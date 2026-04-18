@@ -1,0 +1,63 @@
+.character-select-root {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    background-color: rgba(0, 0, 0, 0.28);
+}
+
+.character-select-panel {
+    min-width: 280px;
+    width: 50%;
+    max-width: 520px;
+    max-height: 460px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: rgba(20, 24, 34, 235);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(255, 255, 255, 0.08);
+    border-right-color: rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.08);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.character-select-title {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgb(245, 247, 250);
+    margin-bottom: 24px;
+    -unity-text-align: middle-center;
+}
+
+.character-select-list {
+    flex-grow: 1;
+    min-height: 120px;
+    max-height: 320px;
+    margin-bottom: 16px;
+}
+
+.character-select-selected-name {
+    color: rgb(245, 247, 250);
+    margin-bottom: 16px;
+    -unity-text-align: middle-center;
+}
+
+.character-select-confirm-button {
+    width: 200px;
+    height: 48px;
+    align-self: center;
+}
+
+.character-select-option {
+    height: 40px;
+    margin-bottom: 4px;
+}

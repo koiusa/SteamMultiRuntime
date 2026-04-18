@@ -1,0 +1,13 @@
+.status-panel {
+    background-color: rgba(8, 24, 38, 140);
+}
+
+.status {
+    margin-bottom: 4px;
+    color: rgba(208, 236, 255, 255);
+}
+
+.info {
+    margin-bottom: 0;
+    color: rgba(127, 224, 255, 255);
+}

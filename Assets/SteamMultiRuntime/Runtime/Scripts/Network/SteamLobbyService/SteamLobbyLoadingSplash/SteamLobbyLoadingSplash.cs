@@ -1,0 +1,392 @@
+using System;
+using System.Threading.Tasks;
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
+
+namespace Koiusa.SteamMultiRuntime
+{
+    [DisallowMultipleComponent]
+    public class SteamLobbyLoadingSplash : MonoBehaviour
+    {
+        [SerializeField] private SteamLobbySceneLoader sceneLoader;
+        [SerializeField] private NetworkManager networkManager;
+        [SerializeField] private SteamLobbyLoadingSplashSettings splashSettings;
+        [SerializeField] private bool showSplashDuringSceneLoad = true;
+
+        private bool isSubscribed;
+        private SteamLobbySceneLoader subscribedSceneLoader;
+        private GameObject splashUiObject;
+        private UIDocument splashUiDocument;
+        private PanelSettings runtimeSplashPanelSettings;
+        private VisualElement splashOverlayElement;
+        private VisualElement splashImageElement;
+        private Label splashMessageElement;
+        private int splashVisibilityVersion;
+        private const float SceneReadyWaitTimeoutSeconds = 15f;
+
+        private void Awake()
+        {
+            ResolveSceneLoader();
+            ResolveNetworkManager();
+        }
+
+        private void OnEnable()
+        {
+            ResolveSceneLoader();
+            ResolveNetworkManager();
+            SubscribeLoaderEvents();
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            splashVisibilityVersion++;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            UnsubscribeLoaderEvents();
+            HideSplashUi();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeLoaderEvents();
+
+            if (splashUiObject != null)
+            {
+                Destroy(splashUiObject);
+                splashUiObject = null;
+            }
+
+            if (runtimeSplashPanelSettings != null)
+            {
+                Destroy(runtimeSplashPanelSettings);
+                runtimeSplashPanelSettings = null;
+            }
+        }
+
+        private void ResolveSceneLoader()
+        {
+            if (sceneLoader != null)
+            {
+                return;
+            }
+
+            sceneLoader = GetComponent<SteamLobbySceneLoader>();
+            if (sceneLoader == null)
+            {
+                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoader>();
+            }
+        }
+
+        private void ResolveNetworkManager()
+        {
+            if (networkManager != null)
+            {
+                return;
+            }
+
+            networkManager = NetworkManager.Singleton;
+            if (networkManager == null)
+            {
+                networkManager = FindFirstObjectByType<NetworkManager>();
+            }
+        }
+
+        private void SubscribeLoaderEvents()
+        {
+            if (sceneLoader == null)
+            {
+                return;
+            }
+
+            if (isSubscribed && subscribedSceneLoader == sceneLoader)
+            {
+                return;
+            }
+
+            UnsubscribeLoaderEvents();
+
+            sceneLoader.LoadingStarted += OnLoadingStarted;
+            sceneLoader.LoadingFinished += OnLoadingFinished;
+            subscribedSceneLoader = sceneLoader;
+            isSubscribed = true;
+        }
+
+        private void UnsubscribeLoaderEvents()
+        {
+            if (!isSubscribed || subscribedSceneLoader == null)
+            {
+                isSubscribed = false;
+                subscribedSceneLoader = null;
+                return;
+            }
+
+            subscribedSceneLoader.LoadingStarted -= OnLoadingStarted;
+            subscribedSceneLoader.LoadingFinished -= OnLoadingFinished;
+            isSubscribed = false;
+            subscribedSceneLoader = null;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ResolveSceneLoader();
+            ResolveNetworkManager();
+            SubscribeLoaderEvents();
+        }
+
+        private void OnLoadingStarted()
+        {
+            if (!showSplashDuringSceneLoad)
+            {
+                return;
+            }
+
+            splashVisibilityVersion++;
+            EnsureSplashUi();
+            RefreshSplashUi();
+            ShowSplashUi();
+        }
+
+        private void OnLoadingFinished()
+        {
+            if (!showSplashDuringSceneLoad)
+            {
+                return;
+            }
+
+            var visibilityVersion = splashVisibilityVersion;
+            _ = HideSplashWhenCharacterReadyAsync(visibilityVersion);
+        }
+
+        private async Task HideSplashWhenCharacterReadyAsync(int visibilityVersion)
+        {
+            await WaitForCharacterReadyAsync(visibilityVersion);
+            await WaitForSceneReadyAsync(visibilityVersion);
+
+            if (!isActiveAndEnabled || visibilityVersion != splashVisibilityVersion)
+            {
+                return;
+            }
+
+            HideSplashUi();
+        }
+
+        private async Task WaitForCharacterReadyAsync(int visibilityVersion)
+        {
+            ResolveNetworkManager();
+
+            var playerPrefab = networkManager != null ? networkManager.NetworkConfig.PlayerPrefab : null;
+            if (playerPrefab == null)
+            {
+                return;
+            }
+
+            var prefabCharacterLoader = playerPrefab.GetComponent<CharacterPrefabLoader>();
+            if (prefabCharacterLoader == null)
+            {
+                return;
+            }
+
+            while (isActiveAndEnabled && visibilityVersion == splashVisibilityVersion)
+            {
+                ResolveNetworkManager();
+
+                if (networkManager == null || !networkManager.IsListening)
+                {
+                    return;
+                }
+
+                var playerObject = networkManager.LocalClient?.PlayerObject;
+                if (playerObject == null)
+                {
+                    await Task.Yield();
+                    continue;
+                }
+
+                var runtimeCharacterLoader = playerObject.GetComponent<CharacterPrefabLoader>();
+                if (runtimeCharacterLoader == null)
+                {
+                    return;
+                }
+
+                if (runtimeCharacterLoader.IsLoaded)
+                {
+                    return;
+                }
+
+                // PrefabLoadedイベントで待機
+                var tcs = new TaskCompletionSource<bool>();
+                void OnLoaded(GameObject obj)
+                {
+                    runtimeCharacterLoader.PrefabLoaded -= OnLoaded;
+                    tcs.TrySetResult(true);
+                }
+                runtimeCharacterLoader.PrefabLoaded += OnLoaded;
+
+                // 既にロード済みなら即解除
+                if (runtimeCharacterLoader.IsLoaded)
+                {
+                    runtimeCharacterLoader.PrefabLoaded -= OnLoaded;
+                    return;
+                }
+
+                await tcs.Task;
+                return;
+            }
+        }
+
+        private async Task WaitForSceneReadyAsync(int visibilityVersion)
+        {
+            var startedAt = Time.realtimeSinceStartup;
+
+            while (isActiveAndEnabled && visibilityVersion == splashVisibilityVersion)
+            {
+                if (IsSceneReadyForSplashHide())
+                {
+                    return;
+                }
+
+                if (Time.realtimeSinceStartup - startedAt >= SceneReadyWaitTimeoutSeconds)
+                {
+                    return;
+                }
+
+                await Task.Yield();
+            }
+        }
+
+        private bool IsSceneReadyForSplashHide()
+        {
+            var activeScene = SceneManager.GetActiveScene();
+            if (!activeScene.IsValid() || !activeScene.isLoaded)
+            {
+                return false;
+            }
+
+            ResolveSceneLoader();
+            if (sceneLoader != null && sceneLoader.IsDirectLobbyTransitionInProgress)
+            {
+                return false;
+            }
+
+            ResolveNetworkManager();
+            if (networkManager == null || !networkManager.IsListening)
+            {
+                return true;
+            }
+
+            if (sceneLoader == null || string.IsNullOrWhiteSpace(sceneLoader.LobbySceneName))
+            {
+                return true;
+            }
+
+            return string.Equals(activeScene.name, sceneLoader.LobbySceneName, StringComparison.Ordinal);
+        }
+
+        private void EnsureSplashUi()
+        {
+            if (splashUiObject != null)
+            {
+                return;
+            }
+
+            var splashLayoutAsset = splashSettings != null ? splashSettings.SplashLayoutAsset : null;
+            if (splashLayoutAsset == null)
+            {
+                Debug.LogError("[SteamLobbyLoadingSplash] Splash layout asset is not assigned in settings.");
+                return;
+            }
+
+            var panelSettings = ResolveSplashPanelSettings();
+            if (panelSettings == null)
+            {
+                Debug.LogError("[SteamLobbyLoadingSplash] PanelSettings could not be resolved for splash UI.");
+                return;
+            }
+
+            splashUiObject = new GameObject("SteamLobbyLoadingSplash");
+            DontDestroyOnLoad(splashUiObject);
+
+            splashUiDocument = splashUiObject.AddComponent<UIDocument>();
+            splashUiDocument.panelSettings = panelSettings;
+            splashUiDocument.sortingOrder = short.MaxValue;
+
+            BuildSplashUi(splashUiDocument.rootVisualElement, splashLayoutAsset);
+        }
+
+        private PanelSettings ResolveSplashPanelSettings()
+        {
+            if (splashSettings != null && splashSettings.PanelSettings != null)
+            {
+                return splashSettings.PanelSettings;
+            }
+
+            var existingDocument = FindFirstObjectByType<UIDocument>();
+            if (existingDocument != null && existingDocument.panelSettings != null)
+            {
+                return existingDocument.panelSettings;
+            }
+
+            runtimeSplashPanelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+            return runtimeSplashPanelSettings;
+        }
+
+        private void BuildSplashUi(VisualElement root, VisualTreeAsset splashLayoutAsset)
+        {
+            root.Clear();
+            splashLayoutAsset.CloneTree(root);
+
+            splashOverlayElement = root.Q<VisualElement>("splash-overlay");
+            splashImageElement = root.Q<VisualElement>("splash-image");
+            splashMessageElement = root.Q<Label>("splash-message");
+
+            if (splashOverlayElement == null || splashImageElement == null || splashMessageElement == null)
+            {
+                Debug.LogError("[SteamLobbyLoadingSplash] Splash layout is missing required elements.");
+            }
+        }
+
+        private void RefreshSplashUi()
+        {
+            if (splashOverlayElement == null || splashImageElement == null || splashMessageElement == null)
+            {
+                return;
+            }
+
+            var splashTexture = splashSettings != null ? splashSettings.SplashImageTexture : null;
+
+            if (splashTexture != null)
+            {
+                splashImageElement.style.display = DisplayStyle.Flex;
+                splashImageElement.style.backgroundImage = new StyleBackground(splashTexture);
+            }
+            else
+            {
+                splashImageElement.style.display = DisplayStyle.None;
+            }
+
+            var messageText = splashSettings != null ? splashSettings.SplashMessage : "Loading...";
+            splashMessageElement.text = string.IsNullOrWhiteSpace(messageText) ? "Loading..." : messageText;
+            splashMessageElement.style.display = string.IsNullOrWhiteSpace(messageText)
+                ? DisplayStyle.None
+                : DisplayStyle.Flex;
+        }
+
+        private void ShowSplashUi()
+        {
+            if (splashOverlayElement != null)
+            {
+                splashOverlayElement.style.display = DisplayStyle.Flex;
+            }
+        }
+
+        private void HideSplashUi()
+        {
+            if (splashOverlayElement != null)
+            {
+                splashOverlayElement.style.display = DisplayStyle.None;
+            }
+        }
+    }
+}

@@ -1,0 +1,72 @@
+.section-title {
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+    color: rgba(196, 245, 255, 255);
+}
+
+.muted {
+    color: rgba(162, 208, 230, 255);
+}
+
+.create-panel,
+.join-panel,
+.search-panel,
+.actions-panel,
+.online-members-panel {
+    background-color: rgba(7, 20, 34, 130);
+}
+
+.field {
+    color: rgba(226, 245, 255, 255);
+    --unity-cursor-color: rgba(150, 245, 255, 255);
+    --unity-selection-color: rgba(65, 165, 210, 140);
+}
+
+.field > .unity-base-field__label {
+    color: rgba(148, 228, 255, 255);
+}
+
+.field > .unity-base-text-field__input,
+.field > .unity-text-field__input {
+    color: rgba(220, 244, 255, 255);
+    background-color: rgba(9, 24, 40, 230);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(83, 208, 235, 180);
+    border-bottom-color: rgba(83, 208, 235, 180);
+    border-left-color: rgba(83, 208, 235, 180);
+    border-right-color: rgba(83, 208, 235, 180);
+}
+
+.field > .unity-base-text-field__input:focus,
+.field > .unity-text-field__input:focus {
+    background-color: rgba(15, 40, 66, 245);
+    border-top-color: rgba(117, 236, 255, 220);
+    border-bottom-color: rgba(117, 236, 255, 220);
+    border-left-color: rgba(117, 236, 255, 220);
+    border-right-color: rgba(117, 236, 255, 220);
+}
+
+.lobby-list,
+.online-member-list {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(51, 168, 204, 220);
+    border-bottom-color: rgba(51, 168, 204, 220);
+    border-left-color: rgba(51, 168, 204, 220);
+    border-right-color: rgba(51, 168, 204, 220);
+    background-color: rgba(7, 14, 24, 230);
+}
+
+.lobby-row-label,
+.online-member-name {
+    color: rgba(218, 238, 255, 255);
+}

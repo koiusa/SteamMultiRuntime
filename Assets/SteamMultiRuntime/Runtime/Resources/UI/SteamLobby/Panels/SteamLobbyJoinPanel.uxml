@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="../Styles/SteamLobbyJoinPanel.uss" />
+    <ui:VisualElement class="section-panel join-panel row">
+        <ui:TextField name="lobby-id-field" label="Lobby ID" class="field grow" />
+        <ui:Button name="join-by-id-button" text="Join by ID" class="button narrow" />
+    </ui:VisualElement>
+</ui:UXML>

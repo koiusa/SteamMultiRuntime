@@ -1,0 +1,35 @@
+.player-name-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.player-name-overlay__label {
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    color: rgb(245, 247, 250);
+    text-shadow: none;
+    -unity-text-outline-width: 0px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0px;
+    border-top-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    font-size: 12px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    display: none;
+}

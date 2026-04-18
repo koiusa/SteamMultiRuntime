@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="Styles/SteamLobbyBase.uss" />
+    <ui:VisualElement class="root">
+        <ui:VisualElement class="panel main-panel">
+            <ui:Label text="Steam Lobby" class="title" />
+
+            <ui:VisualElement class="lobby-content-row">
+                <ui:VisualElement class="lobby-controls-column">
+                    <ui:VisualElement name="status-panel-host" />
+                    <ui:VisualElement name="online-members-panel-host" />
+                    <ui:VisualElement name="create-panel-host" />
+                    <ui:VisualElement name="actions-panel-host" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="lobby-list-column">
+                    <ui:VisualElement name="join-panel-host" />
+                    <ui:VisualElement name="search-panel-host" />
+                    <ui:VisualElement name="list-panel-host" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

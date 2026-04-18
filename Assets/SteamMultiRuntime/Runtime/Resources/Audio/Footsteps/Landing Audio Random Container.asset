@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1233149941 &-8381670517291473565
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_003_{-8381670517291473565}
+  m_AudioClip: {fileID: 8300000, guid: 9fc925bd4f1845e7830402ac709c6fb6, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-7429256835216100276
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_004_{-7429256835216100276}
+  m_AudioClip: {fileID: 8300000, guid: afd7872ab23d4611ad73259c6da853e5, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-3204520809582820554
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_005_{-3204520809582820554}
+  m_AudioClip: {fileID: 8300000, guid: 56b17f6e406f4636bd9c63082cdaaedb, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-811227829210779302
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_001_{-811227829210779302}
+  m_AudioClip: {fileID: 8300000, guid: af4d1dc90a7b4706803f56cab2cd92a5, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1307931743 &6418180475301049370
+AudioRandomContainer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing Audio Random Container
+  m_Volume: 0
+  m_Pitch: 0
+  m_AutomaticTriggerTime: 0
+  m_LoopCount: 1
+  m_VolumeRandomizationRange: {x: 0, y: 0}
+  m_PitchRandomizationRange: {x: 0, y: 0}
+  m_AutomaticTriggerTimeRandomizationRange: {x: 0, y: 0}
+  m_LoopCountRandomizationRange: {x: 0, y: 0}
+  m_Elements:
+  - {fileID: 8584173510302952881}
+  - {fileID: -811227829210779302}
+  - {fileID: 8614599556353158770}
+  - {fileID: -8381670517291473565}
+  - {fileID: -7429256835216100276}
+  - {fileID: -3204520809582820554}
+  m_AvoidRepeatingLast: 0
+  m_PlaybackMode: 1
+  m_TriggerMode: 1
+  m_AutomaticTriggerMode: 1
+  m_LoopMode: 1
+  m_VolumeRandomizationEnabled: 0
+  m_PitchRandomizationEnabled: 0
+  m_AutomaticTriggerTimeRandomizationEnabled: 0
+  m_LoopCountRandomizationEnabled: 0
+--- !u!1233149941 &8584173510302952881
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_000_{8584173510302952881}
+  m_AudioClip: {fileID: 8300000, guid: ad705a6946594ead8ff042d44b8ec3a9, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &8614599556353158770
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Landing_002_{8614599556353158770}
+  m_AudioClip: {fileID: 8300000, guid: 58006b4b07824f4ebf34ed5b3a3feef8, type: 3}
+  m_Volume: 0
+  m_Enabled: 1

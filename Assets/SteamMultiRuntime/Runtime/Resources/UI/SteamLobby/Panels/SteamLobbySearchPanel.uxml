@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="../Styles/SteamLobbySearchPanel.uss" />
+    <ui:VisualElement class="section-panel search-panel row">
+        <ui:TextField name="lobby-name-search-field" label="Lobby Name" class="field grow" />
+        <ui:Button name="search-by-name-button" text="Search" class="button narrow" />
+    </ui:VisualElement>
+</ui:UXML>

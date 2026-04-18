@@ -1,0 +1,119 @@
+.root {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.main-panel {
+    max-width: 1100px;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    background-color: rgba(0, 0, 0, 0);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-color: rgba(50, 235, 255, 160);
+    border-bottom-color: rgba(50, 235, 255, 160);
+    border-left-color: rgba(50, 235, 255, 160);
+    border-right-color: rgba(50, 235, 255, 160);
+}
+
+.lobby-content-row {
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+    min-width: 0;
+}
+
+.lobby-controls-column {
+    flex-basis: 340px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 300px;
+    margin-right: 10px;
+}
+
+.lobby-list-column {
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.section-panel {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-shrink: 0;
+    min-width: 0;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(52, 147, 190, 120);
+    border-bottom-color: rgba(52, 147, 190, 120);
+    border-left-color: rgba(52, 147, 190, 120);
+    border-right-color: rgba(52, 147, 190, 120);
+    background-color: rgba(7, 16, 28, 110);
+}
+
+.title {
+    -unity-font-style: bold;
+    font-size: 22px;
+    color: rgba(153, 248, 255, 255);
+    margin-bottom: 12px;
+}
+
+.row {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.button {
+    margin-right: 6px;
+    color: rgba(166, 241, 255, 255);
+    background-color: rgba(20, 42, 72, 255);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(88, 237, 255, 200);
+    border-bottom-color: rgba(88, 237, 255, 200);
+    border-left-color: rgba(88, 237, 255, 200);
+    border-right-color: rgba(88, 237, 255, 200);
+}
+
+.button:hover {
+    background-color: rgba(28, 64, 96, 255);
+}
+
+.button:active {
+    background-color: rgba(15, 96, 122, 255);
+}
+
+.narrow {
+    width: 120px;
+}
+
+#join-panel-host,
+#search-panel-host {
+    flex-shrink: 0;
+    min-height: 0;
+}
+
+#list-panel-host {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
+}

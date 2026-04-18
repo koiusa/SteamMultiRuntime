@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="SteamLobbyLoadingSplash.uss" />
+    <ui:VisualElement name="splash-overlay" class="splash-overlay">
+        <ui:VisualElement class="splash-content">
+            <ui:VisualElement name="splash-image" class="splash-image" />
+            <ui:Label name="splash-message" text="Loading..." class="splash-message" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

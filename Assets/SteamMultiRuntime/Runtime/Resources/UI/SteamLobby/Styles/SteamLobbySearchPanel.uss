@@ -1,0 +1,12 @@
+.search-panel {
+    margin-bottom: 10px;
+}
+
+.search-panel .grow {
+    flex-grow: 1;
+    margin-right: 6px;
+}
+
+.search-panel .field {
+    margin-bottom: 0;
+}

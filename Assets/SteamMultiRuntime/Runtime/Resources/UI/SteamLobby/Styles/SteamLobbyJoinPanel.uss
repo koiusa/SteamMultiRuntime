@@ -1,0 +1,12 @@
+.join-panel {
+    margin-bottom: 10px;
+}
+
+.join-panel .grow {
+    flex-grow: 1;
+    margin-right: 6px;
+}
+
+.join-panel .field {
+    margin-bottom: 0;
+}

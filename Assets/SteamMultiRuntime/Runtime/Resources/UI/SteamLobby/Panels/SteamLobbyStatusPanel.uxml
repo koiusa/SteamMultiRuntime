@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="../Styles/SteamLobbyStatusPanel.uss" />
+    <ui:VisualElement class="section-panel status-panel">
+        <ui:Label name="connection-label" text="Steam: connecting..." class="status" />
+        <ui:Label name="current-lobby-label" text="Current Lobby: none" class="status" />
+        <ui:Label name="info-label" text="NetworkManager/FacepunchTransport の初期化待ち" class="muted info" />
+    </ui:VisualElement>
+</ui:UXML>

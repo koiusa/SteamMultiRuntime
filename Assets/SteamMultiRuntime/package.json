@@ -1,0 +1,48 @@
+{
+  "name": "com.koiusa.steammultiruntime",
+  "displayName": "Steam Multi Runtime",
+  "version": "0.3.6",
+  "unity": "6000.3",
+  "unityRelease": "9f1",
+  "description": "Steam Multi Runtime Asset.",
+  "author": {
+    "name": "koiusa"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koiusa/SteamMultiRuntime"
+  },
+
+  "keywords": [
+    "steam",
+    "multi",
+    "runtime"
+  ],
+
+  "dependencies": {
+    "com.unity.netcode.gameobjects": "2.11.0",
+    "com.unity.cinemachine": "3.1.6",
+    "com.unity.terrain-tools": "5.3.2",
+    "com.unity.visualeffectgraph": "17.3.0",
+    "com.unity.render-pipelines.universal": "17.3.0",
+    "com.unity.postprocessing": "3.5.4"
+  },
+
+  "samples": [
+    {
+      "displayName": "Samples Common Assets",
+      "description": "Sample for Common Assets.",
+      "path": "Samples/Common"
+    },
+    {
+      "displayName": "Samples Steam Multi Player Simple",
+      "description": "Sample for Steam Multi Player Simple.",
+      "path": "Samples/SteamMultiPlayer_Simple"
+    },
+    {
+      "displayName": "Samples Steam Multi Player With Animator",
+      "description": "Sample for Steam Multi Player With Animator.",
+      "path": "Samples/SteamMultiPlayer_WithAnimator"
+    }
+  ]
+}

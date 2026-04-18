@@ -1,0 +1,22 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:2aa43b0c797e0d444a7e82e75d4f2082",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:4307f53044263cf4b835bd812fc161a4",
+        "GUID:b856170c0ce9ee349b28955398a62a7e",
+        "GUID:726d4e3f8f415514f81587df3e3135b2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

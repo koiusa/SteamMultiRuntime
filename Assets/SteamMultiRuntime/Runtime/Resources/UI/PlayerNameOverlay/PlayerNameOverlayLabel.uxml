@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="PlayerNameOverlay.uss" />
+    <ui:Label name="player-name-label" class="player-name-overlay__label" text="Player0" />
+</ui:UXML>

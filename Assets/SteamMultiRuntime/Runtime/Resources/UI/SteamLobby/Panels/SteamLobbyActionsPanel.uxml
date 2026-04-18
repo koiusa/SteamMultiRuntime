@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="../Styles/SteamLobbyActionsPanel.uss" />
+    <ui:VisualElement class="section-panel actions-panel row">
+        <ui:Button name="refresh-button" text="Refresh" class="button" />
+        <ui:Button name="leave-button" text="Leave Lobby" class="button" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../Styles/SteamLobbyCommon.uss" />
+    <ui:Style src="../Styles/SteamLobbyCreatePanel.uss" />
+    <ui:VisualElement class="section-panel create-panel">
+        <ui:TextField name="lobby-name-field" label="Lobby Name" value="My Lobby" class="field" />
+        <ui:DropdownField name="stage-scene-field" label="Stage" class="field" />
+        <ui:Button name="create-button" text="Create Lobby" class="button" />
+    </ui:VisualElement>
+</ui:UXML>

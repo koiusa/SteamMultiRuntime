@@ -1,0 +1,76 @@
+.list-panel {
+    margin-bottom: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 120px;
+}
+
+.lobby-list {
+    height: auto;
+    min-height: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.lobby-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 5px;
+    background-color: rgba(14, 28, 46, 220);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(52, 147, 190, 180);
+    border-bottom-color: rgba(52, 147, 190, 180);
+    border-left-color: rgba(52, 147, 190, 180);
+    border-right-color: rgba(52, 147, 190, 180);
+}
+
+.lobby-row-label {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.lobby-row-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.lobby-badge {
+    margin-left: 6px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    color: rgba(12, 28, 35, 255);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    -unity-font-style: bold;
+}
+
+.host-badge {
+    background-color: rgba(111, 241, 255, 235);
+}
+
+.joined-badge {
+    background-color: rgba(115, 245, 166, 235);
+}
+
+.full-badge {
+    background-color: rgba(255, 199, 107, 235);
+}
+
+.join-button {
+    margin-left: 6px;
+}

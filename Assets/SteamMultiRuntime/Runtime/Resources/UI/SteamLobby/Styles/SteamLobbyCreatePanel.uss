@@ -1,0 +1,46 @@
+.create-panel {
+    background-color: rgba(7, 20, 34, 130);
+}
+
+.create-panel .field {
+    margin-bottom: 6px;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+}
+
+.create-panel .field > .unity-base-field__label {
+    min-width: 0;
+    margin-bottom: 2px;
+}
+
+.create-panel .field > .unity-base-field__input,
+.create-panel .field > .unity-base-text-field__input,
+.create-panel .field > .unity-base-popup-field__input,
+.create-panel .field > .unity-text-field__input {
+    min-width: 0;
+    width: auto;
+}
+
+.create-panel .field > .unity-base-text-field__input,
+.create-panel .field > .unity-text-field__input {
+    color: rgba(220, 244, 255, 255);
+    background-color: rgba(9, 24, 40, 230);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: rgba(83, 208, 235, 180);
+    border-bottom-color: rgba(83, 208, 235, 180);
+    border-left-color: rgba(83, 208, 235, 180);
+    border-right-color: rgba(83, 208, 235, 180);
+}
+
+.create-panel .field > .unity-base-text-field__input:focus,
+.create-panel .field > .unity-text-field__input:focus {
+    background-color: rgba(15, 40, 66, 245);
+    border-top-color: rgba(117, 236, 255, 220);
+    border-bottom-color: rgba(117, 236, 255, 220);
+    border-left-color: rgba(117, 236, 255, 220);
+    border-right-color: rgba(117, 236, 255, 220);
+}

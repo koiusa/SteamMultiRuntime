@@ -1,0 +1,15 @@
+.online-members-panel {
+    background-color: rgba(7, 20, 34, 130);
+}
+
+.member-connection-strength {
+    margin-bottom: 6px;
+}
+
+.online-member-list {
+    height: 120px;
+}
+
+.online-member-name {
+    margin-bottom: 2px;
+}
