@@ -41,12 +41,26 @@ jobs:
           cd upm
           zip -r ../SteamMultiRuntime-upm.zip .
 
+      - name: Import GPG key
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      - name: Sign UPM package
+        run: |
+          echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign -o SteamMultiRuntime-upm.zip.sig SteamMultiRuntime-upm.zip
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
           name: v${{ env.PACKAGE_VERSION }}
-          files: SteamMultiRuntime-upm.zip
+          files: |
+            SteamMultiRuntime-upm.zip
+            SteamMultiRuntime-upm.zip.sig
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
