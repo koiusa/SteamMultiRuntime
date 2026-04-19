@@ -18,16 +18,24 @@ jobs:
         run: |
           echo "PACKAGE_VERSION=$(jq -r .version Assets/SteamMultiRuntime/package.json)" >> $GITHUB_ENV
 
-      - name: Create and Push Git Tag (if not exists)
+      - name: Check if tag exists
+        id: check_tag
         run: |
           if git ls-remote --tags origin | grep "refs/tags/v${PACKAGE_VERSION}$"; then
-            echo "Tag v${PACKAGE_VERSION} already exists. Skipping tag creation."
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git tag v${PACKAGE_VERSION}
-            git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }} v${PACKAGE_VERSION}
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+
+      - name: Create and Push Git Tag (if not exists)
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag v${PACKAGE_VERSION}
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }} v${PACKAGE_VERSION}
         env:
           PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
 
@@ -71,6 +79,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Publish to npm
+        if: steps.check_tag.outputs.exists == 'false'
         run: npm publish --access public
         working-directory: Assets/SteamMultiRuntime
         env:
