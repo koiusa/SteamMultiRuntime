@@ -40,28 +40,33 @@ jobs:
           PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
 
       - name: Prepare UPM package
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           mkdir -p upm
           cp -r Assets/SteamMultiRuntime/* upm/
 
       - name: Zip UPM package
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           cd upm
           zip -r ../SteamMultiRuntime-upm.zip .
 
       - name: Import GPG key
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: Sign UPM package
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign -o SteamMultiRuntime-upm.zip.sig SteamMultiRuntime-upm.zip
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
