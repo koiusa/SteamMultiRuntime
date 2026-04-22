@@ -26,6 +26,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/SteamMultiRuntime/Samples/Common/NPCVilleg.unity
     guid: 0ad083b12f9e5c04abd9318132df160d
+  - enabled: 1
+    path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_Server/SampleLobbyScene_Server.unity
+    guid: b872728e980f8eb409a63cbd22815067
+  - enabled: 1
+    path: Assets/SteamMultiRuntime/Samples/Common/ServerScene.unity
+    guid: e050ced7b67192b418ee482cf3fe6036
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: c99c9c0ae8f6190439a44478dbaa4a76, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

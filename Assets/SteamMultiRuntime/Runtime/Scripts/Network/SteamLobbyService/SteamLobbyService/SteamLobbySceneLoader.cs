@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbySceneLoader : MonoBehaviour
+    public class SteamLobbySceneLoader : SteamLobbySceneLoaderBase, ISteamLobbyTransitionScope
     {
         [Serializable]
         private class SceneCatalogSettings
@@ -67,9 +67,6 @@ namespace Koiusa.SteamMultiRuntime
         private int directLobbyTransitionScopeCount;
         private string lobbySceneName;
 
-        public event Action LoadingStarted;
-        public event Action LoadingFinished;
-
         private void Awake()
         {
             if (instance != null && instance != this)
@@ -114,15 +111,7 @@ namespace Koiusa.SteamMultiRuntime
             lobbyService = GetComponent<SteamLobbyService>();
         }
 
-        private void SubscribeLobbyServiceEvents()
-        {
-        }
-
-        private void UnsubscribeLobbyServiceEvents()
-        {
-        }
-
-        public async Task<bool> LoadLobbySceneOnEnteredAsync()
+        public override async Task<bool> LoadLobbySceneOnEnteredAsync()
         {
             if (!lobbyScenePolicy.loadOnEntered || string.IsNullOrWhiteSpace(lobbySceneName))
             {
@@ -184,7 +173,7 @@ namespace Koiusa.SteamMultiRuntime
             didUnloadDefaultSceneForLobby = true;
         }
 
-        public void UnloadLobbySceneOnLeft()
+        public override void UnloadLobbySceneOnLeft()
         {
             _ = ExecuteWithLoadingScopeAsync(() => UnloadLobbySceneOnLeftCoreAsync(null));
         }
@@ -263,7 +252,7 @@ namespace Koiusa.SteamMultiRuntime
             _ = HandleLobbyLeftAsyncInternal(null);
         }
 
-        public Task HandleLobbyLeftAsync(string sceneNameToUnload)
+        public override Task HandleLobbyLeftAsync(string sceneNameToUnload)
         {
             return HandleLobbyLeftAsyncInternal(sceneNameToUnload);
         }
@@ -333,7 +322,7 @@ namespace Koiusa.SteamMultiRuntime
             loadingScopeCount++;
             if (loadingScopeCount == 1)
             {
-                LoadingStarted?.Invoke();
+                RaiseLoadingStarted();
             }
         }
 
@@ -348,7 +337,7 @@ namespace Koiusa.SteamMultiRuntime
             loadingScopeCount--;
             if (loadingScopeCount == 0)
             {
-                LoadingFinished?.Invoke();
+                RaiseLoadingFinished();
             }
         }
 
@@ -384,30 +373,19 @@ namespace Koiusa.SteamMultiRuntime
             DynamicGI.UpdateEnvironment();
         }
 
-        private static Task WaitForOperationAsync(AsyncOperation operation)
+        private static bool AreSameSceneReference(string left, string right)
         {
-            if (operation == null || operation.isDone)
+            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
             {
-                return Task.CompletedTask;
+                return false;
             }
 
-            var completionSource = new TaskCompletionSource<bool>();
-
-            void OnCompleted(AsyncOperation completedOperation)
+            if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase))
             {
-                operation.completed -= OnCompleted;
-                completionSource.TrySetResult(true);
+                return true;
             }
 
-            operation.completed += OnCompleted;
-
-            if (operation.isDone)
-            {
-                operation.completed -= OnCompleted;
-                return Task.CompletedTask;
-            }
-
-            return completionSource.Task;
+            return string.Equals(SteamLobbySceneUtility.ToSceneName(left), SteamLobbySceneUtility.ToSceneName(right), StringComparison.OrdinalIgnoreCase);
         }
 
         private void OnDestroy()
@@ -418,9 +396,9 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public string LobbySceneName => lobbySceneName;
+        public override string LobbySceneName => lobbySceneName;
 
-        public void SetLobbySceneName(string sceneName)
+        public override void SetLobbySceneName(string sceneName)
         {
             if (string.IsNullOrWhiteSpace(sceneName))
             {
@@ -432,7 +410,7 @@ namespace Koiusa.SteamMultiRuntime
                 : sceneName;
         }
 
-        public IReadOnlyList<string> CreatableStageSceneNames =>
+        public override IReadOnlyList<string> CreatableStageSceneNames =>
             (sceneCatalog.stageSceneList != null && sceneCatalog.stageSceneList.sceneNames != null)
                 ? sceneCatalog.stageSceneList.sceneNames
                 : Array.Empty<string>();
@@ -453,78 +431,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             directLobbyTransitionScopeCount--;
-        }
-
-        private static bool CanLoadScene(string sceneReference)
-        {
-            if (string.IsNullOrWhiteSpace(sceneReference))
-            {
-                return false;
-            }
-
-            if (IsScenePath(sceneReference))
-            {
-                return SceneUtility.GetBuildIndexByScenePath(sceneReference) >= 0;
-            }
-
-            return Application.CanStreamedLevelBeLoaded(sceneReference);
-        }
-
-        private static Scene GetLoadedScene(string sceneReference)
-        {
-            if (string.IsNullOrWhiteSpace(sceneReference))
-            {
-                return default;
-            }
-
-            if (IsScenePath(sceneReference))
-            {
-                var byPath = SceneManager.GetSceneByPath(sceneReference);
-                if (byPath.IsValid())
-                {
-                    return byPath;
-                }
-            }
-
-            return SceneManager.GetSceneByName(ToSceneName(sceneReference));
-        }
-
-        private static bool AreSameSceneReference(string left, string right)
-        {
-            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
-            {
-                return false;
-            }
-
-            if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return string.Equals(ToSceneName(left), ToSceneName(right), StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool IsScenePath(string sceneReference)
-        {
-            return sceneReference.Contains("/") || sceneReference.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string ToSceneName(string sceneReference)
-        {
-            if (string.IsNullOrWhiteSpace(sceneReference))
-            {
-                return string.Empty;
-            }
-
-            var normalized = sceneReference.Replace('\\', '/');
-            var slashIndex = normalized.LastIndexOf('/');
-            var fileName = slashIndex >= 0 ? normalized.Substring(slashIndex + 1) : normalized;
-            if (fileName.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
-            {
-                return fileName.Substring(0, fileName.Length - ".unity".Length);
-            }
-
-            return fileName;
         }
     }
 }

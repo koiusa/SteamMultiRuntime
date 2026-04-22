@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     public class SteamLobbyService : MonoBehaviour
     {
         [SerializeField] private SteamConnection steamConnection;
-        [SerializeField] private SteamLobbySceneLoader sceneLoader;
+        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
         [SerializeField] private SteamLobbyConnectionStatus connectionStatus;
         [SerializeField] private int defaultMaxPlayers = 4;
         [SerializeField] private bool enableLogging = false;
@@ -55,7 +55,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (sceneLoader == null)
             {
-                sceneLoader = GetComponent<SteamLobbySceneLoader>();
+                sceneLoader = GetComponent<SteamLobbySceneLoaderBase>();
             }
 
             if (connectionStatus == null)

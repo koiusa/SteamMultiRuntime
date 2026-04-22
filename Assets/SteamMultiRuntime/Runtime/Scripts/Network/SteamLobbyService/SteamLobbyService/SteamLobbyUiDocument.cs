@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
+using Koiusa.SteamMultiRuntime.Network;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
     public class SteamLobbyUiDocument : MonoBehaviour
     {
         [SerializeField] private SteamLobbyService lobbyService;
-        [SerializeField] private SteamLobbySceneLoader sceneLoader;
+        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
         [SerializeField] private SteamLobbyUiAssets uiAssets;
 
         private UIDocument uiDocument;
@@ -34,7 +35,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (sceneLoader == null)
             {
-                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoader>();
+                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoaderBase>();
             }
 
             uiAssets?.EnsureDefaultsLoaded();

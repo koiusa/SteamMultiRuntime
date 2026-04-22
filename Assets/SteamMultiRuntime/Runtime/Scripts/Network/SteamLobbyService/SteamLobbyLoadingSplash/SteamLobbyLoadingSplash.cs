@@ -10,13 +10,13 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class SteamLobbyLoadingSplash : MonoBehaviour
     {
-        [SerializeField] private SteamLobbySceneLoader sceneLoader;
+        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
         [SerializeField] private NetworkManager networkManager;
         [SerializeField] private SteamLobbyLoadingSplashSettings splashSettings;
         [SerializeField] private bool showSplashDuringSceneLoad = true;
 
         private bool isSubscribed;
-        private SteamLobbySceneLoader subscribedSceneLoader;
+        private ISteamLobbySceneLoader subscribedSceneLoader;
         private GameObject splashUiObject;
         private UIDocument splashUiDocument;
         private PanelSettings runtimeSplashPanelSettings;
@@ -72,10 +72,10 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            sceneLoader = GetComponent<SteamLobbySceneLoader>();
+            sceneLoader = GetComponent<SteamLobbySceneLoaderBase>();
             if (sceneLoader == null)
             {
-                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoader>();
+                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoaderBase>();
             }
         }
 
@@ -265,7 +265,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ResolveSceneLoader();
-            if (sceneLoader != null && sceneLoader.IsDirectLobbyTransitionInProgress)
+            if (sceneLoader is ISteamLobbyTransitionScope transitionScope && transitionScope.IsDirectLobbyTransitionInProgress)
             {
                 return false;
             }

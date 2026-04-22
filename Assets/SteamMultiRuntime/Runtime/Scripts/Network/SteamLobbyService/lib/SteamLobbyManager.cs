@@ -41,7 +41,8 @@ namespace Koiusa.SteamMultiRuntime
         private readonly List<Lobby> lobbyCache = new List<Lobby>();
         private readonly LobbyState lobbyState = new LobbyState();
         private readonly SteamConnection steamConnection;
-        private readonly SteamLobbySceneLoader sceneLoader;
+        private readonly ISteamLobbySceneLoader sceneLoader;
+        private readonly ISteamLobbyTransitionScope transitionScope;
         private int defaultMaxPlayers = 4;
         private Action onStateChanged;
         private Action<Lobby> onLobbyCreated;
@@ -64,10 +65,11 @@ namespace Koiusa.SteamMultiRuntime
         public IReadOnlyList<Lobby> LobbyCache => lobbyCache;
         public bool IsHost => lobbyState.IsHost;
 
-        public SteamLobbyManager(SteamConnection steamConnection, SteamLobbySceneLoader sceneLoader)
+        public SteamLobbyManager(SteamConnection steamConnection, ISteamLobbySceneLoader sceneLoader)
         {
             this.steamConnection = steamConnection;
             this.sceneLoader = sceneLoader;
+            this.transitionScope = sceneLoader as ISteamLobbyTransitionScope;
         }
 
         public void SetDefaultMaxPlayers(int maxPlayers)
@@ -114,7 +116,7 @@ namespace Koiusa.SteamMultiRuntime
             var isDirectTransition = IsInLobby;
             if (isDirectTransition)
             {
-                sceneLoader?.BeginDirectLobbyTransitionScope();
+                transitionScope?.BeginDirectLobbyTransitionScope();
             }
 
             try
@@ -156,7 +158,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 if (isDirectTransition)
                 {
-                    sceneLoader?.EndDirectLobbyTransitionScope();
+                    transitionScope?.EndDirectLobbyTransitionScope();
                 }
             }
         }
@@ -172,7 +174,7 @@ namespace Koiusa.SteamMultiRuntime
             var isDirectTransition = IsInLobby;
             if (isDirectTransition)
             {
-                sceneLoader?.BeginDirectLobbyTransitionScope();
+                transitionScope?.BeginDirectLobbyTransitionScope();
             }
 
             try
@@ -219,7 +221,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 if (isDirectTransition)
                 {
-                    sceneLoader?.EndDirectLobbyTransitionScope();
+                    transitionScope?.EndDirectLobbyTransitionScope();
                 }
             }
         }
