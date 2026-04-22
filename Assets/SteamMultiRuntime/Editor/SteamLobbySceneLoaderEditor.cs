@@ -46,6 +46,12 @@ namespace Koiusa.SteamMultiRuntime.Editor
         {
             serializedObject.Update();
 
+            using (new EditorGUI.DisabledScope(true))
+            {
+                EditorGUILayout.ObjectField("Script", MonoScript.FromMonoBehaviour((SteamLobbySceneLoader)target), typeof(MonoScript), false);
+            }
+
+            EditorGUILayout.Space();
             DrawReferencesSection();
             EditorGUILayout.Space();
             DrawSceneCatalogSection();
