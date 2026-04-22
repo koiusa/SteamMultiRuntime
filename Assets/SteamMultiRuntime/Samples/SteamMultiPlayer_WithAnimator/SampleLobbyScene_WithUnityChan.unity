@@ -645,7 +645,7 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8572833451326343917, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
-      propertyPath: defaultSceneName
+      propertyPath: sceneCatalog.defaultSceneName
       value: UnityLogo
       objectReference: {fileID: 0}
     - target: {fileID: 8616978841974111165, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}

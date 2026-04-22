@@ -180,15 +180,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
   lobbyService: {fileID: 7001024383980304856}
-  loadDefaultSceneOnStart: 1
-  unloadDefaultSceneOnEntered: 1
-  loadDefaultSceneOnLeft: 1
-  defaultSceneName: WelcomScene
-  loadLobbySceneOnEntered: 1
-  unloadLobbySceneOnLeft: 1
-  creatableStageSceneNames:
-  - PlayGroundScene
-  - SandBoxScene
-  - NPCVilleg
-  projectStageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
+  sceneCatalog:
+    defaultSceneName: WelcomScene
+    stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
+  defaultScenePolicy:
+    loadOnStart: 1
+    unloadOnLobbyEntered: 1
+    loadOnLobbyLeft: 0
+  lobbyScenePolicy:
+    loadOnEntered: 1
+    unloadOnLeft: 1
   disableCamerasInLoadedScenes: 1
