@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Editor.csproj" />
+  <Project Path="UnityChan.Common.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Packages.csproj" />
+  <Project Path="UnityChan.Editor.csproj" />
+  <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
+</Solution>

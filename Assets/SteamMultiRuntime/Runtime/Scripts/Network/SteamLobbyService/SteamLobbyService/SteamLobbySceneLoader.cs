@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Koiusa.SteamMultiRuntime.Network;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -25,7 +26,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private bool unloadLobbySceneOnLeft = true;
         private string lobbySceneName;
 
-        [SerializeField] private string[] creatableStageSceneNames = Array.Empty<string>();
+        [Tooltip("プロジェクトで管理するScriptableObjectをアサイン")] 
+        [SerializeField] private StageSceneList projectStageSceneList;
 
         [Header("Loaded Scene Cameras")]
         [SerializeField] private bool disableCamerasInLoadedScenes = true;
@@ -396,7 +398,10 @@ namespace Koiusa.SteamMultiRuntime
             lobbySceneName = sceneName;
         }
 
-        public IReadOnlyList<string> CreatableStageSceneNames => creatableStageSceneNames ?? Array.Empty<string>();
+        public IReadOnlyList<string> CreatableStageSceneNames =>
+            (projectStageSceneList != null && projectStageSceneList.sceneNames != null)
+                ? projectStageSceneList.sceneNames
+                : Array.Empty<string>();
 
         public bool IsDirectLobbyTransitionInProgress => directLobbyTransitionScopeCount > 0;
 

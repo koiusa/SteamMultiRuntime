@@ -190,4 +190,5 @@ MonoBehaviour:
   - PlayGroundScene
   - SandBoxScene
   - NPCVilleg
+  projectStageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
   disableCamerasInLoadedScenes: 1
