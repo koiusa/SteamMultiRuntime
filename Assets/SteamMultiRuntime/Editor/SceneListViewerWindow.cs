@@ -134,13 +134,15 @@ namespace Koiusa.SteamMultiRuntime.Editor
                     {
                         for (var i = 0; i < names.Length; i++)
                         {
-                            var sceneName = names[i] ?? string.Empty;
+                            var sceneRef = names[i] ?? string.Empty;
+                            var resolvedSceneRef = info.asset != null ? info.asset.ResolveSceneReference(sceneRef) : sceneRef;
 
                             EditorGUILayout.Space(2f);
                             EditorGUILayout.LabelField($"Scene {i}", EditorStyles.miniBoldLabel);
-                            DrawLabeledPathRow("Scene Name", sceneName, null);
+                            DrawLabeledPathRow("Scene Ref", sceneRef, null);
 
-                            if (scenePathMap.TryGetValue(sceneName, out var scenePaths) && scenePaths != null && scenePaths.Count > 0)
+                            var scenePaths = ResolveScenePaths(resolvedSceneRef);
+                            if (scenePaths.Count > 0)
                             {
                                 for (var j = 0; j < scenePaths.Count; j++)
                                 {
@@ -186,6 +188,36 @@ namespace Koiusa.SteamMultiRuntime.Editor
                     }
                 }
             }
+        }
+
+        private List<string> ResolveScenePaths(string sceneReference)
+        {
+            var results = new List<string>();
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return results;
+            }
+
+            var normalized = sceneReference.Replace('\\', '/').Trim();
+            if (normalized.EndsWith(".unity", System.StringComparison.OrdinalIgnoreCase))
+            {
+                results.Add(normalized);
+                return results;
+            }
+
+            if (scenePathMap.TryGetValue(normalized, out var scenePaths) && scenePaths != null && scenePaths.Count > 0)
+            {
+                results.AddRange(scenePaths);
+                return results;
+            }
+
+            var sceneName = Path.GetFileNameWithoutExtension(normalized);
+            if (!string.IsNullOrEmpty(sceneName) && scenePathMap.TryGetValue(sceneName, out var byName) && byName != null)
+            {
+                results.AddRange(byName);
+            }
+
+            return results;
         }
     }
 }

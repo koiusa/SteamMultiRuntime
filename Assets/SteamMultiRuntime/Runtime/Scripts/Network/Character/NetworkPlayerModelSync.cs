@@ -48,7 +48,9 @@ namespace Koiusa.SteamMultiRuntime.Network
             var ids = modelIdList != null ? modelIdList.modelIds : null;
             if (ids == null || SelectedModelIndex.Value < 0 || SelectedModelIndex.Value >= ids.Length)
                 return null;
-            return ids[SelectedModelIndex.Value];
+
+            var modelId = ids[SelectedModelIndex.Value];
+            return modelIdList != null ? modelIdList.ResolveResourcePath(modelId) : modelId;
         }
 
         // Prefabのロードとセットを一元化

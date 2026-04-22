@@ -281,7 +281,13 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            return string.Equals(activeScene.name, sceneLoader.LobbySceneName, StringComparison.Ordinal);
+            var lobbySceneRef = sceneLoader.LobbySceneName;
+            if (lobbySceneRef.Contains("/") || lobbySceneRef.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Equals(activeScene.path, lobbySceneRef, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(activeScene.name, lobbySceneRef, StringComparison.Ordinal);
         }
 
         private void EnsureSplashUi()

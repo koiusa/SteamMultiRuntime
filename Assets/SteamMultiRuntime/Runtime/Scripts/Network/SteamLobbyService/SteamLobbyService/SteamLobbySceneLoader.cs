@@ -130,26 +130,28 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (!Application.CanStreamedLevelBeLoaded(lobbySceneName))
+            var lobbySceneRef = lobbySceneName;
+            if (!CanLoadScene(lobbySceneRef))
             {
-                Debug.LogError($"[SteamLobbySceneLoader] Scene '{lobbySceneName}' is not in Build Settings.");
+                Debug.LogError($"[SteamLobbySceneLoader] Scene '{lobbySceneRef}' is not in Build Settings.");
                 return false;
             }
 
             return await ExecuteWithLoadingScopeAsync(async () =>
             {
-                var lobbyScene = SceneManager.GetSceneByName(lobbySceneName);
+                var lobbyScene = GetLoadedScene(lobbySceneRef);
                 if (!(lobbyScene.IsValid() && lobbyScene.isLoaded))
                 {
-                    var operation = SceneManager.LoadSceneAsync(lobbySceneName, LoadSceneMode.Additive);
+                    var operation = SceneManager.LoadSceneAsync(lobbySceneRef, LoadSceneMode.Additive);
                     if (operation == null)
                     {
-                        Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{lobbySceneName}'.");
+                        Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{lobbySceneRef}'.",
+                            this);
                         return false;
                     }
 
                     await WaitForOperationAsync(operation);
-                    lobbyScene = SceneManager.GetSceneByName(lobbySceneName);
+                    lobbyScene = GetLoadedScene(lobbySceneRef);
                 }
 
                 ApplyLoadedSceneCameraSettings(lobbyScene);
@@ -166,18 +168,19 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (sceneCatalog.defaultSceneName == lobbySceneName)
+            var defaultSceneRef = sceneCatalog.defaultSceneName;
+            if (AreSameSceneReference(defaultSceneRef, lobbySceneName))
             {
                 return;
             }
 
-            var defaultScene = SceneManager.GetSceneByName(sceneCatalog.defaultSceneName);
+            var defaultScene = GetLoadedScene(defaultSceneRef);
             if (!defaultScene.IsValid() || !defaultScene.isLoaded)
             {
                 return;
             }
 
-            await WaitForOperationAsync(SceneManager.UnloadSceneAsync(sceneCatalog.defaultSceneName));
+            await WaitForOperationAsync(SceneManager.UnloadSceneAsync(defaultSceneRef));
             didUnloadDefaultSceneForLobby = true;
         }
 
@@ -197,7 +200,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var lobbyScene = SceneManager.GetSceneByName(sceneNameToUnload);
+            var lobbyScene = GetLoadedScene(sceneNameToUnload);
             if (!lobbyScene.IsValid() || !lobbyScene.isLoaded)
             {
                 return;
@@ -228,24 +231,26 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (!Application.CanStreamedLevelBeLoaded(sceneCatalog.defaultSceneName))
+            var defaultSceneRef = sceneCatalog.defaultSceneName;
+            if (!CanLoadScene(defaultSceneRef))
             {
-                Debug.LogError($"[SteamLobbySceneLoader] Scene '{sceneCatalog.defaultSceneName}' is not in Build Settings.");
+                Debug.LogError($"[SteamLobbySceneLoader] Scene '{defaultSceneRef}' is not in Build Settings.");
                 return;
             }
 
-            var defaultScene = SceneManager.GetSceneByName(sceneCatalog.defaultSceneName);
+            var defaultScene = GetLoadedScene(defaultSceneRef);
             if (!(defaultScene.IsValid() && defaultScene.isLoaded))
             {
-                var operation = SceneManager.LoadSceneAsync(sceneCatalog.defaultSceneName, LoadSceneMode.Additive);
+                var operation = SceneManager.LoadSceneAsync(defaultSceneRef, LoadSceneMode.Additive);
                 if (operation == null)
                 {
-                    Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{sceneCatalog.defaultSceneName}'.");
+                    Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{defaultSceneRef}'.",
+                        this);
                     return;
                 }
 
                 await WaitForOperationAsync(operation);
-                defaultScene = SceneManager.GetSceneByName(sceneCatalog.defaultSceneName);
+                defaultScene = GetLoadedScene(defaultSceneRef);
             }
 
             ApplyLoadedSceneCameraSettings(defaultScene);
@@ -293,7 +298,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var defaultScene = SceneManager.GetSceneByName(sceneCatalog.defaultSceneName);
+            var defaultScene = GetLoadedScene(sceneCatalog.defaultSceneName);
             return !defaultScene.IsValid() || !defaultScene.isLoaded;
         }
 
@@ -422,7 +427,9 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            lobbySceneName = sceneName;
+            lobbySceneName = sceneCatalog.stageSceneList != null
+                ? sceneCatalog.stageSceneList.ResolveSceneReference(sceneName)
+                : sceneName;
         }
 
         public IReadOnlyList<string> CreatableStageSceneNames =>
@@ -446,6 +453,78 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             directLobbyTransitionScopeCount--;
+        }
+
+        private static bool CanLoadScene(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return false;
+            }
+
+            if (IsScenePath(sceneReference))
+            {
+                return SceneUtility.GetBuildIndexByScenePath(sceneReference) >= 0;
+            }
+
+            return Application.CanStreamedLevelBeLoaded(sceneReference);
+        }
+
+        private static Scene GetLoadedScene(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return default;
+            }
+
+            if (IsScenePath(sceneReference))
+            {
+                var byPath = SceneManager.GetSceneByPath(sceneReference);
+                if (byPath.IsValid())
+                {
+                    return byPath;
+                }
+            }
+
+            return SceneManager.GetSceneByName(ToSceneName(sceneReference));
+        }
+
+        private static bool AreSameSceneReference(string left, string right)
+        {
+            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+            {
+                return false;
+            }
+
+            if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return string.Equals(ToSceneName(left), ToSceneName(right), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsScenePath(string sceneReference)
+        {
+            return sceneReference.Contains("/") || sceneReference.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ToSceneName(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return string.Empty;
+            }
+
+            var normalized = sceneReference.Replace('\\', '/');
+            var slashIndex = normalized.LastIndexOf('/');
+            var fileName = slashIndex >= 0 ? normalized.Substring(slashIndex + 1) : normalized;
+            if (fileName.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
+            {
+                return fileName.Substring(0, fileName.Length - ".unity".Length);
+            }
+
+            return fileName;
         }
     }
 }

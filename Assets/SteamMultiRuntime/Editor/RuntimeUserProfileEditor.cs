@@ -105,7 +105,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             {
                 var modelId = ids[i] ?? string.Empty;
                 var label = i == clampedIndex ? $"[{i}] {modelId} *" : $"[{i}] {modelId}";
-                var resourcePath = ToRuntimeResourcePath(modelId);
+                var resourcePath = modelIdList.ResolveResourcePath(modelId);
                 var prefabPaths = FindPrefabAssetPaths(resourcePath);
 
                 using (new EditorGUILayout.HorizontalScope())
