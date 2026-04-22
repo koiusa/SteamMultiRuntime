@@ -166,13 +166,23 @@ namespace Koiusa.SteamMultiRuntime.Editor
             return "Character/" + modelId;
         }
 
+        private enum ResourceSourceKind
+        {
+            Any,
+            Assets,
+            Library
+        }
+
         private static List<string> FindPrefabAssetPaths(string runtimeResourcePath)
         {
             var results = new List<string>();
             if (string.IsNullOrEmpty(runtimeResourcePath))
                 return results;
 
-            var fileName = Path.GetFileName(runtimeResourcePath);
+            var normalizedRuntimePath = NormalizePath(runtimeResourcePath);
+            var expectedSource = GetExpectedSource(normalizedRuntimePath);
+            var runtimeRelativePath = CharacterModelIdList.ToResourcesRelativePath(normalizedRuntimePath);
+            var fileName = Path.GetFileName(runtimeRelativePath);
             if (string.IsNullOrEmpty(fileName))
                 return results;
 
@@ -183,12 +193,39 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 if (!path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
                     continue;
 
+                var candidateSource = GetAssetSource(path);
+                if (expectedSource != ResourceSourceKind.Any && expectedSource != candidateSource)
+                    continue;
+
                 var resourceRelative = ToResourceRelativePath(path);
-                if (string.Equals(resourceRelative, runtimeResourcePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(resourceRelative, runtimeRelativePath, StringComparison.OrdinalIgnoreCase))
                     results.Add(path);
             }
 
             return results;
+        }
+
+        private static ResourceSourceKind GetExpectedSource(string runtimeResourcePath)
+        {
+            if (CharacterModelIdList.TryGetLogicalSource(runtimeResourcePath, out var source))
+            {
+                return source == CharacterModelIdList.ModelReferenceSource.Library
+                    ? ResourceSourceKind.Library
+                    : ResourceSourceKind.Assets;
+            }
+
+            return ResourceSourceKind.Any;
+        }
+
+        private static ResourceSourceKind GetAssetSource(string assetPath)
+        {
+            var normalized = NormalizePath(assetPath);
+            if (normalized.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+                return ResourceSourceKind.Assets;
+            if (normalized.StartsWith("Packages/", StringComparison.OrdinalIgnoreCase)
+                || normalized.StartsWith("Library/PackageCache/", StringComparison.OrdinalIgnoreCase))
+                return ResourceSourceKind.Library;
+            return ResourceSourceKind.Any;
         }
 
         private static string ToResourceRelativePath(string assetPath)
@@ -206,8 +243,15 @@ namespace Koiusa.SteamMultiRuntime.Editor
             var relative = normalized.Substring(start);
             var ext = Path.GetExtension(relative);
             return string.IsNullOrEmpty(ext)
-                ? relative
-                : relative.Substring(0, relative.Length - ext.Length);
+                ? NormalizePath(relative)
+                : NormalizePath(relative.Substring(0, relative.Length - ext.Length));
+        }
+
+        private static string NormalizePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return string.Empty;
+            return path.Trim().Replace('\\', '/').Trim('/');
         }
 
         private static string GetSourceLabel(string path)

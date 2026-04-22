@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2250562b6ce9fd4cb94658fb129a761, type: 3}
   m_Name: CharacterModelIdList
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.Network.CharacterModelIdList
+  resourceSub: Character
+  modelReferenceSource: 0
   modelIds:
   - DummyModel
   - SD_unitychan_Network

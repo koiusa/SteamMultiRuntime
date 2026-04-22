@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
   networkManager: {fileID: 384021173469697096}
   modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
-  selectedModelIndex: 0
+  selectedModelIndex: 1
   applyOnEnable: 1
   applyOnSceneLoaded: 1
 --- !u!114 &4677556144028070161
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 956d78501632c844fa9bc83eeb1b1ee8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyLoadingSplash
-  sceneLoader: {fileID: 8572833451326343917}
+  sceneLoader: {fileID: 6002579511194936492}
   networkManager: {fileID: 384021173469697096}
   splashSettings: {fileID: 11400000, guid: b03839c4c062ecb45a053abbc85c6091, type: 2}
   showSplashDuringSceneLoad: 1
@@ -275,7 +275,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectUiDocument
   userProfile: {fileID: 7355919073678531344}
-  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   layoutAsset: {fileID: 9197481963319205126, guid: 195c25ff6b312b74e87df8c2041788f1, type: 3}
   styleSheet: {fileID: 7433441132597879392, guid: a7551227f3e7d384b8a1bde7ae03b70e, type: 3}
 --- !u!1001 &5810708328502798835
@@ -338,7 +337,8 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2763832390210331422, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -348,9 +348,9 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1785878223749337941, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
   m_PrefabInstance: {fileID: 5810708328502798835}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8572833451326343917 stripped
+--- !u!114 &6002579511194936492 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2763832390210331422, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
+  m_CorrespondingSourceObject: {fileID: 283368555198532959, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
   m_PrefabInstance: {fileID: 5810708328502798835}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}

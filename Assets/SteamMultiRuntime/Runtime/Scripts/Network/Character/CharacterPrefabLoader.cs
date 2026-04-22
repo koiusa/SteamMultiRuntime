@@ -1,4 +1,5 @@
 using System;
+using Koiusa.SteamMultiRuntime.Network;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -23,15 +24,13 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetPrefabSource(CharacterPrefabSourceSettings sourceSettings)
         {
-            string path = sourceSettings.resourcePath;
-            // "Character/" で始まっていなければ自動付与
-            if (!string.IsNullOrEmpty(path) && !path.StartsWith("Character/"))
-                path = "Character/" + path;
+            var path = sourceSettings.resourcePath;
 
-            GameObject prefab = sourceSettings.characterPrefab;
+            var prefab = sourceSettings.characterPrefab;
             if (prefab == null && !string.IsNullOrEmpty(path))
             {
-                prefab = Resources.Load<GameObject>(path);
+                var resourcesPath = CharacterModelIdList.ToResourcesRelativePath(path);
+                prefab = Resources.Load<GameObject>(resourcesPath);
             }
 
             if (LoadedPrefab == prefab)

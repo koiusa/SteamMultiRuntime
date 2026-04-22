@@ -640,9 +640,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: NetworkManager
       objectReference: {fileID: 0}
-    - target: {fileID: 7355919073678531344, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
-      propertyPath: selectedModelIndex
-      value: 1
+    - target: {fileID: 6002579511194936492, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: sceneCatalog.defaultSceneName
+      value: UnityLogo
       objectReference: {fileID: 0}
     - target: {fileID: 8572833451326343917, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: sceneCatalog.defaultSceneName
@@ -652,7 +652,8 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8572833451326343917, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

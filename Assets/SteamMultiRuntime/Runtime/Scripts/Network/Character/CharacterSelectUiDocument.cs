@@ -13,7 +13,6 @@ namespace Koiusa.SteamMultiRuntime
 
         [Header("References")]
         [SerializeField] private RuntimeUserProfile userProfile;
-        [SerializeField] private CharacterModelIdList modelIdList;
 
         [Header("UI Assets")]
         [SerializeField] private VisualTreeAsset layoutAsset;
@@ -55,11 +54,10 @@ namespace Koiusa.SteamMultiRuntime
 
         private CharacterModelIdList ResolveModelIdList()
         {
-            if (modelIdList != null)
-                return modelIdList;
-            if (userProfile != null && userProfile.ModelIdList != null)
-                return userProfile.ModelIdList;
-            return null;
+            if (userProfile == null)
+                userProfile = FindFirstObjectByType<RuntimeUserProfile>();
+
+            return userProfile != null ? userProfile.ModelIdList : null;
         }
 
         private void OnCharacterSelected(int index)

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: defa8296739b65a4e880c97c6769bd32, type: 3}
   m_Name: StageSceneList
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.Network.StageSceneList
+  sceneRoot: 
   sceneNames:
   - PlayGroundScene
   - SandBoxScene

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1785878223749337941}
   - component: {fileID: 2255673815828834066}
   - component: {fileID: 6068190005020545627}
+  - component: {fileID: 283368555198532959}
   - component: {fileID: 3783905598876084774}
   m_Layer: 0
   m_Name: SteamConnection
@@ -62,6 +63,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyConnectionStatus
   broadcastIntervalSeconds: 1
+--- !u!114 &283368555198532959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4990285079444767989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
+  lobbyService: {fileID: 7001024383980304856}
+  sceneCatalog:
+    defaultSceneName: WelcomScene
+    stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
+  defaultScenePolicy:
+    loadOnStart: 1
+    unloadOnLobbyEntered: 1
+    loadOnLobbyLeft: 0
+  lobbyScenePolicy:
+    loadOnEntered: 1
+    unloadOnLeft: 1
+  disableCamerasInLoadedScenes: 1
 --- !u!114 &3783905598876084774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,7 +113,6 @@ GameObject:
   - component: {fileID: 4559462331118176269}
   - component: {fileID: 7001024383980304856}
   - component: {fileID: 6992672057939424112}
-  - component: {fileID: 2763832390210331422}
   m_Layer: 0
   m_Name: SteamLobbyService
   m_TagString: Untagged
@@ -147,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyService
   steamConnection: {fileID: 2255673815828834066}
-  sceneLoader: {fileID: 2763832390210331422}
+  sceneLoader: {fileID: 283368555198532959}
   connectionStatus: {fileID: 6068190005020545627}
   defaultMaxPlayers: 4
   enableLogging: 0
@@ -165,29 +189,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyUiDocument
   lobbyService: {fileID: 7001024383980304856}
-  sceneLoader: {fileID: 2763832390210331422}
+  sceneLoader: {fileID: 283368555198532959}
   uiAssets: {fileID: 11400000, guid: 20f7720e98a6f314785f2a56050019fc, type: 2}
---- !u!114 &2763832390210331422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7870440590420074118}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
-  lobbyService: {fileID: 7001024383980304856}
-  sceneCatalog:
-    defaultSceneName: WelcomScene
-    stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
-  defaultScenePolicy:
-    loadOnStart: 1
-    unloadOnLobbyEntered: 1
-    loadOnLobbyLeft: 0
-  lobbyScenePolicy:
-    loadOnEntered: 1
-    unloadOnLeft: 1
-  disableCamerasInLoadedScenes: 1
