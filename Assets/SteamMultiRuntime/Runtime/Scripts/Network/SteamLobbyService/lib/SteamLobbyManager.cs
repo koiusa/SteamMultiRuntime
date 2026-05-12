@@ -57,6 +57,7 @@ namespace Koiusa.SteamMultiRuntime
         private Func<bool> onEnsureReady;
         private Func<Task<bool>> onTryLoadLobbySceneAsync;
         private Func<bool> onStartNetworkHost;
+        private Func<bool> onStartNetworkServer;
         private Func<ulong, bool> onStartNetworkClient;
         private Action onShutdownNetwork;
 
@@ -91,6 +92,7 @@ namespace Koiusa.SteamMultiRuntime
             Func<bool> ensureReady,
             Func<Task<bool>> tryLoadLobbySceneAsync,
             Func<bool> startNetworkHost,
+            Func<bool> startNetworkServer,
             Func<ulong, bool> startNetworkClient,
             Action shutdownNetwork)
         {
@@ -107,6 +109,7 @@ namespace Koiusa.SteamMultiRuntime
             onEnsureReady = ensureReady;
             onTryLoadLobbySceneAsync = tryLoadLobbySceneAsync;
             onStartNetworkHost = startNetworkHost;
+            onStartNetworkServer = startNetworkServer;
             onStartNetworkClient = startNetworkClient;
             onShutdownNetwork = shutdownNetwork;
         }
@@ -161,6 +164,36 @@ namespace Koiusa.SteamMultiRuntime
                     transitionScope?.EndDirectLobbyTransitionScope();
                 }
             }
+        }
+
+        public async Task<bool> CreateLobbyAsServerAsync(string lobbyName, string stageSceneName)
+        {
+            ApplySelectedStageScene(stageSceneName);
+
+            var maxPlayers = Mathf.Max(2, defaultMaxPlayers);
+            var lobby = await SteamMatchmaking.CreateLobbyAsync(maxPlayers);
+
+            if (!lobby.HasValue)
+            {
+                return false;
+            }
+
+            if (!await TryLoadLobbySceneOnEnterAsync())
+            {
+                FailAndLeaveLobby(lobby.Value, unloadLobbyScene: false);
+                return false;
+            }
+
+            if (!onStartNetworkServer?.Invoke() ?? false)
+            {
+                FailAndLeaveLobby(lobby.Value, unloadLobbyScene: true);
+                return false;
+            }
+
+            ConfigureLobby(lobby.Value, lobbyName, stageSceneName);
+            onLobbyCreated?.Invoke(lobby.Value);
+            await CompleteLobbyEntryAsync(lobby.Value, SteamClient.SteamId);
+            return true;
         }
 
         public async Task<bool> JoinLobbyAsync(ulong lobbyId)

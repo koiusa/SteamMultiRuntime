@@ -728,6 +728,9 @@ MonoBehaviour:
   autoStartOnPlay: 1
   onlyWhenBatchMode: 1
   networkManager: {fileID: 346700968077840722}
+  lobbyService: {fileID: 3463410417665955121}
+  createLobbyOnStart: 1
+  lobbyName: TestServer
   loadStartupScene: 1
   stageSceneList: {fileID: 11400000, guid: a3476e62f9db54749a534eb4f3b3e3e5, type: 2}
   startupStageSceneIndex: 0

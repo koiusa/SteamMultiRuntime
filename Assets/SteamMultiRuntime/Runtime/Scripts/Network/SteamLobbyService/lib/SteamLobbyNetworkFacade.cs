@@ -55,6 +55,17 @@ namespace Koiusa.SteamMultiRuntime
             return true;
         }
 
+        public bool TryStartServer()
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null)
+            {
+                return false;
+            }
+
+            return networkManager.StartServer();
+        }
+
         public bool TryStartClient(ulong hostSteamId)
         {
             var networkManager = NetworkManager.Singleton;

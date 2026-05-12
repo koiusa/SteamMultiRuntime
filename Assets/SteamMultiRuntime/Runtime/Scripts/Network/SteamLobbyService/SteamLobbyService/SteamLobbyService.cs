@@ -91,6 +91,7 @@ namespace Koiusa.SteamMultiRuntime
                 EnsureReady,
                 TryLoadLobbySceneOnEnterAsync,
                 StartNetworkHost,
+                StartNetworkServer,
                 StartNetworkClient,
                 ShutdownNetwork);
 
@@ -143,6 +144,24 @@ namespace Koiusa.SteamMultiRuntime
             else
             {
                 LogError("Failed to create lobby");
+            }
+
+            return success;
+        }
+
+        public async Task<bool> CreateLobbyAsServerAsync(string lobbyName, string stageSceneName = "")
+        {
+            Log("Creating lobby as server...");
+
+            if (!EnsureReadyOrLog())
+            {
+                return false;
+            }
+
+            var success = await lobbyManager.CreateLobbyAsServerAsync(lobbyName, stageSceneName);
+            if (!success)
+            {
+                LogError("Failed to create lobby as server");
             }
 
             return success;
@@ -366,6 +385,11 @@ namespace Koiusa.SteamMultiRuntime
         private bool StartNetworkHost()
         {
             return networkFacade != null && networkFacade.TryStartHost();
+        }
+
+        private bool StartNetworkServer()
+        {
+            return networkFacade != null && networkFacade.TryStartServer();
         }
 
         private bool StartNetworkClient(ulong hostSteamId)

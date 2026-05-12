@@ -14,10 +14,14 @@ namespace Koiusa.SteamMultiRuntime.Network
     {
         [Header("Auto Start")]
         [SerializeField] private bool autoStartOnPlay = true;
-        [SerializeField] private bool onlyWhenBatchMode = true;
 
         [Header("Network")]
         [SerializeField] private NetworkManager networkManager;
+
+        [Header("Lobby")]
+        [SerializeField] private SteamLobbyService lobbyService;
+        [SerializeField] private bool createLobbyOnStart = true;
+        [SerializeField] private string lobbyName = "";
 
         [Header("Startup Scene")]
         [SerializeField] private bool loadStartupScene = true;
@@ -68,14 +72,23 @@ namespace Koiusa.SteamMultiRuntime.Network
                 return;
             }
 
-            if (onlyWhenBatchMode && !Application.isBatchMode)
+            started = true;
+            ResolveLobbyService();
+            await BootstrapDedicatedServerAsync();
+        }
+
+        private void ResolveLobbyService()
+        {
+            if (lobbyService != null)
             {
-                Log("Skip auto start because Application.isBatchMode is false.");
                 return;
             }
 
-            started = true;
-            await BootstrapDedicatedServerAsync();
+            lobbyService = GetComponent<SteamLobbyService>();
+            if (lobbyService == null)
+            {
+                lobbyService = FindFirstObjectByType<SteamLobbyService>(FindObjectsInactive.Include);
+            }
         }
 
         private async Task BootstrapDedicatedServerAsync()
@@ -89,7 +102,37 @@ namespace Koiusa.SteamMultiRuntime.Network
                 }
             }
 
-            TryStartDedicatedServer();
+            if (createLobbyOnStart)
+            {
+                await CreateLobbyAsServerAsync();
+            }
+            else
+            {
+                TryStartDedicatedServer();
+            }
+        }
+
+        private async Task CreateLobbyAsServerAsync()
+        {
+            if (lobbyService == null)
+            {
+                Debug.LogError("[SteamLobbyDedicatedServer] LobbyService is not found. Cannot create lobby.", this);
+                return;
+            }
+
+            var name = string.IsNullOrWhiteSpace(lobbyName) ? $"Server_{SystemInfo.deviceName}" : lobbyName;
+            var stageSceneName = ResolveStartupSceneReference();
+
+            Log($"Creating lobby as server: {name}");
+            var success = await lobbyService.CreateLobbyAsServerAsync(name, stageSceneName);
+            if (success)
+            {
+                Log($"Lobby created as server: {name}");
+            }
+            else
+            {
+                Debug.LogError("[SteamLobbyDedicatedServer] Failed to create lobby as server.", this);
+            }
         }
 
         private async Task<bool> LoadStartupSceneIfConfiguredAsync()
