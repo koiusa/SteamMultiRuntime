@@ -211,6 +211,7 @@ namespace Koiusa.SteamMultiRuntime
             bool canJoin,
             System.Func<Lobby, string> getLobbyDisplayName,
             System.Func<Lobby, bool> isHostedByLocalPlayer,
+            System.Func<Lobby, (int memberCount, int maxMembers)> getPlayerCount,
             ulong currentLobbyId,
             System.Action<ulong> onJoinLobby)
         {
@@ -223,10 +224,11 @@ namespace Koiusa.SteamMultiRuntime
 
                 var isLocalHostLobby = isHostedByLocalPlayer != null && isHostedByLocalPlayer(lobby);
                 var isCurrentLobby = currentLobbyId != 0 && lobby.Id == currentLobbyId;
-                var isFullLobby = lobby.MemberCount >= lobby.MaxMembers;
+                var (memberCount, maxMembers) = getPlayerCount != null ? getPlayerCount(lobby) : (lobby.MemberCount, lobby.MaxMembers);
+                var isFullLobby = memberCount >= maxMembers;
 
                 var name = getLobbyDisplayName(lobby);
-                var label = new Label($"{name}  {lobby.MemberCount}/{lobby.MaxMembers}  [{lobby.Id}]");
+                var label = new Label($"{name}  {memberCount}/{maxMembers}  [{lobby.Id}]");
                 label.AddToClassList("lobby-row-label");
                 row.Add(label);
 

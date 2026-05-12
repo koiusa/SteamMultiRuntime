@@ -236,6 +236,7 @@ namespace Koiusa.SteamMultiRuntime
                 isReady,
                 lobbyService.GetLobbyDisplayName,
                 lobbyService.IsHostedByLocalPlayer,
+                lobbyService.GetLobbyPlayerCount,
                 lobbyService.CurrentLobbyId,
                 JoinLobbyFromList);
         }

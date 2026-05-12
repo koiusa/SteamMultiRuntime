@@ -63,7 +63,14 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            return networkManager.StartServer();
+            // Start server without the server itself being a player
+            // Set server to not be part of the connected clients count
+            if (!networkManager.StartServer())
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public bool TryStartClient(ulong hostSteamId)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
@@ -16,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
             public const string HostSteamId = "hostSteamId";
             public const string SessionState = "sessionState";
             public const string StageScene = "stageScene";
+            public const string IsDedicatedServer = "isDedicatedServer";
         }
 
         private static class LobbySessionStates
@@ -65,6 +67,28 @@ namespace Koiusa.SteamMultiRuntime
         public ulong CurrentLobbyId => lobbyState.CurrentLobby?.Id ?? 0;
         public IReadOnlyList<Lobby> LobbyCache => lobbyCache;
         public bool IsHost => lobbyState.IsHost;
+
+        public bool IsDedicatedServerLobby(Lobby lobby)
+        {
+            return lobby.GetData(LobbyDataKeys.IsDedicatedServer) == "1";
+        }
+
+        public IEnumerable<Friend> GetPlayerMembers(Lobby lobby)
+        {
+            if (!IsDedicatedServerLobby(lobby))
+            {
+                return lobby.Members;
+            }
+
+            var ownerSteamId = lobby.Owner.Id;
+            return lobby.Members.Where(m => m.Id != ownerSteamId);
+        }
+
+        public (int memberCount, int maxMembers) GetPlayerCount(Lobby lobby)
+        {
+            var offset = IsDedicatedServerLobby(lobby) ? 1 : 0;
+            return (Mathf.Max(0, lobby.MemberCount - offset), Mathf.Max(1, lobby.MaxMembers - offset));
+        }
 
         public SteamLobbyManager(SteamConnection steamConnection, ISteamLobbySceneLoader sceneLoader)
         {
@@ -170,7 +194,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             ApplySelectedStageScene(stageSceneName);
 
-            var maxPlayers = Mathf.Max(2, defaultMaxPlayers);
+            // +1 to account for the dedicated server itself occupying one Steam lobby slot
+            var maxPlayers = Mathf.Max(2, defaultMaxPlayers) + 1;
             var lobby = await SteamMatchmaking.CreateLobbyAsync(maxPlayers);
 
             if (!lobby.HasValue)
@@ -190,7 +215,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            ConfigureLobby(lobby.Value, lobbyName, stageSceneName);
+            ConfigureLobbyAsServer(lobby.Value, lobbyName, stageSceneName);
             onLobbyCreated?.Invoke(lobby.Value);
             await CompleteLobbyEntryAsync(lobby.Value, SteamClient.SteamId);
             return true;
@@ -273,6 +298,13 @@ namespace Koiusa.SteamMultiRuntime
                 var lobbies = await SteamMatchmaking.LobbyList.RequestAsync();
                 if (lobbies != null)
                 {
+                    // Request lobby metadata for each lobby so GetData() is populated
+                    foreach (var lobby in lobbies)
+                    {
+                        lobby.Refresh();
+                    }
+                    // Wait for Steam to deliver lobby data callbacks
+                    await Task.Delay(500);
                     lobbyCache.AddRange(lobbies);
                 }
             }
@@ -416,6 +448,12 @@ namespace Koiusa.SteamMultiRuntime
         private void NotifyStateChanged()
         {
             onStateChanged?.Invoke();
+        }
+
+        private void ConfigureLobbyAsServer(Lobby lobby, string lobbyName, string stageSceneName)
+        {
+            ConfigureLobby(lobby, lobbyName, stageSceneName);
+            lobby.SetData(LobbyDataKeys.IsDedicatedServer, "1");
         }
 
         private void ConfigureLobby(Lobby lobby, string lobbyName, string stageSceneName)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
@@ -217,6 +218,11 @@ namespace Koiusa.SteamMultiRuntime
             return lobbyManager != null && lobbyManager.IsHostedByLocalPlayer(lobby);
         }
 
+        public (int memberCount, int maxMembers) GetLobbyPlayerCount(Lobby lobby)
+        {
+            return lobbyManager?.GetPlayerCount(lobby) ?? (lobby.MemberCount, lobby.MaxMembers);
+        }
+
         public IReadOnlyList<string> GetCurrentLobbyMemberNames()
         {
             var members = GetCurrentLobbyMembers();
@@ -416,7 +422,7 @@ namespace Koiusa.SteamMultiRuntime
                 return new List<Friend>();
             }
 
-            return new List<Friend>(currentLobby.Value.Members);
+            return lobbyManager.GetPlayerMembers(currentLobby.Value).ToList();
         }
 
         private void ApplyMemberQualitySnapshot(List<SteamLobbyMemberQualityEntry> entries)
