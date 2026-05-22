@@ -30,7 +30,12 @@ namespace Netcode.Transports.Facepunch
         [Tooltip("When in play mode, this will display your Steam ID.")]
         [SerializeField] private ulong userSteamId;
 
-        private LogLevel LogLevel => NetworkManager.Singleton.LogLevel;
+        private bool steamClientInitialized;
+
+        private Unity.Netcode.LogLevel LogLevel =>
+            NetworkManager.Singleton != null
+                ? NetworkManager.Singleton.LogLevel
+                : Unity.Netcode.LogLevel.Normal;
 
         private class Client
         {
@@ -45,13 +50,36 @@ namespace Netcode.Transports.Facepunch
             try
             {
                 SteamClient.Init(steamAppId, false);
+                steamClientInitialized = true;
             }
             catch (Exception e)
             {
+                steamClientInitialized = false;
+
+                if (e is EntryPointNotFoundException)
+                {
+                    if (LogLevel <= LogLevel.Error)
+                    {
+                        Debug.LogError(
+                            $"[{nameof(FacepunchTransport)}] - Steam client initialization failed because the loaded native Steam library does not export an expected Steam init entrypoint. This indicates a mismatch between Facepunch.Steamworks managed DLL and libsteam_api native binary versions. Ensure all Facepunch managed/native binaries come from the same release set. Original error: {e.Message}");
+                    }
+
+                    return;
+                }
+
+                if (e is DllNotFoundException && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    if (LogLevel <= LogLevel.Error)
+                        Debug.LogError($"[{nameof(FacepunchTransport)}] - Steam native library failed to load on Apple Silicon (arm64). Ensure libsteam_api plugin import settings include macOS Editor and that the native binary matches the current Facepunch.Steamworks release. Original error: {e.Message}");
+
+                    return;
+                }
+
                 if (LogLevel <= LogLevel.Error)
-                    Debug.LogError($"[{nameof(FacepunchTransport)}] - Caught an exeption during initialization of Steam client: {e}");
+                    Debug.LogError($"[{nameof(FacepunchTransport)}] - Caught an exception during initialization of Steam client: {e}");
             }
-            finally
+
+            if (steamClientInitialized)
             {
                 StartCoroutine(InitSteamworks());
             }
@@ -59,12 +87,14 @@ namespace Netcode.Transports.Facepunch
 
         private void Update()
         {
-            SteamClient.RunCallbacks();
+            if (steamClientInitialized)
+                SteamClient.RunCallbacks();
         }
 
         private void OnDestroy()
         {
-            SteamClient.Shutdown();
+            if (steamClientInitialized)
+                SteamClient.Shutdown();
         }
 
         #endregion
