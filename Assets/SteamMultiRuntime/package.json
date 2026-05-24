@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime",
   "displayName": "Steam Multi Runtime",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Steam Multi Runtime Asset.",
@@ -16,16 +16,18 @@
   "keywords": [
     "steam",
     "multi",
-    "runtime"
+    "runtime",
+    "unity"
   ],
 
   "dependencies": {
-    "com.unity.netcode.gameobjects": "2.11.0",
+    "com.unity.netcode.gameobjects": "2.11.2",
     "com.unity.cinemachine": "3.1.6",
     "com.unity.terrain-tools": "5.3.2",
     "com.unity.visualeffectgraph": "17.3.0",
     "com.unity.render-pipelines.universal": "17.3.0",
-    "com.unity.postprocessing": "3.5.4"
+    "com.unity.postprocessing": "3.5.4",
+    "com.unity.toonshader": "0.13.4"
   },
 
   "samples": [
@@ -33,6 +35,11 @@
       "displayName": "Samples Common Assets",
       "description": "Sample for Common Assets.",
       "path": "Samples/Common"
+    },
+    {
+      "displayName": "Samples Steam Multi Player Server",
+      "description": "Sample for Steam Multi Player Server.",
+      "path": "Samples/SteamMultiPlayer_Server"
     },
     {
       "displayName": "Samples Steam Multi Player Simple",
