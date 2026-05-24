@@ -141,11 +141,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var sync = target.GetComponent<NetworkPlayerModelSync>();
+            var sync = target.GetComponent<IPlayerModelSync>();
             if (sync != null)
             {
-                sync.modelIdList = modelIdList;
-                sync.SetModelIndexServerRpc(selectedModelIndex);
+                sync.ModelIdList = modelIdList;
+                sync.ApplyModelIndex(selectedModelIndex);
                 return;
             }
 
@@ -154,6 +154,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 return;
             }
+
             var modelId = modelIds[selectedModelIndex];
             var resourceId = modelIdList != null ? modelIdList.ResolveResourcePath(modelId) : modelId;
             loader.SetPrefabSource(new CharacterPrefabSourceSettings { characterPrefab = null, resourcePath = resourceId });
