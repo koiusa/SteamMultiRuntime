@@ -13,13 +13,16 @@ namespace Koiusa.SteamMultiRuntime
         {
             private readonly InputActionReference moveAction;
             private readonly InputActionReference jumpAction;
-            private bool jumpRequested;
+            private readonly InputActionReference strafeToggleAction;
+            private int jumpToken;
+            private bool isStrafeMode;
             private bool isEnabled;
 
-            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction)
+            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction)
             {
                 this.moveAction = moveAction;
                 this.jumpAction = jumpAction;
+                this.strafeToggleAction = strafeToggleAction;
             }
 
             public void Enable()
@@ -37,12 +40,24 @@ namespace Koiusa.SteamMultiRuntime
                     jumpAction.action.Enable();
                     jumpAction.action.performed += OnJumpPerformed;
                 }
+
+                if (strafeToggleAction != null)
+                {
+                    strafeToggleAction.action.Enable();
+                    strafeToggleAction.action.performed += OnStrafeTogglePerformed;
+                }
             }
 
             public void Disable()
             {
-                if (isEnabled) return;
+                if (!isEnabled) return;
                 isEnabled = false;
+
+                if (strafeToggleAction != null)
+                {
+                    strafeToggleAction.action.performed -= OnStrafeTogglePerformed;
+                    strafeToggleAction.action.Disable();
+                }
 
                 if (jumpAction != null)
                 {
@@ -55,34 +70,44 @@ namespace Koiusa.SteamMultiRuntime
                     moveAction.action.Disable();
                 }
 
-                jumpRequested = false;
+                jumpToken = 0;
+                isStrafeMode = false;
             }
 
             public PlayerInputState ReadState()
             {
                 var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
-                var jumpPressed = jumpRequested;
-                jumpRequested = false;
-                return new PlayerInputState(move, jumpPressed);
+                var jumpPressed = jumpToken;
+                jumpToken = 0;
+                return new PlayerInputState(move, jumpPressed > 0);
             }
+
+            public bool GetStrafeMode() => isStrafeMode;
 
             private void OnJumpPerformed(InputAction.CallbackContext context)
             {
-                jumpRequested = true;
+                jumpToken++;
+            }
+
+            private void OnStrafeTogglePerformed(InputAction.CallbackContext context)
+            {
+                isStrafeMode = !isStrafeMode;
             }
         }
 
         [Header("Input")]
-        [SerializeField] private InputActionReference moveAction;
-        [SerializeField] private InputActionReference jumpAction;
+        [SerializeField] private PlayerInputActionsProfile inputActionsProfile;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
 
-        private IPlayerInputSource inputSource;
+        private Rigidbody targetRigidbody;
+        private InputActionPlayerInputSource inputSource;
         private PlayerCompositeMotor motor;
-        private Vector2 moveInput;
-        private bool jumpRequested;
+        private Vector3 moveDirection;
+        private int jumpToken;
+        private int lastConsumedJumpToken;
+        private bool isStrafeMode;
 
         public bool IsGrounded => motor != null && motor.IsGrounded;
         public bool IsJumping => motor != null && motor.IsJumping;
@@ -95,13 +120,26 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
+            targetRigidbody = GetComponent<Rigidbody>();
+            targetRigidbody.freezeRotation = true;
+
             motor = GetComponent<PlayerCompositeMotor>();
             if (motor == null)
             {
                 motor = gameObject.AddComponent<PlayerCompositeMotor>();
             }
 
-            inputSource = new InputActionPlayerInputSource(moveAction, jumpAction);
+            if (inputActionsProfile == null)
+            {
+                Debug.LogError("PlayerInputActionsProfile is not assigned.", this);
+                enabled = false;
+                return;
+            }
+
+            inputSource = new InputActionPlayerInputSource(
+                inputActionsProfile.MoveAction,
+                inputActionsProfile.JumpAction,
+                inputActionsProfile.StrafeToggleAction);
 
             if (cameraTransform == null && Camera.main != null)
             {
@@ -118,24 +156,30 @@ namespace Koiusa.SteamMultiRuntime
         {
             inputSource?.Disable();
             motor?.ResetState();
-            moveInput = Vector2.zero;
-            jumpRequested = false;
+            moveDirection = Vector3.zero;
+            jumpToken = 0;
+            lastConsumedJumpToken = 0;
+            isStrafeMode = false;
         }
 
         private void Update()
         {
             if (inputSource == null)
             {
-                moveInput = Vector2.zero;
+                moveDirection = Vector3.zero;
                 return;
             }
 
             var inputState = inputSource.ReadState();
-            moveInput = inputState.Move;
+            Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
+            moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
+
             if (inputState.JumpPressed)
             {
-                jumpRequested = true;
+                jumpToken++;
             }
+
+            isStrafeMode = inputSource.GetStrafeMode();
         }
 
         private void FixedUpdate()
@@ -145,10 +189,19 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
-            var moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, moveInput);
-            motor.Tick(moveDirection, jumpRequested);
-            jumpRequested = false;
+            var jumpThisFrame = jumpToken != lastConsumedJumpToken;
+            if (jumpThisFrame)
+            {
+                lastConsumedJumpToken = jumpToken;
+            }
+
+            var baseMotor = motor.GetComponent<IPlayerMotor>();
+            if (baseMotor != null)
+            {
+                baseMotor.SetStrafeMode(isStrafeMode);
+            }
+
+            motor.Tick(moveDirection, jumpThisFrame);
         }
 
         private void OnCollisionEnter(Collision collision)

@@ -306,7 +306,7 @@ MonoBehaviour:
     StrafeRotationSpeed: 300
     BackwardSpeedMultiplier: 0.5
     EnableStepAssist: 1
-    StepAssistMaxHeight: 0.28
+    StepAssistMaxHeight: 0.6
     StepAssistCheckDistance: 0.35
     StepAssistMinMoveSpeed: 1
     StepAssistObstacleUpDot: 0.35
