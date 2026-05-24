@@ -435,66 +435,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_ActionId: c95b2375-e6d9-4b88-9c4c-c5e76515df4b
---- !u!1001 &866876012
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3003735386717007390, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_Name
-      value: LocalPlayer_WithAnimator
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4035978081068949003, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4413791566816308068, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-  m_SourcePrefab: {fileID: 100100000, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
 --- !u!1001 &1079498013
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -701,7 +641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d37a7669b260ad4396c1c42155901cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalRuntimeUserProfile
-  localPlayerObject: {fileID: 0}
+  localManager: {fileID: 2125036335}
   modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   selectedModelIndex: 1
   applyOnEnable: 1
@@ -743,6 +683,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2125036333}
+  - component: {fileID: 2125036335}
   - component: {fileID: 2125036334}
   m_Layer: 0
   m_Name: LoacalManager
@@ -784,6 +725,21 @@ MonoBehaviour:
   startupStageSceneIndex: 0
   sceneLoadMode: 1
   setLoadedSceneAsActive: 1
+--- !u!114 &2125036335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125036332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12b66870efb2ce4a8fa09d4ba9bcbce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalManager
+  playerPrefab: {fileID: 3003735386717007390, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
+  spawnPosition: {x: 0, y: 0.2, z: 0}
+  spawnRotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -792,4 +748,3 @@ SceneRoots:
   - {fileID: 634971125}
   - {fileID: 1200208249}
   - {fileID: 2125036333}
-  - {fileID: 866876012}

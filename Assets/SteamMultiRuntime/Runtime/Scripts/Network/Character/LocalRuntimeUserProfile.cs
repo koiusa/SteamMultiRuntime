@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     public class LocalRuntimeUserProfile : PlayerModelProfileBase
     {
         [Header("References")]
-        [SerializeField] private GameObject localPlayerObject;
+        [SerializeField] private LocalManager localManager;
 
         [Header("Character Prefab Loader Source")]
         [Tooltip("モデルIDリスト（ScriptableObject参照）")]
@@ -29,6 +29,11 @@ namespace Koiusa.SteamMultiRuntime
         public override void ApplySelectedModel()
         {
             ApplyToLocalPlayerPrefabLoader();
+        }
+
+        private void Awake()
+        {
+            ResolveLocalManager();
         }
 
         private void OnEnable()
@@ -56,17 +61,34 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ApplyToLocalPlayerPrefabLoader()
         {
+            ResolveLocalManager();
             if (TryResolveLocalPlayerObject(out var target))
             {
                 RuntimeUserProfileModelApplyUtility.ApplyToLoader(target, this, nameof(LocalRuntimeUserProfile));
             }
         }
 
+        private void ResolveLocalManager()
+        {
+            if (localManager != null)
+            {
+                return;
+            }
+
+            localManager = LocalManager.Singleton;
+            if (localManager == null)
+            {
+                localManager = FindFirstObjectByType<LocalManager>();
+            }
+        }
+
         private bool TryResolveLocalPlayerObject(out GameObject target)
         {
-            if (localPlayerObject != null)
+            // LocalManager が存在する場合はそのインスタンス済みオブジェクトを優先参照
+            // （NetworkManager.LocalClient.PlayerObject に相当）
+            if (localManager != null && localManager.LocalPlayerObject != null)
             {
-                target = localPlayerObject;
+                target = localManager.LocalPlayerObject;
                 return true;
             }
 

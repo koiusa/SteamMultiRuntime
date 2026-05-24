@@ -10,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
     [CustomEditor(typeof(LocalRuntimeUserProfile))]
     public class LocalRuntimeUserProfileEditor : UnityEditor.Editor
     {
+        private SerializedProperty localManagerProperty;
         private SerializedProperty localPlayerObjectProperty;
         private SerializedProperty modelIdListProperty;
         private SerializedProperty selectedModelIndexProperty;
@@ -18,6 +19,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
 
         private void OnEnable()
         {
+            localManagerProperty = serializedObject.FindProperty("localManager");
             localPlayerObjectProperty = serializedObject.FindProperty("localPlayerObject");
             modelIdListProperty = serializedObject.FindProperty("modelIdList");
             selectedModelIndexProperty = serializedObject.FindProperty("selectedModelIndex");
@@ -47,9 +49,13 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private void DrawReferenceSection()
         {
             EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
+            if (localManagerProperty != null)
+            {
+                EditorGUILayout.PropertyField(localManagerProperty, new GUIContent("Local Manager"));
+            }
             if (localPlayerObjectProperty != null)
             {
-                EditorGUILayout.PropertyField(localPlayerObjectProperty, new GUIContent("Local Player Object"));
+                EditorGUILayout.PropertyField(localPlayerObjectProperty, new GUIContent("Local Player Object (fallback)"));
             }
         }
 
