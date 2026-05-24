@@ -12,8 +12,9 @@ GameObject:
   - component: {fileID: 6580791355322641124}
   - component: {fileID: 7866116347518461925}
   - component: {fileID: 3488588548170026997}
-  - component: {fileID: 8795024021923995256}
+  - component: {fileID: 5021112773685558985}
   - component: {fileID: 4003174539648773126}
+  - component: {fileID: 8795024021923995256}
   - component: {fileID: 324244260282127880}
   - component: {fileID: 3613120474214503031}
   - component: {fileID: 626167900066496392}
@@ -22,7 +23,7 @@ GameObject:
   - component: {fileID: 7364711086840703048}
   - component: {fileID: 5341095656457548464}
   - component: {fileID: 6962452901085774379}
-  - component: {fileID: 4810057342919123209}
+  - component: {fileID: 4331762846265168320}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
   m_TagString: Untagged
@@ -119,6 +120,35 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &5021112773685558985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3740239c61d7da14a9053417e414a1da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerModelSync
+  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
+  prefabLoader: {fileID: 4331762846265168320}
+  selectedModelIndex: 1
+--- !u!114 &4003174539648773126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd7d4202b2015d04191edc1b521bb2ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerController
+  inputActionsProfile: {fileID: 11400000, guid: 7eca54e9ff221ea498609aef2dbc614d, type: 2}
+  cameraTransform: {fileID: 0}
 --- !u!114 &8795024021923995256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,20 +167,6 @@ MonoBehaviour:
   onRecovered:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &4003174539648773126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd7d4202b2015d04191edc1b521bb2ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerController
-  inputActionsProfile: {fileID: 11400000, guid: 7eca54e9ff221ea498609aef2dbc614d, type: 2}
-  cameraTransform: {fileID: 0}
 --- !u!114 &324244260282127880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,7 +336,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
---- !u!114 &4810057342919123209
+--- !u!114 &4331762846265168320
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -329,12 +345,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3740239c61d7da14a9053417e414a1da, type: 3}
+  m_Script: {fileID: 11500000, guid: a07ce9300863a0e468414a13e3b93327, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerModelSync
-  modelIdList: {fileID: 0}
-  prefabLoader: {fileID: 0}
-  selectedModelIndex: 0
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterPrefabLoader
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

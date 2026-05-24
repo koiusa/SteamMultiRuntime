@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal static class SteamLobbySceneUtility
+    internal static class SceneUtilityEx
     {
         internal static Task WaitForOperationAsync(AsyncOperation operation)
         {

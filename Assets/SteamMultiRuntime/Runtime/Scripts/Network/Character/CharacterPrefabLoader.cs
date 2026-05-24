@@ -33,15 +33,20 @@ namespace Koiusa.SteamMultiRuntime
                 prefab = Resources.Load<GameObject>(resourcesPath);
             }
 
-            if (LoadedPrefab == prefab)
-                return;
-
+            var isSamePrefab = LoadedPrefab == prefab;
             LoadedPrefab = prefab;
+
             if (LastInstantiatedObject != null)
             {
                 Destroy(LastInstantiatedObject);
                 LastInstantiatedObject = null;
             }
+
+            if (isSamePrefab)
+            {
+                return;
+            }
+
             PrefabLoaded?.Invoke(LoadedPrefab);
         }
 
@@ -54,6 +59,13 @@ namespace Koiusa.SteamMultiRuntime
                 LoadFailed?.Invoke(message);
                 return null;
             }
+
+            if (LastInstantiatedObject != null)
+            {
+                Destroy(LastInstantiatedObject);
+                LastInstantiatedObject = null;
+            }
+
             var instance = Instantiate(LoadedPrefab, position, rotation, parent);
             LastInstantiatedObject = instance;
             PrefabInstantiated?.Invoke(instance);

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -7,7 +6,7 @@ using Koiusa.SteamMultiRuntime.Network;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class RuntimeUserProfile : MonoBehaviour
+    public class RuntimeUserProfile : PlayerModelProfileBase
     {
         [Header("References")]
         [SerializeField] private NetworkManager networkManager;
@@ -20,12 +19,17 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private bool applyOnEnable = true;
         [SerializeField] private bool applyOnSceneLoaded = true;
 
-        public CharacterModelIdList ModelIdList => modelIdList;
-        public int SelectedModelIndex => selectedModelIndex;
+        public override CharacterModelIdList ModelIdList => modelIdList;
+        public override int SelectedModelIndex => selectedModelIndex;
 
-        public void SetSelectedModel(int index)
+        public override void SetSelectedModel(int index)
         {
             selectedModelIndex = index;
+        }
+
+        public override void ApplySelectedModel()
+        {
+            ApplyToNetworkPlayerPrefabLoader();
         }
 
         private void Awake()
@@ -63,23 +67,24 @@ namespace Koiusa.SteamMultiRuntime
         public void ApplyToNetworkPlayerPrefabLoader()
         {
             ResolveNetworkManager();
+            TryApplyToNetworkLocalPlayer();
+        }
+
+        private bool TryApplyToNetworkLocalPlayer()
+        {
             if (networkManager == null || networkManager.NetworkConfig == null)
             {
-                return;
+                return false;
             }
 
             var runtimePlayerObject = networkManager.LocalClient?.PlayerObject;
-            if (runtimePlayerObject == null)
+            if (runtimePlayerObject == null || !runtimePlayerObject.IsOwner)
             {
-                return;
-            }
-
-            if (!runtimePlayerObject.IsOwner)
-            {
-                return;
+                return false;
             }
 
             ApplyToLoader(runtimePlayerObject.gameObject);
+            return true;
         }
 
         private void ResolveNetworkManager()
@@ -129,35 +134,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplyToLoader(GameObject target)
         {
-            if (target == null)
-            {
-                return;
-            }
-
-            var modelIds = modelIdList != null ? modelIdList.modelIds : null;
-            if (modelIds == null || selectedModelIndex < 0 || selectedModelIndex >= modelIds.Length)
-            {
-                Debug.LogWarning("[RuntimeUserProfile] Invalid model index or modelIdList not set.");
-                return;
-            }
-
-            var sync = target.GetComponent<IPlayerModelSync>();
-            if (sync != null)
-            {
-                sync.ModelIdList = modelIdList;
-                sync.ApplyModelIndex(selectedModelIndex);
-                return;
-            }
-
-            var loader = target.GetComponent<CharacterPrefabLoader>();
-            if (loader == null)
-            {
-                return;
-            }
-
-            var modelId = modelIds[selectedModelIndex];
-            var resourceId = modelIdList != null ? modelIdList.ResolveResourcePath(modelId) : modelId;
-            loader.SetPrefabSource(new CharacterPrefabSourceSettings { characterPrefab = null, resourcePath = resourceId });
+            RuntimeUserProfileModelApplyUtility.ApplyToLoader(target, this, nameof(RuntimeUserProfile));
         }
     }
 }

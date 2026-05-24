@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Koiusa.SteamMultiRuntime.Network;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Koiusa.SteamMultiRuntime;
 
 namespace Koiusa.SteamMultiRuntime.Network
 {
     [DisallowMultipleComponent]
-    public class SteamLobbyDedicatedServer : SteamLobbySceneLoaderBase
+    public class SteamLobbyDedicatedServer : SteamLobbySceneLoaderBase, IStartupStageSceneLoaderContext
     {
         [Header("Auto Start")]
         [SerializeField] private bool autoStartOnPlay = true;
@@ -35,6 +33,11 @@ namespace Koiusa.SteamMultiRuntime.Network
         [SerializeField] private bool enableLogging = true;
 
         private bool started;
+
+        public StageSceneList StageSceneList => stageSceneList;
+        public int StartupStageSceneIndex => startupStageSceneIndex;
+        public LoadSceneMode SceneLoadMode => sceneLoadMode;
+        public bool SetLoadedSceneAsActive => setLoadedSceneAsActive;
 
         public override string LobbySceneName => ResolveStartupSceneReference();
         public override IReadOnlyList<string> CreatableStageSceneNames => stageSceneList?.sceneNames ?? Array.Empty<string>();
@@ -135,53 +138,9 @@ namespace Koiusa.SteamMultiRuntime.Network
             }
         }
 
-        private async Task<bool> LoadStartupSceneIfConfiguredAsync()
+        private Task<bool> LoadStartupSceneIfConfiguredAsync()
         {
-            var startupScene = ResolveStartupSceneReference();
-            if (string.IsNullOrWhiteSpace(startupScene))
-            {
-                Log("Startup scene is empty. Skip scene loading.");
-                return true;
-            }
-
-            if (!CanLoadScene(startupScene))
-            {
-                Debug.LogError($"[SteamLobbyDedicatedServer] Scene '{startupScene}' is not in Build Settings.", this);
-                return false;
-            }
-
-            var loadedScene = GetLoadedScene(startupScene);
-            if (loadedScene.IsValid() && loadedScene.isLoaded)
-            {
-                if (setLoadedSceneAsActive)
-                {
-                    SceneManager.SetActiveScene(loadedScene);
-                }
-
-                Log($"Startup scene already loaded: {startupScene}");
-                return true;
-            }
-
-            var operation = SceneManager.LoadSceneAsync(startupScene, sceneLoadMode);
-            if (operation == null)
-            {
-                Debug.LogError($"[SteamLobbyDedicatedServer] Failed to start loading scene '{startupScene}'.", this);
-                return false;
-            }
-
-            await WaitForOperationAsync(operation);
-
-            if (setLoadedSceneAsActive)
-            {
-                var scene = GetLoadedScene(startupScene);
-                if (scene.IsValid() && scene.isLoaded)
-                {
-                    SceneManager.SetActiveScene(scene);
-                }
-            }
-
-            Log($"Startup scene loaded: {startupScene}");
-            return true;
+            return StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(SteamLobbyDedicatedServer), Log);
         }
 
         private void TryStartDedicatedServer()
@@ -228,20 +187,7 @@ namespace Koiusa.SteamMultiRuntime.Network
 
         private string ResolveStartupSceneReference()
         {
-            if (stageSceneList == null || stageSceneList.sceneNames == null || stageSceneList.sceneNames.Length == 0)
-            {
-                return string.Empty;
-            }
-
-            if (startupStageSceneIndex < 0 || startupStageSceneIndex >= stageSceneList.sceneNames.Length)
-            {
-                Debug.LogError($"[SteamLobbyDedicatedServer] startupStageSceneIndex '{startupStageSceneIndex}' is out of range.", this);
-                return string.Empty;
-            }
-
-            var sceneName = stageSceneList.sceneNames[startupStageSceneIndex];
-            var resolved = stageSceneList.ResolveSceneReference(sceneName);
-            return !string.IsNullOrWhiteSpace(resolved) ? resolved : sceneName;
+            return StageStartupSceneLoader.ResolveStartupSceneReference(this, this, nameof(SteamLobbyDedicatedServer));
         }
 
         private void Log(string message)

@@ -23,12 +23,12 @@ namespace Koiusa.SteamMultiRuntime
         protected void RaiseLoadingFinished() => LoadingFinished?.Invoke();
 
         protected static Task WaitForOperationAsync(AsyncOperation operation)
-            => SteamLobbySceneUtility.WaitForOperationAsync(operation);
+            => SceneUtilityEx.WaitForOperationAsync(operation);
 
         protected static bool CanLoadScene(string sceneReference)
-            => SteamLobbySceneUtility.CanLoadScene(sceneReference);
+            => SceneUtilityEx.CanLoadScene(sceneReference);
 
         protected static Scene GetLoadedScene(string sceneReference)
-            => SteamLobbySceneUtility.GetLoadedScene(sceneReference);
+            => SceneUtilityEx.GetLoadedScene(sceneReference);
     }
 }

@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime
         private const string DefaultStyleSheetResourcePath = "UI/CharacterSelect/CharacterSelect";
 
         [Header("References")]
-        [SerializeField] private RuntimeUserProfile userProfile;
+        [SerializeField] private PlayerModelProfileBase userProfile;
 
         [Header("UI Assets")]
         [SerializeField] private VisualTreeAsset layoutAsset;
@@ -34,7 +34,7 @@ namespace Koiusa.SteamMultiRuntime
             view = new CharacterSelectView(uiDocument, layoutAsset, styleSheet);
 
             if (userProfile == null)
-                userProfile = FindFirstObjectByType<RuntimeUserProfile>();
+                userProfile = FindFirstObjectByType<PlayerModelProfileBase>();
         }
 
         private void OnEnable()
@@ -55,7 +55,7 @@ namespace Koiusa.SteamMultiRuntime
         private CharacterModelIdList ResolveModelIdList()
         {
             if (userProfile == null)
-                userProfile = FindFirstObjectByType<RuntimeUserProfile>();
+                userProfile = FindFirstObjectByType<PlayerModelProfileBase>();
 
             return userProfile != null ? userProfile.ModelIdList : null;
         }
@@ -73,7 +73,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             userProfile.SetSelectedModel(pendingIndex);
-            userProfile.ApplyToNetworkPlayerPrefabLoader();
+            userProfile.ApplySelectedModel();
             gameObject.SetActive(false);
         }
     }

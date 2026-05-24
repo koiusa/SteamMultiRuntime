@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbySceneLoader : SteamLobbySceneLoaderBase, ISteamLobbyTransitionScope
+    public class SteamLobbySceneLoader : SteamLobbySceneLoaderBase, ISteamLobbyTransitionScope, ISceneLoadContext
     {
         [Serializable]
         private class SceneCatalogSettings
@@ -67,6 +67,12 @@ namespace Koiusa.SteamMultiRuntime
         private int directLobbyTransitionScopeCount;
         private string lobbySceneName;
 
+        public string DefaultSceneName => sceneCatalog.defaultSceneName;
+        public bool DisableCamerasInLoadedScenes => disableCamerasInLoadedScenes;
+        public bool UnloadDefaultSceneOnLobbyEntered => defaultScenePolicy.unloadOnLobbyEntered;
+        public bool LoadDefaultSceneOnLobbyLeft => defaultScenePolicy.loadOnLobbyLeft;
+        public bool ShouldUnloadLobbySceneOnLeft => lobbyScenePolicy.unloadOnLeft;
+
         private void Awake()
         {
             if (instance != null && instance != this)
@@ -120,31 +126,14 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var lobbySceneRef = lobbySceneName;
-            if (!CanLoadScene(lobbySceneRef))
-            {
-                Debug.LogError($"[SteamLobbySceneLoader] Scene '{lobbySceneRef}' is not in Build Settings.");
-                return false;
-            }
-
             return await ExecuteWithLoadingScopeAsync(async () =>
             {
-                var lobbyScene = GetLoadedScene(lobbySceneRef);
-                if (!(lobbyScene.IsValid() && lobbyScene.isLoaded))
+                var loaded = await SceneLoadUtility.LoadPresentationSceneAsync(lobbySceneRef, this, this, nameof(SteamLobbySceneLoader));
+                if (!loaded)
                 {
-                    var operation = SceneManager.LoadSceneAsync(lobbySceneRef, LoadSceneMode.Additive);
-                    if (operation == null)
-                    {
-                        Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{lobbySceneRef}'.",
-                            this);
-                        return false;
-                    }
-
-                    await WaitForOperationAsync(operation);
-                    lobbyScene = GetLoadedScene(lobbySceneRef);
+                    return false;
                 }
 
-                ApplyLoadedSceneCameraSettings(lobbyScene);
-                ActivatePresentationScene(lobbyScene);
                 await UnloadDefaultSceneOnEnteredAsync();
                 return true;
             });
@@ -158,19 +147,15 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var defaultSceneRef = sceneCatalog.defaultSceneName;
-            if (AreSameSceneReference(defaultSceneRef, lobbySceneName))
+            if (SceneLoadUtility.AreSameSceneReference(defaultSceneRef, lobbySceneName))
             {
                 return;
             }
 
-            var defaultScene = GetLoadedScene(defaultSceneRef);
-            if (!defaultScene.IsValid() || !defaultScene.isLoaded)
+            if (await SceneLoadUtility.UnloadSceneAsync(defaultSceneRef))
             {
-                return;
+                didUnloadDefaultSceneForLobby = true;
             }
-
-            await WaitForOperationAsync(SceneManager.UnloadSceneAsync(defaultSceneRef));
-            didUnloadDefaultSceneForLobby = true;
         }
 
         public override void UnloadLobbySceneOnLeft()
@@ -189,13 +174,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var lobbyScene = GetLoadedScene(sceneNameToUnload);
-            if (!lobbyScene.IsValid() || !lobbyScene.isLoaded)
-            {
-                return;
-            }
-
-            await WaitForOperationAsync(SceneManager.UnloadSceneAsync(sceneNameToUnload));
+            await SceneLoadUtility.UnloadSceneAsync(sceneNameToUnload);
         }
 
         public void LoadDefaultSceneOnLeft()
@@ -220,31 +199,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var defaultSceneRef = sceneCatalog.defaultSceneName;
-            if (!CanLoadScene(defaultSceneRef))
+            var loaded = await SceneLoadUtility.LoadPresentationSceneAsync(sceneCatalog.defaultSceneName, this, this, nameof(SteamLobbySceneLoader));
+            if (loaded)
             {
-                Debug.LogError($"[SteamLobbySceneLoader] Scene '{defaultSceneRef}' is not in Build Settings.");
-                return;
+                didUnloadDefaultSceneForLobby = false;
             }
-
-            var defaultScene = GetLoadedScene(defaultSceneRef);
-            if (!(defaultScene.IsValid() && defaultScene.isLoaded))
-            {
-                var operation = SceneManager.LoadSceneAsync(defaultSceneRef, LoadSceneMode.Additive);
-                if (operation == null)
-                {
-                    Debug.LogError($"[SteamLobbySceneLoader] Failed to start loading scene '{defaultSceneRef}'.",
-                        this);
-                    return;
-                }
-
-                await WaitForOperationAsync(operation);
-                defaultScene = GetLoadedScene(defaultSceneRef);
-            }
-
-            ApplyLoadedSceneCameraSettings(defaultScene);
-            ActivatePresentationScene(defaultScene);
-            didUnloadDefaultSceneForLobby = false;
         }
 
         public void HandleLobbyLeft()
@@ -339,53 +298,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 RaiseLoadingFinished();
             }
-        }
-
-        private void ApplyLoadedSceneCameraSettings(Scene scene)
-        {
-            if (!disableCamerasInLoadedScenes || !scene.IsValid() || !scene.isLoaded)
-            {
-                return;
-            }
-
-            foreach (var rootGameObject in scene.GetRootGameObjects())
-            {
-                foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
-                {
-                    camera.enabled = false;
-
-                    if (camera.gameObject.activeSelf)
-                    {
-                        camera.gameObject.SetActive(false);
-                    }
-                }
-            }
-        }
-
-        private static void ActivatePresentationScene(Scene scene)
-        {
-            if (!scene.IsValid() || !scene.isLoaded)
-            {
-                return;
-            }
-
-            SceneManager.SetActiveScene(scene);
-            DynamicGI.UpdateEnvironment();
-        }
-
-        private static bool AreSameSceneReference(string left, string right)
-        {
-            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
-            {
-                return false;
-            }
-
-            if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return string.Equals(SteamLobbySceneUtility.ToSceneName(left), SteamLobbySceneUtility.ToSceneName(right), StringComparison.OrdinalIgnoreCase);
         }
 
         private void OnDestroy()
