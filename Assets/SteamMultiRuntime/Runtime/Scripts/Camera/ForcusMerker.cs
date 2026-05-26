@@ -1,257 +1,163 @@
-using System.Reflection;
-using Koiusa.SteamMultiRuntime;
 using Unity.Cinemachine;
 using UnityEngine;
 
-public class ForcusMerker : MonoBehaviour
+namespace Koiusa.SteamMultiRuntime
 {
-    [SerializeField] private CinemachineCamera _cinemachineCamera;
-    [SerializeField] private SteamLobbyService _lobbyService;
-
-    private CameraTrackMarker _activeMarker;
-    private Transform _defaultTrackingTarget;
-
-    private void Awake()
+    public class ForcusMerker : MonoBehaviour
     {
-        if (_lobbyService == null)
+        [SerializeField] private CinemachineCamera _cinemachineCamera;
+
+        [Tooltip("Network 用は NetworkFocusMarkerContext、Local 用は LocalFocusMarkerContext をアタッチしたオブジェクトを指定")]
+        [SerializeField] private MonoBehaviour _contextSource;
+
+        private IFocusMarkerContext _context;
+        private CameraTrackMarker _activeMarker;
+        private Transform _defaultTrackingTarget;
+
+        private void Awake()
         {
-            _lobbyService = FindFirstObjectByType<SteamLobbyService>();
+            ResolveContext();
+
+            if (_cinemachineCamera == null)
+            {
+                _cinemachineCamera = GetComponent<CinemachineCamera>();
+            }
+
+            if (_cinemachineCamera == null)
+            {
+                _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+            }
+
+            _defaultTrackingTarget = FocusMarkerUtility.GetTrackingTarget(_cinemachineCamera);
         }
 
-        if (_cinemachineCamera == null)
+        private void OnEnable()
         {
-            _cinemachineCamera = GetComponent<CinemachineCamera>();
+            ResolveContext();
+            if (_context != null)
+            {
+                _context.StateChanged += OnContextStateChanged;
+            }
+
+            RefreshTrackingTarget();
         }
 
-        if (_cinemachineCamera == null)
+        private void OnDisable()
         {
-            _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+            if (_context != null)
+            {
+                _context.StateChanged -= OnContextStateChanged;
+            }
+
+            ClearActiveMarker();
+            RestoreDefaultTarget();
         }
 
-        _defaultTrackingTarget = GetTrackingTarget();
-    }
-
-    private void OnEnable()
-    {
-        if (_lobbyService != null)
+        private void Update()
         {
-            _lobbyService.StateChanged += OnLobbyStateChanged;
-        }
+            if (_context != null && !_context.IsActive)
+            {
+                if (_activeMarker != null)
+                {
+                    ClearActiveMarker();
+                    RestoreDefaultTarget();
+                }
 
-        RefreshTrackingTarget();
-    }
+                return;
+            }
 
-    private void OnDisable()
-    {
-        if (_lobbyService != null)
-        {
-            _lobbyService.StateChanged -= OnLobbyStateChanged;
-        }
-
-        ClearActiveMarker();
-        RestoreDefaultTarget();
-    }
-
-    private void Update()
-    {
-        if (_lobbyService != null && !_lobbyService.IsInLobby)
-        {
             if (_activeMarker != null)
+            {
+                if (_activeMarker.IsLocalPlayerMarker)
+                {
+                    return;
+                }
+
+                ClearActiveMarker();
+                RestoreDefaultTarget();
+            }
+
+            TryResolveLocalMarker();
+        }
+
+        private void OnContextStateChanged()
+        {
+            RefreshTrackingTarget();
+        }
+
+        private void RefreshTrackingTarget()
+        {
+            if (_context != null && !_context.IsActive)
+            {
+                ClearActiveMarker();
+                RestoreDefaultTarget();
+                return;
+            }
+
+            if (_activeMarker != null && !_activeMarker.IsLocalPlayerMarker)
             {
                 ClearActiveMarker();
                 RestoreDefaultTarget();
             }
 
-            return;
+            TryResolveLocalMarker();
         }
 
-        if (_activeMarker != null)
+        private void TryResolveLocalMarker()
         {
-            if (_activeMarker.IsLocalPlayerMarker)
+            var markers = FindObjectsByType<CameraTrackMarker>(FindObjectsSortMode.None);
+            for (var i = 0; i < markers.Length; i++)
+            {
+                if (!markers[i].IsLocalPlayerMarker)
+                {
+                    continue;
+                }
+
+                AttachToMarker(markers[i]);
+                return;
+            }
+        }
+
+        private void AttachToMarker(CameraTrackMarker marker)
+        {
+            _activeMarker = marker;
+            if (marker == null)
             {
                 return;
             }
 
-            ClearActiveMarker();
-            RestoreDefaultTarget();
+            FocusMarkerUtility.SetTrackingTarget(_cinemachineCamera, marker.transform);
         }
 
-        TryResolveLocalMarker();
-    }
-
-    private void OnLobbyStateChanged()
-    {
-        RefreshTrackingTarget();
-    }
-
-    private void RefreshTrackingTarget()
-    {
-        if (_lobbyService != null && !_lobbyService.IsInLobby)
+        private void RestoreDefaultTarget()
         {
-            ClearActiveMarker();
-            RestoreDefaultTarget();
-            return;
+            FocusMarkerUtility.SetTrackingTarget(_cinemachineCamera, _defaultTrackingTarget);
         }
 
-        if (_activeMarker != null && !_activeMarker.IsLocalPlayerMarker)
+        private void ClearActiveMarker()
         {
-            ClearActiveMarker();
-            RestoreDefaultTarget();
+            _activeMarker = null;
         }
 
-        TryResolveLocalMarker();
-    }
-
-    private void TryResolveLocalMarker()
-    {
-        var markers = FindObjectsByType<CameraTrackMarker>(FindObjectsSortMode.None);
-        for (var i = 0; i < markers.Length; i++)
+        private void ResolveContext()
         {
-            if (!markers[i].IsLocalPlayerMarker)
+            if (_context != null)
             {
-                continue;
+                return;
             }
 
-            AttachToMarker(markers[i]);
-            return;
+            if (_contextSource is IFocusMarkerContext ctx)
+            {
+                _context = ctx;
+                return;
+            }
+
+            _context = GetComponent<IFocusMarkerContext>();
+            if (_context == null)
+            {
+                _context = GetComponentInChildren<IFocusMarkerContext>();
+            }
         }
-    }
-
-    private void AttachToMarker(CameraTrackMarker marker)
-    {
-        _activeMarker = marker;
-        if (marker == null)
-        {
-            return;
-        }
-
-        SetTrackingTarget(marker.transform);
-    }
-
-    private void RestoreDefaultTarget()
-    {
-        SetTrackingTarget(_defaultTrackingTarget);
-    }
-
-    private void ClearActiveMarker()
-    {
-        _activeMarker = null;
-    }
-
-    private Transform GetTrackingTarget()
-    {
-        if (_cinemachineCamera == null)
-        {
-            return null;
-        }
-
-        if (TryGetMemberValue(_cinemachineCamera, "TrackingTarget", out var trackingTarget))
-        {
-            return trackingTarget as Transform;
-        }
-
-        if (TryGetMemberValue(_cinemachineCamera, "Follow", out var followTarget))
-        {
-            return followTarget as Transform;
-        }
-
-        if (TryGetNestedMemberValue(_cinemachineCamera, "Target", "TrackingTarget", out var nestedTrackingTarget))
-        {
-            return nestedTrackingTarget as Transform;
-        }
-
-        return null;
-    }
-
-    private void SetTrackingTarget(Transform target)
-    {
-        if (_cinemachineCamera == null)
-        {
-            return;
-        }
-
-        if (TrySetMemberValue(_cinemachineCamera, "TrackingTarget", target))
-        {
-            return;
-        }
-
-        if (TrySetMemberValue(_cinemachineCamera, "Follow", target))
-        {
-            return;
-        }
-
-        TrySetNestedMemberValue(_cinemachineCamera, "Target", "TrackingTarget", target);
-    }
-
-    private static bool TryGetMemberValue(object instance, string memberName, out object value)
-    {
-        value = null;
-        if (instance == null)
-        {
-            return false;
-        }
-
-        var type = instance.GetType();
-        var property = type.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public);
-        if (property != null && property.CanRead)
-        {
-            value = property.GetValue(instance);
-            return true;
-        }
-
-        var field = type.GetField(memberName, BindingFlags.Instance | BindingFlags.Public);
-        if (field != null)
-        {
-            value = field.GetValue(instance);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool TrySetMemberValue(object instance, string memberName, object value)
-    {
-        if (instance == null)
-        {
-            return false;
-        }
-
-        var type = instance.GetType();
-        var property = type.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public);
-        if (property != null && property.CanWrite)
-        {
-            property.SetValue(instance, value);
-            return true;
-        }
-
-        var field = type.GetField(memberName, BindingFlags.Instance | BindingFlags.Public);
-        if (field != null)
-        {
-            field.SetValue(instance, value);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool TryGetNestedMemberValue(object instance, string memberName, string nestedMemberName, out object value)
-    {
-        value = null;
-        if (!TryGetMemberValue(instance, memberName, out var nestedInstance) || nestedInstance == null)
-        {
-            return false;
-        }
-
-        return TryGetMemberValue(nestedInstance, nestedMemberName, out value);
-    }
-
-    private static bool TrySetNestedMemberValue(object instance, string memberName, string nestedMemberName, object value)
-    {
-        if (!TryGetMemberValue(instance, memberName, out var nestedInstance) || nestedInstance == null)
-        {
-            return false;
-        }
-
-        return TrySetMemberValue(nestedInstance, nestedMemberName, value);
     }
 }
+
