@@ -139,6 +139,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
+            targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
 
             motor = GetComponent<PlayerCompositeMotor>();
             if (motor == null)
