@@ -598,11 +598,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
---- !u!1 &1837045513 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8367426446817566792, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
-  m_PrefabInstance: {fileID: 8557213534670978268}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &115945191008077082
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -837,35 +832,19 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8367426446817566792, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8557213534670978270}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
 --- !u!114 &8557213534670978269 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1938429945531210679, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
   m_PrefabInstance: {fileID: 8557213534670978268}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1837045513}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
---- !u!114 &8557213534670978270
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1837045513}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b3455417b786cd42ab3c99742c33c8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.NetworkFocusMarkerContext
-  lobbyService: {fileID: 75165694}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
