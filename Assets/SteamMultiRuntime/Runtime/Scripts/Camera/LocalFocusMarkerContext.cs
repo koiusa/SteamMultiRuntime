@@ -10,7 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class LocalFocusMarkerContext : MonoBehaviour, IFocusMarkerContext
     {
-        public bool IsActive => LocalPlayerReferenceUtility.ResolveLocalPlayerObject() != null;
+        public bool IsActive => ResolveLocalPlayerObject() != null;
 
         public event Action StateChanged;
 
@@ -30,6 +30,17 @@ namespace Koiusa.SteamMultiRuntime
                 _wasActive = isActive;
                 StateChanged?.Invoke();
             }
+        }
+
+        private static GameObject ResolveLocalPlayerObject()
+        {
+            if (LocalManager.Singleton != null && LocalManager.Singleton.LocalPlayerObject != null)
+            {
+                return LocalManager.Singleton.LocalPlayerObject;
+            }
+
+            var controller = FindFirstObjectByType<LocalPlayerController>();
+            return controller != null ? controller.gameObject : null;
         }
     }
 }

@@ -6,5 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         CharacterModelIdList ModelIdList { get; }
         int SelectedModelIndex { get; }
+        void SetSelectedModel(int index);
+        void ApplySelectedModel();
     }
 }

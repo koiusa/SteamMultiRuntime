@@ -532,6 +532,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_ActionId: 7607c7b6-cd76-4816-beef-bd0341cfe950
+--- !u!114 &1925673635 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7355919073678531344, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+  m_PrefabInstance: {fileID: 115945191008077082}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6db577b103c6ab4480f7b9398a8ac5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
 --- !u!1001 &115945191008077082
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -584,6 +595,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3147301363162230330, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: userProfile.unityReference
+      value: 
+      objectReference: {fileID: 1925673635}
+    - target: {fileID: 3578459824219183747, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 115945191008077083}
     - target: {fileID: 5337043238702301571, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: m_Name
       value: NetworkManager
@@ -597,6 +616,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+--- !u!114 &115945191008077083 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6002579511194936492, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+  m_PrefabInstance: {fileID: 115945191008077082}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

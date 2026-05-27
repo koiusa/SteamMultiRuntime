@@ -1,3 +1,4 @@
+using TNRD;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private CinemachineCamera _cinemachineCamera;
 
-        [Tooltip("Network 用は NetworkFocusMarkerContext、Local 用は LocalFocusMarkerContext をアタッチしたオブジェクトを指定")]
-        [SerializeField] private MonoBehaviour _contextSource;
+        [Tooltip("Network 用は NetworkFocusMarkerContext、Local 用は LocalFocusMarkerContext を指定")]
+        [SerializeField] private SerializableInterface<IFocusMarkerContext> _contextSource;
 
         private IFocusMarkerContext _context;
         private CameraTrackMarker _activeMarker;
@@ -146,9 +147,10 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (_contextSource is IFocusMarkerContext ctx)
+            var configuredContext = _contextSource != null ? _contextSource.Value : null;
+            if (configuredContext != null)
             {
-                _context = ctx;
+                _context = configuredContext;
                 return;
             }
 

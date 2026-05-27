@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using TNRD;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,13 +11,15 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class SteamLobbyLoadingSplash : MonoBehaviour
     {
-        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
+        [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private NetworkManager networkManager;
         [SerializeField] private SteamLobbyLoadingSplashSettings splashSettings;
         [SerializeField] private bool showSplashDuringSceneLoad = true;
 
         private bool isSubscribed;
         private ISteamLobbySceneLoader subscribedSceneLoader;
+
+        private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
         private GameObject splashUiObject;
         private UIDocument splashUiDocument;
         private PanelSettings runtimeSplashPanelSettings;
@@ -67,15 +70,20 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveSceneLoader()
         {
-            if (sceneLoader != null)
+            if (SceneLoader != null)
             {
                 return;
             }
 
-            sceneLoader = GetComponent<SteamLobbySceneLoaderBase>();
-            if (sceneLoader == null)
+            var loader = GetComponent<ISteamLobbySceneLoader>()
+                ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
+                ?? FindFirstObjectByType<SteamLobbySceneLoader>() as ISteamLobbySceneLoader
+                ?? FindFirstObjectByType<Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
+                ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+
+            if (loader != null)
             {
-                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoaderBase>();
+                sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
             }
         }
 
@@ -95,21 +103,22 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SubscribeLoaderEvents()
         {
-            if (sceneLoader == null)
+            var loader = SceneLoader;
+            if (loader == null)
             {
                 return;
             }
 
-            if (isSubscribed && subscribedSceneLoader == sceneLoader)
+            if (isSubscribed && subscribedSceneLoader == loader)
             {
                 return;
             }
 
             UnsubscribeLoaderEvents();
 
-            sceneLoader.LoadingStarted += OnLoadingStarted;
-            sceneLoader.LoadingFinished += OnLoadingFinished;
-            subscribedSceneLoader = sceneLoader;
+            loader.LoadingStarted += OnLoadingStarted;
+            loader.LoadingFinished += OnLoadingFinished;
+            subscribedSceneLoader = loader;
             isSubscribed = true;
         }
 
@@ -265,7 +274,8 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ResolveSceneLoader();
-            if (sceneLoader is ISteamLobbyTransitionScope transitionScope && transitionScope.IsDirectLobbyTransitionInProgress)
+            var loader = SceneLoader;
+            if (loader is ISteamLobbyTransitionScope transitionScope && transitionScope.IsDirectLobbyTransitionInProgress)
             {
                 return false;
             }
@@ -276,12 +286,12 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (sceneLoader == null || string.IsNullOrWhiteSpace(sceneLoader.LobbySceneName))
+            if (loader == null || string.IsNullOrWhiteSpace(loader.LobbySceneName))
             {
                 return true;
             }
 
-            var lobbySceneRef = sceneLoader.LobbySceneName;
+            var lobbySceneRef = loader.LobbySceneName;
             if (lobbySceneRef.Contains("/") || lobbySceneRef.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Equals(activeScene.path, lobbySceneRef, StringComparison.OrdinalIgnoreCase);

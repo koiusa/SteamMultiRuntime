@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var profile = Object.FindFirstObjectByType<RuntimeUserProfile>();
+            var profile = Object.FindFirstObjectByType<PlayerModelProfileBase>() as IRuntimeUserProfileModelSource;
             if (profile != null)
             {
                 modelIdList = profile.ModelIdList;

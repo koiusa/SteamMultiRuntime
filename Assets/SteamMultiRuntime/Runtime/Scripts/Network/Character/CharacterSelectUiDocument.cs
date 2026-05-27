@@ -1,4 +1,5 @@
 using Koiusa.SteamMultiRuntime.Network;
+using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         private const string DefaultStyleSheetResourcePath = "UI/CharacterSelect/CharacterSelect";
 
         [Header("References")]
-        [SerializeField] private PlayerModelProfileBase userProfile;
+        [SerializeField] private SerializableInterface<IRuntimeUserProfileModelSource> userProfile;
 
         [Header("UI Assets")]
         [SerializeField] private VisualTreeAsset layoutAsset;
@@ -21,6 +22,8 @@ namespace Koiusa.SteamMultiRuntime
         private UIDocument uiDocument;
         private CharacterSelectView view;
         private int pendingIndex = -1;
+
+        private IRuntimeUserProfileModelSource UserProfile => userProfile != null ? userProfile.Value : null;
 
         private void Awake()
         {
@@ -33,8 +36,14 @@ namespace Koiusa.SteamMultiRuntime
 
             view = new CharacterSelectView(uiDocument, layoutAsset, styleSheet);
 
-            if (userProfile == null)
-                userProfile = FindFirstObjectByType<PlayerModelProfileBase>();
+            if (UserProfile == null)
+            {
+                var profile = FindFirstObjectByType<PlayerModelProfileBase>();
+                if (profile != null)
+                {
+                    userProfile = new SerializableInterface<IRuntimeUserProfileModelSource>(profile);
+                }
+            }
         }
 
         private void OnEnable()
@@ -43,7 +52,7 @@ namespace Koiusa.SteamMultiRuntime
             view.Build(ids);
             view.BindActions(OnCharacterSelected, OnConfirmClicked);
 
-            pendingIndex = userProfile != null ? userProfile.SelectedModelIndex : 0;
+            pendingIndex = UserProfile != null ? UserProfile.SelectedModelIndex : 0;
             view.SetSelectedIndex(pendingIndex, ids != null ? ids.modelIds : null);
         }
 
@@ -54,10 +63,16 @@ namespace Koiusa.SteamMultiRuntime
 
         private CharacterModelIdList ResolveModelIdList()
         {
-            if (userProfile == null)
-                userProfile = FindFirstObjectByType<PlayerModelProfileBase>();
+            if (UserProfile == null)
+            {
+                var profile = FindFirstObjectByType<PlayerModelProfileBase>();
+                if (profile != null)
+                {
+                    userProfile = new SerializableInterface<IRuntimeUserProfileModelSource>(profile);
+                }
+            }
 
-            return userProfile != null ? userProfile.ModelIdList : null;
+            return UserProfile != null ? UserProfile.ModelIdList : null;
         }
 
         private void OnCharacterSelected(int index)
@@ -69,11 +84,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnConfirmClicked()
         {
-            if (pendingIndex < 0 || userProfile == null)
+            if (pendingIndex < 0 || UserProfile == null)
                 return;
 
-            userProfile.SetSelectedModel(pendingIndex);
-            userProfile.ApplySelectedModel();
+            UserProfile.SetSelectedModel(pendingIndex);
+            UserProfile.ApplySelectedModel();
             gameObject.SetActive(false);
         }
     }

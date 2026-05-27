@@ -449,6 +449,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &664996152 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7355919073678531344, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+  m_PrefabInstance: {fileID: 115945191008077082}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6db577b103c6ab4480f7b9398a8ac5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
 --- !u!114 &794504595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -576,6 +587,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_ActionId: 7607c7b6-cd76-4816-beef-bd0341cfe950
+--- !u!114 &1728126410 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6002579511194936492, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+  m_PrefabInstance: {fileID: 115945191008077082}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
 --- !u!1 &1837045513 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8367426446817566792, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
@@ -601,6 +623,10 @@ PrefabInstance:
       propertyPath: steamAppId
       value: 480
       objectReference: {fileID: 0}
+    - target: {fileID: 1533343188955586086, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 1728126410}
     - target: {fileID: 2835344246036045877, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -641,6 +667,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3147301363162230330, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: userProfile.unityReference
+      value: 
+      objectReference: {fileID: 664996152}
+    - target: {fileID: 3570064664541679659, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 1728126410}
+    - target: {fileID: 3578459824219183747, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 1728126410}
     - target: {fileID: 5337043238702301571, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: m_Name
       value: NetworkManager
@@ -728,6 +766,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1407171741054070296, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
+      propertyPath: lobbyService
+      value: 
+      objectReference: {fileID: 75165694}
     - target: {fileID: 4091770396958065525, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
       propertyPath: m_Name
       value: Network Mixing Camera
@@ -776,10 +818,6 @@ PrefabInstance:
       propertyPath: lobbyService
       value: 
       objectReference: {fileID: 75165694}
-    - target: {fileID: 5649759960531656290, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
-      propertyPath: networkContext
-      value: 
-      objectReference: {fileID: 8557213534670978270}
     - target: {fileID: 6667912240168262587, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
       propertyPath: m_ControllerManager.Controllers.Array.data[0].Input.InputAction
       value: 

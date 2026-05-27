@@ -138,6 +138,11 @@ namespace Koiusa.SteamMultiRuntime
             return velocity;
         }
 
+        public void SetTargetAnimator(Animator animator)
+        {
+            targetAnimator = animator;
+        }
+
         private void OnValidate()
         {
             CacheParameterHashes();

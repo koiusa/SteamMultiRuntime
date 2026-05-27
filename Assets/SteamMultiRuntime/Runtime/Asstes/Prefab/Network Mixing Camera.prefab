@@ -74,6 +74,7 @@ GameObject:
   - component: {fileID: 5312780958680519509}
   - component: {fileID: 5526019284348948746}
   - component: {fileID: 5649759960531656290}
+  - component: {fileID: 1407171741054070296}
   m_Layer: 0
   m_Name: Network Mixing Camera
   m_TagString: Untagged
@@ -155,10 +156,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Extend::Koiusa.SteamMultiRuntime.LobbyCameraMixerWeightController
   mixingCamera: {fileID: 5526019284348948746}
-  lobbyService: {fileID: 0}
   defaultCameraIndex: 0
   followCameraIndex: 1
   transitionSpeed: 10
+  networkContext: {fileID: 1407171741054070296}
+  lobbyService: {fileID: 0}
+--- !u!114 &1407171741054070296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4091770396958065525}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b3455417b786cd42ab3c99742c33c8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.NetworkFocusMarkerContext
+  lobbyService: {fileID: 0}
 --- !u!1 &6314832120136489508
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,5 +515,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 343e8afc58b02244788e7a1722813740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::MarkerTracker
-  _cinemachineCamera: {fileID: 0}
-  _contextSource: {fileID: 0}
+  _cinemachineCamera: {fileID: 1938429945531210679}
+  _contextSource:
+    mode: 0
+    unityReference: {fileID: 1407171741054070296}
+    rawReference:
+      rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 namespace Koiusa.SteamMultiRuntime.Network
 {
     [DisallowMultipleComponent]
-    public class SteamLobbyDedicatedServer : SteamLobbySceneLoaderBase, IStartupStageSceneLoaderContext
+    public class SteamLobbyDedicatedServer : MonoBehaviour, ISteamLobbySceneLoader, IStartupStageSceneLoaderContext
     {
         [Header("Auto Start")]
         [SerializeField] private bool autoStartOnPlay = true;
@@ -34,27 +34,30 @@ namespace Koiusa.SteamMultiRuntime.Network
 
         private bool started;
 
+        public event Action LoadingStarted;
+        public event Action LoadingFinished;
+
         public StageSceneList StageSceneList => stageSceneList;
         public int StartupStageSceneIndex => startupStageSceneIndex;
         public LoadSceneMode SceneLoadMode => sceneLoadMode;
         public bool SetLoadedSceneAsActive => setLoadedSceneAsActive;
 
-        public override string LobbySceneName => ResolveStartupSceneReference();
-        public override IReadOnlyList<string> CreatableStageSceneNames => stageSceneList?.sceneNames ?? Array.Empty<string>();
+        public string LobbySceneName => ResolveStartupSceneReference();
+        public IReadOnlyList<string> CreatableStageSceneNames => stageSceneList?.sceneNames ?? Array.Empty<string>();
 
-        public override async Task<bool> LoadLobbySceneOnEnteredAsync()
+        public async Task<bool> LoadLobbySceneOnEnteredAsync()
         {
-            RaiseLoadingStarted();
+            LoadingStarted?.Invoke();
             var result = await LoadStartupSceneIfConfiguredAsync();
-            RaiseLoadingFinished();
+            LoadingFinished?.Invoke();
             return result;
         }
 
-        public override void UnloadLobbySceneOnLeft() { }
+        public void UnloadLobbySceneOnLeft() { }
 
-        public override Task HandleLobbyLeftAsync(string sceneNameToUnload) => Task.CompletedTask;
+        public Task HandleLobbyLeftAsync(string sceneNameToUnload) => Task.CompletedTask;
 
-        public override void SetLobbySceneName(string sceneName)
+        public void SetLobbySceneName(string sceneName)
         {
             if (stageSceneList == null || stageSceneList.sceneNames == null)
                 return;

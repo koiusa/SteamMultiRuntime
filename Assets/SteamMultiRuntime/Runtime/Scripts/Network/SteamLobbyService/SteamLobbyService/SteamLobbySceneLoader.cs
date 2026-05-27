@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbySceneLoader : SteamLobbySceneLoaderBase, ISteamLobbyTransitionScope, ISceneLoadContext
+    public class SteamLobbySceneLoader : MonoBehaviour, ISteamLobbySceneLoader, ISteamLobbyTransitionScope, ISceneLoadContext
     {
         [Serializable]
         private class SceneCatalogSettings
@@ -67,6 +67,9 @@ namespace Koiusa.SteamMultiRuntime
         private int directLobbyTransitionScopeCount;
         private string lobbySceneName;
 
+        public event Action LoadingStarted;
+        public event Action LoadingFinished;
+
         public string DefaultSceneName => sceneCatalog.defaultSceneName;
         public bool DisableCamerasInLoadedScenes => disableCamerasInLoadedScenes;
         public bool UnloadDefaultSceneOnLobbyEntered => defaultScenePolicy.unloadOnLobbyEntered;
@@ -117,7 +120,7 @@ namespace Koiusa.SteamMultiRuntime
             lobbyService = GetComponent<SteamLobbyService>();
         }
 
-        public override async Task<bool> LoadLobbySceneOnEnteredAsync()
+        public async Task<bool> LoadLobbySceneOnEnteredAsync()
         {
             if (!lobbyScenePolicy.loadOnEntered || string.IsNullOrWhiteSpace(lobbySceneName))
             {
@@ -158,7 +161,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public override void UnloadLobbySceneOnLeft()
+        public void UnloadLobbySceneOnLeft()
         {
             _ = ExecuteWithLoadingScopeAsync(() => UnloadLobbySceneOnLeftCoreAsync(null));
         }
@@ -211,7 +214,7 @@ namespace Koiusa.SteamMultiRuntime
             _ = HandleLobbyLeftAsyncInternal(null);
         }
 
-        public override Task HandleLobbyLeftAsync(string sceneNameToUnload)
+        public Task HandleLobbyLeftAsync(string sceneNameToUnload)
         {
             return HandleLobbyLeftAsyncInternal(sceneNameToUnload);
         }
@@ -246,7 +249,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var defaultScene = GetLoadedScene(sceneCatalog.defaultSceneName);
+            var defaultScene = SceneUtilityEx.GetLoadedScene(sceneCatalog.defaultSceneName);
             return !defaultScene.IsValid() || !defaultScene.isLoaded;
         }
 
@@ -281,7 +284,7 @@ namespace Koiusa.SteamMultiRuntime
             loadingScopeCount++;
             if (loadingScopeCount == 1)
             {
-                RaiseLoadingStarted();
+                LoadingStarted?.Invoke();
             }
         }
 
@@ -296,7 +299,7 @@ namespace Koiusa.SteamMultiRuntime
             loadingScopeCount--;
             if (loadingScopeCount == 0)
             {
-                RaiseLoadingFinished();
+                LoadingFinished?.Invoke();
             }
         }
 
@@ -308,9 +311,9 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public override string LobbySceneName => lobbySceneName;
+        public string LobbySceneName => lobbySceneName;
 
-        public override void SetLobbySceneName(string sceneName)
+        public void SetLobbySceneName(string sceneName)
         {
             if (string.IsNullOrWhiteSpace(sceneName))
             {
@@ -322,7 +325,7 @@ namespace Koiusa.SteamMultiRuntime
                 : sceneName;
         }
 
-        public override IReadOnlyList<string> CreatableStageSceneNames =>
+        public IReadOnlyList<string> CreatableStageSceneNames =>
             (sceneCatalog.stageSceneList != null && sceneCatalog.stageSceneList.sceneNames != null)
                 ? sceneCatalog.stageSceneList.sceneNames
                 : Array.Empty<string>();

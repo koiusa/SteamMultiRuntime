@@ -647,6 +647,7 @@ GameObject:
   - component: {fileID: 5653671864346807291}
   - component: {fileID: 364414789120753330}
   - component: {fileID: 5653671864346807292}
+  - component: {fileID: 5653671864346807293}
   m_Layer: 0
   m_Name: SteamConnection
   m_TagString: Untagged
@@ -683,11 +684,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyService
   steamConnection: {fileID: 5653671864346807291}
-  sceneLoader: {fileID: 5653671864346807292}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 5653671864346807292}
+    rawReference:
+      rid: -2
   connectionStatus: {fileID: 364414789120753330}
   defaultMaxPlayers: 4
   enableLogging: 0
   useAdditiveClientSynchronization: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!114 &3473073323446165401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -701,8 +711,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyUiDocument
   lobbyService: {fileID: 3463410417665955121}
-  sceneLoader: {fileID: 5653671864346807292}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 5653671864346807292}
+    rawReference:
+      rid: -2
   uiAssets: {fileID: 11400000, guid: 20f7720e98a6f314785f2a56050019fc, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!1 &4323825068643611247
 GameObject:
   m_ObjectHideFlags: 0
@@ -794,6 +813,20 @@ MonoBehaviour:
   setLoadedSceneAsActive: 1
   failStartupWhenSceneCannotLoad: 1
   enableLogging: 1
+--- !u!114 &5653671864346807293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1475261129497208860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bf0277afdb31ba42be4b5d416996af7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyMenuToggle
+  lobbyUiDocument: {fileID: 3473073323446165401}
+  toggleAction: {fileID: 1781555164194001046, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
 --- !u!114 &7961894838766494948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -825,9 +858,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1407171741054070296, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
+      propertyPath: lobbyService
+      value: 
+      objectReference: {fileID: 3463410417665955121}
     - target: {fileID: 4091770396958065525, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
       propertyPath: m_Name
-      value: Mixing Camera
+      value: Network Mixing Camera
       objectReference: {fileID: 0}
     - target: {fileID: 5312780958680519509, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -881,6 +918,10 @@ PrefabInstance:
       propertyPath: m_ControllerManager.Controllers.Array.data[1].Input.InputAction
       value: 
       objectReference: {fileID: 6301629349367188045, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+    - target: {fileID: 8990328993008697336, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
+      propertyPath: lobbyService
+      value: 
+      objectReference: {fileID: 3463410417665955121}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

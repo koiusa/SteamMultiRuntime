@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
+using TNRD;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
     public class SteamLobbyService : MonoBehaviour
     {
         [SerializeField] private SteamConnection steamConnection;
-        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
+        [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private SteamLobbyConnectionStatus connectionStatus;
         [SerializeField] private int defaultMaxPlayers = 4;
         [SerializeField] private bool enableLogging = false;
@@ -24,6 +25,8 @@ namespace Koiusa.SteamMultiRuntime
         private SteamLobbyNetworkFacade networkFacade;
         private bool isSubscribedToNetworkEvents;
         private bool isSubscribedToLobbyEvents;
+
+        private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
 
         public event Action StateChanged;
         public event Action<Lobby> LobbyCreated;
@@ -43,8 +46,8 @@ namespace Koiusa.SteamMultiRuntime
         public string LocalPlayerName => IsReady ? SteamClient.Name : "Not Connected";
         public ulong CurrentLobbyId => lobbyManager?.CurrentLobbyId ?? 0;
         public IReadOnlyList<Lobby> LobbyCache => lobbyManager?.LobbyCache ?? new List<Lobby>();
-        public IReadOnlyList<string> CreatableStageSceneNames => sceneLoader != null
-            ? sceneLoader.CreatableStageSceneNames
+        public IReadOnlyList<string> CreatableStageSceneNames => SceneLoader != null
+            ? SceneLoader.CreatableStageSceneNames
             : (IReadOnlyList<string>)Array.Empty<string>();
 
         private void Awake()
@@ -54,9 +57,18 @@ namespace Koiusa.SteamMultiRuntime
                 steamConnection = GetComponent<SteamConnection>();
             }
 
-            if (sceneLoader == null)
+            if (SceneLoader == null)
             {
-                sceneLoader = GetComponent<SteamLobbySceneLoaderBase>();
+                var loader = GetComponent<ISteamLobbySceneLoader>()
+                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
+                    ?? FindFirstObjectByType<SteamLobbySceneLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
+                    ?? FindFirstObjectByType<Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
+                    ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+
+                if (loader != null)
+                {
+                    sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
+                }
             }
 
             if (connectionStatus == null)
@@ -76,7 +88,7 @@ namespace Koiusa.SteamMultiRuntime
 
             networkFacade = new SteamLobbyNetworkFacade(useAdditiveClientSynchronization);
 
-            lobbyManager = new SteamLobbyManager(steamConnection, sceneLoader);
+            lobbyManager = new SteamLobbyManager(steamConnection, SceneLoader);
             lobbyManager.SetDefaultMaxPlayers(defaultMaxPlayers);
             lobbyManager.SetCallbacks(
                 NotifyStateChanged,
@@ -285,12 +297,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private async Task<bool> TryLoadLobbySceneOnEnterAsync()
         {
-            if (sceneLoader == null)
+            if (SceneLoader == null)
             {
                 return true;
             }
 
-            return await sceneLoader.LoadLobbySceneOnEnteredAsync();
+            return await SceneLoader.LoadLobbySceneOnEnteredAsync();
         }
 
         private void NotifyStateChanged()

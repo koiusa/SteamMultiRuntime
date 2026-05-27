@@ -1,70 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &690987805268425676
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8584581394508415706}
-  - component: {fileID: 7355919073678531344}
-  - component: {fileID: 4677556144028070161}
-  m_Layer: 0
-  m_Name: UserRuntimeProfile
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8584581394508415706
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 690987805268425676}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5249567670381544472}
-  m_Father: {fileID: 2835344246036045877}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7355919073678531344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 690987805268425676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6db577b103c6ab4480f7b9398a8ac5a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
-  networkManager: {fileID: 384021173469697096}
-  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
-  selectedModelIndex: 1
-  applyOnEnable: 1
-  applyOnSceneLoaded: 1
---- !u!114 &4677556144028070161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 690987805268425676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09299c0a471df734b931cd4564d10d90, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectMenuToggle
-  characterSelectUiDocument: {fileID: 3147301363162230330}
-  toggleAction: {fileID: 7476244043514120974, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
 --- !u!1 &1760592744389726144
 GameObject:
   m_ObjectHideFlags: 0
@@ -109,10 +44,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 956d78501632c844fa9bc83eeb1b1ee8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyLoadingSplash
-  sceneLoader: {fileID: 6002579511194936492}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 6002579511194936492}
+    rawReference:
+      rid: -2
   networkManager: {fileID: 384021173469697096}
   splashSettings: {fileID: 11400000, guid: b03839c4c062ecb45a053abbc85c6091, type: 2}
   showSplashDuringSceneLoad: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!1 &5337043238702301571
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,6 +206,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SteamConnection
       objectReference: {fileID: 0}
+    - target: {fileID: 6992672057939424112, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 6002579511194936492}
+    - target: {fileID: 7001024383980304856, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
+      propertyPath: sceneLoader.unityReference
+      value: 
+      objectReference: {fileID: 6002579511194936492}
     - target: {fileID: 7870440590420074118, guid: f64a6aa39e2b40343b890acedc1deb59, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -288,80 +240,69 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe54f11bf062d984491bbc98c4203737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
---- !u!1001 &7964235523748374700
+--- !u!1001 &8100405252963367855
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 8584581394508415706}
+    m_TransformParent: {fileID: 2835344246036045877}
     m_Modifications:
-    - target: {fileID: 1806803926142276369, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
-      propertyPath: m_Name
-      value: CharacterSelectService
-      objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
+    - target: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4984310410782082710, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
-      propertyPath: userProfile
+    - target: {fileID: 1621035025790656703, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
+      propertyPath: networkManager
       value: 
-      objectReference: {fileID: 7355919073678531344}
+      objectReference: {fileID: 384021173469697096}
+    - target: {fileID: 8790052406570270819, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
+      propertyPath: m_Name
+      value: UserRuntimeProfile
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
---- !u!114 &3147301363162230330 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4984310410782082710, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
-  m_PrefabInstance: {fileID: 7964235523748374700}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efbdf2d101bfbb648b740bb92aa711be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectUiDocument
---- !u!4 &5249567670381544472 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
+--- !u!4 &8584581394508415706 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 2764246967577357492, guid: c7a79bf2b7280b744ae75062d8cd3708, type: 3}
-  m_PrefabInstance: {fileID: 7964235523748374700}
+  m_CorrespondingSourceObject: {fileID: 524921022119213429, guid: c8d5573258103e14aab0e375f87ffab7, type: 3}
+  m_PrefabInstance: {fileID: 8100405252963367855}
   m_PrefabAsset: {fileID: 0}

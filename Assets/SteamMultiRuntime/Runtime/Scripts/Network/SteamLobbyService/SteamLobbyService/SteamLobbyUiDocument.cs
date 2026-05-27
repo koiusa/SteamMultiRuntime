@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
 using Koiusa.SteamMultiRuntime.Network;
+using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,11 +15,12 @@ namespace Koiusa.SteamMultiRuntime
     public class SteamLobbyUiDocument : MonoBehaviour
     {
         [SerializeField] private SteamLobbyService lobbyService;
-        [SerializeField] private SteamLobbySceneLoaderBase sceneLoader;
+        [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private SteamLobbyUiAssets uiAssets;
 
         private UIDocument uiDocument;
         private LobbyView view;
+        private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
         private Coroutine waitForSteamCoroutine;
         private bool isRefreshing;
         private string lobbyNameSearch = string.Empty;
@@ -33,9 +35,17 @@ namespace Koiusa.SteamMultiRuntime
                 lobbyService = FindFirstObjectByType<SteamLobbyService>();
             }
 
-            if (sceneLoader == null)
+            if (SceneLoader == null)
             {
-                sceneLoader = FindFirstObjectByType<SteamLobbySceneLoaderBase>();
+                var loader = GetComponent<ISteamLobbySceneLoader>()
+                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
+                    ?? FindFirstObjectByType<SteamLobbySceneLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
+                    ?? FindFirstObjectByType<Koiusa.SteamMultiRuntime.Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
+                    ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+                if (loader != null)
+                {
+                    sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
+                }
             }
 
             uiAssets?.EnsureDefaultsLoaded();
@@ -50,9 +60,9 @@ namespace Koiusa.SteamMultiRuntime
                 lobbyService.StateChanged += Render;
             }
 
-            if (sceneLoader != null)
+            if (SceneLoader != null)
             {
-                sceneLoader.LoadingFinished += OnSceneLoadingFinished;
+                SceneLoader.LoadingFinished += OnSceneLoadingFinished;
             }
 
             if (uiAssets != null)
@@ -77,9 +87,9 @@ namespace Koiusa.SteamMultiRuntime
                 lobbyService.StateChanged -= Render;
             }
 
-            if (sceneLoader != null)
+            if (SceneLoader != null)
             {
-                sceneLoader.LoadingFinished -= OnSceneLoadingFinished;
+                SceneLoader.LoadingFinished -= OnSceneLoadingFinished;
             }
 
             if (uiAssets != null)
