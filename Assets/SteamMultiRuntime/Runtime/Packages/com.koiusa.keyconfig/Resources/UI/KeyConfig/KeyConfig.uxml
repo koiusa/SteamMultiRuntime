@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+	<ui:Style src="KeyConfig.uss" />
+	<ui:VisualElement class="keyconfig-root">
+		<ui:VisualElement class="keyconfig-panel">
+			<ui:Label text="キーコンフィグ" class="keyconfig-title" />
+			<ui:Label name="status-label" text="Ready" class="keyconfig-status" />
+			<ui:ScrollView name="binding-list-view" mode="Vertical" class="keyconfig-list" />
+			<ui:VisualElement class="keyconfig-buttons-row">
+				<ui:Button name="load-button" text="読込" class="keyconfig-button" />
+				<ui:Button name="save-button" text="保存" class="keyconfig-button" />
+				<ui:Button name="reset-all-button" text="全リセット" class="keyconfig-button" />
+				<ui:Button name="close-button" text="閉じる" class="keyconfig-button" />
+			</ui:VisualElement>
+		</ui:VisualElement>
+	</ui:VisualElement>
+</ui:UXML>

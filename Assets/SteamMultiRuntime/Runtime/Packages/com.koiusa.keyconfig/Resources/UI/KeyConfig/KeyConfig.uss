@@ -1,0 +1,153 @@
+.keyconfig-root {
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+	padding-left: 24px;
+	padding-right: 24px;
+	padding-top: 24px;
+	padding-bottom: 24px;
+	background-color: rgba(0, 0, 0, 0.35);
+}
+
+.keyconfig-panel {
+	min-width: 420px;
+	width: 62%;
+	max-width: 860px;
+	max-height: 620px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: rgba(20, 24, 34, 235);
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-left-color: rgba(255, 255, 255, 0.08);
+	border-right-color: rgba(255, 255, 255, 0.08);
+	border-top-color: rgba(255, 255, 255, 0.08);
+	border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.keyconfig-title {
+	font-size: 30px;
+	-unity-font-style: bold;
+	color: rgb(245, 247, 250);
+	margin-bottom: 12px;
+	-unity-text-align: middle-center;
+}
+
+.keyconfig-status {
+	color: rgb(210, 220, 236);
+	margin-bottom: 12px;
+}
+
+.keyconfig-list {
+	flex-grow: 1;
+	min-height: 220px;
+	max-height: 460px;
+	margin-bottom: 16px;
+}
+
+.keyconfig-binding-group-dropdown {
+	margin-bottom: 8px;
+}
+
+.keyconfig-map-tabs {
+	flex-direction: row;
+	flex-wrap: nowrap;
+	margin-bottom: 8px;
+}
+
+.keyconfig-map-tab-button {
+	height: 30px;
+	margin-right: 6px;
+	margin-bottom: 0;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.keyconfig-map-tab-button.active {
+	background-color: rgba(120, 170, 255, 0.35);
+}
+
+.keyconfig-map-group-header {
+	margin-top: 14px;
+	margin-bottom: 6px;
+	padding-left: 2px;
+	font-size: 15px;
+	-unity-font-style: bold;
+	color: rgb(255, 255, 255);
+}
+
+.keyconfig-scheme-group-header {
+	margin-top: 8px;
+	margin-bottom: 4px;
+	padding-left: 8px;
+	font-size: 13px;
+	-unity-font-style: bold;
+	color: rgb(255, 230, 190);
+}
+
+.keyconfig-profile-group-header {
+	margin-top: 6px;
+	margin-bottom: 4px;
+	padding-left: 16px;
+	font-size: 13px;
+	-unity-font-style: bold;
+	color: rgb(220, 232, 250);
+}
+
+.keyconfig-action-group-header {
+	margin-top: 6px;
+	margin-bottom: 4px;
+	padding-left: 24px;
+	font-size: 13px;
+	-unity-font-style: bold;
+	color: rgb(245, 247, 250);
+}
+
+.keyconfig-row {
+	flex-direction: row;
+	align-items: center;
+	margin-bottom: 6px;
+	padding-left: 24px;
+	padding-right: 8px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	background-color: rgba(255, 255, 255, 0.03);
+}
+
+.keyconfig-action {
+	min-width: 160px;
+	width: 28%;
+	color: rgb(245, 247, 250);
+	margin-right: 8px;
+}
+
+.keyconfig-binding {
+	flex-grow: 1;
+	color: rgb(208, 215, 225);
+	margin-right: 8px;
+}
+
+.keyconfig-rebind-button {
+	width: 96px;
+	margin-right: 6px;
+}
+
+.keyconfig-reset-button {
+	width: 84px;
+}
+
+.keyconfig-buttons-row {
+	flex-direction: row;
+	justify-content: flex-end;
+}
+
+.keyconfig-button {
+	width: 110px;
+	height: 40px;
+	margin-left: 8px;
+}
