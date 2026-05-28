@@ -166,14 +166,14 @@ namespace Koiusa.Keyconfig.Editor
                         }
 
                         var path = string.IsNullOrWhiteSpace(binding.effectivePath) ? binding.path : binding.effectivePath;
-                        var deviceType = ExtractDeviceType(path);
-                        var controlName = ExtractControlName(path);
+                        var deviceType = InputBindingIconEditorUi.ExtractDeviceType(path);
+                        var controlName = InputBindingIconEditorUi.ExtractControlName(path);
                         if (string.IsNullOrWhiteSpace(deviceType) || string.IsNullOrWhiteSpace(controlName))
                         {
                             continue;
                         }
 
-                        var key = BuildKey(deviceType, controlName);
+                        var key = InputBindingIconEditorUi.BuildKey(deviceType, controlName);
                         if (!keySet.Add(key))
                         {
                             continue;
@@ -181,7 +181,7 @@ namespace Koiusa.Keyconfig.Editor
 
                         rows.Add(new BindingRow
                         {
-                            category = BuildCategory(deviceType),
+                            category = InputBindingIconEditorUi.BuildCategory(deviceType),
                             mapName = actionMap.name,
                             actionName = action.name,
                             bindingPath = path,
@@ -199,7 +199,7 @@ namespace Koiusa.Keyconfig.Editor
                 for (var i = 0; i < customBindings.Count; i++)
                 {
                     var custom = customBindings[i];
-                    var key = BuildKey(custom.deviceType, custom.controlName);
+                    var key = InputBindingIconEditorUi.BuildKey(custom.deviceType, custom.controlName);
                     if (string.IsNullOrWhiteSpace(key) || !keySet.Add(key))
                     {
                         continue;
@@ -207,7 +207,7 @@ namespace Koiusa.Keyconfig.Editor
 
                     rows.Add(new BindingRow
                     {
-                        category = BuildCategory(custom.deviceType),
+                        category = InputBindingIconEditorUi.BuildCategory(custom.deviceType),
                         mapName = "(Assigned Only)",
                         actionName = "(No InputAction)",
                         bindingPath = string.Empty,
@@ -261,75 +261,5 @@ namespace Koiusa.Keyconfig.Editor
             EditorPrefs.SetString(LastResolverPathEditorPrefsKey, path);
         }
 
-        private static string ExtractDeviceType(string bindingPath)
-        {
-            if (string.IsNullOrWhiteSpace(bindingPath))
-            {
-                return string.Empty;
-            }
-
-            var start = bindingPath.IndexOf('<');
-            if (start < 0)
-            {
-                return string.Empty;
-            }
-
-            var end = bindingPath.IndexOf('>', start + 1);
-            if (end <= start + 1)
-            {
-                return string.Empty;
-            }
-
-            return bindingPath.Substring(start + 1, end - start - 1);
-        }
-
-        private static string ExtractControlName(string bindingPath)
-        {
-            if (string.IsNullOrWhiteSpace(bindingPath))
-            {
-                return string.Empty;
-            }
-
-            var slashIndex = bindingPath.LastIndexOf('/');
-            if (slashIndex < 0 || slashIndex >= bindingPath.Length - 1)
-            {
-                return string.Empty;
-            }
-
-            return bindingPath.Substring(slashIndex + 1);
-        }
-
-        private static string BuildCategory(string deviceType)
-        {
-            if (string.IsNullOrWhiteSpace(deviceType))
-            {
-                return "Other";
-            }
-
-            var lower = deviceType.Trim().ToLowerInvariant();
-            if (lower.Contains("keyboard"))
-            {
-                return "Keyboard";
-            }
-
-            if (lower.Contains("mouse"))
-            {
-                return "Mouse";
-            }
-
-            if (lower.Contains("gamepad") || lower.Contains("controller") || lower.Contains("joystick") || lower.Contains("steam"))
-            {
-                return "Gamepad";
-            }
-
-            return "Other";
-        }
-
-        private static string BuildKey(string deviceType, string controlName)
-        {
-            var normalizedDevice = string.IsNullOrWhiteSpace(deviceType) ? string.Empty : deviceType.Trim().ToLowerInvariant();
-            var normalizedControl = string.IsNullOrWhiteSpace(controlName) ? string.Empty : controlName.Trim().ToLowerInvariant();
-            return normalizedDevice + "/" + normalizedControl;
-        }
     }
 }

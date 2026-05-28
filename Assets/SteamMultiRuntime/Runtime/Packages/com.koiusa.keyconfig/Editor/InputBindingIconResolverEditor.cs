@@ -12,6 +12,7 @@ namespace Koiusa.Keyconfig.Editor
     {
         private sealed class BindingRow
         {
+            public string category;
             public string mapName;
             public string actionName;
             public string bindingPath;
@@ -71,6 +72,7 @@ namespace Koiusa.Keyconfig.Editor
             selectedMapTabIndex = GUILayout.Toolbar(selectedMapTabIndex, mapTabs);
             var selectedMapName = selectedMapTabIndex == 0 ? null : mapTabs[selectedMapTabIndex];
 
+            string currentCategory = null;
             string currentMap = null;
             string currentAction = null;
             for (var i = 0; i < rows.Count; i++)
@@ -81,12 +83,20 @@ namespace Koiusa.Keyconfig.Editor
                     continue;
                 }
 
+                if (!string.Equals(currentCategory, row.category, StringComparison.Ordinal))
+                {
+                    currentCategory = row.category;
+                    currentMap = null;
+                    currentAction = null;
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(currentCategory, EditorStyles.boldLabel);
+                }
+
                 if (!string.Equals(currentMap, row.mapName, StringComparison.Ordinal))
                 {
                     currentMap = row.mapName;
                     currentAction = null;
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField(currentMap, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField("  " + currentMap, EditorStyles.boldLabel);
                 }
 
                 if (!string.Equals(currentAction, row.actionName, StringComparison.Ordinal))
@@ -135,14 +145,14 @@ namespace Koiusa.Keyconfig.Editor
                         }
 
                         var path = string.IsNullOrWhiteSpace(binding.effectivePath) ? binding.path : binding.effectivePath;
-                        var deviceType = ExtractDeviceType(path);
-                        var controlName = ExtractControlName(path);
+                        var deviceType = InputBindingIconEditorUi.ExtractDeviceType(path);
+                        var controlName = InputBindingIconEditorUi.ExtractControlName(path);
                         if (string.IsNullOrWhiteSpace(deviceType) || string.IsNullOrWhiteSpace(controlName))
                         {
                             continue;
                         }
 
-                        var key = BuildKey(deviceType, controlName);
+                        var key = InputBindingIconEditorUi.BuildKey(deviceType, controlName);
                         if (!keySet.Add(key))
                         {
                             continue;
@@ -150,6 +160,7 @@ namespace Koiusa.Keyconfig.Editor
 
                         rows.Add(new BindingRow
                         {
+                            category = InputBindingIconEditorUi.BuildCategory(deviceType),
                             mapName = actionMap.name,
                             actionName = action.name,
                             bindingPath = path,
@@ -163,6 +174,12 @@ namespace Koiusa.Keyconfig.Editor
 
             rows.Sort((a, b) =>
             {
+                var categoryCompare = string.Compare(a.category, b.category, StringComparison.OrdinalIgnoreCase);
+                if (categoryCompare != 0)
+                {
+                    return categoryCompare;
+                }
+
                 var mapCompare = string.Compare(a.mapName, b.mapName, StringComparison.OrdinalIgnoreCase);
                 if (mapCompare != 0)
                 {
@@ -181,49 +198,5 @@ namespace Koiusa.Keyconfig.Editor
             return rows;
         }
 
-        private static string ExtractDeviceType(string bindingPath)
-        {
-            if (string.IsNullOrWhiteSpace(bindingPath))
-            {
-                return string.Empty;
-            }
-
-            var start = bindingPath.IndexOf('<');
-            if (start < 0)
-            {
-                return string.Empty;
-            }
-
-            var end = bindingPath.IndexOf('>', start + 1);
-            if (end <= start + 1)
-            {
-                return string.Empty;
-            }
-
-            return bindingPath.Substring(start + 1, end - start - 1);
-        }
-
-        private static string ExtractControlName(string bindingPath)
-        {
-            if (string.IsNullOrWhiteSpace(bindingPath))
-            {
-                return string.Empty;
-            }
-
-            var slashIndex = bindingPath.LastIndexOf('/');
-            if (slashIndex < 0 || slashIndex >= bindingPath.Length - 1)
-            {
-                return string.Empty;
-            }
-
-            return bindingPath.Substring(slashIndex + 1);
-        }
-
-        private static string BuildKey(string deviceType, string controlName)
-        {
-            var normalizedDevice = string.IsNullOrWhiteSpace(deviceType) ? string.Empty : deviceType.Trim().ToLowerInvariant();
-            var normalizedControl = string.IsNullOrWhiteSpace(controlName) ? string.Empty : controlName.Trim().ToLowerInvariant();
-            return normalizedDevice + "/" + normalizedControl;
-        }
     }
 }
