@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e623d370189c140981d2c796f6bd64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Keyconfig::Koiusa.SteamMultiRuntime.KeyConfigUiDocument
-  inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  inputActionAsset: {fileID: -944628639613478452, guid: a3597a87f1c9e7f468cf50a295baae1d, type: 3}
   userId: LocalUser
   bindingGroup: Keyboard&Mouse
   layoutAsset: {fileID: 9197481963319205126, guid: 89dea7eeee4661040ad3498a698d525f, type: 3}
