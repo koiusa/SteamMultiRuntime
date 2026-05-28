@@ -9,7 +9,7 @@ namespace Koiusa.Keyconfig
     {
         public readonly struct BindingEntry
         {
-            public BindingEntry(Guid actionId, string actionName, string actionMapName, string schemeName, string profileName, int bindingIndex, Guid bindingId, string displayName, bool isComposite, bool isPartOfComposite, string groups)
+            public BindingEntry(Guid actionId, string actionName, string actionMapName, string schemeName, string profileName, int bindingIndex, Guid bindingId, string displayName, bool isComposite, bool isPartOfComposite, string groups, string bindingPath)
             {
                 ActionId = actionId;
                 ActionName = actionName;
@@ -22,6 +22,7 @@ namespace Koiusa.Keyconfig
                 IsComposite = isComposite;
                 IsPartOfComposite = isPartOfComposite;
                 Groups = groups;
+                BindingPath = bindingPath;
             }
 
             public Guid ActionId { get; }
@@ -35,6 +36,7 @@ namespace Koiusa.Keyconfig
             public bool IsComposite { get; }
             public bool IsPartOfComposite { get; }
             public string Groups { get; }
+            public string BindingPath { get; }
         }
 
         private readonly InputActionAsset inputActionAsset;
@@ -155,7 +157,8 @@ namespace Koiusa.Keyconfig
                         displayName,
                         binding.isComposite,
                         binding.isPartOfComposite,
-                        binding.groups));
+                        binding.groups,
+                        string.IsNullOrEmpty(binding.effectivePath) ? binding.path : binding.effectivePath));
                 }
             }
 

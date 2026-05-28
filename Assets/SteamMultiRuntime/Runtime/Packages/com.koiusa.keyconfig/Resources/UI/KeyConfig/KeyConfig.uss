@@ -141,6 +141,13 @@
 	width: 84px;
 }
 
+.keyconfig-binding-icon {
+	width: 32px;
+	height: 32px;
+	margin-right: 8px;
+	flex-shrink: 0;
+}
+
 .keyconfig-buttons-row {
 	flex-direction: row;
 	justify-content: flex-end;

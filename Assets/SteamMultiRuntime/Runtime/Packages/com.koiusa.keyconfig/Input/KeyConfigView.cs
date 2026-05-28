@@ -10,6 +10,7 @@ namespace Koiusa.Keyconfig
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
         private readonly StyleSheet styleSheet;
+        private InputBindingIconResolver iconResolver;
 
         private Label statusLabel;
         private DropdownField bindingGroupDropdown;
@@ -153,6 +154,11 @@ namespace Koiusa.Keyconfig
             bindingGroupDropdown.SetValueWithoutNotify(value);
         }
 
+        public void SetIconResolver(InputBindingIconResolver resolver)
+        {
+            iconResolver = resolver;
+        }
+
         public void RenderBindingEntries(
             IReadOnlyList<InputBindingService.BindingEntry> entries,
             Action<int> onRebind,
@@ -261,6 +267,16 @@ namespace Koiusa.Keyconfig
 
                 var row = new VisualElement();
                 row.AddToClassList("keyconfig-row");
+
+                if (iconResolver != null)
+                {
+                    var icon = iconResolver.Resolve(entry.BindingPath);
+                    var iconElement = new Image();
+                    iconElement.AddToClassList("keyconfig-binding-icon");
+                    iconElement.image = icon;
+                    iconElement.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
+                    row.Add(iconElement);
+                }
 
                 var bindingLabel = new Label(entry.DisplayName);
                 bindingLabel.AddToClassList("keyconfig-binding");

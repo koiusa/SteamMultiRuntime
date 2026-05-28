@@ -45,6 +45,7 @@ namespace Koiusa.Keyconfig
             }
 
             view = new KeyConfigView(uiDocument, layoutAsset, styleSheet);
+            view.SetIconResolver(new InputBindingIconResolver());
 
             if (inputActionAsset != null)
             {
