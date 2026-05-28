@@ -3,11 +3,13 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class PlayerAnimatorStateDriver : MonoBehaviour
+    public class PlayerAnimatorStateDriver : MonoBehaviour, IPlayerAnimatorStateDriver
     {
         [Header("References")]
         [SerializeField] private Animator targetAnimator;
         [SerializeField] private Rigidbody targetRigidbody;
+
+        public Animator TargetAnimator => targetAnimator;
 
         [Header("Animator Parameters")]
         [SerializeField] private string horizontalSpeedParameter = "Speed";
@@ -17,6 +19,13 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private string jumpingParameter = "IsJumping";
         [SerializeField] private string freefallParameter = "IsFreefall";
         [SerializeField] private string fallingAfterJumpParameter = "IsFallingAfterJump";
+        [SerializeField] private string inputForwardParameter = "InputForward";
+        [SerializeField] private string inputRightParameter = "InputRight";
+        [SerializeField] private string moveDirectionForwardParameter = "MoveDirectionForward";
+        [SerializeField] private string moveDirectionRightParameter = "MoveDirectionRight";
+        [SerializeField] private string strafeModeParameter = "IsStrafeMode";
+        [SerializeField] private string animationFinishedParameter = "IsAnimationFinished";
+        [SerializeField, Min(0)] private int animationFinishedLayerIndex = 0;
 
         [Header("Smoothing")]
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
@@ -29,6 +38,12 @@ namespace Koiusa.SteamMultiRuntime
         private int jumpingHash;
         private int freefallHash;
         private int fallingAfterJumpHash;
+        private int inputForwardHash;
+        private int inputRightHash;
+        private int moveDirectionForwardHash;
+        private int moveDirectionRightHash;
+        private int strafeModeHash;
+        private int animationFinishedHash;
         private bool hasHorizontalSpeedParameter;
         private bool hasVerticalSpeedParameter;
         private bool hasGroundedParameter;
@@ -36,6 +51,12 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasJumpingParameter;
         private bool hasFreefallParameter;
         private bool hasFallingAfterJumpParameter;
+        private bool hasInputForwardParameter;
+        private bool hasInputRightParameter;
+        private bool hasMoveDirectionForwardParameter;
+        private bool hasMoveDirectionRightParameter;
+        private bool hasStrafeModeParameter;
+        private bool hasAnimationFinishedParameter;
         private IPlayerController playerController;
         private Vector3 previousPosition;
 
@@ -74,13 +95,24 @@ namespace Koiusa.SteamMultiRuntime
 
             var velocity = GetEstimatedVelocity();
             var upAxis = PlayerMotor.GetUpAxis();
+
             var horizontalSpeed = playerController != null ? playerController.HorizontalVelocity : Vector3.ProjectOnPlane(velocity, upAxis).magnitude;
             var verticalSpeed = playerController != null ? playerController.VerticalVelocity : Vector3.Dot(velocity, upAxis);
             var isGrounded = playerController != null ? playerController.IsGrounded : true;
-            var motionSpeed = playerController != null ? horizontalSpeed / playerController.MaxMoveSpeed * motionSpeedMultiplier : horizontalSpeed * motionSpeedMultiplier;
+            var motionSpeed = playerController != null && playerController.MaxMoveSpeed > Mathf.Epsilon
+                ? horizontalSpeed / playerController.MaxMoveSpeed * motionSpeedMultiplier
+                : horizontalSpeed * motionSpeedMultiplier;
             var isJumping = playerController != null && playerController.IsJumping;
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
+            var moveInput = playerController != null ? playerController.MoveInput : Vector2.zero;
+            var inputForward = moveInput.y;
+            var inputRight = moveInput.x;
+            var moveDirection = playerController != null ? playerController.MoveDirection : Vector3.zero;
+            var moveDirectionForward = Vector3.Dot(moveDirection, transform.forward);
+            var moveDirectionRight = Vector3.Dot(moveDirection, transform.right);
+            var isStrafeMode = playerController != null && playerController.IsStrafeMode;
+            var isAnimationFinished = IsCurrentStateFinished(animationFinishedLayerIndex);
 
             if (hasHorizontalSpeedParameter)
             {
@@ -116,6 +148,36 @@ namespace Koiusa.SteamMultiRuntime
             {
                 targetAnimator.SetBool(fallingAfterJumpHash, isFallingAfterJump);
             }
+
+            if (hasInputForwardParameter)
+            {
+                targetAnimator.SetFloat(inputForwardHash, inputForward, speedDampTime, Time.deltaTime);
+            }
+
+            if (hasInputRightParameter)
+            {
+                targetAnimator.SetFloat(inputRightHash, inputRight, speedDampTime, Time.deltaTime);
+            }
+
+            if (hasMoveDirectionForwardParameter)
+            {
+                targetAnimator.SetFloat(moveDirectionForwardHash, moveDirectionForward, speedDampTime, Time.deltaTime);
+            }
+
+            if (hasMoveDirectionRightParameter)
+            {
+                targetAnimator.SetFloat(moveDirectionRightHash, moveDirectionRight, speedDampTime, Time.deltaTime);
+            }
+
+            if (hasStrafeModeParameter)
+            {
+                targetAnimator.SetBool(strafeModeHash, isStrafeMode);
+            }
+
+            if (hasAnimationFinishedParameter)
+            {
+                targetAnimator.SetBool(animationFinishedHash, isAnimationFinished);
+            }
         }
 
         private Vector3 GetEstimatedVelocity()
@@ -143,6 +205,48 @@ namespace Koiusa.SteamMultiRuntime
             targetAnimator = animator;
         }
 
+        public bool IsCurrentStateFinished(int layerIndex)
+        {
+            if (targetAnimator == null || layerIndex < 0 || layerIndex >= targetAnimator.layerCount)
+            {
+                return false;
+            }
+
+            if (targetAnimator.IsInTransition(layerIndex))
+            {
+                return false;
+            }
+
+            var stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(layerIndex);
+            if (stateInfo.loop)
+            {
+                return false;
+            }
+
+            return stateInfo.normalizedTime >= 1f;
+        }
+
+        public bool IsStateFinished(int stateShortNameHash, int layerIndex)
+        {
+            if (targetAnimator == null || stateShortNameHash == 0 || layerIndex < 0 || layerIndex >= targetAnimator.layerCount)
+            {
+                return false;
+            }
+
+            if (targetAnimator.IsInTransition(layerIndex))
+            {
+                return false;
+            }
+
+            var stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(layerIndex);
+            if (stateInfo.shortNameHash != stateShortNameHash || stateInfo.loop)
+            {
+                return false;
+            }
+
+            return stateInfo.normalizedTime >= 1f;
+        }
+
         private void OnValidate()
         {
             CacheParameterHashes();
@@ -157,6 +261,12 @@ namespace Koiusa.SteamMultiRuntime
             hasJumpingParameter = !string.IsNullOrWhiteSpace(jumpingParameter);
             hasFreefallParameter = !string.IsNullOrWhiteSpace(freefallParameter);
             hasFallingAfterJumpParameter = !string.IsNullOrWhiteSpace(fallingAfterJumpParameter);
+            hasInputForwardParameter = !string.IsNullOrWhiteSpace(inputForwardParameter);
+            hasInputRightParameter = !string.IsNullOrWhiteSpace(inputRightParameter);
+            hasMoveDirectionForwardParameter = !string.IsNullOrWhiteSpace(moveDirectionForwardParameter);
+            hasMoveDirectionRightParameter = !string.IsNullOrWhiteSpace(moveDirectionRightParameter);
+            hasStrafeModeParameter = !string.IsNullOrWhiteSpace(strafeModeParameter);
+            hasAnimationFinishedParameter = !string.IsNullOrWhiteSpace(animationFinishedParameter);
 
             horizontalSpeedHash = hasHorizontalSpeedParameter ? Animator.StringToHash(horizontalSpeedParameter) : 0;
             verticalSpeedHash = hasVerticalSpeedParameter ? Animator.StringToHash(verticalSpeedParameter) : 0;
@@ -165,6 +275,12 @@ namespace Koiusa.SteamMultiRuntime
             jumpingHash = hasJumpingParameter ? Animator.StringToHash(jumpingParameter) : 0;
             freefallHash = hasFreefallParameter ? Animator.StringToHash(freefallParameter) : 0;
             fallingAfterJumpHash = hasFallingAfterJumpParameter ? Animator.StringToHash(fallingAfterJumpParameter) : 0;
+            inputForwardHash = hasInputForwardParameter ? Animator.StringToHash(inputForwardParameter) : 0;
+            inputRightHash = hasInputRightParameter ? Animator.StringToHash(inputRightParameter) : 0;
+            moveDirectionForwardHash = hasMoveDirectionForwardParameter ? Animator.StringToHash(moveDirectionForwardParameter) : 0;
+            moveDirectionRightHash = hasMoveDirectionRightParameter ? Animator.StringToHash(moveDirectionRightParameter) : 0;
+            strafeModeHash = hasStrafeModeParameter ? Animator.StringToHash(strafeModeParameter) : 0;
+            animationFinishedHash = hasAnimationFinishedParameter ? Animator.StringToHash(animationFinishedParameter) : 0;
         }
     }
 }

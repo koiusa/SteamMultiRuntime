@@ -25,7 +25,33 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => jump.IsJumping;
         public bool IsFreefall => false;
         public bool IsFallingAfterJump => jump.IsFallingAfterJump;
+        public bool IsStrafeMode => false;
         public Vector3 InheritedGroundVelocity => Vector3.zero;
+        public Vector2 MoveInput
+        {
+            get
+            {
+                if (_agent == null || !_agent.isOnNavMesh)
+                    return Vector2.zero;
+
+                var localDesired = transform.InverseTransformDirection(_agent.desiredVelocity);
+                var planar = new Vector2(localDesired.x, localDesired.z);
+                return planar.sqrMagnitude > 1f ? planar.normalized : planar;
+            }
+        }
+
+        public Vector3 MoveDirection
+        {
+            get
+            {
+                if (_agent == null || !_agent.isOnNavMesh)
+                    return Vector3.zero;
+
+                var upAxis = PlayerMotor.GetUpAxis();
+                var direction = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
+                return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
+            }
+        }
 
         public float HorizontalVelocity
         {

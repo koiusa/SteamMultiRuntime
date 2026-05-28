@@ -105,6 +105,7 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionPlayerInputSource inputSource;
         private PlayerCompositeMotor motor;
         private Vector3 moveDirection;
+        private Vector2 moveInput;
         private int jumpToken;
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
@@ -113,7 +114,10 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => motor != null && motor.IsJumping;
         public bool IsFreefall => motor != null && motor.IsFreefall;
         public bool IsFallingAfterJump => motor != null && motor.IsFallingAfterJump;
+        public bool IsStrafeMode => isStrafeMode;
         public Vector3 InheritedGroundVelocity => motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
+        public Vector2 MoveInput => moveInput;
+        public Vector3 MoveDirection => moveDirection;
         public float HorizontalVelocity => motor != null ? motor.HorizontalVelocity : 0f;
         public float VerticalVelocity => motor != null ? motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed => 5f;
@@ -157,6 +161,7 @@ namespace Koiusa.SteamMultiRuntime
             inputSource?.Disable();
             motor?.ResetState();
             moveDirection = Vector3.zero;
+            moveInput = Vector2.zero;
             jumpToken = 0;
             lastConsumedJumpToken = 0;
             isStrafeMode = false;
@@ -171,6 +176,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var inputState = inputSource.ReadState();
+            moveInput = inputState.Move;
             Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
             moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
 

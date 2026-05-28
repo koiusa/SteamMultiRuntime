@@ -111,7 +111,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasInitializedSettings;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
-            new PlayerInputSyncState(Vector3.zero, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+            new PlayerInputSyncState(Vector3.zero, Vector2.zero, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         // Settings Sync (Server -> All Clients)
         private readonly NetworkVariable<PlayerMotorSettings> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettings>(
@@ -130,7 +130,10 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => UseLocalMotorState && motor != null ? motor.IsJumping : netMovementFlagsState.Value.IsJumping;
         public bool IsFreefall => UseLocalMotorState && motor != null ? motor.IsFreefall : netMovementFlagsState.Value.IsFreefall;
         public bool IsFallingAfterJump => UseLocalMotorState && motor != null ? motor.IsFallingAfterJump : netMovementFlagsState.Value.IsFallingAfterJump;
+        public bool IsStrafeMode => UseLocalMotorState ? isStrafeMode : netInputState.Value.IsStrafeMode;
         public Vector3 InheritedGroundVelocity => UseLocalMotorState && motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
+        public Vector2 MoveInput => netInputState.Value.MoveInput;
+        public Vector3 MoveDirection => netInputState.Value.MoveDirection;
         public float HorizontalVelocity => UseLocalMotorState && motor != null ? motor.HorizontalVelocity : netKinematicState.Value.HorizontalVelocity;
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
@@ -277,14 +280,16 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var emptyInputState = netInputState.Value;
                 emptyInputState.MoveDirection = Vector3.zero;
+                emptyInputState.MoveInput = Vector2.zero;
                 netInputState.Value = emptyInputState;
                 return;
             }
 
             var inputState = baseInputSource.ReadState();
+            var moveInput = inputState.Move;
 
             Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
-            var moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
+            var moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, moveInput);
 
             if (inputState.JumpPressed)
             {
@@ -292,7 +297,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             isStrafeMode = baseInputSource.GetStrafeMode();
-            netInputState.Value = new PlayerInputSyncState(moveDirection, jumpToken, isStrafeMode);
+            netInputState.Value = new PlayerInputSyncState(moveDirection, moveInput, jumpToken, isStrafeMode);
         }
 
         private void TickServerPhysics()

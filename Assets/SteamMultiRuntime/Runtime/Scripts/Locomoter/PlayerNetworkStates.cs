@@ -6,12 +6,14 @@ namespace Koiusa.SteamMultiRuntime
     internal struct PlayerInputSyncState : INetworkSerializable
     {
         public Vector3 MoveDirection;
+        public Vector2 MoveInput;
         public int JumpToken;
         public bool IsStrafeMode;
 
-        public PlayerInputSyncState(Vector3 moveDirection, int jumpToken, bool isStrafeMode)
+        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, int jumpToken, bool isStrafeMode)
         {
             MoveDirection = moveDirection;
+            MoveInput = moveInput;
             JumpToken = jumpToken;
             IsStrafeMode = isStrafeMode;
         }
@@ -19,6 +21,7 @@ namespace Koiusa.SteamMultiRuntime
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref MoveDirection);
+            serializer.SerializeValue(ref MoveInput);
             serializer.SerializeValue(ref JumpToken);
             serializer.SerializeValue(ref IsStrafeMode);
         }
