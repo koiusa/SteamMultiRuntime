@@ -138,6 +138,33 @@ namespace Koiusa.SteamMultiRuntime
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
 
+        public void SetInputProfile(PlayerInputActionsProfile profile)
+        {
+            if (profile == null)
+            {
+                Debug.LogError("InputProfile cannot be null.", this);
+                return;
+            }
+
+            inputActionsProfile = profile;
+
+            // Reinitialize input source if already created
+            if (baseInputSource != null)
+            {
+                baseInputSource.Disable();
+            }
+
+            baseInputSource = new InputActionPlayerInputSource(
+                profile.MoveAction,
+                profile.JumpAction,
+                profile.StrafeToggleAction);
+
+            if (IsSpawned && IsOwner)
+            {
+                baseInputSource.Enable();
+            }
+        }
+
         private void Awake()
         {
             targetRigidbody = GetComponent<Rigidbody>();
