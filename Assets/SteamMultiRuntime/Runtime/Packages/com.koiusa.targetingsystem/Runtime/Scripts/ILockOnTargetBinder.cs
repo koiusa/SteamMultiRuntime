@@ -1,0 +1,36 @@
+using System;
+using System.Collections.Generic;
+
+namespace Koiusa.TargetingSystem.Runtime
+{
+    /// <summary>
+    /// 複数ターゲットのロック管理を担う Binder の共通インターフェース。
+    /// MultiLock 用の実装（LockOnTargetGroupBinder 等）に対応する。
+    /// </summary>
+    public interface ILockOnTargetBinder
+    {
+        /// <summary>現在ロック中のターゲット一覧。</summary>
+        IReadOnlyCollection<ITargetable> LockedTargets { get; }
+
+        /// <summary>ロック中のターゲットがすべて解除されたときに発火する。</summary>
+        event Action AllLockedTargetsCleared;
+
+        /// <summary>最も近い可視ターゲットをロックする。</summary>
+        bool LockClosestVisibleTarget();
+
+        /// <summary>最も近い可視ターゲットのロック状態をトグルする。</summary>
+        bool ToggleClosestVisibleTarget();
+
+        /// <summary>指定ターゲットをロックする。</summary>
+        bool LockTarget(ITargetable target);
+
+        /// <summary>指定ターゲットのロックを解除する。</summary>
+        bool UnlockTarget(ITargetable target);
+
+        /// <summary>最後にロックしたターゲットのロックを解除する。</summary>
+        bool UnlockLastLockedTarget();
+
+        /// <summary>すべてのロックを解除する。</summary>
+        void UnlockAllTargets();
+    }
+}
