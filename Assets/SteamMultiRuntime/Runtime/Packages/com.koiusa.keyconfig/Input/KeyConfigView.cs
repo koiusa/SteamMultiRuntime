@@ -56,17 +56,26 @@ namespace Koiusa.Keyconfig
                 layoutAsset.CloneTree(root);
                 statusLabel = root.Q<Label>("status-label");
                 bindingListView = root.Q<ScrollView>("binding-list-view");
+
+                var tableHeader = root.Q<VisualElement>("table-header");
+                var insertParent = tableHeader?.parent ?? bindingListView?.parent;
+
                 bindingGroupDropdown = new DropdownField("BindingGroup");
                 bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");
                 mapTabBar = new VisualElement();
                 mapTabBar.AddToClassList("keyconfig-map-tabs");
 
-                var listParent = bindingListView.parent;
-                if (listParent != null)
+                if (insertParent != null && tableHeader != null)
                 {
-                    var listIndex = listParent.IndexOf(bindingListView);
-                    listParent.Insert(listIndex, bindingGroupDropdown);
-                    listParent.Insert(listIndex + 1, mapTabBar);
+                    var headerIndex = insertParent.IndexOf(tableHeader);
+                    insertParent.Insert(headerIndex, bindingGroupDropdown);
+                    insertParent.Insert(headerIndex + 1, mapTabBar);
+                }
+                else if (insertParent != null && bindingListView != null)
+                {
+                    var listIndex = insertParent.IndexOf(bindingListView);
+                    insertParent.Insert(listIndex, bindingGroupDropdown);
+                    insertParent.Insert(listIndex + 1, mapTabBar);
                 }
 
                 loadButton = root.Q<Button>("load-button");
@@ -225,6 +234,7 @@ namespace Koiusa.Keyconfig
             string currentSchemeName = null;
             string currentProfileName = null;
             string currentActionName = null;
+            var rowCounter = 0;
 
             for (var i = 0; i < entries.Count; i++)
             {
@@ -242,7 +252,7 @@ namespace Koiusa.Keyconfig
                     currentProfileName = null;
                     currentActionName = null;
 
-                    var schemeHeader = new Label($"Scheme: {currentSchemeName}");
+                    var schemeHeader = new Label(currentSchemeName);
                     schemeHeader.AddToClassList("keyconfig-scheme-group-header");
                     bindingListView.Add(schemeHeader);
                 }
@@ -252,46 +262,66 @@ namespace Koiusa.Keyconfig
                     currentProfileName = entry.ProfileName;
                     currentActionName = null;
 
-                    var profileHeader = new Label($"Profile: {currentProfileName}");
+                    var profileHeader = new Label(currentProfileName);
                     profileHeader.AddToClassList("keyconfig-profile-group-header");
                     bindingListView.Add(profileHeader);
                 }
 
-                if (!string.Equals(currentActionName, entry.ActionName, StringComparison.Ordinal))
+                var isNewAction = !string.Equals(currentActionName, entry.ActionName, StringComparison.Ordinal);
+                if (isNewAction)
                 {
                     currentActionName = entry.ActionName;
-                    var actionHeader = new Label(entry.ActionName);
-                    actionHeader.AddToClassList("keyconfig-action-group-header");
-                    bindingListView.Add(actionHeader);
                 }
 
+                // --- 行 ---
                 var row = new VisualElement();
                 row.AddToClassList("keyconfig-row");
+                row.AddToClassList(rowCounter % 2 == 0 ? "even" : "odd");
+                rowCounter++;
 
-                if (iconResolver != null)
+                // アクション名セル（アクション初出のみ表示）
+                var actionCell = new Label(isNewAction && !entry.IsPartOfComposite ? entry.ActionName : (entry.IsPartOfComposite ? entry.DisplayName.Split('/')[0] : string.Empty));
+                actionCell.AddToClassList("keyconfig-cell-action");
+                if (entry.IsPartOfComposite)
+                {
+                    actionCell.AddToClassList("composite-child");
+                }
+                row.Add(actionCell);
+
+                // バインドセル（アイコン + ラベル）
+                var bindingCell = new VisualElement();
+                bindingCell.AddToClassList("keyconfig-cell-binding");
+
+                if (iconResolver != null && !entry.IsComposite)
                 {
                     var icon = iconResolver.Resolve(entry.BindingPath);
                     var iconElement = new Image();
                     iconElement.AddToClassList("keyconfig-binding-icon");
                     iconElement.image = icon;
                     iconElement.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
-                    row.Add(iconElement);
+                    bindingCell.Add(iconElement);
                 }
 
-                var bindingLabel = new Label(entry.DisplayName);
-                bindingLabel.AddToClassList("keyconfig-binding");
-                row.Add(bindingLabel);
+                var bindingLabel = new Label(entry.IsComposite ? string.Empty : entry.DisplayName);
+                bindingLabel.AddToClassList("keyconfig-binding-label");
+                bindingCell.Add(bindingLabel);
+                row.Add(bindingCell);
+
+                // ボタンセル
+                var buttonCell = new VisualElement();
+                buttonCell.AddToClassList("keyconfig-cell-buttons");
 
                 var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = "変更" };
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 rebindButton.SetEnabled(!entry.IsComposite);
-                row.Add(rebindButton);
+                buttonCell.Add(rebindButton);
 
                 var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = "戻す" };
                 resetButton.AddToClassList("keyconfig-reset-button");
                 resetButton.SetEnabled(!entry.IsComposite);
-                row.Add(resetButton);
+                buttonCell.Add(resetButton);
 
+                row.Add(buttonCell);
                 bindingListView.Add(row);
             }
         }

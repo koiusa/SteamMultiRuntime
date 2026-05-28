@@ -4,6 +4,11 @@
 		<ui:VisualElement class="keyconfig-panel">
 			<ui:Label text="キーコンフィグ" class="keyconfig-title" />
 			<ui:Label name="status-label" text="Ready" class="keyconfig-status" />
+			<ui:VisualElement name="table-header" class="keyconfig-table-header">
+				<ui:Label text="アクション" class="keyconfig-th keyconfig-th-action" />
+				<ui:Label text="キー / ボタン" class="keyconfig-th keyconfig-th-binding" />
+				<ui:Label text="" class="keyconfig-th keyconfig-th-buttons" />
+			</ui:VisualElement>
 			<ui:ScrollView name="binding-list-view" mode="Vertical" class="keyconfig-list" />
 			<ui:VisualElement class="keyconfig-buttons-row">
 				<ui:Button name="load-button" text="読込" class="keyconfig-button" />
