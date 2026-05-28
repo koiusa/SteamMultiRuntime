@@ -20,6 +20,8 @@ namespace Koiusa.Keyconfig.Editor
             public string key;
         }
 
+        private const string LastResolverPathEditorPrefsKey = "Koiusa.Keyconfig.InputBindingIconBindingWindow.LastResolverPath";
+
         private InputBindingIconResolver iconResolver;
         private Vector2 scrollPosition;
         private int selectedMapTabIndex;
@@ -31,16 +33,32 @@ namespace Koiusa.Keyconfig.Editor
             window.minSize = new Vector2(620f, 380f);
         }
 
+        private void OnEnable()
+        {
+            var lastResolverPath = EditorPrefs.GetString(LastResolverPathEditorPrefsKey, string.Empty);
+            if (string.IsNullOrWhiteSpace(lastResolverPath))
+            {
+                return;
+            }
+
+            iconResolver = AssetDatabase.LoadAssetAtPath<InputBindingIconResolver>(lastResolverPath);
+        }
+
         private void OnGUI()
         {
             EditorGUILayout.LabelField("Input Binding Icon Editor", EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
+            EditorGUI.BeginChangeCheck();
             iconResolver = (InputBindingIconResolver)EditorGUILayout.ObjectField(
                 "Icon Resolver",
                 iconResolver,
                 typeof(InputBindingIconResolver),
                 false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                SaveLastResolver();
+            }
 
             if (iconResolver == null)
             {
@@ -224,6 +242,23 @@ namespace Koiusa.Keyconfig.Editor
             });
 
             return rows;
+        }
+
+        private void SaveLastResolver()
+        {
+            if (iconResolver == null)
+            {
+                EditorPrefs.DeleteKey(LastResolverPathEditorPrefsKey);
+                return;
+            }
+
+            var path = AssetDatabase.GetAssetPath(iconResolver);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            EditorPrefs.SetString(LastResolverPathEditorPrefsKey, path);
         }
 
         private static string ExtractDeviceType(string bindingPath)
