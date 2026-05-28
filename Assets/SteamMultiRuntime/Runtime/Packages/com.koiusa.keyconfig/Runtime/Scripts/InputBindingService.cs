@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
     public sealed class InputBindingService
     {

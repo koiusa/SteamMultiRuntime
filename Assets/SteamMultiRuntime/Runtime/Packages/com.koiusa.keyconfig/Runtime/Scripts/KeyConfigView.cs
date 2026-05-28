@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
     internal sealed class KeyConfigView
     {

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
     public sealed class InputBindingOverridesRepository
     {

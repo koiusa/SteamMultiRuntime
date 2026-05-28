@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
     public sealed class InputRebindController : IDisposable
     {

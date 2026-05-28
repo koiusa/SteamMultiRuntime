@@ -242,8 +242,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: koiusa.Keyconfig::Koiusa.SteamMultiRuntime.KeyConfigUiDocument
   inputActionAsset: {fileID: -944628639613478452, guid: a3597a87f1c9e7f468cf50a295baae1d, type: 3}
+  inputActionAssetResolver: {fileID: 11400000, guid: 115556ad89f735444ace63a39e033995, type: 2}
   userId: LocalUser
   bindingGroup: Keyboard&Mouse
+  iconResolver: {fileID: 11400000, guid: 6415dd300497c674ba7731d62b0fb24a, type: 2}
   layoutAsset: {fileID: 9197481963319205126, guid: 89dea7eeee4661040ad3498a698d525f, type: 3}
   styleSheet: {fileID: 7433441132597879392, guid: ea13b0205239aef48b5ddbc93f8a8ee5, type: 3}
 --- !u!114 &1443678954

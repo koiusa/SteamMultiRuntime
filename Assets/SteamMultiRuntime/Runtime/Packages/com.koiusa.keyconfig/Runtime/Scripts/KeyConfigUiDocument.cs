@@ -3,23 +3,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
     public sealed class KeyConfigUiDocument : MonoBehaviour
     {
-        private const string DefaultLayoutResourcePath = "UI/KeyConfig/KeyConfig";
-        private const string DefaultStyleSheetResourcePath = "UI/KeyConfig/KeyConfig";
-
-        [Header("Input")]
-        [SerializeField] private InputActionAsset inputActionAsset;
-        [SerializeField] private string userId = "LocalUser";
-        [SerializeField] private string bindingGroup = string.Empty;
-
         [Header("UI Assets")]
         [SerializeField] private VisualTreeAsset layoutAsset;
         [SerializeField] private StyleSheet styleSheet;
+        
+        [Header("Input")]
+        [SerializeField] private InputActionAssetResolver inputActionAssetResolver;
+        [SerializeField] private string userId = "LocalUser";
+        [SerializeField] private string bindingGroup = string.Empty;
+
+        [Header("Resolvers")]
+        [SerializeField] private InputBindingIconResolver iconResolver;
 
         private UIDocument uiDocument;
         private KeyConfigView view;
@@ -34,22 +34,13 @@ namespace Koiusa.Keyconfig
         {
             uiDocument = GetComponent<UIDocument>();
 
-            if (layoutAsset == null)
-            {
-                layoutAsset = Resources.Load<VisualTreeAsset>(DefaultLayoutResourcePath);
-            }
-
-            if (styleSheet == null)
-            {
-                styleSheet = Resources.Load<StyleSheet>(DefaultStyleSheetResourcePath);
-            }
-
             view = new KeyConfigView(uiDocument, layoutAsset, styleSheet);
-            view.SetIconResolver(new InputBindingIconResolver());
+            view.SetIconResolver(iconResolver);
 
-            if (inputActionAsset != null)
+            var resolvedInputActionAsset = ResolveInputActionAsset();
+            if (resolvedInputActionAsset != null)
             {
-                bindingService = new InputBindingService(inputActionAsset);
+                bindingService = new InputBindingService(resolvedInputActionAsset);
                 rebindController = new InputRebindController(bindingService);
                 rebindController.RebindStarted += OnRebindStarted;
                 rebindController.RebindCompleted += OnRebindCompleted;
@@ -66,7 +57,7 @@ namespace Koiusa.Keyconfig
             if (bindingService == null)
             {
                 view.SetInteractive(false);
-                view.SetStatus("InputActionAsset が未設定です。");
+                view.SetStatus("InputActionAssetResolver が未設定、または解決先が未設定です。");
                 view.SetBindingGroupChoices(null, bindingGroup);
                 view.RenderBindingEntries(currentEntries, null, null);
                 return;
@@ -259,6 +250,11 @@ namespace Koiusa.Keyconfig
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetStatus(string.IsNullOrWhiteSpace(message) ? BuildRebindFailedStatus() : message);
+        }
+
+        private InputActionAsset ResolveInputActionAsset()
+        {
+            return inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
         }
 
         private string BuildReadyStatus()

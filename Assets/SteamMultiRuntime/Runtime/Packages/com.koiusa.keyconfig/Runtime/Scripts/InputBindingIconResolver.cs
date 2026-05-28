@@ -1,10 +1,24 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig
+namespace Koiusa.Keyconfig.Runtime
 {
-    public sealed class InputBindingIconResolver
+    [CreateAssetMenu(fileName = "InputBindingIconResolver", menuName = "Koiusa/Keyconfig/Input Binding Icon Resolver", order = 100)]
+    public class InputBindingIconResolver : ScriptableObject
     {
+        [Serializable]
+        public struct CustomIconBinding
+        {
+            public string deviceType;
+            public string controlName;
+            public Texture2D icon;
+        }
+
+        [SerializeField] private InputActionAssetResolver inputActionAssetResolver;
+        [SerializeField] private List<CustomIconBinding> customBindings = new List<CustomIconBinding>();
+
         private const string KbmIconBasePath = "Icons/KeyboardAndMouse/Light/";
         private const string GamepadIconBasePath = "Icons/SteamGamepad/Light/";
 
@@ -137,6 +151,14 @@ namespace Koiusa.Keyconfig
 
         private readonly Dictionary<string, Texture2D> cache = new Dictionary<string, Texture2D>();
 
+        public IReadOnlyList<CustomIconBinding> CustomBindings => customBindings;
+
+        public InputActionAssetResolver InputActionAssetResolver
+        {
+            get => inputActionAssetResolver;
+            set => inputActionAssetResolver = value;
+        }
+
         public Texture2D Resolve(string bindingPath)
         {
             if (string.IsNullOrEmpty(bindingPath))
@@ -149,9 +171,76 @@ namespace Koiusa.Keyconfig
                 return cached;
             }
 
-            var texture = LoadIcon(bindingPath);
+            var texture = ResolveCustomIcon(bindingPath) ?? LoadIcon(bindingPath);
             cache[bindingPath] = texture;
             return texture;
+        }
+
+        public void SetCustomBindingIcon(string deviceType, string controlName, Texture2D icon)
+        {
+            var normalizedDeviceType = NormalizeToken(deviceType);
+            var normalizedControlName = NormalizeToken(controlName);
+            if (string.IsNullOrEmpty(normalizedDeviceType) || string.IsNullOrEmpty(normalizedControlName))
+            {
+                return;
+            }
+
+            for (var i = 0; i < customBindings.Count; i++)
+            {
+                if (!string.Equals(NormalizeToken(customBindings[i].deviceType), normalizedDeviceType, StringComparison.Ordinal) ||
+                    !string.Equals(NormalizeToken(customBindings[i].controlName), normalizedControlName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var binding = customBindings[i];
+                binding.icon = icon;
+                customBindings[i] = binding;
+                cache.Clear();
+                return;
+            }
+
+            customBindings.Add(new CustomIconBinding
+            {
+                deviceType = deviceType,
+                controlName = controlName,
+                icon = icon
+            });
+            cache.Clear();
+        }
+
+        public InputActionAsset ResolveInputActionAsset()
+        {
+            return inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
+        }
+
+        private Texture2D ResolveCustomIcon(string bindingPath)
+        {
+            var deviceType = NormalizeToken(ExtractDeviceType(bindingPath));
+            var controlName = NormalizeToken(ExtractControlName(bindingPath));
+            if (string.IsNullOrEmpty(deviceType) || string.IsNullOrEmpty(controlName))
+            {
+                return null;
+            }
+
+            for (var i = 0; i < customBindings.Count; i++)
+            {
+                var binding = customBindings[i];
+                if (!string.Equals(NormalizeToken(binding.deviceType), deviceType, StringComparison.Ordinal) ||
+                    !string.Equals(NormalizeToken(binding.controlName), controlName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                return binding.icon;
+            }
+
+            return null;
+        }
+
+        private static string NormalizeToken(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
         }
 
         private static Texture2D LoadIcon(string bindingPath)
