@@ -22,6 +22,7 @@ namespace Koiusa.Keyconfig.Editor
 
         private InputBindingIconResolver iconResolver;
         private Vector2 scrollPosition;
+        private int selectedMapTabIndex;
 
         [MenuItem("Tools/KeyConfig/Input Binding Icon Window")]
         private static void Open()
@@ -61,6 +62,11 @@ namespace Koiusa.Keyconfig.Editor
                 return;
             }
 
+            var mapTabs = InputBindingIconEditorUi.BuildMapTabs(rows, row => row.mapName);
+            selectedMapTabIndex = Mathf.Clamp(selectedMapTabIndex, 0, mapTabs.Length - 1);
+            selectedMapTabIndex = GUILayout.Toolbar(selectedMapTabIndex, mapTabs);
+            var selectedMapName = selectedMapTabIndex == 0 ? null : mapTabs[selectedMapTabIndex];
+
             EditorGUILayout.Space();
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
@@ -70,6 +76,10 @@ namespace Koiusa.Keyconfig.Editor
             for (var i = 0; i < rows.Count; i++)
             {
                 var row = rows[i];
+                if (!string.IsNullOrEmpty(selectedMapName) && !string.Equals(row.mapName, selectedMapName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
                 if (!string.Equals(currentCategory, row.category, StringComparison.Ordinal))
                 {
@@ -93,7 +103,7 @@ namespace Koiusa.Keyconfig.Editor
                     EditorGUILayout.LabelField("    " + currentAction, EditorStyles.miniBoldLabel);
                 }
 
-                var currentIcon = FindCustomIcon(iconResolver, row.key);
+                var currentIcon = iconResolver.ResolveDisplayIcon(row.deviceType, row.controlName, row.bindingPath);
                 EditorGUI.BeginChangeCheck();
                 var newIcon = (Texture2D)EditorGUILayout.ObjectField(
                     $"      <{row.deviceType}>/{row.controlName}",
@@ -214,28 +224,6 @@ namespace Koiusa.Keyconfig.Editor
             });
 
             return rows;
-        }
-
-        private static Texture2D FindCustomIcon(InputBindingIconResolver resolver, string key)
-        {
-            if (resolver == null || string.IsNullOrWhiteSpace(key))
-            {
-                return null;
-            }
-
-            var bindings = resolver.CustomBindings;
-            for (var i = 0; i < bindings.Count; i++)
-            {
-                var binding = bindings[i];
-                if (!string.Equals(BuildKey(binding.deviceType, binding.controlName), key, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                return binding.icon;
-            }
-
-            return null;
         }
 
         private static string ExtractDeviceType(string bindingPath)

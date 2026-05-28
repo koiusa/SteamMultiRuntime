@@ -22,6 +22,7 @@ namespace Koiusa.Keyconfig.Editor
 
         private SerializedProperty inputActionAssetResolverProperty;
         private SerializedProperty customBindingsProperty;
+        private int selectedMapTabIndex;
 
         private void OnEnable()
         {
@@ -65,11 +66,20 @@ namespace Koiusa.Keyconfig.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Resolved Bindings", EditorStyles.boldLabel);
 
+            var mapTabs = InputBindingIconEditorUi.BuildMapTabs(rows, row => row.mapName);
+            selectedMapTabIndex = Mathf.Clamp(selectedMapTabIndex, 0, mapTabs.Length - 1);
+            selectedMapTabIndex = GUILayout.Toolbar(selectedMapTabIndex, mapTabs);
+            var selectedMapName = selectedMapTabIndex == 0 ? null : mapTabs[selectedMapTabIndex];
+
             string currentMap = null;
             string currentAction = null;
             for (var i = 0; i < rows.Count; i++)
             {
                 var row = rows[i];
+                if (!string.IsNullOrEmpty(selectedMapName) && !string.Equals(row.mapName, selectedMapName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
 
                 if (!string.Equals(currentMap, row.mapName, StringComparison.Ordinal))
                 {
@@ -85,7 +95,7 @@ namespace Koiusa.Keyconfig.Editor
                     EditorGUILayout.LabelField("  " + currentAction, EditorStyles.miniBoldLabel);
                 }
 
-                var currentIcon = FindCustomIcon(customBindingsProperty, row.key);
+                var currentIcon = resolver.ResolveDisplayIcon(row.deviceType, row.controlName, row.bindingPath);
                 EditorGUI.BeginChangeCheck();
                 var icon = (Texture2D)EditorGUILayout.ObjectField(
                     $"    <{row.deviceType}>/{row.controlName}",
@@ -169,24 +179,6 @@ namespace Koiusa.Keyconfig.Editor
             });
 
             return rows;
-        }
-
-        private static Texture2D FindCustomIcon(SerializedProperty customBindings, string key)
-        {
-            for (var i = 0; i < customBindings.arraySize; i++)
-            {
-                var element = customBindings.GetArrayElementAtIndex(i);
-                var deviceType = element.FindPropertyRelative("deviceType")?.stringValue;
-                var controlName = element.FindPropertyRelative("controlName")?.stringValue;
-                if (!string.Equals(BuildKey(deviceType, controlName), key, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                return element.FindPropertyRelative("icon")?.objectReferenceValue as Texture2D;
-            }
-
-            return null;
         }
 
         private static string ExtractDeviceType(string bindingPath)

@@ -13,7 +13,4 @@ MonoBehaviour:
   m_Name: InputBindingIconResolver
   m_EditorClassIdentifier: koiusa.Keyconfig::Koiusa.Keyconfig.InputBindingIconResolver
   inputActionAssetResolver: {fileID: 11400000, guid: 115556ad89f735444ace63a39e033995, type: 2}
-  customBindings:
-  - deviceType: Gamepad
-    controlName: buttonWest
-    icon: {fileID: 0}
+  customBindings: []

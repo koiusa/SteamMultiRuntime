@@ -214,11 +214,27 @@ namespace Koiusa.Keyconfig.Runtime
             return inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
         }
 
+        public Texture2D ResolveDisplayIcon(string deviceType, string controlName, string bindingPath)
+        {
+            var customIcon = ResolveCustomIcon(deviceType, controlName);
+            if (customIcon != null)
+            {
+                return customIcon;
+            }
+
+            return Resolve(bindingPath);
+        }
+
         private Texture2D ResolveCustomIcon(string bindingPath)
         {
-            var deviceType = NormalizeToken(ExtractDeviceType(bindingPath));
-            var controlName = NormalizeToken(ExtractControlName(bindingPath));
-            if (string.IsNullOrEmpty(deviceType) || string.IsNullOrEmpty(controlName))
+            return ResolveCustomIcon(ExtractDeviceType(bindingPath), ExtractControlName(bindingPath));
+        }
+
+        private Texture2D ResolveCustomIcon(string deviceType, string controlName)
+        {
+            var normalizedDeviceType = NormalizeToken(deviceType);
+            var normalizedControlName = NormalizeToken(controlName);
+            if (string.IsNullOrEmpty(normalizedDeviceType) || string.IsNullOrEmpty(normalizedControlName))
             {
                 return null;
             }
@@ -226,8 +242,8 @@ namespace Koiusa.Keyconfig.Runtime
             for (var i = 0; i < customBindings.Count; i++)
             {
                 var binding = customBindings[i];
-                if (!string.Equals(NormalizeToken(binding.deviceType), deviceType, StringComparison.Ordinal) ||
-                    !string.Equals(NormalizeToken(binding.controlName), controlName, StringComparison.Ordinal))
+                if (!string.Equals(NormalizeToken(binding.deviceType), normalizedDeviceType, StringComparison.Ordinal) ||
+                    !string.Equals(NormalizeToken(binding.controlName), normalizedControlName, StringComparison.Ordinal))
                 {
                     continue;
                 }
