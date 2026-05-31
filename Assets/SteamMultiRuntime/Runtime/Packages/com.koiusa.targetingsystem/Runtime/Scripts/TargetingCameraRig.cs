@@ -117,23 +117,14 @@ namespace Koiusa.TargetingSystem.Runtime
 
             if (mode == CameraMode.MultiLock && targetGroupBinder != null)
             {
-                // SoloLock の現在ターゲットを先に保持（ClearLookAt でリセットされる前に）
-                var soloTarget = soloLockBinder?.CurrentTarget;
+                // SoloLock → MultiLock: Solo のターゲットは引き継がずにクリア
+                soloLockBinder?.ClearLookAt();
 
-                // ロック済みが0件の場合、SoloLock の現在ターゲットを引き継ぐか最近傍を自動ロック
+                // ロック済みが0件の場合、最近傍を自動ロック
                 if (targetGroupBinder.LockedTargets.Count == 0)
                 {
-                    if (soloTarget != null)
-                    {
-                        targetGroupBinder.LockTarget(soloTarget);
-                    }
-                    else
-                    {
-                        targetGroupBinder.LockClosestVisibleTarget();
-                    }
+                    targetGroupBinder.LockClosestVisibleTarget();
                 }
-                // SoloLock VCam はブレンド中もウェイトが残るためここではクリアしない
-                // ブレンド完了後にウェイト0になってから自然に無効化される
             }
             else if (mode == CameraMode.SoloLock)
             {
