@@ -69,12 +69,22 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
+            if (!cameraRig.CanTransitionTo(TargetingCameraRig.CameraMode.SoloLock))
+            {
+                return;
+            }
+
             cameraRig.SetMode(TargetingCameraRig.CameraMode.SoloLock);
         }
 
         private void OnMultiLockPerformed(InputAction.CallbackContext context)
         {
             if (cameraRig == null)
+            {
+                return;
+            }
+
+            if (!cameraRig.CanTransitionTo(TargetingCameraRig.CameraMode.MultiLock))
             {
                 return;
             }

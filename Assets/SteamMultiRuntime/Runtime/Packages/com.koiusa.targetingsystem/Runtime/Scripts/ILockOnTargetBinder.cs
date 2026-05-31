@@ -32,5 +32,8 @@ namespace Koiusa.TargetingSystem.Runtime
 
         /// <summary>すべてのロックを解除する。</summary>
         void UnlockAllTargets();
+
+        /// <summary>LookAt 対象と選択状態を初期化する。NoLock 復帰時に呼び出す。</summary>
+        void ClearLookAt();
     }
 }

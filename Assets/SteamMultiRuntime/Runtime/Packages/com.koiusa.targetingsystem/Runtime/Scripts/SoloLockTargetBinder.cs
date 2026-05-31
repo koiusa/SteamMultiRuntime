@@ -10,12 +10,13 @@ namespace Koiusa.TargetingSystem.Runtime
     /// ITargetBinder を実装し、SoloLockTargetInput から委譲される。
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class SoloLockTargetBinder : MonoBehaviour, ITargetBinder
+    public sealed class SoloLockTargetBinder : MonoBehaviour, ITargetBinder, ITransitionGuard
     {
         [Header("References")]
         [SerializeField] private ScreenTargetDetector detector;
 
         private CinemachineCamera targetCamera;
+        private LookAtTarget playerLookAt;
 
         private readonly List<ITargetable> cachedTargets = new List<ITargetable>();
         private int currentIndex = -1;
@@ -25,9 +26,17 @@ namespace Koiusa.TargetingSystem.Runtime
 
         public event Action<ITargetable> TargetSelected;
 
+        /// <inheritdoc/>
+        public bool CanTransition() => cachedTargets.Count > 0 && playerLookAt != null;
+
         private void Awake()
         {
             targetCamera = GetComponent<CinemachineCamera>();
+
+            if (targetCamera != null && targetCamera.Follow != null)
+            {
+                playerLookAt = targetCamera.Follow.GetComponentInChildren<LookAtTarget>();
+            }
         }
 
         private void OnEnable()
@@ -79,6 +88,27 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             CurrentTarget = target;
             ApplyLookAt(target);
+
+            if (playerLookAt != null)
+            {
+                playerLookAt.Target = target?.AimPoint != null ? target.AimPoint : target?.Root;
+            }
+        }
+
+        public void ClearLookAt()
+        {
+            CurrentTarget = null;
+            currentIndex = -1;
+
+            if (targetCamera != null)
+            {
+                targetCamera.LookAt = targetCamera.Follow;
+            }
+
+            if (playerLookAt != null)
+            {
+                playerLookAt.Target = null;
+            }
         }
 
         private void ApplyLookAt(ITargetable target)

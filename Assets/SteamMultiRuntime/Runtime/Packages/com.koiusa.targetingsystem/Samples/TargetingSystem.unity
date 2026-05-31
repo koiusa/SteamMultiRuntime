@@ -216,7 +216,6 @@ MonoBehaviour:
   soloLockVCam: {fileID: 1934981614}
   multiLockVCam: {fileID: 403516751}
   switchSmoothTime: 0.25
-  targetGroupBinder: {fileID: 403516757}
 --- !u!114 &41070899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -656,7 +655,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d95a2e8082d4654ba055e7342791643, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Targetingsystem.Runtime::Koiusa.Targetingsystem.Runtime.LockOnTargetGroupInput
-  binder: {fileID: 403516757}
   lockAction: {fileID: 1781555164194001046, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   unlockAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   unlockAllAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
@@ -1065,7 +1063,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297866344}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.32143667, z: -0, w: 0.94693106}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1084,7 +1082,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcdd5cb7eed7b37428bea0b308c64040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Targetingsystem.Runtime::koiusa.TargetingSystem.Runtime.LookAtTarget
-  Target: {fileID: 1674776827}
+  Target: {fileID: 0}
   LockRotationX: 1
   LockRotationY: 0
   LockRotationZ: 1
@@ -1200,11 +1198,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1443890542}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &1674776827 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-  m_PrefabInstance: {fileID: 1930023490}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1804085561
 GameObject:
   m_ObjectHideFlags: 0
@@ -1235,7 +1228,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 102838641}
-  - {fileID: 1674776827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1860669138
@@ -1322,7 +1314,7 @@ MonoBehaviour:
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
-    TrackingTarget: {fileID: 471387470}
+    TrackingTarget: {fileID: 1297866345}
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
@@ -1630,63 +1622,6 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
---- !u!1001 &1930023490
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1804085562}
-    m_Modifications:
-    - target: {fileID: 4782669312180637288, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_Name
-      value: TargetMarker
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 8.19404
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 10.67881
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720154851710284826, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9e04145e9a560ad42b7f7efa474bc912, type: 3}
 --- !u!1 &1934981609
 GameObject:
   m_ObjectHideFlags: 0
@@ -1717,8 +1652,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1934981609}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.038952556, y: 0.32116467, z: -0.013222484, w: 0.9461296}
-  m_LocalPosition: {x: -7.2655883, y: 1.4974091, z: -6.28116}
+  m_LocalRotation: {x: 0.1521234, y: 0.000000017369766, z: -0.0000000026734628, w: 0.98836154}
+  m_LocalPosition: {x: -4.36268, y: 1.4974091, z: -7.266555}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1774,7 +1709,7 @@ MonoBehaviour:
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 1297866345}
-    LookAtTarget: {fileID: 1674776827}
+    LookAtTarget: {fileID: 1297866345}
     CustomLookAtTarget: 1
   Lens:
     FieldOfView: 60
@@ -1871,18 +1806,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f5200b2288c7544b9b96840cb7afefd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.SoloLockTargetInput
-  binder:
-    mode: 0
-    unityReference: {fileID: 1934981618}
-    rawReference:
-      rid: -2
   nextTargetAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   prevTargetAction: {fileID: 2411907206095950430, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  references:
-    version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
 --- !u!114 &1934981617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1915,7 +1840,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.SoloLockTargetBinder
   detector: {fileID: 1934981617}
-  targetCamera: {fileID: 1934981614}
 --- !u!1 &2025960049
 GameObject:
   m_ObjectHideFlags: 0

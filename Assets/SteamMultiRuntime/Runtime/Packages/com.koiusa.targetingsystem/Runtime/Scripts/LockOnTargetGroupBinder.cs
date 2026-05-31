@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Koiusa.TargetingSystem.Runtime
 {
     [DisallowMultipleComponent]
-    public sealed class LockOnTargetGroupBinder : MonoBehaviour, ILockOnTargetBinder
+    public sealed class LockOnTargetGroupBinder : MonoBehaviour, ILockOnTargetBinder, ITransitionGuard
     {
         [Header("References")]
         [SerializeField] private ScreenTargetDetector detector;
@@ -33,6 +33,9 @@ namespace Koiusa.TargetingSystem.Runtime
         /// NoLockOn 状態へ戻す処理をここで受け取る。
         /// </summary>
         public event Action AllLockedTargetsCleared;
+
+        /// <inheritdoc/>
+        public bool CanTransition() => visibleTargets.Count > 0;
 
         private void Awake()
         {
@@ -160,6 +163,24 @@ namespace Koiusa.TargetingSystem.Runtime
 
             lockedMembers.Clear();
             lockOrder.Clear();
+        }
+
+        public void ClearLookAt()
+        {
+            if (cinemachineTargetGroup != null)
+            {
+                foreach (var trackingTarget in lockedMembers.Values)
+                {
+                    if (trackingTarget != null)
+                    {
+                        cinemachineTargetGroup.RemoveMember(trackingTarget);
+                    }
+                }
+            }
+
+            lockedMembers.Clear();
+            lockOrder.Clear();
+            // NoLock 復帰時はイベントを発火しない（TargetingCameraRig 側からの明示的な遷移のため）
         }
 
         private ITargetable SelectClosestVisibleTarget(bool excludeLocked)

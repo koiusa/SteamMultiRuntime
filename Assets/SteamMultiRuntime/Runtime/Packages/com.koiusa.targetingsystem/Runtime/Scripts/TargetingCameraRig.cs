@@ -35,6 +35,10 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField, Min(0f)] private float switchSmoothTime = 0.25f;
 
         private ILockOnTargetBinder targetGroupBinder;
+        private ITargetBinder soloLockBinder;
+        private ITransitionGuard soloLockGuard;
+        private ITransitionGuard multiLockGuard;
+        private CinemachineBrain cinemachineBrain;
 
         public CameraMode CurrentMode { get; private set; } = CameraMode.NoLock;
 
@@ -45,7 +49,33 @@ namespace Koiusa.TargetingSystem.Runtime
             if (multiLockVCam != null)
             {
                 targetGroupBinder = multiLockVCam.GetComponent<ILockOnTargetBinder>();
+                multiLockGuard = multiLockVCam.GetComponent<ITransitionGuard>();
             }
+
+            if (soloLockVCam != null)
+            {
+                soloLockGuard = soloLockVCam.GetComponent<ITransitionGuard>();
+                soloLockBinder = soloLockVCam.GetComponent<ITargetBinder>();
+            }
+
+            if (Camera.main != null)
+            {
+                cinemachineBrain = Camera.main.GetComponent<CinemachineBrain>();
+            }
+        }
+
+        /// <summary>
+        /// 指定したカメラモードへ遷移可能かどうかを返す。
+        /// 対応するBinder に ITransitionGuard が存在しない場合は常に遷移可能とみなす。
+        /// </summary>
+        public bool CanTransitionTo(CameraMode mode)
+        {
+            return mode switch
+            {
+                CameraMode.SoloLock => soloLockGuard == null || soloLockGuard.CanTransition(),
+                CameraMode.MultiLock => multiLockGuard == null || multiLockGuard.CanTransition(),
+                _ => true,
+            };
         }
 
         private void OnEnable()
@@ -84,6 +114,44 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             CurrentMode = mode;
+
+            if (mode == CameraMode.MultiLock && targetGroupBinder != null)
+            {
+                // SoloLock の現在ターゲットを先に保持（ClearLookAt でリセットされる前に）
+                var soloTarget = soloLockBinder?.CurrentTarget;
+
+                // ロック済みが0件の場合、SoloLock の現在ターゲットを引き継ぐか最近傍を自動ロック
+                if (targetGroupBinder.LockedTargets.Count == 0)
+                {
+                    if (soloTarget != null)
+                    {
+                        targetGroupBinder.LockTarget(soloTarget);
+                    }
+                    else
+                    {
+                        targetGroupBinder.LockClosestVisibleTarget();
+                    }
+                }
+                // SoloLock VCam はブレンド中もウェイトが残るためここではクリアしない
+                // ブレンド完了後にウェイト0になってから自然に無効化される
+            }
+            else if (mode == CameraMode.SoloLock)
+            {
+                // MultiLock → SoloLock: ブレンド前に TargetGroup を初期化
+                targetGroupBinder?.ClearLookAt();
+            }
+            else if (mode == CameraMode.NoLock)
+            {
+                // * → NoLock: ブレンド前に両 Binder を初期化
+                soloLockBinder?.ClearLookAt();
+                targetGroupBinder?.ClearLookAt();
+            }
+
+            if (mode == CameraMode.SoloLock)
+            {
+                soloLockBinder?.SelectNext();
+            }
+
             ApplyMode(mode);
             OnModeChanged?.Invoke(mode);
         }
@@ -104,6 +172,16 @@ namespace Koiusa.TargetingSystem.Runtime
             {
                 StopCoroutine(switchRoutine);
                 switchRoutine = null;
+            }
+
+            // NoLock に戻る際、noLockVCam を現在のカメラ位置・向きにスナップしてからブレンド開始（暴れ防止）
+            if (mode == CameraMode.NoLock && !instant && noLockVCam != null && cinemachineBrain != null)
+            {
+                var outputCam = cinemachineBrain.OutputCamera;
+                if (outputCam != null)
+                {
+                    noLockVCam.ForceCameraPosition(outputCam.transform.position, outputCam.transform.rotation);
+                }
             }
 
             if (instant || switchSmoothTime <= 0f)
@@ -143,6 +221,14 @@ namespace Koiusa.TargetingSystem.Runtime
             SetWeight(multiLockVCam, targetMultiLock);
             switchRoutine = null;
         }
+
+        private CinemachineCamera GetVCamForMode(CameraMode mode) => mode switch
+        {
+            CameraMode.NoLock    => noLockVCam,
+            CameraMode.SoloLock  => soloLockVCam,
+            CameraMode.MultiLock => multiLockVCam,
+            _                    => null,
+        };
 
         private float GetWeight(CinemachineCamera vCam)
         {
