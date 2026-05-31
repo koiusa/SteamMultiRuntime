@@ -13,6 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private InputActionReference prevTargetAction;
 
         private ITargetBinder binder;
+        private TargetingCameraRig cameraRig;
         private bool isBound;
 
         public ITargetable CurrentTarget => binder?.CurrentTarget;
@@ -20,6 +21,7 @@ namespace Koiusa.TargetingSystem.Runtime
         private void Awake()
         {
             binder = GetComponent<ITargetBinder>();
+            cameraRig = GetComponentInParent<TargetingCameraRig>();
         }
 
         private void OnEnable()
@@ -38,13 +40,18 @@ namespace Koiusa.TargetingSystem.Runtime
             isBound = false;
         }
 
+        private bool IsSoloLockMode =>
+            cameraRig == null || cameraRig.CurrentMode == TargetingCameraRig.CameraMode.SoloLock;
+
         private void OnNextTargetPerformed(InputAction.CallbackContext context)
         {
+            if (!IsSoloLockMode) return;
             binder?.SelectNext();
         }
 
         private void OnPrevTargetPerformed(InputAction.CallbackContext context)
         {
+            if (!IsSoloLockMode) return;
             binder?.SelectPrev();
         }
 

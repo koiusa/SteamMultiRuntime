@@ -13,12 +13,17 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private InputActionReference unlockAllAction;
 
         private ILockOnTargetBinder binder;
+        private TargetingCameraRig cameraRig;
         private bool isBound;
 
         private void Awake()
         {
             binder = GetComponent<ILockOnTargetBinder>();
+            cameraRig = GetComponentInParent<TargetingCameraRig>();
         }
+
+        private bool IsMultiLockMode =>
+            cameraRig == null || cameraRig.CurrentMode == TargetingCameraRig.CameraMode.MultiLock;
 
         private void OnEnable()
         {
@@ -48,31 +53,19 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnLockPerformed(InputAction.CallbackContext context)
         {
-            if (binder == null)
-            {
-                return;
-            }
-
+            if (!IsMultiLockMode || binder == null) return;
             binder.LockClosestVisibleTarget();
         }
 
         private void OnUnlockPerformed(InputAction.CallbackContext context)
         {
-            if (binder == null)
-            {
-                return;
-            }
-
+            if (!IsMultiLockMode || binder == null) return;
             binder.UnlockLastLockedTarget();
         }
 
         private void OnUnlockAllPerformed(InputAction.CallbackContext context)
         {
-            if (binder == null)
-            {
-                return;
-            }
-
+            if (!IsMultiLockMode || binder == null) return;
             binder.UnlockAllTargets();
         }
 

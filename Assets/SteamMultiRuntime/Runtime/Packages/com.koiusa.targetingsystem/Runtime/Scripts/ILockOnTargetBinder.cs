@@ -7,7 +7,7 @@ namespace Koiusa.TargetingSystem.Runtime
     /// 複数ターゲットのロック管理を担う Binder の共通インターフェース。
     /// MultiLock 用の実装（LockOnTargetGroupBinder 等）に対応する。
     /// </summary>
-    public interface ILockOnTargetBinder
+    public interface ILockOnTargetBinder : ILockOn
     {
         /// <summary>現在ロック中のターゲット一覧。</summary>
         IReadOnlyCollection<ITargetable> LockedTargets { get; }

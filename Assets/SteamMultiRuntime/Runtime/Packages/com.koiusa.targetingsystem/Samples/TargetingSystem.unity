@@ -413,6 +413,7 @@ GameObject:
   - component: {fileID: 403516758}
   - component: {fileID: 403516757}
   - component: {fileID: 403516756}
+  - component: {fileID: 403516759}
   m_Layer: 0
   m_Name: GroupLockOn
   m_TagString: Untagged
@@ -696,6 +697,21 @@ MonoBehaviour:
   viewportPadding: 0.02
   maxDetectionDistance: 10
   registry: {fileID: 2025960052}
+--- !u!114 &403516759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 403516748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d37f879979dd236428a04ddc826090de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
+  binder: {fileID: 403516757}
+  debugLockOnMaterial: {fileID: 2100000, guid: e7a1be69115eaa74080720812f5e4b6a, type: 2}
+  includeInactiveRenderers: 0
 --- !u!1 &469465552
 GameObject:
   m_ObjectHideFlags: 0
@@ -1637,6 +1653,7 @@ GameObject:
   - component: {fileID: 1934981617}
   - component: {fileID: 1934981618}
   - component: {fileID: 1934981616}
+  - component: {fileID: 1934981619}
   m_Layer: 0
   m_Name: SoloLockOn
   m_TagString: Untagged
@@ -1840,6 +1857,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.SoloLockTargetBinder
   detector: {fileID: 1934981617}
+--- !u!114 &1934981619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1934981609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d37f879979dd236428a04ddc826090de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
+  binder: {fileID: 1934981618}
+  debugLockOnMaterial: {fileID: 2100000, guid: 6288ae4d74a079646970028f70fde2f5, type: 2}
+  includeInactiveRenderers: 0
 --- !u!1 &2025960049
 GameObject:
   m_ObjectHideFlags: 0

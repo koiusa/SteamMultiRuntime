@@ -25,6 +25,8 @@ namespace Koiusa.TargetingSystem.Runtime
         public ITargetable CurrentTarget { get; private set; }
 
         public event Action<ITargetable> TargetSelected;
+        public event Action<ITargetable> Looked;
+        public event Action<ITargetable> Unlooked;
 
         /// <inheritdoc/>
         public bool CanTransition() => cachedTargets.Count > 0 && playerLookAt != null;
@@ -86,6 +88,12 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void SelectTarget(ITargetable target)
         {
+            var previousTarget = CurrentTarget;
+            if (previousTarget != null && previousTarget != target)
+            {
+                Unlooked?.Invoke(previousTarget);
+            }
+
             CurrentTarget = target;
             ApplyLookAt(target);
 
@@ -93,10 +101,16 @@ namespace Koiusa.TargetingSystem.Runtime
             {
                 playerLookAt.Target = target?.AimPoint != null ? target.AimPoint : target?.Root;
             }
+
+            if (target != null && previousTarget != target)
+            {
+                Looked?.Invoke(target);
+            }
         }
 
         public void ClearLookAt()
         {
+            var previousTarget = CurrentTarget;
             CurrentTarget = null;
             currentIndex = -1;
 
@@ -108,6 +122,11 @@ namespace Koiusa.TargetingSystem.Runtime
             if (playerLookAt != null)
             {
                 playerLookAt.Target = null;
+            }
+
+            if (previousTarget != null)
+            {
+                Unlooked?.Invoke(previousTarget);
             }
         }
 
@@ -134,16 +153,12 @@ namespace Koiusa.TargetingSystem.Runtime
             if (CurrentTarget != null)
             {
                 var idx = cachedTargets.IndexOf(CurrentTarget);
-                if (idx >= 0)
-                {
-                    currentIndex = idx;
-                    return;
-                }
-
-                CurrentTarget = null;
+                currentIndex = idx >= 0 ? idx : -1;
             }
-
-            currentIndex = cachedTargets.Count > 0 ? 0 : -1;
+            else
+            {
+                currentIndex = cachedTargets.Count > 0 ? 0 : -1;
+            }
         }
 
         private int CompareTargets(ITargetable left, ITargetable right)

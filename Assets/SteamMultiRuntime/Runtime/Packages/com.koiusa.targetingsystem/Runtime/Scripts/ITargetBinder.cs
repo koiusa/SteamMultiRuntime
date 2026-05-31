@@ -6,7 +6,7 @@ namespace Koiusa.TargetingSystem.Runtime
     /// ターゲット選択・切り替えを担う Binder の共通インターフェース。
     /// SoloLock / MultiLock など複数の実装に対応する。
     /// </summary>
-    public interface ITargetBinder
+    public interface ITargetBinder : ILockOn
     {
         /// <summary>現在選択中のターゲット。</summary>
         ITargetable CurrentTarget { get; }

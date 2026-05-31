@@ -222,14 +222,6 @@ namespace Koiusa.TargetingSystem.Runtime
             switchRoutine = null;
         }
 
-        private CinemachineCamera GetVCamForMode(CameraMode mode) => mode switch
-        {
-            CameraMode.NoLock    => noLockVCam,
-            CameraMode.SoloLock  => soloLockVCam,
-            CameraMode.MultiLock => multiLockVCam,
-            _                    => null,
-        };
-
         private float GetWeight(CinemachineCamera vCam)
         {
             if (mixingCamera != null && vCam != null)

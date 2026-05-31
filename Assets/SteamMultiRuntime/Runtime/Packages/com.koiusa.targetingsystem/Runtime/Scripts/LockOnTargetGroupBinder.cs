@@ -33,6 +33,8 @@ namespace Koiusa.TargetingSystem.Runtime
         /// NoLockOn 状態へ戻す処理をここで受け取る。
         /// </summary>
         public event Action AllLockedTargetsCleared;
+        public event Action<ITargetable> Looked;
+        public event Action<ITargetable> Unlooked;
 
         /// <inheritdoc/>
         public bool CanTransition() => visibleTargets.Count > 0;
@@ -111,6 +113,7 @@ namespace Koiusa.TargetingSystem.Runtime
             cinemachineTargetGroup.AddMember(trackingTarget, targetWeight, targetRadius);
             lockedMembers.Add(target, trackingTarget);
             lockOrder.Add(target);
+            Looked?.Invoke(target);
             return true;
         }
 
@@ -139,6 +142,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
             lockedMembers.Remove(target);
             lockOrder.Remove(target);
+            Unlooked?.Invoke(target);
 
             if (lockedMembers.Count == 0)
             {
@@ -150,6 +154,8 @@ namespace Koiusa.TargetingSystem.Runtime
 
         public void UnlockAllTargets()
         {
+            var removedTargets = new List<ITargetable>(lockedMembers.Keys);
+
             if (cinemachineTargetGroup != null)
             {
                 foreach (var trackingTarget in lockedMembers.Values)
@@ -163,24 +169,16 @@ namespace Koiusa.TargetingSystem.Runtime
 
             lockedMembers.Clear();
             lockOrder.Clear();
+
+            for (var i = 0; i < removedTargets.Count; i++)
+            {
+                Unlooked?.Invoke(removedTargets[i]);
+            }
         }
 
         public void ClearLookAt()
         {
-            if (cinemachineTargetGroup != null)
-            {
-                foreach (var trackingTarget in lockedMembers.Values)
-                {
-                    if (trackingTarget != null)
-                    {
-                        cinemachineTargetGroup.RemoveMember(trackingTarget);
-                    }
-                }
-            }
-
-            lockedMembers.Clear();
-            lockOrder.Clear();
-            // NoLock 復帰時はイベントを発火しない（TargetingCameraRig 側からの明示的な遷移のため）
+            UnlockAllTargets();
         }
 
         private ITargetable SelectClosestVisibleTarget(bool excludeLocked)
