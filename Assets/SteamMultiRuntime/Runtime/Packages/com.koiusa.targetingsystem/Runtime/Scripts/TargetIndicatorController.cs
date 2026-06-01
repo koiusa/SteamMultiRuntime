@@ -17,7 +17,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [Header("References")]
         [SerializeField] private ScreenTargetDetector detector;
         [SerializeField] private UIDocument uiDocument;
-        [SerializeField] private StyleSheet targetIndicatorStyleSheet;
+        [SerializeField] private TargetIndicatorThemeProvider themeProvider;
 
         [Header("UI Settings")]
         [SerializeField, Min(20f)] private float markerSize = 40f;
@@ -138,12 +138,22 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             rootPanel = uiDocument.rootVisualElement;
-            if (targetIndicatorStyleSheet != null && !rootPanel.styleSheets.Contains(targetIndicatorStyleSheet))
+
+            var visualTree = themeProvider != null ? themeProvider.TargetIndicatorVisualTree : null;
+            var styleSheet = themeProvider != null ? themeProvider.TargetIndicatorStyleSheet : null;
+
+            if (styleSheet != null && !rootPanel.styleSheets.Contains(styleSheet))
             {
-                rootPanel.styleSheets.Add(targetIndicatorStyleSheet);
+                rootPanel.styleSheets.Add(styleSheet);
             }
 
-            markersContainer = rootPanel.Q("target-indicators");
+            markersContainer = rootPanel.Q<VisualElement>("target-indicators");
+            if (markersContainer == null && visualTree != null)
+            {
+                visualTree.CloneTree(rootPanel);
+                markersContainer = rootPanel.Q<VisualElement>("target-indicators");
+            }
+
             if (markersContainer == null)
             {
                 markersContainer = new VisualElement { name = "target-indicators" };
@@ -292,6 +302,16 @@ namespace Koiusa.TargetingSystem.Runtime
             if (uiDocument == null)
             {
                 uiDocument = GetComponentInParent<UIDocument>();
+            }
+
+            if (themeProvider == null)
+            {
+                themeProvider = GetComponent<TargetIndicatorThemeProvider>();
+            }
+
+            if (themeProvider == null)
+            {
+                themeProvider = GetComponentInParent<TargetIndicatorThemeProvider>();
             }
 
             if (targetCamera == null)
