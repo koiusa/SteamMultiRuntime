@@ -42,15 +42,18 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            if (currentFocusTarget != null)
-            {
-                RefreshMarkerState(currentFocusTarget);
-            }
-
+            var previousFocus = currentFocusTarget;
             currentFocusTarget = target;
 
+            if (previousFocus != null)
+            {
+                RefreshMarkerState(previousFocus);
+                RemoveMarkerIfUnused(previousFocus);
+            }
+
             if (currentFocusTarget != null)
             {
+                EnsureMarker(currentFocusTarget);
                 RefreshMarkerState(currentFocusTarget);
             }
         }
@@ -65,6 +68,7 @@ namespace Koiusa.TargetingSystem.Runtime
             if (locked)
             {
                 lockedTargets.Add(target);
+                EnsureMarker(target);
             }
             else
             {
@@ -72,6 +76,7 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             RefreshMarkerState(target);
+            RemoveMarkerIfUnused(target);
         }
 
         public void ClearLockedTargets()
@@ -223,21 +228,17 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnTargetExited(ITargetable target)
         {
-            if (target != null && activeMarkers.TryGetValue(target, out var marker))
+            if (target == null)
             {
-                marker.RemoveFromHierarchy();
-                activeMarkers.Remove(target);
-
-                if (ReferenceEquals(currentFocusTarget, target))
-                {
-                    currentFocusTarget = null;
-                }
+                return;
             }
+
+            RemoveMarkerIfUnused(target);
         }
 
         private void CreateMarker(ITargetable target)
         {
-            if (markersContainer == null)
+            if (markersContainer == null || target == null)
             {
                 return;
             }
@@ -249,6 +250,39 @@ namespace Koiusa.TargetingSystem.Runtime
             marker.style.position = Position.Absolute;
             markersContainer.Add(marker);
             activeMarkers[target] = marker;
+        }
+
+        private void EnsureMarker(ITargetable target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (!activeMarkers.ContainsKey(target))
+            {
+                CreateMarker(target);
+            }
+        }
+
+        private void RemoveMarkerIfUnused(ITargetable target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            if (lockedTargets.Contains(target) || ReferenceEquals(currentFocusTarget, target))
+            {
+                EnsureMarker(target);
+                return;
+            }
+
+            if (activeMarkers.TryGetValue(target, out var marker))
+            {
+                marker.RemoveFromHierarchy();
+                activeMarkers.Remove(target);
+            }
         }
 
         private void UpdateMarkerPositions()
