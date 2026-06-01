@@ -77,8 +77,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (indicatorController != null)
             {
-                indicatorController.SetTargetLocked(target, true);
-                indicatorController.SetFocusTarget(target);
+                indicatorController.SetTargetsState(new[] { target }, target);
             }
         }
 
@@ -86,12 +85,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (indicatorController != null)
             {
-                indicatorController.SetTargetLocked(target, false);
-
-                if (ReferenceEquals(indicatorController.CurrentFocusTarget, target))
-                {
-                    indicatorController.SetFocusTarget(null);
-                }
+                indicatorController.SetTargetsState(null, null);
             }
         }
 

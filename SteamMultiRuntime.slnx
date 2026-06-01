@@ -4,11 +4,11 @@
   <Project Path="UnityChan.Common.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Packages.csproj" />
   <Project Path="koiusa.Keyconfig.Runtime.csproj" />
+  <Project Path="Koiusa.TargetingSystem.Runtime.csproj" />
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />
   <Project Path="TNRD.SerializableInterface.Editor.csproj" />
-  <Project Path="Koiusa.TargetingSystem.Runtime.csproj" />
   <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
 </Solution>

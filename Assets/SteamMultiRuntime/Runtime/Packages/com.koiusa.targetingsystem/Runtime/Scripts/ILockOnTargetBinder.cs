@@ -12,6 +12,9 @@ namespace Koiusa.TargetingSystem.Runtime
         /// <summary>現在ロック中のターゲット一覧。</summary>
         IReadOnlyCollection<ITargetable> LockedTargets { get; }
 
+        /// <summary>現在注視中のターゲット。未選択時は null。</summary>
+        ITargetable CurrentFocusTarget { get; }
+
         /// <summary>ロック中のターゲットがすべて解除されたときに発火する。</summary>
         event Action AllLockedTargetsCleared;
 

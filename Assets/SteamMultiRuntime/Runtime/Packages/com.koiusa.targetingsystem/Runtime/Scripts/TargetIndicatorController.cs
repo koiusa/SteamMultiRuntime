@@ -90,6 +90,44 @@ namespace Koiusa.TargetingSystem.Runtime
             }
         }
 
+        public void SetTargetsState(IEnumerable<ITargetable> locked, ITargetable focus)
+        {
+            var snapshot = new List<ITargetable>(lockedTargets);
+            lockedTargets.Clear();
+
+            if (locked != null)
+            {
+                foreach (var target in locked)
+                {
+                    if (target != null)
+                    {
+                        lockedTargets.Add(target);
+                        if (!snapshot.Contains(target))
+                        {
+                            snapshot.Add(target);
+                        }
+                    }
+                }
+            }
+
+            if (!ReferenceEquals(currentFocusTarget, focus) && currentFocusTarget != null && !snapshot.Contains(currentFocusTarget))
+            {
+                snapshot.Add(currentFocusTarget);
+            }
+
+            currentFocusTarget = focus;
+
+            if (currentFocusTarget != null && !snapshot.Contains(currentFocusTarget))
+            {
+                snapshot.Add(currentFocusTarget);
+            }
+
+            for (var i = 0; i < snapshot.Count; i++)
+            {
+                RefreshMarkerState(snapshot[i]);
+            }
+        }
+
         private void Awake()
         {
             ResolveReferences();

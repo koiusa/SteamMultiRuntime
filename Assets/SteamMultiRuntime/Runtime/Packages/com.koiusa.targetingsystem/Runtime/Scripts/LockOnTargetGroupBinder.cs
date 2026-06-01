@@ -29,6 +29,8 @@ namespace Koiusa.TargetingSystem.Runtime
         private bool isBound;
 
         public IReadOnlyCollection<ITargetable> LockedTargets => lockedMembers.Keys;
+        public ITargetable CurrentFocusTarget =>
+            focusIndex >= 0 && focusIndex < lockOrder.Count ? lockOrder[focusIndex] : null;
 
         /// <summary>
         /// ロック中のターゲットがすべて解除されたときに発火する。

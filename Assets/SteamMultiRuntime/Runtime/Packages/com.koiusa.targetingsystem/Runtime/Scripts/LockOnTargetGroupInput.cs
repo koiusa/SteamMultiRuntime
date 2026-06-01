@@ -94,12 +94,14 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (!IsMultiLockMode || binder == null) return;
             binder.SelectNext();
+            SyncFocusIndicator();
         }
 
         private void OnPrevTargetPerformed(InputAction.CallbackContext context)
         {
             if (!IsMultiLockMode || binder == null) return;
             binder.SelectPrev();
+            SyncFocusIndicator();
         }
 
         private void OnUnlockAllPerformed(InputAction.CallbackContext context)
@@ -109,8 +111,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
             if (indicatorController != null)
             {
-                indicatorController.ClearLockedTargets();
-                indicatorController.SetFocusTarget(null);
+                indicatorController.SetTargetsState(null, null);
             }
         }
 
@@ -118,6 +119,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (!IsMultiLockMode || binder == null) return;
             binder.SetFocusModeEnabled(!binder.IsFocusModeEnabled);
+            SyncFocusIndicator();
         }
 
         private void OnBulkLockPerformed(InputAction.CallbackContext context)
@@ -142,42 +144,12 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnTargetLooked(ITargetable target)
         {
-            if (indicatorController == null)
-            {
-                return;
-            }
-
-            indicatorController.SetTargetLocked(target, true);
-
-            if (binder.IsFocusModeEnabled)
-            {
-                indicatorController.SetFocusTarget(target);
-            }
+            SyncIndicatorState();
         }
 
         private void OnTargetUnlooked(ITargetable target)
         {
-            if (indicatorController == null)
-            {
-                return;
-            }
-
-            indicatorController.SetTargetLocked(target, false);
-
-            if (ReferenceEquals(indicatorController.CurrentFocusTarget, target))
-            {
-                ITargetable nextFocus = null;
-                foreach (var t in binder.LockedTargets)
-                {
-                    if (t != null && !ReferenceEquals(t, target))
-                    {
-                        nextFocus = t;
-                        break;
-                    }
-                }
-
-                indicatorController.SetFocusTarget(nextFocus);
-            }
+            SyncIndicatorState();
         }
 
         private void ResolveReferences()
@@ -191,6 +163,23 @@ namespace Koiusa.TargetingSystem.Runtime
             {
                 indicatorController = GetComponentInParent<TargetIndicatorController>();
             }
+        }
+
+        private void SyncFocusIndicator()
+        {
+            SyncIndicatorState();
+        }
+
+        private void SyncIndicatorState()
+        {
+            if (indicatorController == null || binder == null)
+            {
+                return;
+            }
+
+            indicatorController.SetTargetsState(
+                binder.LockedTargets,
+                binder.IsFocusModeEnabled ? binder.CurrentFocusTarget : null);
         }
 
         private static void BindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
