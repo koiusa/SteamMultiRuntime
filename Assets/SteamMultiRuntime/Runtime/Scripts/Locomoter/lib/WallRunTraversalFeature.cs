@@ -127,6 +127,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool MeetsWallRunConditions(Vector3 moveDirection, Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
         {
+            if (IsMovingAwayFromWall(velocity, wallNormal))
+            {
+                return false;
+            }
+
             if (!HasMoveInputTowardsWall(moveDirection, upAxis, wallNormal))
             {
                 return false;
@@ -139,6 +144,17 @@ namespace Koiusa.SteamMultiRuntime
 
             var upwardSpeed = Vector3.Dot(velocity, upAxis);
             return upwardSpeed <= settings.WallRunMaxUpwardStartSpeed;
+        }
+
+        private bool IsMovingAwayFromWall(Vector3 velocity, Vector3 wallNormal)
+        {
+            if (settings.WallRunAwayFromWallMinSpeed <= 0f)
+            {
+                return false;
+            }
+
+            var awaySpeed = Vector3.Dot(velocity, wallNormal);
+            return awaySpeed > settings.WallRunAwayFromWallMinSpeed;
         }
 
         private bool HasMoveInputTowardsWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)

@@ -72,6 +72,14 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            var awaySpeed = Vector3.Dot(velocity, wallNormal);
+            if (settings.WallSlideAwayFromWallMinSpeed > 0f && awaySpeed > settings.WallSlideAwayFromWallMinSpeed)
+            {
+                IsWallSliding = false;
+                wallSlideContactStreak = 0;
+                return false;
+            }
+
             var verticalSpeed = Vector3.Dot(velocity, upAxis);
             if (verticalSpeed >= -settings.WallSlideMinDownSpeed)
             {

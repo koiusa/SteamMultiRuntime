@@ -105,6 +105,7 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource baseInputSource;
         private PlayerCompositeMotor motor;
+        private IPlayerMoveInputReceiver moveInputReceiver;
         private int jumpToken;
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
@@ -176,6 +177,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 motor = gameObject.AddComponent<PlayerCompositeMotor>();
             }
+
+            moveInputReceiver = motor as IPlayerMoveInputReceiver;
 
             if (inputActionsProfile == null)
             {
@@ -346,6 +349,8 @@ namespace Koiusa.SteamMultiRuntime
                     // Server uses local motor settings, no need to apply from network
                     baseMotor.SetStrafeMode(inputState.IsStrafeMode);
                 }
+
+                moveInputReceiver?.SetMoveInput(inputState.MoveInput);
             }
 
             motor.Tick(moveDirection, jumpThisFrame);

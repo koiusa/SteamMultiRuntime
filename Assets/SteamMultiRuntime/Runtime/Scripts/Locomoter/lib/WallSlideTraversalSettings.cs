@@ -11,6 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         public float WallSlideMinDownSpeed;
         public int WallSlideStartContactFrames;
         public float WallSlideExitMoveOppositeNormalDot;
+        public float WallSlideAwayFromWallMinSpeed;
 
         public static WallSlideTraversalSettings CreateDefault()
         {
@@ -22,6 +23,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallSlideMinDownSpeed = 1.5f,
                 WallSlideStartContactFrames = 2,
                 WallSlideExitMoveOppositeNormalDot = 0.3f,
+                WallSlideAwayFromWallMinSpeed = 0.15f,
             };
         }
 
@@ -33,6 +35,7 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallSlideMinDownSpeed);
             serializer.SerializeValue(ref WallSlideStartContactFrames);
             serializer.SerializeValue(ref WallSlideExitMoveOppositeNormalDot);
+            serializer.SerializeValue(ref WallSlideAwayFromWallMinSpeed);
         }
     }
 }

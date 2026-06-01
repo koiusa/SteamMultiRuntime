@@ -5,11 +5,12 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    public sealed class PlayerCompositeMotor : MonoBehaviour
+    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver
     {
         private Rigidbody rb;
         private IPlayerMotor baseMotor;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private Vector2 rawMoveInput;
 
         private void Awake()
         {
@@ -102,6 +103,11 @@ namespace Koiusa.SteamMultiRuntime
             traversalCoordinator?.ResetState();
         }
 
+        public void SetMoveInput(Vector2 moveInput)
+        {
+            rawMoveInput = moveInput;
+        }
+
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (baseMotor == null)
@@ -115,7 +121,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             baseMotor.Tick(moveDirection, jumpRequested);
-            traversalCoordinator?.ApplyTraversal(moveDirection, jumpRequested, baseMotor.IsGrounded);
+            traversalCoordinator?.ApplyTraversal(moveDirection, rawMoveInput, jumpRequested, baseMotor.IsGrounded);
         }
 
         public void OnCollisionEnter(Collision collision)

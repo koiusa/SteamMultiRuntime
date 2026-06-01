@@ -104,6 +104,7 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource inputSource;
         private PlayerCompositeMotor motor;
+        private IPlayerMoveInputReceiver moveInputReceiver;
         private Vector3 moveDirection;
         private Vector2 moveInput;
         private int jumpToken;
@@ -159,6 +160,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 motor = gameObject.AddComponent<PlayerCompositeMotor>();
             }
+
+            moveInputReceiver = motor as IPlayerMoveInputReceiver;
 
             if (inputActionsProfile == null)
             {
@@ -233,6 +236,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 baseMotor.SetStrafeMode(isStrafeMode);
             }
+
+            moveInputReceiver?.SetMoveInput(moveInput);
 
             motor.Tick(moveDirection, jumpThisFrame);
         }

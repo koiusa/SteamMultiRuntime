@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -14,7 +15,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody rb;
         private LadderVolume currentLadder;
-        private int ladderOverlapCount;
+        private readonly HashSet<LadderVolume> activeLadders = new HashSet<LadderVolume>();
+        private float reattachBlockedUntilTime;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
@@ -49,28 +51,54 @@ namespace Koiusa.SteamMultiRuntime
         public void ResetState()
         {
             currentLadder = null;
-            ladderOverlapCount = 0;
+            activeLadders.Clear();
             rb.useGravity = true;
+            reattachBlockedUntilTime = 0f;
+        }
+
+        public void DetachFromLadder(float reattachDelaySeconds)
+        {
+            currentLadder = null;
+            activeLadders.Clear();
+            rb.useGravity = true;
+            reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
         }
 
         public void NotifyEnterLadder(LadderVolume ladder)
         {
-            ladderOverlapCount++;
+            if (Time.time < reattachBlockedUntilTime)
+            {
+                return;
+            }
+
+            activeLadders.Add(ladder);
             currentLadder = ladder;
         }
 
         public void NotifyExitLadder(LadderVolume ladder)
         {
-            ladderOverlapCount = Mathf.Max(0, ladderOverlapCount - 1);
+            activeLadders.Remove(ladder);
 
-            if (ladderOverlapCount == 0)
+            if (activeLadders.Count == 0)
             {
                 currentLadder = null;
                 rb.useGravity = true;
+
+                // 本当に梯子コライダー外へ出た時だけ再捕捉ブロックを解除する
+                // （ジャンプ離脱直後の即再捕捉は維持）
+                reattachBlockedUntilTime = 0f;
+            }
+            else
+            {
+                // 別の梯子がまだ重なっている場合は最後に追加されたものを使う
+                foreach (var remaining in activeLadders)
+                {
+                    currentLadder = remaining;
+                }
             }
         }
 
-        public bool TryApplyLadderMovement(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, out Vector3 nextVelocity)
+        public bool TryApplyLadderMovement(Vector3 velocity, float climbInput, Vector3 upAxis, out Vector3 nextVelocity)
         {
             nextVelocity = velocity;
 
@@ -84,9 +112,8 @@ namespace Koiusa.SteamMultiRuntime
 
             var ladderUp = currentLadder.UpDirection;
 
-            // 入力の上下成分をそのまま梯子の上方向に変換
-            var verticalInput = Vector3.Dot(moveDirection, upAxis);
-            var targetClimbVelocity = ladderUp * (verticalInput * settings.ClimbSpeed);
+            // 生の前後入力（moveInput.y）を梯子の上方向に直接マッピングする
+            var targetClimbVelocity = ladderUp * (climbInput * settings.ClimbSpeed);
 
             // 水平方向の速度はゼロに収束させる（梯子に吸い付く）
             var horizontalVelocity = Vector3.ProjectOnPlane(velocity, ladderUp);
@@ -98,6 +125,53 @@ namespace Koiusa.SteamMultiRuntime
 
             nextVelocity = nextHorizontal + nextClimbVelocity;
             return true;
+        }
+
+        public bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump)
+        {
+            nextVelocity = velocity;
+            detachedByJump = false;
+
+            if (!IsOnLadder)
+            {
+                return false;
+            }
+
+            var directionalDetachDelay = Mathf.Max(0f, settings.DirectionalDetachReattachDelay);
+            var jumpDetachDelay = Mathf.Max(0f, settings.JumpDetachReattachDelay);
+
+            if (jumpRequested)
+            {
+                DetachFromLadder(jumpDetachDelay);
+                detachedByJump = true;
+                return true;
+            }
+
+            if (Mathf.Abs(moveInput.x) > 0.2f)
+            {
+                DetachFromLadder(directionalDetachDelay);
+                return true;
+            }
+
+            if (isGrounded && moveInput.y < -0.01f)
+            {
+                DetachFromLadder(directionalDetachDelay);
+                return true;
+            }
+
+            if (isGrounded && Mathf.Abs(moveInput.y) <= 0.01f)
+            {
+                ResetState();
+                return true;
+            }
+
+            if (TryApplyLadderMovement(velocity, moveInput.y, upAxis, out var ladderVelocity))
+            {
+                nextVelocity = ladderVelocity;
+                return true;
+            }
+
+            return false;
         }
 
         private static bool IsSettingsEmpty(LadderTraversalSettings s)

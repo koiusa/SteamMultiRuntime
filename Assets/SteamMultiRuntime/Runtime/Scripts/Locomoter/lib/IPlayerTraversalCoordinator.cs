@@ -6,6 +6,6 @@ namespace Koiusa.SteamMultiRuntime
     {
         bool IsTraversalActive { get; }
         void ResetState();
-        void ApplyTraversal(Vector3 moveDirection, bool jumpRequested, bool isGrounded);
+        void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, bool jumpRequested, bool isGrounded);
     }
 }

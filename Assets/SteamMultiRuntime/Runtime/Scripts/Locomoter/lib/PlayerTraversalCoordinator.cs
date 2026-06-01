@@ -40,7 +40,7 @@ namespace Koiusa.SteamMultiRuntime
             GetComponent<ILadderTraversalFeature>()?.ResetState();
         }
 
-        public void ApplyTraversal(Vector3 moveDirection, bool jumpRequested, bool isGrounded)
+        public void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, bool jumpRequested, bool isGrounded)
         {
             var wallRunFeature = GetComponent<IWallRunTraversalFeature>();
             var wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
@@ -73,16 +73,24 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            // 梯子昇降中はすべての Wall 系処理をスキップして速度を上書きする
-            if (ladderFeature != null && ladderFeature.IsOnLadder)
+            // 梯子処理は feature 側に委譲する
+            if (ladderFeature != null)
             {
-                var ladderUpAxis = GetUpAxis();
-                var ladderVelocityIn = rb.linearVelocity;
-                if (ladderFeature.TryApplyLadderMovement(ladderVelocityIn, moveDirection, ladderUpAxis, out var ladderVelocity))
+                var upAxisForLadder = GetUpAxis();
+                if (ladderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
                 {
-                    rb.linearVelocity = ladderVelocity;
+                    if (detachedByJump)
+                    {
+                        // 梯子離脱直後の壁接触残りをクリアして、壁ズリ誤判定を抑える
+                        slopeContactResolver?.Clear();
+                    }
+                    else if (ladderFeature.IsOnLadder)
+                    {
+                        rb.linearVelocity = ladderVelocity;
+                    }
+
+                    return;
                 }
-                return;
             }
 
             if (isGrounded)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -13,26 +14,118 @@ namespace Koiusa.SteamMultiRuntime
         /// <summary>梯子の上方向（正規化済み）。デフォルトは World Up。</summary>
         public Vector3 UpDirection => transform.up;
 
+        // Enter/Exit をコライダー単位で追跡し、feature 単位の参照カウントで管理する
+        private readonly Dictionary<Collider, ILadderTraversalFeature> colliderOwners = new Dictionary<Collider, ILadderTraversalFeature>();
+        private readonly Dictionary<ILadderTraversalFeature, int> featureRefCounts = new Dictionary<ILadderTraversalFeature, int>();
+
         private void Awake()
         {
             var col = GetComponent<Collider>();
+            if (col == null)
+            {
+                Debug.LogError("LadderVolume: Collider が必要です。", this);
+                enabled = false;
+                return;
+            }
+
             if (!col.isTrigger)
             {
-                col.isTrigger = true;
-                Debug.LogWarning("LadderVolume: Collider を自動的に isTrigger = true に設定しました。", this);
+                Debug.LogError("LadderVolume: Prefab の Collider を isTrigger = true に設定してください。", this);
+                enabled = false;
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            var feature = other.GetComponentInParent<ILadderTraversalFeature>();
-            feature?.NotifyEnterLadder(this);
+            RegisterCollider(other);
         }
 
         private void OnTriggerExit(Collider other)
         {
-            var feature = other.GetComponentInParent<ILadderTraversalFeature>();
-            feature?.NotifyExitLadder(this);
+            if (!colliderOwners.TryGetValue(other, out var feature))
+            {
+                return;
+            }
+
+            colliderOwners.Remove(other);
+
+            if (!featureRefCounts.TryGetValue(feature, out var count))
+            {
+                return;
+            }
+
+            if (count <= 1)
+            {
+                featureRefCounts.Remove(feature);
+                feature.NotifyExitLadder(this);
+            }
+            else
+            {
+                featureRefCounts[feature] = count - 1;
+            }
+        }
+
+        private void OnDisable()
+        {
+            var features = new ILadderTraversalFeature[featureRefCounts.Count];
+            featureRefCounts.Keys.CopyTo(features, 0);
+
+            for (var i = 0; i < features.Length; i++)
+            {
+                features[i]?.NotifyExitLadder(this);
+            }
+
+            colliderOwners.Clear();
+            featureRefCounts.Clear();
+        }
+
+        private void RegisterCollider(Collider other)
+        {
+            if (colliderOwners.ContainsKey(other))
+            {
+                return;
+            }
+
+            if (!TryResolveFeatureForCollider(other, out var feature))
+            {
+                return;
+            }
+
+            colliderOwners.Add(other, feature);
+
+            if (!featureRefCounts.TryGetValue(feature, out var count))
+            {
+                featureRefCounts.Add(feature, 1);
+                feature.NotifyEnterLadder(this);
+            }
+            else
+            {
+                featureRefCounts[feature] = count + 1;
+            }
+        }
+
+        private static bool TryResolveFeatureForCollider(Collider other, out ILadderTraversalFeature feature)
+        {
+            feature = other.GetComponentInParent<ILadderTraversalFeature>();
+            if (feature == null)
+            {
+                return false;
+            }
+
+            var featureMono = feature as MonoBehaviour;
+            if (featureMono == null)
+            {
+                return false;
+            }
+
+            // ルート（feature と同一 GameObject）にある Collider のみを梯子判定対象にする。
+            // 子オブジェクトのセンサー/補助コライダーで誤反応しないようにする。
+            if (other.transform != featureMono.transform)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

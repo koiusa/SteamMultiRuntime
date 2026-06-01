@@ -29,6 +29,8 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref Ladder.ClimbSpeed);
             serializer.SerializeValue(ref Ladder.ClimbAcceleration);
             serializer.SerializeValue(ref Ladder.ExitTopBoostSpeed);
+            serializer.SerializeValue(ref Ladder.DirectionalDetachReattachDelay);
+            serializer.SerializeValue(ref Ladder.JumpDetachReattachDelay);
         }
     }
 }

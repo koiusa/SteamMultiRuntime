@@ -14,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         public float WallRunMaxUpwardStartSpeed;
         public float WallMaxUpDot;
         public int WallRunStartContactFrames;
+        public float WallRunAwayFromWallMinSpeed;
 
         public static WallRunTraversalSettings CreateDefault()
         {
@@ -28,6 +29,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallRunMaxUpwardStartSpeed = 0f,
                 WallMaxUpDot = 0.2f,
                 WallRunStartContactFrames = 2,
+                WallRunAwayFromWallMinSpeed = 0.15f,
             };
         }
 
@@ -42,6 +44,7 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallRunMaxUpwardStartSpeed);
             serializer.SerializeValue(ref WallMaxUpDot);
             serializer.SerializeValue(ref WallRunStartContactFrames);
+            serializer.SerializeValue(ref WallRunAwayFromWallMinSpeed);
         }
     }
 }
