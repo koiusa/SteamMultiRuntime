@@ -35,7 +35,8 @@ namespace Koiusa.TargetingSystem.Runtime
         private bool CanBulkLock =>
             cameraRig == null ||
             cameraRig.CurrentMode == TargetingCameraRig.CameraMode.MultiLock ||
-            cameraRig.CurrentMode == TargetingCameraRig.CameraMode.NoLock;
+            cameraRig.CurrentMode == TargetingCameraRig.CameraMode.NoLock ||
+            cameraRig.CurrentMode == TargetingCameraRig.CameraMode.SoloLock;
 
         private void OnEnable()
         {
@@ -126,7 +127,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            if (cameraRig != null && cameraRig.CurrentMode == TargetingCameraRig.CameraMode.NoLock)
+            if (cameraRig != null && cameraRig.CurrentMode != TargetingCameraRig.CameraMode.MultiLock)
             {
                 if (!cameraRig.CanTransitionTo(TargetingCameraRig.CameraMode.MultiLock))
                 {
