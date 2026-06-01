@@ -25,8 +25,10 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var wallRunFeature = GetComponent<IWallRunTraversalFeature>();
                 var wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
+                var ladderFeature = GetComponent<ILadderTraversalFeature>();
                 return (wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning)
-                    || (wallSlideFeature != null && wallSlideFeature.IsEnabled && wallSlideFeature.IsWallSliding);
+                    || (wallSlideFeature != null && wallSlideFeature.IsEnabled && wallSlideFeature.IsWallSliding)
+                    || (ladderFeature != null && ladderFeature.IsEnabled && ladderFeature.IsOnLadder);
             }
         }
 
@@ -35,6 +37,7 @@ namespace Koiusa.SteamMultiRuntime
             GetComponent<IWallRunTraversalFeature>()?.ResetState();
             GetComponent<IWallJumpTraversalFeature>()?.ResetState();
             GetComponent<IWallSlideTraversalFeature>()?.ResetState();
+            GetComponent<ILadderTraversalFeature>()?.ResetState();
         }
 
         public void ApplyTraversal(Vector3 moveDirection, bool jumpRequested, bool isGrounded)
@@ -42,6 +45,7 @@ namespace Koiusa.SteamMultiRuntime
             var wallRunFeature = GetComponent<IWallRunTraversalFeature>();
             var wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
             var wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
+            var ladderFeature = GetComponent<ILadderTraversalFeature>();
 
             if (wallRunFeature != null && !wallRunFeature.IsEnabled)
             {
@@ -58,9 +62,26 @@ namespace Koiusa.SteamMultiRuntime
                 wallSlideFeature = null;
             }
 
-            var hasFeatureTraversal = wallRunFeature != null || wallJumpFeature != null || wallSlideFeature != null;
+            if (ladderFeature != null && !ladderFeature.IsEnabled)
+            {
+                ladderFeature = null;
+            }
+
+            var hasFeatureTraversal = wallRunFeature != null || wallJumpFeature != null || wallSlideFeature != null || ladderFeature != null;
             if (rb == null || !hasFeatureTraversal)
             {
+                return;
+            }
+
+            // 梯子昇降中はすべての Wall 系処理をスキップして速度を上書きする
+            if (ladderFeature != null && ladderFeature.IsOnLadder)
+            {
+                var ladderUpAxis = GetUpAxis();
+                var ladderVelocityIn = rb.linearVelocity;
+                if (ladderFeature.TryApplyLadderMovement(ladderVelocityIn, moveDirection, ladderUpAxis, out var ladderVelocity))
+                {
+                    rb.linearVelocity = ladderVelocity;
+                }
                 return;
             }
 

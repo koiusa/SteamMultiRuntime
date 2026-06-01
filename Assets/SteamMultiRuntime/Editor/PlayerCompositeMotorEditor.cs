@@ -14,7 +14,8 @@ namespace Koiusa.SteamMultiRuntime
                 "• PlayerMotor - 基本的な移動（自動でアタッチされます）\n" +
                 "• WallRunTraversalFeature - 壁走り（オプション）\n" +
                 "• WallJumpTraversalFeature - 壁ジャンプ（オプション）\n" +
-                "• WallSlideTraversalFeature - 壁滑り（オプション）",
+                "• WallSlideTraversalFeature - 壁滑り（オプション）\n" +
+                "• LadderTraversalFeature - 梯子昇降（オプション）",
                 MessageType.Info);
 
             EditorGUILayout.Space();
@@ -34,6 +35,7 @@ namespace Koiusa.SteamMultiRuntime
             DrawComponentRow<WallRunTraversalFeature>(gameObject, "WallRunTraversalFeature");
             DrawComponentRow<WallJumpTraversalFeature>(gameObject, "WallJumpTraversalFeature");
             DrawComponentRow<WallSlideTraversalFeature>(gameObject, "WallSlideTraversalFeature");
+            DrawComponentRow<LadderTraversalFeature>(gameObject, "LadderTraversalFeature");
 
             EditorGUI.indentLevel--;
 

@@ -8,6 +8,7 @@ namespace Koiusa.SteamMultiRuntime
         public WallRunTraversalSettings WallRun;
         public WallJumpTraversalSettings WallJump;
         public WallSlideTraversalSettings WallSlide;
+        public LadderTraversalSettings Ladder;
 
         public static TraversalFeatureSettings CreateDefault()
         {
@@ -16,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallRun = WallRunTraversalSettings.CreateDefault(),
                 WallJump = WallJumpTraversalSettings.CreateDefault(),
                 WallSlide = WallSlideTraversalSettings.CreateDefault(),
+                Ladder = LadderTraversalSettings.CreateDefault(),
             };
         }
 
@@ -24,6 +26,9 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallRun);
             serializer.SerializeValue(ref WallJump);
             serializer.SerializeValue(ref WallSlide);
+            serializer.SerializeValue(ref Ladder.ClimbSpeed);
+            serializer.SerializeValue(ref Ladder.ClimbAcceleration);
+            serializer.SerializeValue(ref Ladder.ExitTopBoostSpeed);
         }
     }
 }

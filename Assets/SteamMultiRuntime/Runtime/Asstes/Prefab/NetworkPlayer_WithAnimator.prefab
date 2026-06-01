@@ -27,6 +27,7 @@ GameObject:
   - component: {fileID: 7364711086840703048}
   - component: {fileID: 5341095656457548464}
   - component: {fileID: 6962452901085774379}
+  - component: {fileID: 7872827304047197062}
   m_Layer: 0
   m_Name: NetworkPlayer_WithAnimator
   m_TagString: Untagged
@@ -193,6 +194,30 @@ MonoBehaviour:
       ParameterType: 1
     - name: Elevation
       NameHash: -1092892638
+      Synchronize: 1
+      ParameterType: 1
+    - name: IsAnimationFinished
+      NameHash: -150762512
+      Synchronize: 1
+      ParameterType: 4
+    - name: InputForward
+      NameHash: 94020412
+      Synchronize: 1
+      ParameterType: 1
+    - name: InputRight
+      NameHash: 605983468
+      Synchronize: 1
+      ParameterType: 1
+    - name: IsStrafeMode
+      NameHash: 348398113
+      Synchronize: 1
+      ParameterType: 4
+    - name: MoveDirectionForward
+      NameHash: -36646540
+      Synchronize: 1
+      ParameterType: 1
+    - name: MoveDirectionRight
+      NameHash: -91762220
       Synchronize: 1
       ParameterType: 1
   AnimatorParametersExpanded: 0
@@ -481,6 +506,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+--- !u!114 &7872827304047197062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3808a72c22c47145a3583d68821ab98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderTraversalFeature
+  settings:
+    ClimbSpeed: 4
+    ClimbAcceleration: 20
+    ExitTopBoostSpeed: 2
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
