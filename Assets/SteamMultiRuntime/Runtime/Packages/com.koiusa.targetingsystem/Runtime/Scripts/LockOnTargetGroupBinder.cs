@@ -39,7 +39,13 @@ namespace Koiusa.TargetingSystem.Runtime
         public event Action<ITargetable> Unlooked;
 
         /// <inheritdoc/>
-        public bool CanTransition() => visibleTargets.Count > 0;
+        public bool CanTransition()
+        {
+            ValidateReferences();
+            detector.Refresh();
+            SyncVisibleTargets();
+            return visibleTargets.Count > 0;
+        }
 
         private void Awake()
         {

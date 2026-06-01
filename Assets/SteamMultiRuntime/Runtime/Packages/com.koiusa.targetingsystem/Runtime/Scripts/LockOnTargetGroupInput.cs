@@ -15,6 +15,9 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private InputActionReference focusAction;
         [SerializeField] private InputActionReference bulkLockAction;
 
+        [Header("References")]
+        [SerializeField] private TargetIndicatorController indicatorController;
+
         private ILockOnTargetBinder binder;
         private TargetingCameraRig cameraRig;
         private bool isBound;
@@ -23,10 +26,16 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             binder = GetComponent<ILockOnTargetBinder>();
             cameraRig = GetComponentInParent<TargetingCameraRig>();
+            ResolveReferences();
         }
 
         private bool IsMultiLockMode =>
             cameraRig == null || cameraRig.CurrentMode == TargetingCameraRig.CameraMode.MultiLock;
+
+        private bool CanBulkLock =>
+            cameraRig == null ||
+            cameraRig.CurrentMode == TargetingCameraRig.CameraMode.MultiLock ||
+            cameraRig.CurrentMode == TargetingCameraRig.CameraMode.NoLock;
 
         private void OnEnable()
         {
@@ -41,6 +50,13 @@ namespace Koiusa.TargetingSystem.Runtime
             BindAction(unlockAllAction, OnUnlockAllPerformed);
             BindAction(focusAction, OnFocusPerformed);
             BindAction(bulkLockAction, OnBulkLockPerformed);
+
+            if (binder is ILockOn lockOn)
+            {
+                lockOn.Looked += OnTargetLooked;
+                lockOn.Unlooked += OnTargetUnlooked;
+            }
+
             isBound = true;
         }
 
@@ -57,6 +73,13 @@ namespace Koiusa.TargetingSystem.Runtime
             UnbindAction(prevTargetAction, OnPrevTargetPerformed);
             UnbindAction(nextTargetAction, OnNextTargetPerformed);
             UnbindAction(lockAction, OnLockPerformed);
+
+            if (binder is ILockOn lockOn)
+            {
+                lockOn.Looked -= OnTargetLooked;
+                lockOn.Unlooked -= OnTargetUnlooked;
+            }
+
             isBound = false;
         }
 
@@ -82,6 +105,12 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (!IsMultiLockMode || binder == null) return;
             binder.UnlockAllTargets();
+
+            if (indicatorController != null)
+            {
+                indicatorController.ClearLockedTargets();
+                indicatorController.SetFocusTarget(null);
+            }
         }
 
         private void OnFocusPerformed(InputAction.CallbackContext context)
@@ -92,8 +121,75 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnBulkLockPerformed(InputAction.CallbackContext context)
         {
-            if (!IsMultiLockMode || binder == null) return;
+            if (!CanBulkLock || binder == null)
+            {
+                return;
+            }
+
+            if (cameraRig != null && cameraRig.CurrentMode == TargetingCameraRig.CameraMode.NoLock)
+            {
+                if (!cameraRig.CanTransitionTo(TargetingCameraRig.CameraMode.MultiLock))
+                {
+                    return;
+                }
+
+                cameraRig.SetMode(TargetingCameraRig.CameraMode.MultiLock);
+            }
+
             binder.LockAllVisibleTargets();
+        }
+
+        private void OnTargetLooked(ITargetable target)
+        {
+            if (indicatorController == null)
+            {
+                return;
+            }
+
+            indicatorController.SetTargetLocked(target, true);
+
+            if (binder.IsFocusModeEnabled)
+            {
+                indicatorController.SetFocusTarget(target);
+            }
+        }
+
+        private void OnTargetUnlooked(ITargetable target)
+        {
+            if (indicatorController == null)
+            {
+                return;
+            }
+
+            indicatorController.SetTargetLocked(target, false);
+
+            if (ReferenceEquals(indicatorController.CurrentFocusTarget, target))
+            {
+                ITargetable nextFocus = null;
+                foreach (var t in binder.LockedTargets)
+                {
+                    if (t != null && !ReferenceEquals(t, target))
+                    {
+                        nextFocus = t;
+                        break;
+                    }
+                }
+
+                indicatorController.SetFocusTarget(nextFocus);
+            }
+        }
+
+        private void ResolveReferences()
+        {
+            if (indicatorController == null)
+            {
+                indicatorController = GetComponent<TargetIndicatorController>();
+            }
+
+            if (indicatorController == null)
+            {
+                indicatorController = GetComponentInParent<TargetIndicatorController>();
+            }
         }
 
         private static void BindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)

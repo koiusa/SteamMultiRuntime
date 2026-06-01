@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 354199859479193300}
   - component: {fileID: 3573248697702278429}
   - component: {fileID: 7953508243648865285}
+  - component: {fileID: 1621374485892493988}
   m_Layer: 0
   m_Name: SoloLockOn
   m_TagString: Untagged
@@ -219,6 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.SoloLockTargetInput
   nextTargetAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   prevTargetAction: {fileID: 2411907206095950430, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  indicatorController: {fileID: 1621374485892493988}
 --- !u!114 &7953508243648865285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -233,6 +235,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
   binder: {fileID: 354199859479193300}
   debugLockOnMaterial: {fileID: 2100000, guid: 6288ae4d74a079646970028f70fde2f5, type: 2}
+--- !u!114 &1621374485892493988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1116152557644085991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6152fc9dcca08484fb836ae6d33cbf37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetIndicatorController
+  detector: {fileID: 4946852752456973584}
+  uiDocument: {fileID: 4353384104446628668}
+  targetIndicatorStyleSheet: {fileID: 7433441132597879392, guid: 77cc273d497b5e446890388bf8e460cb, type: 3}
+  markerSize: 40
+  enableFocusHighlight: 1
 --- !u!1 &2922866909314842869
 GameObject:
   m_ObjectHideFlags: 0
@@ -251,6 +270,7 @@ GameObject:
   - component: {fileID: 4406692661628174695}
   - component: {fileID: 976978346296359161}
   - component: {fileID: 3757149331465346227}
+  - component: {fileID: 2183135012566770961}
   m_Layer: 0
   m_Name: GroupLockOn
   m_TagString: Untagged
@@ -537,6 +557,7 @@ MonoBehaviour:
   unlockAllAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   focusAction: {fileID: -7471211009204490832, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   bulkLockAction: {fileID: -2099379676528639254, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  indicatorController: {fileID: 2183135012566770961}
 --- !u!114 &3757149331465346227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -551,6 +572,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
   binder: {fileID: 4406692661628174695}
   debugLockOnMaterial: {fileID: 2100000, guid: e7a1be69115eaa74080720812f5e4b6a, type: 2}
+--- !u!114 &2183135012566770961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2922866909314842869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6152fc9dcca08484fb836ae6d33cbf37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetIndicatorController
+  detector: {fileID: 8509057288494707893}
+  uiDocument: {fileID: 4353384104446628668}
+  targetIndicatorStyleSheet: {fileID: 7433441132597879392, guid: 77cc273d497b5e446890388bf8e460cb, type: 3}
+  markerSize: 40
+  enableFocusHighlight: 1
 --- !u!1 &5646857874071141061
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,6 +823,7 @@ GameObject:
   - component: {fileID: 5568943051768719865}
   - component: {fileID: 7835040341111763461}
   - component: {fileID: 2841924098193030622}
+  - component: {fileID: 4353384104446628668}
   m_Layer: 0
   m_Name: TargetingCameraRig
   m_TagString: Untagged
@@ -885,3 +924,26 @@ MonoBehaviour:
   noLockAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   soloLockAction: {fileID: 1120369429361536294, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   multiLockAction: {fileID: 1781555164194001046, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+--- !u!114 &4353384104446628668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6122697369128797024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: b15faee243326e94c8dca6ea36fcbf82, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 72f3795800845364ca22aefdfe336fa7, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
