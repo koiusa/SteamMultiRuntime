@@ -532,8 +532,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: koiusa.Targetingsystem.Runtime::Koiusa.Targetingsystem.Runtime.LockOnTargetGroupInput
   lockAction: {fileID: 1781555164194001046, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  unlockAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  nextTargetAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  prevTargetAction: {fileID: 2411907206095950430, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
   unlockAllAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  focusAction: {fileID: -7471211009204490832, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  bulkLockAction: {fileID: -2099379676528639254, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
 --- !u!114 &3757149331465346227
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -715,6 +715,10 @@ PrefabInstance:
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 1297866345}
+    - target: {fileID: 4245522739729437241, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: ScanRecursively
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4406692661628174695, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: cinemachineTargetGroup
       value: 

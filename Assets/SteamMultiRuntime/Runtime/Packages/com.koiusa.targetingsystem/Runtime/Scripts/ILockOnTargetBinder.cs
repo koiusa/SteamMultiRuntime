@@ -35,5 +35,20 @@ namespace Koiusa.TargetingSystem.Runtime
 
         /// <summary>LookAt 対象と選択状態を初期化する。NoLock 復帰時に呼び出す。</summary>
         void ClearLookAt();
+
+        /// <summary>次のロック中ターゲットに注視を切り替える。</summary>
+        void SelectNext();
+
+        /// <summary>前のロック中ターゲットに注視を切り替える。</summary>
+        void SelectPrev();
+
+        /// <summary>フォーカスモード（注視点を1ターゲットに限定）の有効/無効を設定。</summary>
+        void SetFocusModeEnabled(bool enabled);
+
+        /// <summary>フォーカスモードが有効か取得。</summary>
+        bool IsFocusModeEnabled { get; }
+
+        /// <summary>画面内の全ての見えているターゲットをロックする。</summary>
+        int LockAllVisibleTargets();
     }
 }

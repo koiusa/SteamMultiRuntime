@@ -24,6 +24,8 @@ namespace Koiusa.TargetingSystem.Runtime
         private readonly HashSet<ITargetable> visibleTargets = new HashSet<ITargetable>();
         private readonly Dictionary<ITargetable, Transform> lockedMembers = new Dictionary<ITargetable, Transform>();
         private readonly List<ITargetable> lockOrder = new List<ITargetable>();
+        private int focusIndex = -1;
+        private bool isFocusModeEnabled = false;
         private bool isBound;
 
         public IReadOnlyCollection<ITargetable> LockedTargets => lockedMembers.Keys;
@@ -95,6 +97,27 @@ namespace Koiusa.TargetingSystem.Runtime
             return LockTarget(target);
         }
 
+        public int LockAllVisibleTargets()
+        {
+            ValidateReferences();
+            detector.Refresh();
+            SyncVisibleTargets();
+
+            var lockedCount = 0;
+            foreach (var target in visibleTargets)
+            {
+                if (target != null && target.IsTargetable && !lockedMembers.ContainsKey(target))
+                {
+                    if (LockTarget(target))
+                    {
+                        lockedCount++;
+                    }
+                }
+            }
+
+            return lockedCount;
+        }
+
         public bool LockTarget(ITargetable target)
         {
             ValidateReferences();
@@ -113,6 +136,12 @@ namespace Koiusa.TargetingSystem.Runtime
             cinemachineTargetGroup.AddMember(trackingTarget, targetWeight, targetRadius);
             lockedMembers.Add(target, trackingTarget);
             lockOrder.Add(target);
+
+            if (focusIndex < 0)
+            {
+                focusIndex = 0;
+            }
+
             Looked?.Invoke(target);
             return true;
         }
@@ -141,14 +170,29 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             lockedMembers.Remove(target);
+            var removedIndex = lockOrder.IndexOf(target);
             lockOrder.Remove(target);
-            Unlooked?.Invoke(target);
 
-            if (lockedMembers.Count == 0)
+            if (lockOrder.Count == 0)
             {
+                focusIndex = -1;
+                if (isFocusModeEnabled)
+                {
+                    RefreshGroupWeights();
+                }
                 AllLockedTargetsCleared?.Invoke();
             }
+            else if (focusIndex >= lockOrder.Count)
+            {
+                focusIndex = lockOrder.Count - 1;
+                UpdateFocus();
+            }
+            else if (focusIndex == removedIndex)
+            {
+                UpdateFocus();
+            }
 
+            Unlooked?.Invoke(target);
             return true;
         }
 
@@ -169,6 +213,8 @@ namespace Koiusa.TargetingSystem.Runtime
 
             lockedMembers.Clear();
             lockOrder.Clear();
+            focusIndex = -1;
+            isFocusModeEnabled = false;
 
             for (var i = 0; i < removedTargets.Count; i++)
             {
@@ -179,6 +225,91 @@ namespace Koiusa.TargetingSystem.Runtime
         public void ClearLookAt()
         {
             UnlockAllTargets();
+        }
+
+        public bool IsFocusModeEnabled => isFocusModeEnabled;
+
+        public void SetFocusModeEnabled(bool enabled)
+        {
+            if (isFocusModeEnabled == enabled)
+            {
+                return;
+            }
+
+            isFocusModeEnabled = enabled;
+
+            if (isFocusModeEnabled && focusIndex < 0 && lockOrder.Count > 0)
+            {
+                focusIndex = 0;
+            }
+
+            RefreshGroupWeights();
+        }
+
+        public void SelectNext()
+        {
+            if (lockOrder.Count == 0)
+            {
+                return;
+            }
+
+            focusIndex = (focusIndex + 1) % lockOrder.Count;
+
+            if (isFocusModeEnabled)
+            {
+                RefreshGroupWeights();
+            }
+        }
+
+        public void SelectPrev()
+        {
+            if (lockOrder.Count == 0)
+            {
+                return;
+            }
+
+            focusIndex = (focusIndex - 1 + lockOrder.Count) % lockOrder.Count;
+
+            if (isFocusModeEnabled)
+            {
+                RefreshGroupWeights();
+            }
+        }
+
+        private void UpdateFocus()
+        {
+            if (isFocusModeEnabled)
+            {
+                RefreshGroupWeights();
+            }
+        }
+
+        private void RefreshGroupWeights()
+        {
+            if (cinemachineTargetGroup == null)
+            {
+                return;
+            }
+
+            foreach (var kvp in lockedMembers)
+            {
+                var t = kvp.Value;
+                if (t != null)
+                {
+                    cinemachineTargetGroup.RemoveMember(t);
+                }
+            }
+
+            for (var i = 0; i < lockOrder.Count; i++)
+            {
+                if (!lockedMembers.TryGetValue(lockOrder[i], out var t) || t == null)
+                {
+                    continue;
+                }
+
+                var weight = (!isFocusModeEnabled || i == focusIndex) ? targetWeight : 0f;
+                cinemachineTargetGroup.AddMember(t, weight, targetRadius);
+            }
         }
 
         private ITargetable SelectClosestVisibleTarget(bool excludeLocked)

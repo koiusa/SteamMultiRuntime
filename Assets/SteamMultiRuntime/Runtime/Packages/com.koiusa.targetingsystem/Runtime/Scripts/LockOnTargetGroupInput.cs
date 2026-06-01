@@ -9,8 +9,11 @@ namespace Koiusa.TargetingSystem.Runtime
     {
         [Header("Input")]
         [SerializeField] private InputActionReference lockAction;
-        [SerializeField] private InputActionReference unlockAction;
+        [SerializeField] private InputActionReference nextTargetAction;
+        [SerializeField] private InputActionReference prevTargetAction;
         [SerializeField] private InputActionReference unlockAllAction;
+        [SerializeField] private InputActionReference focusAction;
+        [SerializeField] private InputActionReference bulkLockAction;
 
         private ILockOnTargetBinder binder;
         private TargetingCameraRig cameraRig;
@@ -33,8 +36,11 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             BindAction(lockAction, OnLockPerformed);
-            BindAction(unlockAction, OnUnlockPerformed);
+            BindAction(nextTargetAction, OnNextTargetPerformed);
+            BindAction(prevTargetAction, OnPrevTargetPerformed);
             BindAction(unlockAllAction, OnUnlockAllPerformed);
+            BindAction(focusAction, OnFocusPerformed);
+            BindAction(bulkLockAction, OnBulkLockPerformed);
             isBound = true;
         }
 
@@ -45,8 +51,11 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
+            UnbindAction(bulkLockAction, OnBulkLockPerformed);
+            UnbindAction(focusAction, OnFocusPerformed);
             UnbindAction(unlockAllAction, OnUnlockAllPerformed);
-            UnbindAction(unlockAction, OnUnlockPerformed);
+            UnbindAction(prevTargetAction, OnPrevTargetPerformed);
+            UnbindAction(nextTargetAction, OnNextTargetPerformed);
             UnbindAction(lockAction, OnLockPerformed);
             isBound = false;
         }
@@ -57,16 +66,34 @@ namespace Koiusa.TargetingSystem.Runtime
             binder.LockClosestVisibleTarget();
         }
 
-        private void OnUnlockPerformed(InputAction.CallbackContext context)
+        private void OnNextTargetPerformed(InputAction.CallbackContext context)
         {
             if (!IsMultiLockMode || binder == null) return;
-            binder.UnlockLastLockedTarget();
+            binder.SelectNext();
+        }
+
+        private void OnPrevTargetPerformed(InputAction.CallbackContext context)
+        {
+            if (!IsMultiLockMode || binder == null) return;
+            binder.SelectPrev();
         }
 
         private void OnUnlockAllPerformed(InputAction.CallbackContext context)
         {
             if (!IsMultiLockMode || binder == null) return;
             binder.UnlockAllTargets();
+        }
+
+        private void OnFocusPerformed(InputAction.CallbackContext context)
+        {
+            if (!IsMultiLockMode || binder == null) return;
+            binder.SetFocusModeEnabled(!binder.IsFocusModeEnabled);
+        }
+
+        private void OnBulkLockPerformed(InputAction.CallbackContext context)
+        {
+            if (!IsMultiLockMode || binder == null) return;
+            binder.LockAllVisibleTargets();
         }
 
         private static void BindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
