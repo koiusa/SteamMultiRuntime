@@ -124,6 +124,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7720154851710284826}
   - component: {fileID: 213511271794951782}
+  - component: {fileID: 1186012290720438798}
   m_Layer: 0
   m_Name: TargetMarker
   m_TagString: Untagged
@@ -162,3 +163,19 @@ MonoBehaviour:
   aimPoint: {fileID: 0}
   priority: 0
   isTargetable: 1
+  registry: {fileID: 0}
+--- !u!114 &1186012290720438798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4782669312180637288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef19d08da5328684998b5608634f6f5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.RandomTargetMover
+  moveInterval: 2
+  centerPosition: {x: 0, y: 0, z: 0}
+  rangeSize: {x: 10, y: 0, z: 10}

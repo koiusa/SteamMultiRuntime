@@ -1,6 +1,7 @@
 using UnityEngine;
+using Koiusa.TargetingSystem.Runtime;
 
-namespace Koiusa.TargetingSystem.Runtime
+namespace Koiusa.TargetingSystem.Sample
 {
     public sealed class RandomTargetSpawner : MonoBehaviour
     {
