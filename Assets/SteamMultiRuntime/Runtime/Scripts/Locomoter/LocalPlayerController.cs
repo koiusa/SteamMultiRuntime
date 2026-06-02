@@ -238,7 +238,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveInputReceiver?.SetMoveInput(moveInput);
-
             motor.Tick(moveDirection, jumpThisFrame);
         }
 

@@ -142,19 +142,14 @@ namespace Koiusa.SteamMultiRuntime
             var directionalDetachDelay = Mathf.Max(0f, settings.DirectionalDetachReattachDelay);
             var jumpDetachDelay = Mathf.Max(0f, settings.JumpDetachReattachDelay);
 
-            var hasIntentContext = traversalIntentContext != null;
-            var wantsJumpDetach = hasIntentContext
+            var wantsJumpDetach = traversalIntentContext != null
                 ? traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested)
                 : jumpRequested;
-            var wantsLateralDetach = hasIntentContext
-                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderDetachByLateral)
-                : Mathf.Abs(moveInput.x) > 0.2f;
-            var wantsGroundDescendDetach = hasIntentContext
-                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderDetachByDescendOnGround)
-                : (isGrounded && moveInput.y < -0.01f);
-            var wantsGroundIdleDetach = hasIntentContext
-                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderIdleOnGround)
-                : (isGrounded && Mathf.Abs(moveInput.y) <= 0.01f);
+
+            var climbInput = ResolveClimbInput(moveInput, out var detachInput);
+            var wantsLateralDetach = Mathf.Abs(detachInput) > 0.2f;
+            var wantsGroundDescendDetach = isGrounded && climbInput < -0.01f;
+            var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f;
 
             if (wantsJumpDetach)
             {
@@ -181,13 +176,21 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (TryApplyLadderMovement(velocity, moveInput.y, upAxis, out var ladderVelocity))
+            if (TryApplyLadderMovement(velocity, climbInput, upAxis, out var ladderVelocity))
             {
                 nextVelocity = ladderVelocity;
                 return true;
             }
 
             return false;
+        }
+
+        private float ResolveClimbInput(Vector2 moveInput, out float detachInput)
+        {
+            // キャラクター向き基準:
+            // 前後入力(moveInput.y)を昇降、左右入力(moveInput.x)を離脱として扱う
+            detachInput = moveInput.x;
+            return moveInput.y;
         }
 
         private static bool IsSettingsEmpty(LadderTraversalSettings s)
