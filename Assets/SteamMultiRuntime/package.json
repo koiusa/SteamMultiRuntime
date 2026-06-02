@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime",
   "displayName": "Steam Multi Runtime",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Steam Multi Runtime Asset.",
@@ -19,6 +19,8 @@
     "runtime",
     "unity"
   ],
+
+  "license": "MIT",
 
   "dependencies": {
     "com.unity.netcode.gameobjects": "2.11.2",
