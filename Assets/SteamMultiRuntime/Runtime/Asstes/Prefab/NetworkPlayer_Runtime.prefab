@@ -22,6 +22,10 @@ GameObject:
   - component: {fileID: 626167900066496392}
   - component: {fileID: 9178804393752450265}
   - component: {fileID: 4765994916497396643}
+  - component: {fileID: 5777529995516017243}
+  - component: {fileID: 5494012229538613394}
+  - component: {fileID: 4686477341842054326}
+  - component: {fileID: 3692948723871859493}
   m_Layer: 0
   m_Name: NetworkPlayer_Runtime
   m_TagString: Untagged
@@ -345,6 +349,88 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+--- !u!114 &5777529995516017243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3808a72c22c47145a3583d68821ab98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderTraversalFeature
+  settings:
+    ClimbSpeed: 4
+    ClimbAcceleration: 20
+    ExitTopBoostSpeed: 2
+    DirectionalDetachReattachDelay: 0.15
+    JumpDetachReattachDelay: 0.12
+--- !u!114 &5494012229538613394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4725918b45dda4247833b2ba741a1d6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallSlideTraversalFeature
+  settings:
+    WallMaxUpDot: 0.2
+    WallSlideGravityMultiplier: 0.5
+    WallSlideMaxFallSpeed: 3
+    WallSlideMinDownSpeed: 1.5
+    WallSlideStartContactFrames: 2
+    WallSlideExitMoveOppositeNormalDot: 0.3
+    WallSlideAwayFromWallMinSpeed: 0.15
+--- !u!114 &4686477341842054326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f07ec851fddbe8442b9e9dc78968eb8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallJumpTraversalFeature
+  settings:
+    WallMaxUpDot: 0.2
+    WallJumpUpForce: 6.5
+    WallJumpAwayForce: 5
+    TriangleKickForwardForce: 3
+    WallJumpTrajectoryMode: 0
+    SameWallKickLockDuration: 0.2
+    SameWallNormalDotThreshold: 0.97
+--- !u!114 &3692948723871859493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78810bb3b75b24945b59408c3ea69138, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallRunTraversalFeature
+  settings:
+    WallRunSpeed: 7
+    WallRunAcceleration: 20
+    WallRunGravityMultiplier: 0.35
+    WallRunMaxFallSpeed: 2
+    WallRunMinInputDot: 0.15
+    WallRunMinAlongWallSpeed: 2
+    WallRunMaxUpwardStartSpeed: 0
+    WallMaxUpDot: 0.2
+    WallRunStartContactFrames: 2
+    WallRunAwayFromWallMinSpeed: 0.15
+    WallRunInputReleaseGraceTime: 0.2
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,3 +549,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 327ecbedcc38d0a46b88b0a86ac9327e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
+  isLocalPlayer: 0
