@@ -11,7 +11,8 @@ namespace Koiusa.SteamMultiRuntime.UnityChan {
 public class FaceAnimationDriver : MonoBehaviour {
     
     void OnEnable() {
-        InitializeForCharacter();
+        if (m_hasStarted)
+            InitializeForCharacter();
     }
 
     void Awake() {
@@ -21,6 +22,7 @@ public class FaceAnimationDriver : MonoBehaviour {
 
     void Start() {
         InitializeForCharacter();
+        m_hasStarted = true;
         m_shouldResetFaceLayerWeight = true;
         m_curFaceLayerWeight = 1f;
         TryApplyFaceLayerMask(true);
@@ -37,7 +39,7 @@ public class FaceAnimationDriver : MonoBehaviour {
             return false;
 
         var controller = m_animator.runtimeAnimatorController;
-        if (!m_hasCachedFaceLayerMixer || m_cachedController != controller || !m_cachedFaceLayerMixer.IsValid()) {
+        if (m_cachedController != controller) {
             CacheFaceLayerMixer();
         }
 
@@ -94,6 +96,11 @@ public class FaceAnimationDriver : MonoBehaviour {
     }
 
     void Update() {
+        if (m_needsRecache) {
+            m_needsRecache = false;
+            CacheFaceLayerMixer();
+        }
+
         if (!CanControlFaceLayer())
             return;
 
@@ -181,6 +188,7 @@ public class FaceAnimationDriver : MonoBehaviour {
 
         m_shouldResetFaceLayerWeight = true;
         m_animator.Play(defaultStateName, m_faceLayerIndex);
+        m_needsRecache = true;
     }
 
     void PlayFaceState(string stateName) {
@@ -193,6 +201,7 @@ public class FaceAnimationDriver : MonoBehaviour {
         }
 
         m_animator.Play(resolvedStateName, m_faceLayerIndex);
+        m_needsRecache = true;
 
         if (m_returnToDefaultDelay <= 0f) {
             m_isAutoReturnPending = false;
@@ -304,6 +313,8 @@ public class FaceAnimationDriver : MonoBehaviour {
 
     float m_curFaceLayerWeight = 0;
     bool m_shouldResetFaceLayerWeight = false;
+    bool m_hasStarted = false;
+    bool m_needsRecache = false;
 
     bool m_isAutoReturnPending = false;
     float m_autoReturnElapsed = 0f;
