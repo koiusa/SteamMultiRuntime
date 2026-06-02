@@ -606,9 +606,9 @@ GameObject:
   - component: {fileID: 95902892598462830}
   - component: {fileID: 5362608602617473077}
   - component: {fileID: 114585031484379960}
-  - component: {fileID: -8159229443003148014}
-  - component: {fileID: -6503601494403023269}
   - component: {fileID: -8546062179785329305}
+  - component: {fileID: 1014723367488797496}
+  - component: {fileID: 3856001576539625298}
   m_Layer: 0
   m_Name: Toko_sum_Network
   m_TagString: Untagged
@@ -736,59 +736,6 @@ MonoBehaviour:
   collisionColor: {r: 1, g: 0, b: 0, a: 1}
   groundCollisionColor: {r: 0, g: 1, b: 0, a: 1}
   angleLimitDrawScale: 0.05
---- !u!114 &-8159229443003148014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1105312985725752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c195f3661cc6d17458661156c4417f89, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver
-  m_animator: {fileID: 95902892598462830}
-  m_faceAvatarMask: {fileID: 101100000, guid: 8a87710a2e10e154da34c5edd989b03f, type: 2}
-  m_faceLayerIndex: 1
-  m_defaultFaceStateName: default
-  m_lockFace: 0
-  m_delayWeight: 0
-  m_returnToDefaultDelay: 0.5
-  m_faceStateNames:
-  - default@sd_hmd
-  - eye_close@sd_hmd
-  - JumpToTop
-  - Running@loop
-  - smile@sd_hmd
-  - smile2@sd_hmd
-  - Standing@loop
-  - surprise@sd_hmd
-  - TopOfJump
-  - Walking@loop
---- !u!114 &-6503601494403023269
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1105312985725752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 785f36463f83c8246874791626ae85ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerAnimatorStateDriver
-  targetAnimator: {fileID: 95902892598462830}
-  targetRigidbody: {fileID: 0}
-  horizontalSpeedParameter: Speed
-  verticalSpeedParameter: VerticalVelocity
-  groundedParameter: IsGrounded
-  motionSpeedParameter: MotionSpeed
-  jumpingParameter: IsJumping
-  freefallParameter: IsFreefall
-  fallingAfterJumpParameter: IsFallingAfterJump
-  speedDampTime: 0.08
-  motionSpeedMultiplier: 2
 --- !u!114 &-8546062179785329305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -828,6 +775,66 @@ MonoBehaviour:
   FootstepAudioSource: {fileID: 8508627799779004291}
   LandingAudioSource: {fileID: 911931517449661337}
   FootstepAudioVolume: 1
+--- !u!114 &1014723367488797496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105312985725752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 220a1975a3d0fbf48a3cce33e1edf677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.PlayerAnimatorStateDriver
+  targetAnimator: {fileID: 95902892598462830}
+  targetRigidbody: {fileID: 0}
+  horizontalSpeedParameter: Speed
+  verticalSpeedParameter: VerticalVelocity
+  groundedParameter: IsGrounded
+  motionSpeedParameter: MotionSpeed
+  jumpingParameter: IsJumping
+  freefallParameter: IsFreefall
+  fallingAfterJumpParameter: IsFallingAfterJump
+  inputForwardParameter: InputForward
+  inputRightParameter: InputRight
+  moveDirectionForwardParameter: MoveDirectionForward
+  moveDirectionRightParameter: MoveDirectionRight
+  strafeModeParameter: IsStrafeMode
+  animationFinishedParameter: IsAnimationFinished
+  animationFinishedLayerIndex: 0
+  speedDampTime: 0.08
+  motionSpeedMultiplier: 2
+--- !u!114 &3856001576539625298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105312985725752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b63029d8e8c92c549bf33688dfdaad60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver
+  m_animator: {fileID: 95902892598462830}
+  m_faceAvatarMask: {fileID: 101100000, guid: 8a87710a2e10e154da34c5edd989b03f, type: 2}
+  m_faceLayerIndex: 1
+  m_defaultFaceStateName: default
+  m_lockFace: 0
+  m_delayWeight: 0
+  m_returnToDefaultDelay: 2
+  m_faceStateNames:
+  - default@sd_hmd
+  - eye_close@sd_hmd
+  - JumpToTop
+  - Running@loop
+  - smile@sd_hmd
+  - smile2@sd_hmd
+  - Standing@loop
+  - surprise@sd_hmd
+  - TopOfJump
+  - Walking@loop
 --- !u!1 &1126859158464358
 GameObject:
   m_ObjectHideFlags: 0

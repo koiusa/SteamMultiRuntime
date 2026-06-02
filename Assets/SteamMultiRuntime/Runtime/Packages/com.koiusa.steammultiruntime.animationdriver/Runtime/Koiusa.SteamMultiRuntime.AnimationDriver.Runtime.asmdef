@@ -1,0 +1,16 @@
+{
+	"name": "Koiusa.SteamMultiRuntime.AnimationDriver.Runtime",
+	"rootNamespace": "",
+	"references": [
+		"Koiusa.SteamMultiRuntime.Locomoter.Runtime"
+	],
+	"includePlatforms": [],
+	"excludePlatforms": [],
+	"allowUnsafeCode": false,
+	"overrideReferences": false,
+	"precompiledReferences": [],
+	"autoReferenced": true,
+	"defineConstraints": [],
+	"versionDefines": [],
+	"noEngineReferences": false
+}

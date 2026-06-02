@@ -4,6 +4,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
   <Project Path="Koiusa.Common.System.csproj" />
   <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Editor.csproj" />
   <Project Path="TNRD.SerializableInterface.Editor.csproj" />
