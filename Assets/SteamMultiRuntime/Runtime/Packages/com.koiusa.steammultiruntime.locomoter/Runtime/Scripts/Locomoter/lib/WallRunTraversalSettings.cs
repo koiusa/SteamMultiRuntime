@@ -1,9 +1,7 @@
-using Unity.Netcode;
-
 namespace Koiusa.SteamMultiRuntime
 {
     [System.Serializable]
-    public struct WallRunTraversalSettings : INetworkSerializable
+    public partial struct WallRunTraversalSettings
     {
         public float WallRunSpeed;
         public float WallRunAcceleration;
@@ -35,19 +33,5 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref WallRunSpeed);
-            serializer.SerializeValue(ref WallRunAcceleration);
-            serializer.SerializeValue(ref WallRunGravityMultiplier);
-            serializer.SerializeValue(ref WallRunMaxFallSpeed);
-            serializer.SerializeValue(ref WallRunMinInputDot);
-            serializer.SerializeValue(ref WallRunMinAlongWallSpeed);
-            serializer.SerializeValue(ref WallRunMaxUpwardStartSpeed);
-            serializer.SerializeValue(ref WallMaxUpDot);
-            serializer.SerializeValue(ref WallRunStartContactFrames);
-            serializer.SerializeValue(ref WallRunAwayFromWallMinSpeed);
-            serializer.SerializeValue(ref WallRunInputReleaseGraceTime);
+            }
         }
-    }
-}

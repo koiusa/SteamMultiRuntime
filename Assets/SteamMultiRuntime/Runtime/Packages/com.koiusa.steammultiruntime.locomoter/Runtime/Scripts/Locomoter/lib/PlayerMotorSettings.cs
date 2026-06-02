@@ -1,10 +1,9 @@
 using UnityEngine;
-using Unity.Netcode;
 
 namespace Koiusa.SteamMultiRuntime
 {
     [System.Serializable]
-    public struct PlayerMotorSettings : INetworkSerializable
+    public partial struct PlayerMotorSettings
     {
         [Unit("m/s", "移動時の最大速度")]
         public float MoveSpeed;
@@ -117,27 +116,5 @@ namespace Koiusa.SteamMultiRuntime
                 stepAssistObstacleUpDot: 0.35f);
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref MoveSpeed);
-            serializer.SerializeValue(ref GroundAcceleration);
-            serializer.SerializeValue(ref AirAcceleration);
-            serializer.SerializeValue(ref RotationSpeed);
-            serializer.SerializeValue(ref JumpForce);
-            serializer.SerializeValue(ref FallMultiplier);
-            serializer.SerializeValue(ref JumpDetachDuration);
-            serializer.SerializeValue(ref MinGroundNormalDot);
-            serializer.SerializeValue(ref GroundedGraceTime);
-            serializer.SerializeValue(ref NearbyGroundDistance);
-            serializer.SerializeValue(ref StrafeMoveSpeedMultiplier);
-            serializer.SerializeValue(ref StrafeAccelerationMultiplier);
-            serializer.SerializeValue(ref StrafeRotationSpeed);
-            serializer.SerializeValue(ref BackwardSpeedMultiplier);
-            serializer.SerializeValue(ref EnableStepAssist);
-            serializer.SerializeValue(ref StepAssistMaxHeight);
-            serializer.SerializeValue(ref StepAssistCheckDistance);
-            serializer.SerializeValue(ref StepAssistMinMoveSpeed);
-            serializer.SerializeValue(ref StepAssistObstacleUpDot);
+            }
         }
-    }
-}

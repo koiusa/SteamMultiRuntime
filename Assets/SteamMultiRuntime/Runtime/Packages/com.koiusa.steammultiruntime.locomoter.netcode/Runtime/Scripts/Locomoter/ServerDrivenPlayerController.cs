@@ -115,9 +115,9 @@ namespace Koiusa.SteamMultiRuntime
             new PlayerInputSyncState(Vector3.zero, Vector2.zero, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         // Settings Sync (Server -> All Clients)
-        private readonly NetworkVariable<PlayerMotorSettings> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettings>(
+        private readonly NetworkVariable<PlayerMotorSettingsNetData> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        private readonly NetworkVariable<TraversalFeatureSettings> netTraversalMotorSettings = new NetworkVariable<TraversalFeatureSettings>(
+        private readonly NetworkVariable<TraversalFeatureSettingsNetData> netTraversalMotorSettings = new NetworkVariable<TraversalFeatureSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private readonly NetworkVariable<PlayerKinematicState> netKinematicState = new NetworkVariable<PlayerKinematicState>(
@@ -427,7 +427,7 @@ namespace Koiusa.SteamMultiRuntime
             if (baseMotor == null)
                 return;
 
-            netPlayerMotorSettings.Value = baseMotor.GetSettings();
+            netPlayerMotorSettings.Value = PlayerMotorSettingsNetData.FromCore(baseMotor.GetSettings());
 
             var traversalSettings = TraversalFeatureSettings.CreateDefault();
             var traversalSettingsSyncs = motor.GetComponents<ITraversalSettingsSync>();
@@ -436,32 +436,34 @@ namespace Koiusa.SteamMultiRuntime
                 traversalSettingsSyncs[i].WriteSettings(ref traversalSettings);
             }
 
-            netTraversalMotorSettings.Value = traversalSettings;
+            netTraversalMotorSettings.Value = TraversalFeatureSettingsNetData.FromCore(traversalSettings);
         }
 
-        private void OnPlayerMotorSettingsChanged(PlayerMotorSettings oldValue, PlayerMotorSettings newValue)
+        private void OnPlayerMotorSettingsChanged(PlayerMotorSettingsNetData oldValue, PlayerMotorSettingsNetData newValue)
         {
             if (motor != null)
             {
                 var baseMotor = motor.GetComponent<IPlayerMotor>();
                 if (baseMotor != null)
                 {
-                    baseMotor.UpdateSettingsFromStruct(newValue);
+                    var currentSettings = baseMotor.GetSettings();
+                    baseMotor.UpdateSettingsFromStruct(newValue.ToCore(currentSettings.GroundLayer));
                 }
             }
         }
 
-        private void OnTraversalMotorSettingsChanged(TraversalFeatureSettings oldValue, TraversalFeatureSettings newValue)
+        private void OnTraversalMotorSettingsChanged(TraversalFeatureSettingsNetData oldValue, TraversalFeatureSettingsNetData newValue)
         {
             if (motor == null)
             {
                 return;
             }
 
+            var coreSettings = newValue.ToCore();
             var traversalSettingsTargets = motor.GetComponents<ITraversalSettingsSync>();
             for (var i = 0; i < traversalSettingsTargets.Length; i++)
             {
-                traversalSettingsTargets[i].ReadSettings(newValue);
+                traversalSettingsTargets[i].ReadSettings(coreSettings);
             }
         }
     }

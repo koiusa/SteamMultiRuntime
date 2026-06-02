@@ -1,9 +1,7 @@
-using Unity.Netcode;
-
 namespace Koiusa.SteamMultiRuntime
 {
     [System.Serializable]
-    public struct TraversalFeatureSettings : INetworkSerializable
+    public partial struct TraversalFeatureSettings
     {
         public WallRunTraversalSettings WallRun;
         public WallJumpTraversalSettings WallJump;
@@ -21,16 +19,5 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref WallRun);
-            serializer.SerializeValue(ref WallJump);
-            serializer.SerializeValue(ref WallSlide);
-            serializer.SerializeValue(ref Ladder.ClimbSpeed);
-            serializer.SerializeValue(ref Ladder.ClimbAcceleration);
-            serializer.SerializeValue(ref Ladder.ExitTopBoostSpeed);
-            serializer.SerializeValue(ref Ladder.DirectionalDetachReattachDelay);
-            serializer.SerializeValue(ref Ladder.JumpDetachReattachDelay);
+            }
         }
-    }
-}

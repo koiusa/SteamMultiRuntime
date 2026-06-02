@@ -1,5 +1,4 @@
 using UnityEngine;
-using Unity.Netcode;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -10,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
     }
 
     [System.Serializable]
-    public struct TraversalMotorSettings : INetworkSerializable
+    public partial struct TraversalMotorSettings
     {
         [Unit("m/s", "壁走行時の最大速度")]
         public float WallRunSpeed;
@@ -136,31 +135,5 @@ namespace Koiusa.SteamMultiRuntime
                 wallSlideAwayFromWallMinSpeed: 0.15f);
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref WallRunSpeed);
-            serializer.SerializeValue(ref WallRunAcceleration);
-            serializer.SerializeValue(ref WallRunGravityMultiplier);
-            serializer.SerializeValue(ref WallRunMaxFallSpeed);
-            serializer.SerializeValue(ref WallRunMinInputDot);
-            serializer.SerializeValue(ref WallRunMinAlongWallSpeed);
-            serializer.SerializeValue(ref WallRunMaxUpwardStartSpeed);
-            serializer.SerializeValue(ref WallMaxUpDot);
-            serializer.SerializeValue(ref WallJumpUpForce);
-            serializer.SerializeValue(ref WallJumpAwayForce);
-            serializer.SerializeValue(ref TriangleKickForwardForce);
-            serializer.SerializeValue(ref WallRunStartContactFrames);
-            serializer.SerializeValue(ref WallRunAwayFromWallMinSpeed);
-            serializer.SerializeValue(ref WallRunInputReleaseGraceTime);
-            serializer.SerializeValue(ref WallSlideGravityMultiplier);
-            serializer.SerializeValue(ref WallSlideMaxFallSpeed);
-            serializer.SerializeValue(ref WallJumpTrajectoryMode);
-            serializer.SerializeValue(ref SameWallKickLockDuration);
-            serializer.SerializeValue(ref SameWallNormalDotThreshold);
-            serializer.SerializeValue(ref WallSlideMinDownSpeed);
-            serializer.SerializeValue(ref WallSlideStartContactFrames);
-            serializer.SerializeValue(ref WallSlideExitMoveOppositeNormalDot);
-            serializer.SerializeValue(ref WallSlideAwayFromWallMinSpeed);
+            }
         }
-    }
-}

@@ -4,8 +4,7 @@
 	"references": [
 		"Koiusa.Common.System",
 		"Koiusa.SteamMultiRuntime.EditorTools.Runtime",
-		"Unity.InputSystem",
-		"Unity.Netcode.Runtime"
+		"Unity.InputSystem"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],

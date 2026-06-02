@@ -1,9 +1,7 @@
-using Unity.Netcode;
-
 namespace Koiusa.SteamMultiRuntime
 {
     [System.Serializable]
-    public struct WallJumpTraversalSettings : INetworkSerializable
+    public partial struct WallJumpTraversalSettings
     {
         public float WallMaxUpDot;
         public float WallJumpUpForce;
@@ -27,15 +25,5 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref WallMaxUpDot);
-            serializer.SerializeValue(ref WallJumpUpForce);
-            serializer.SerializeValue(ref WallJumpAwayForce);
-            serializer.SerializeValue(ref TriangleKickForwardForce);
-            serializer.SerializeValue(ref WallJumpTrajectoryMode);
-            serializer.SerializeValue(ref SameWallKickLockDuration);
-            serializer.SerializeValue(ref SameWallNormalDotThreshold);
+            }
         }
-    }
-}

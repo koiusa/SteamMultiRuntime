@@ -1,18 +1,19 @@
 {
-	"name": "Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime",
-	"rootNamespace": "",
-	"references": [
-		"Koiusa.SteamMultiRuntime.Locomoter.Runtime",
-		"Unity.InputSystem",
-		"Unity.Netcode.Runtime"
-	],
-	"includePlatforms": [],
-	"excludePlatforms": [],
-	"allowUnsafeCode": false,
-	"overrideReferences": false,
-	"precompiledReferences": [],
-	"autoReferenced": true,
-	"defineConstraints": [],
-	"versionDefines": [],
-	"noEngineReferences": false
+    "name": "Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "Koiusa.Common.System",
+        "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
