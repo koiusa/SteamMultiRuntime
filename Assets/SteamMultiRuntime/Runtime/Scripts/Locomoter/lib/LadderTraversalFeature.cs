@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private LadderVolume currentLadder;
         private readonly HashSet<LadderVolume> activeLadders = new HashSet<LadderVolume>();
         private float reattachBlockedUntilTime;
+        private ITraversalIntentContext traversalIntentContext;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
@@ -24,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
             if (rb == null)
             {
@@ -140,26 +142,40 @@ namespace Koiusa.SteamMultiRuntime
             var directionalDetachDelay = Mathf.Max(0f, settings.DirectionalDetachReattachDelay);
             var jumpDetachDelay = Mathf.Max(0f, settings.JumpDetachReattachDelay);
 
-            if (jumpRequested)
+            var hasIntentContext = traversalIntentContext != null;
+            var wantsJumpDetach = hasIntentContext
+                ? traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested)
+                : jumpRequested;
+            var wantsLateralDetach = hasIntentContext
+                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderDetachByLateral)
+                : Mathf.Abs(moveInput.x) > 0.2f;
+            var wantsGroundDescendDetach = hasIntentContext
+                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderDetachByDescendOnGround)
+                : (isGrounded && moveInput.y < -0.01f);
+            var wantsGroundIdleDetach = hasIntentContext
+                ? traversalIntentContext.HasIntent(TraversalIntentFlags.WantsLadderIdleOnGround)
+                : (isGrounded && Mathf.Abs(moveInput.y) <= 0.01f);
+
+            if (wantsJumpDetach)
             {
                 DetachFromLadder(jumpDetachDelay);
                 detachedByJump = true;
                 return true;
             }
 
-            if (Mathf.Abs(moveInput.x) > 0.2f)
+            if (wantsLateralDetach)
             {
                 DetachFromLadder(directionalDetachDelay);
                 return true;
             }
 
-            if (isGrounded && moveInput.y < -0.01f)
+            if (wantsGroundDescendDetach)
             {
                 DetachFromLadder(directionalDetachDelay);
                 return true;
             }
 
-            if (isGrounded && Mathf.Abs(moveInput.y) <= 0.01f)
+            if (wantsGroundIdleDetach)
             {
                 ResetState();
                 return true;

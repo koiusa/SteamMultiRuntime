@@ -6,11 +6,13 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
-    public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator
+    public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext
     {
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
+
+        public TraversalIntentFlags CurrentIntentFlags { get; private set; }
 
         private void Awake()
         {
@@ -34,10 +36,16 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ResetState()
         {
+            CurrentIntentFlags = TraversalIntentFlags.None;
             GetComponent<IWallRunTraversalFeature>()?.ResetState();
             GetComponent<IWallJumpTraversalFeature>()?.ResetState();
             GetComponent<IWallSlideTraversalFeature>()?.ResetState();
             GetComponent<ILadderTraversalFeature>()?.ResetState();
+        }
+
+        public bool HasIntent(TraversalIntentFlags flag)
+        {
+            return (CurrentIntentFlags & flag) == flag;
         }
 
         public void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, bool jumpRequested, bool isGrounded)
@@ -72,6 +80,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 return;
             }
+
+            CurrentIntentFlags = BuildIntentFlags(moveInput, jumpRequested, isGrounded);
 
             // 梯子処理は feature 側に委譲する
             if (ladderFeature != null)
@@ -127,6 +137,33 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             rb.linearVelocity = velocity;
+        }
+
+        private static TraversalIntentFlags BuildIntentFlags(Vector2 moveInput, bool jumpRequested, bool isGrounded)
+        {
+            var flags = TraversalIntentFlags.None;
+
+            if (jumpRequested)
+            {
+                flags |= TraversalIntentFlags.JumpRequested;
+            }
+
+            if (Mathf.Abs(moveInput.x) > 0.2f)
+            {
+                flags |= TraversalIntentFlags.WantsLadderDetachByLateral;
+            }
+
+            if (isGrounded && moveInput.y < -0.01f)
+            {
+                flags |= TraversalIntentFlags.WantsLadderDetachByDescendOnGround;
+            }
+
+            if (isGrounded && Mathf.Abs(moveInput.y) <= 0.01f)
+            {
+                flags |= TraversalIntentFlags.WantsLadderIdleOnGround;
+            }
+
+            return flags;
         }
 
         private static Vector3 GetUpAxis()
