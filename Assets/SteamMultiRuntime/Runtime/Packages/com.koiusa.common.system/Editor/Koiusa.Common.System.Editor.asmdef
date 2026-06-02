@@ -1,0 +1,16 @@
+{
+    "name": "Koiusa.Common.System.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9137959953403464f926e849d8e90a3b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
