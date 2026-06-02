@@ -109,6 +109,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var entries = BuildMemberQualitySnapshotEntries();
             ApplyMemberQualitySnapshot(entries);
+            if (entries.Count == 0)
+            {
+                return;
+            }
 
             var bufferSize = sizeof(int) + entries.Count * (sizeof(ulong) + sizeof(int));
             using var writer = new FastBufferWriter(bufferSize, Allocator.Temp);
