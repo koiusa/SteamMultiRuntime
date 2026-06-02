@@ -56,6 +56,8 @@ namespace Koiusa.SteamMultiRuntime
                 DrawField(ref currentY, position, property, "WallRunGravityMultiplier", "Gravity multiplier on wall");
                 DrawField(ref currentY, position, property, "WallRunMaxFallSpeed", "Maximum fall speed on wall");
                 DrawField(ref currentY, position, property, "WallRunMaxUpwardStartSpeed", "Max upward speed to start wall run");
+                DrawField(ref currentY, position, property, "WallRunAwayFromWallMinSpeed", "Do not start wall run if moving away from wall faster than this");
+                DrawField(ref currentY, position, property, "WallRunInputReleaseGraceTime", "Grace time to keep wall run after releasing input");
                 EditorGUI.indentLevel--;
             }
 
@@ -92,6 +94,7 @@ namespace Koiusa.SteamMultiRuntime
                 DrawField(ref currentY, position, property, "WallSlideMaxFallSpeed", "Maximum fall speed while sliding");
                 DrawField(ref currentY, position, property, "WallSlideMinDownSpeed", "Minimum downward speed to maintain slide");
                 DrawField(ref currentY, position, property, "WallSlideExitMoveOppositeNormalDot", "Exit slide when pressing INTO wall (higher = less sensitive)");
+                DrawField(ref currentY, position, property, "WallSlideAwayFromWallMinSpeed", "Do not start wall slide if moving away from wall faster than this");
                 EditorGUI.indentLevel--;
             }
 
@@ -162,6 +165,8 @@ namespace Koiusa.SteamMultiRuntime
             property.FindPropertyRelative("WallJumpAwayForce").floatValue = settings.WallJumpAwayForce;
             property.FindPropertyRelative("TriangleKickForwardForce").floatValue = settings.TriangleKickForwardForce;
             property.FindPropertyRelative("WallRunStartContactFrames").intValue = settings.WallRunStartContactFrames;
+            property.FindPropertyRelative("WallRunAwayFromWallMinSpeed").floatValue = settings.WallRunAwayFromWallMinSpeed;
+            property.FindPropertyRelative("WallRunInputReleaseGraceTime").floatValue = settings.WallRunInputReleaseGraceTime;
             property.FindPropertyRelative("WallSlideGravityMultiplier").floatValue = settings.WallSlideGravityMultiplier;
             property.FindPropertyRelative("WallSlideMaxFallSpeed").floatValue = settings.WallSlideMaxFallSpeed;
             property.FindPropertyRelative("WallJumpTrajectoryMode").enumValueIndex = (int)settings.WallJumpTrajectoryMode;
@@ -170,6 +175,7 @@ namespace Koiusa.SteamMultiRuntime
             property.FindPropertyRelative("WallSlideMinDownSpeed").floatValue = settings.WallSlideMinDownSpeed;
             property.FindPropertyRelative("WallSlideStartContactFrames").intValue = settings.WallSlideStartContactFrames;
             property.FindPropertyRelative("WallSlideExitMoveOppositeNormalDot").floatValue = settings.WallSlideExitMoveOppositeNormalDot;
+            property.FindPropertyRelative("WallSlideAwayFromWallMinSpeed").floatValue = settings.WallSlideAwayFromWallMinSpeed;
         }
 
         private void DrawField(ref float currentY, Rect position, SerializedProperty property, string fieldName, string tooltip)
@@ -198,9 +204,9 @@ namespace Koiusa.SteamMultiRuntime
             var inputFoldout = GetFoldout(property, "Input", false);
             var otherFoldout = GetFoldout(property, "Other", false);
 
-            if (wallRunFoldout) height += lineHeight * 5;
+            if (wallRunFoldout) height += lineHeight * 7;
             if (wallJumpFoldout) height += lineHeight * 4;
-            if (wallSlideFoldout) height += lineHeight * 4;
+            if (wallSlideFoldout) height += lineHeight * 5;
             if (contactDetectionFoldout) height += lineHeight * 2;
             if (inputFoldout) height += lineHeight * 3;
             if (otherFoldout) height += lineHeight * 2;

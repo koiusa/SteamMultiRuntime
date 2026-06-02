@@ -455,6 +455,8 @@ MonoBehaviour:
     WallRunMaxUpwardStartSpeed: 0
     WallMaxUpDot: 0.2
     WallRunStartContactFrames: 2
+    WallRunAwayFromWallMinSpeed: 0
+    WallRunInputReleaseGraceTime: 0
 --- !u!114 &7364711086840703048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -494,6 +496,7 @@ MonoBehaviour:
     WallSlideMinDownSpeed: 1.5
     WallSlideStartContactFrames: 2
     WallSlideExitMoveOppositeNormalDot: 0.3
+    WallSlideAwayFromWallMinSpeed: 0
 --- !u!114 &6962452901085774379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -522,6 +525,8 @@ MonoBehaviour:
     ClimbSpeed: 4
     ClimbAcceleration: 20
     ExitTopBoostSpeed: 2
+    DirectionalDetachReattachDelay: 0
+    JumpDetachReattachDelay: 0
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

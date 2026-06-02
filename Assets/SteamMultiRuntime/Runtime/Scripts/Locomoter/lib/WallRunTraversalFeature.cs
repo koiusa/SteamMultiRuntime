@@ -11,9 +11,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody rb;
         private SlopeContactResolver slopeContactResolver;
+        private ITraversalIntentContext traversalIntentContext;
 
         private int wallContactStreak;
         private bool wallRunGateClosed;
+        private float wallRunInputReleaseUntilTime;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsWallRunning { get; private set; }
@@ -22,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             rb = GetComponent<Rigidbody>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
+            traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
             if (rb == null || slopeContactResolver == null)
             {
@@ -59,6 +62,7 @@ namespace Koiusa.SteamMultiRuntime
             IsWallRunning = false;
             wallContactStreak = 0;
             wallRunGateClosed = false;
+            wallRunInputReleaseUntilTime = 0f;
         }
 
         public void NotifyWallJump()
@@ -66,11 +70,19 @@ namespace Koiusa.SteamMultiRuntime
             IsWallRunning = false;
             wallContactStreak = 0;
             wallRunGateClosed = true;
+            wallRunInputReleaseUntilTime = 0f;
         }
 
         public bool TryAccelerateOnWall(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, out Vector3 nextVelocity)
         {
             nextVelocity = velocity;
+
+            if (traversalIntentContext != null && traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested))
+            {
+                IsWallRunning = false;
+                wallContactStreak = 0;
+                return false;
+            }
 
             if (!TryGetWallNormal(upAxis, out var wallNormal))
             {
@@ -134,7 +146,26 @@ namespace Koiusa.SteamMultiRuntime
 
             if (!HasMoveInputTowardsWall(moveDirection, upAxis, wallNormal))
             {
-                return false;
+                if (!IsWallRunning)
+                {
+                    return false;
+                }
+
+                var graceTime = GetInputReleaseGraceTime();
+
+                if (wallRunInputReleaseUntilTime <= Time.time)
+                {
+                    wallRunInputReleaseUntilTime = Time.time + graceTime;
+                }
+
+                if (Time.time > wallRunInputReleaseUntilTime)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                wallRunInputReleaseUntilTime = 0f;
             }
 
             if (!HasEnoughAlongWallSpeed(velocity, upAxis, wallNormal))
@@ -174,6 +205,14 @@ namespace Koiusa.SteamMultiRuntime
             var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
             var alongWallHorizontalSpeed = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
             return alongWallHorizontalSpeed >= settings.WallRunMinAlongWallSpeed;
+        }
+
+        private float GetInputReleaseGraceTime()
+        {
+            // 既存データ（新規フィールド未保存）互換: 0以下ならデフォルト値を使う
+            return settings.WallRunInputReleaseGraceTime > 0f
+                ? settings.WallRunInputReleaseGraceTime
+                : WallRunTraversalSettings.CreateDefault().WallRunInputReleaseGraceTime;
         }
 
         private bool TryGetWallNormal(Vector3 upAxis, out Vector3 wallNormal)

@@ -9,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private WallSlideTraversalSettings settings;
 
         private SlopeContactResolver slopeContactResolver;
+        private ITraversalIntentContext traversalIntentContext;
         private int wallSlideContactStreak;
 
         public bool IsEnabled => isActiveAndEnabled;
@@ -17,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             slopeContactResolver = GetComponent<SlopeContactResolver>();
+            traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
             if (slopeContactResolver == null)
             {
@@ -58,6 +60,13 @@ namespace Koiusa.SteamMultiRuntime
         public bool TryApplyWallSlide(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, bool isWallRunning, out Vector3 nextVelocity)
         {
             nextVelocity = velocity;
+            if (traversalIntentContext != null && traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested))
+            {
+                IsWallSliding = false;
+                wallSlideContactStreak = 0;
+                return false;
+            }
+
             if (isWallRunning)
             {
                 IsWallSliding = false;

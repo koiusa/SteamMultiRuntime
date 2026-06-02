@@ -9,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private WallJumpTraversalSettings settings;
 
         private SlopeContactResolver slopeContactResolver;
+        private ITraversalIntentContext traversalIntentContext;
         private Vector3 lastWallKickNormal;
         private float sameWallKickLockUntilTime;
         private bool hasLastWallKick;
@@ -16,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             slopeContactResolver = GetComponent<SlopeContactResolver>();
+            traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
             if (slopeContactResolver == null)
             {
@@ -60,6 +62,13 @@ namespace Koiusa.SteamMultiRuntime
         public bool TryWallJump(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, out Vector3 jumpVelocity)
         {
             jumpVelocity = velocity;
+
+            // Coordinator 側の呼び出し条件と整合する防御判定
+            if (traversalIntentContext != null && !traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested))
+            {
+                return false;
+            }
+
             if (!TryGetWallNormal(upAxis, out var wallNormal))
             {
                 return false;

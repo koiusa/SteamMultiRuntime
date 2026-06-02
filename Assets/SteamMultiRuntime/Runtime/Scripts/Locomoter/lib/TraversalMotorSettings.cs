@@ -36,6 +36,10 @@ namespace Koiusa.SteamMultiRuntime
         public float TriangleKickForwardForce;
         [Unit("フレーム", "壁走行開始に必要な接触フレーム数")]
         public int WallRunStartContactFrames;
+        [Unit("m/s", "壁から離れる速度がこの値を超えると壁走行を開始しない")]
+        public float WallRunAwayFromWallMinSpeed;
+        [Unit("秒", "壁走行中に入力を離しても維持する猶予時間")]
+        public float WallRunInputReleaseGraceTime;
         [Unit("倍率", "壁スライド時の重力倍率（0.0-1.0推奨）")]
         public float WallSlideGravityMultiplier;
         [Unit("m/s", "壁スライド時の最大落下速度")]
@@ -51,6 +55,8 @@ namespace Koiusa.SteamMultiRuntime
         public int WallSlideStartContactFrames;
         [Unit("ドット積", "壁スライド終了の入力判定閾値（-1.0-1.0）")]
         public float WallSlideExitMoveOppositeNormalDot;
+        [Unit("m/s", "壁から離れる速度がこの値を超えると壁スライドを開始しない")]
+        public float WallSlideAwayFromWallMinSpeed;
 
         public TraversalMotorSettings(
             float wallRunSpeed,
@@ -65,6 +71,8 @@ namespace Koiusa.SteamMultiRuntime
             float wallJumpAwayForce,
             float triangleKickForwardForce,
             int wallRunStartContactFrames,
+            float wallRunAwayFromWallMinSpeed,
+            float wallRunInputReleaseGraceTime,
             float wallSlideGravityMultiplier,
             float wallSlideMaxFallSpeed,
             WallJumpTrajectoryMode wallJumpTrajectoryMode,
@@ -72,7 +80,8 @@ namespace Koiusa.SteamMultiRuntime
             float sameWallNormalDotThreshold,
             float wallSlideMinDownSpeed,
             int wallSlideStartContactFrames,
-            float wallSlideExitMoveOppositeNormalDot)
+            float wallSlideExitMoveOppositeNormalDot,
+            float wallSlideAwayFromWallMinSpeed)
         {
             WallRunSpeed = wallRunSpeed;
             WallRunAcceleration = wallRunAcceleration;
@@ -86,6 +95,8 @@ namespace Koiusa.SteamMultiRuntime
             WallJumpAwayForce = wallJumpAwayForce;
             TriangleKickForwardForce = triangleKickForwardForce;
             WallRunStartContactFrames = wallRunStartContactFrames;
+            WallRunAwayFromWallMinSpeed = wallRunAwayFromWallMinSpeed;
+            WallRunInputReleaseGraceTime = wallRunInputReleaseGraceTime;
             WallSlideGravityMultiplier = wallSlideGravityMultiplier;
             WallSlideMaxFallSpeed = wallSlideMaxFallSpeed;
             WallJumpTrajectoryMode = wallJumpTrajectoryMode;
@@ -94,6 +105,7 @@ namespace Koiusa.SteamMultiRuntime
             WallSlideMinDownSpeed = wallSlideMinDownSpeed;
             WallSlideStartContactFrames = wallSlideStartContactFrames;
             WallSlideExitMoveOppositeNormalDot = wallSlideExitMoveOppositeNormalDot;
+            WallSlideAwayFromWallMinSpeed = wallSlideAwayFromWallMinSpeed;
         }
 
         public static TraversalMotorSettings CreateDefault()
@@ -111,6 +123,8 @@ namespace Koiusa.SteamMultiRuntime
                 wallJumpAwayForce: 5f,
                 triangleKickForwardForce: 3f,
                 wallRunStartContactFrames: 2,
+                wallRunAwayFromWallMinSpeed: 0.15f,
+                wallRunInputReleaseGraceTime: 0.2f,
                 wallSlideGravityMultiplier: 0.5f,
                 wallSlideMaxFallSpeed: 3f,
                 wallJumpTrajectoryMode: WallJumpTrajectoryMode.Snappy,
@@ -118,7 +132,8 @@ namespace Koiusa.SteamMultiRuntime
                 sameWallNormalDotThreshold: 0.97f,
                 wallSlideMinDownSpeed: 1.5f,
                 wallSlideStartContactFrames: 2,
-                wallSlideExitMoveOppositeNormalDot: 0.3f);
+                wallSlideExitMoveOppositeNormalDot: 0.3f,
+                wallSlideAwayFromWallMinSpeed: 0.15f);
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -135,6 +150,8 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallJumpAwayForce);
             serializer.SerializeValue(ref TriangleKickForwardForce);
             serializer.SerializeValue(ref WallRunStartContactFrames);
+            serializer.SerializeValue(ref WallRunAwayFromWallMinSpeed);
+            serializer.SerializeValue(ref WallRunInputReleaseGraceTime);
             serializer.SerializeValue(ref WallSlideGravityMultiplier);
             serializer.SerializeValue(ref WallSlideMaxFallSpeed);
             serializer.SerializeValue(ref WallJumpTrajectoryMode);
@@ -143,6 +160,7 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallSlideMinDownSpeed);
             serializer.SerializeValue(ref WallSlideStartContactFrames);
             serializer.SerializeValue(ref WallSlideExitMoveOppositeNormalDot);
+            serializer.SerializeValue(ref WallSlideAwayFromWallMinSpeed);
         }
     }
 }
