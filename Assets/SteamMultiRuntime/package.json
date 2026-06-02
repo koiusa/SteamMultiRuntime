@@ -41,14 +41,14 @@
       "path": "Samples/SteamMultiPlayer_Server"
     },
     {
-      "displayName": "Samples Steam Multi Player Simple",
-      "description": "Sample for Steam Multi Player Simple.",
-      "path": "Samples/SteamMultiPlayer_Simple"
+      "displayName": "Samples Steam Multi Player Quarter View",
+      "description": "Sample for Steam Multi Player Quarter View.",
+      "path": "Samples/SteamMultiPlayer_QuarterView"
     },
     {
-      "displayName": "Samples Steam Multi Player With Animator",
-      "description": "Sample for Steam Multi Player With Animator.",
-      "path": "Samples/SteamMultiPlayer_WithAnimator"
+      "displayName": "Samples Steam Multi Player Third Person View",
+      "description": "Sample for Steam Multi Player Third Person View.",
+      "path": "Samples/SteamMultiPlayer_ThirdPersonView"
     }
   ]
 }
