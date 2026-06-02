@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3673524978782938107}
-  - component: {fileID: 4211832200434139029}
+  - component: {fileID: 427363977603238572}
   m_Layer: 0
   m_Name: System
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4211832200434139029
+--- !u!114 &427363977603238572
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,6 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7062256032978338714}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1780c163e2ca5494eb36223c5d3e31a2, type: 3}
+  m_Script: {fileID: 11500000, guid: fd792b3904e31b949bb9b0b0188293e3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::EscapeQuitter
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::GameQuitter
+  gameQuitAction: {fileID: 2439831681566174928, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}

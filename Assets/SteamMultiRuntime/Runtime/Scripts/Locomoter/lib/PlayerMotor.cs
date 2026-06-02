@@ -61,7 +61,6 @@ namespace Koiusa.SteamMultiRuntime
             return s.MoveSpeed == 0f && s.GroundAcceleration == 0f && s.JumpForce == 0f;
         }
 
-#if UNITY_EDITOR
         private void OnValidate()
         {
             if (IsSettingsEmpty(settings))
@@ -69,7 +68,6 @@ namespace Koiusa.SteamMultiRuntime
                 settings = PlayerMotorSettings.CreateDefault();
             }
         }
-#endif
 
         private void OnDestroy()
         {

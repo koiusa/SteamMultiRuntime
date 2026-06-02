@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "name": "Input_SteamMultiPlayer",
+    "name": "SteamMultiRuntime_InputActions",
     "maps": [
         {
             "name": "Player",
@@ -1060,6 +1060,34 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "System",
+            "id": "164bf769-9fcb-4741-827f-aa64c536f82d",
+            "actions": [
+                {
+                    "name": "GameQuit",
+                    "type": "Button",
+                    "id": "1b64d717-0e8d-44f8-a665-3c6f1f34448b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cf5c2bf6-3a2b-4fb9-8074-0c981a67aac1",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GameQuit",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
