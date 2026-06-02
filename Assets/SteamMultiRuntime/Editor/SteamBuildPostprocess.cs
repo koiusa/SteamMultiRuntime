@@ -57,46 +57,83 @@ public sealed class SteamBuildPostprocess : IPostprocessBuildWithReport
             return;
         }
 
-        var packageCache = Path.Combine(projectRoot, "Library", "PackageCache");
-        if (!Directory.Exists(packageCache))
+        var source = FindSteamNativePath(projectRoot);
+        if (string.IsNullOrEmpty(source))
         {
-            Debug.LogError($"[SteamBuildPostprocess] PackageCache not found: {packageCache}");
+            Debug.LogError("[SteamBuildPostprocess] Steam native library not found. Checked Assets/Packages/PackageCache paths.");
             return;
         }
 
-        var sourceBundle = FindSteamBundleInPackageCache(packageCache);
-        if (string.IsNullOrEmpty(sourceBundle))
-        {
-            Debug.LogError("[SteamBuildPostprocess] libsteam_api.bundle not found in PackageCache.");
-            return;
-        }
-
+        var sourceName = Path.GetFileName(source);
         var destinations = new[]
         {
-            Path.Combine(appPath, "Contents", "PlugIns", "libsteam_api.bundle"),
-            Path.Combine(appPath, "Contents", "Frameworks", "libsteam_api.bundle"),
-            Path.Combine(appPath, "Contents", "MacOS", "libsteam_api.bundle")
+            Path.Combine(appPath, "Contents", "PlugIns", sourceName),
+            Path.Combine(appPath, "Contents", "Frameworks", sourceName),
+            Path.Combine(appPath, "Contents", "MacOS", sourceName)
         };
 
-        foreach (var destinationBundle in destinations)
+        foreach (var destination in destinations)
         {
-            var destinationDir = Path.GetDirectoryName(destinationBundle);
+            var destinationDir = Path.GetDirectoryName(destination);
             if (!string.IsNullOrEmpty(destinationDir))
             {
                 Directory.CreateDirectory(destinationDir);
             }
 
-            CopyPath(sourceBundle, destinationBundle);
-            Debug.Log($"[SteamBuildPostprocess] Copied libsteam_api.bundle to: {destinationBundle}");
+            CopyPath(source, destination);
+            Debug.Log($"[SteamBuildPostprocess] Copied Steam native library to: {destination}");
         }
     }
 
-    private static string FindSteamBundleInPackageCache(string packageCache)
+    private static string FindSteamNativePath(string projectRoot)
     {
+        // Preferred: embedded package under Assets.
+        var embeddedRoot = Path.Combine(
+            projectRoot,
+            "Assets",
+            "SteamMultiRuntime",
+            "Runtime",
+            "Packages",
+            "Thirdparty",
+            "com.community.netcode.transport.facepunch",
+            "Runtime",
+            "Facepunch",
+            "redistributable_bin",
+            "osx");
+
+        var directEmbedded = FindSteamNativeInRoot(embeddedRoot);
+        if (!string.IsNullOrEmpty(directEmbedded))
+        {
+            return directEmbedded;
+        }
+
+        // Next: UPM package under Packages.
+        var packageRoot = Path.Combine(
+            projectRoot,
+            "Packages",
+            "com.community.netcode.transport.facepunch",
+            "Runtime",
+            "Facepunch",
+            "redistributable_bin",
+            "osx");
+
+        var directPackage = FindSteamNativeInRoot(packageRoot);
+        if (!string.IsNullOrEmpty(directPackage))
+        {
+            return directPackage;
+        }
+
+        // Fallback: PackageCache.
+        var packageCache = Path.Combine(projectRoot, "Library", "PackageCache");
+        if (!Directory.Exists(packageCache))
+        {
+            return string.Empty;
+        }
+
         var dirs = Directory.GetDirectories(packageCache, "com.koiusa.steammultiruntime@*", SearchOption.TopDirectoryOnly);
         foreach (var dir in dirs)
         {
-            var candidate = Path.Combine(
+            var cacheRoot = Path.Combine(
                 dir,
                 "Runtime",
                 "Packages",
@@ -104,13 +141,35 @@ public sealed class SteamBuildPostprocess : IPostprocessBuildWithReport
                 "Runtime",
                 "Facepunch",
                 "redistributable_bin",
-                "osx",
-                "libsteam_api.bundle");
+                "osx");
 
-            if (Directory.Exists(candidate) || File.Exists(candidate))
+            var candidate = FindSteamNativeInRoot(cacheRoot);
+            if (!string.IsNullOrEmpty(candidate))
             {
                 return candidate;
             }
+        }
+
+        return string.Empty;
+    }
+
+    private static string FindSteamNativeInRoot(string root)
+    {
+        if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
+        {
+            return string.Empty;
+        }
+
+        var bundle = Path.Combine(root, "libsteam_api.bundle");
+        if (Directory.Exists(bundle) || File.Exists(bundle))
+        {
+            return bundle;
+        }
+
+        var dylib = Path.Combine(root, "libsteam_api.dylib");
+        if (File.Exists(dylib))
+        {
+            return dylib;
         }
 
         return string.Empty;
