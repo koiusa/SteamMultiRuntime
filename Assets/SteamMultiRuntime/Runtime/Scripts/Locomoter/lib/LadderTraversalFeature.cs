@@ -19,6 +19,14 @@ namespace Koiusa.SteamMultiRuntime
         private float reattachBlockedUntilTime;
         private ITraversalIntentContext traversalIntentContext;
 
+        private bool hasClimbAxisLock;
+        private bool useXAxisAsClimb;
+        private float xAxisClimbSign = -1f;
+        private float ladderEnteredTime;
+
+        private const float ClimbAxisLockEnterThreshold = 0.2f;
+        private const float GroundEnterDetachGraceTime = 0.2f;
+
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
 
@@ -56,6 +64,8 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             rb.useGravity = true;
             reattachBlockedUntilTime = 0f;
+            hasClimbAxisLock = false;
+            xAxisClimbSign = -1f;
         }
 
         public void DetachFromLadder(float reattachDelaySeconds)
@@ -64,6 +74,8 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             rb.useGravity = true;
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
+            hasClimbAxisLock = false;
+            xAxisClimbSign = -1f;
         }
 
         public void NotifyEnterLadder(LadderVolume ladder)
@@ -75,6 +87,7 @@ namespace Koiusa.SteamMultiRuntime
 
             activeLadders.Add(ladder);
             currentLadder = ladder;
+            ladderEnteredTime = Time.time;
         }
 
         public void NotifyExitLadder(LadderVolume ladder)
@@ -147,9 +160,12 @@ namespace Koiusa.SteamMultiRuntime
                 : jumpRequested;
 
             var climbInput = ResolveClimbInput(moveInput, out var detachInput);
-            var wantsLateralDetach = Mathf.Abs(detachInput) > 0.2f;
+            var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= GroundEnterDetachGraceTime;
+
+            // 軸ロック前は離脱判定を行わない（地面から侵入直後に取りこぼさないため）
+            var wantsLateralDetach = hasClimbAxisLock && Mathf.Abs(detachInput) > 0.2f;
             var wantsGroundDescendDetach = isGrounded && climbInput < -0.01f;
-            var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f;
+            var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f && !isJustEnteredFromGround;
 
             if (wantsJumpDetach)
             {
@@ -187,8 +203,41 @@ namespace Koiusa.SteamMultiRuntime
 
         private float ResolveClimbInput(Vector2 moveInput, out float detachInput)
         {
-            // キャラクター向き基準:
-            // 前後入力(moveInput.y)を昇降、左右入力(moveInput.x)を離脱として扱う
+            // 梯子侵入後に最初に強く入力された軸を昇降軸としてロックする。
+            // これにより、梯子が横向きに見える固定カメラでも左右入力で昇降できる。
+            if (!hasClimbAxisLock)
+            {
+                var absX = Mathf.Abs(moveInput.x);
+                var absY = Mathf.Abs(moveInput.y);
+                var dominant = Mathf.Max(absX, absY);
+
+                if (dominant >= ClimbAxisLockEnterThreshold)
+                {
+                    useXAxisAsClimb = absX > absY;
+                    hasClimbAxisLock = true;
+
+                    if (useXAxisAsClimb)
+                    {
+                        // 最初に強く押した左右方向を「上昇方向」としてロックする。
+                        // これにより左側/右側どちらの梯子でも直感どおりに登れる。
+                        xAxisClimbSign = moveInput.x >= 0f ? 1f : -1f;
+                    }
+                }
+            }
+
+            if (!hasClimbAxisLock)
+            {
+                // ロック未確定時は従来どおりYを昇降、Xを離脱として扱う
+                detachInput = moveInput.x;
+                return moveInput.y;
+            }
+
+            if (useXAxisAsClimb)
+            {
+                detachInput = moveInput.y;
+                return moveInput.x * xAxisClimbSign;
+            }
+
             detachInput = moveInput.x;
             return moveInput.y;
         }
