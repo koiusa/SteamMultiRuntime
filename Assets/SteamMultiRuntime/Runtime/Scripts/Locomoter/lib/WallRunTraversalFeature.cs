@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private int wallContactStreak;
         private bool wallRunGateClosed;
         private float wallRunInputReleaseUntilTime;
+        private bool isInputReleaseGraceActive;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsWallRunning { get; private set; }
@@ -63,6 +64,7 @@ namespace Koiusa.SteamMultiRuntime
             wallContactStreak = 0;
             wallRunGateClosed = false;
             wallRunInputReleaseUntilTime = 0f;
+            isInputReleaseGraceActive = false;
         }
 
         public void NotifyWallJump()
@@ -71,6 +73,7 @@ namespace Koiusa.SteamMultiRuntime
             wallContactStreak = 0;
             wallRunGateClosed = true;
             wallRunInputReleaseUntilTime = 0f;
+            isInputReleaseGraceActive = false;
         }
 
         public bool TryAccelerateOnWall(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, out Vector3 nextVelocity)
@@ -152,9 +155,9 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 var graceTime = GetInputReleaseGraceTime();
-
-                if (wallRunInputReleaseUntilTime <= Time.time)
+                if (!isInputReleaseGraceActive)
                 {
+                    isInputReleaseGraceActive = true;
                     wallRunInputReleaseUntilTime = Time.time + graceTime;
                 }
 
@@ -166,9 +169,10 @@ namespace Koiusa.SteamMultiRuntime
             else
             {
                 wallRunInputReleaseUntilTime = 0f;
+                isInputReleaseGraceActive = false;
             }
 
-            if (!HasEnoughAlongWallSpeed(velocity, upAxis, wallNormal))
+            if (!HasEnoughAlongWallSpeed(velocity, upAxis, wallNormal, isInputReleaseGraceActive))
             {
                 return false;
             }
@@ -200,11 +204,19 @@ namespace Koiusa.SteamMultiRuntime
             return intoWallDot >= settings.WallRunMinInputDot;
         }
 
-        private bool HasEnoughAlongWallSpeed(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
+        private bool HasEnoughAlongWallSpeed(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal, bool isInInputReleaseGrace)
         {
             var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
             var alongWallHorizontalSpeed = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
-            return alongWallHorizontalSpeed >= settings.WallRunMinAlongWallSpeed;
+
+            var minSpeed = settings.WallRunMinAlongWallSpeed;
+            if (isInInputReleaseGrace)
+            {
+                // 入力リリース猶予中は必要速度閾値を緩和する
+                minSpeed *= 0.5f;
+            }
+
+            return alongWallHorizontalSpeed >= minSpeed;
         }
 
         private float GetInputReleaseGraceTime()
