@@ -14,11 +14,12 @@ GameObject:
   - component: {fileID: -2727450833852221789}
   - component: {fileID: 2404645661678682767}
   - component: {fileID: 8293643381823499549}
-  - component: {fileID: 8795024021923995256}
   - component: {fileID: 8996789483217533819}
   - component: {fileID: 6198608453556538922}
   - component: {fileID: 2467385649118676374}
   - component: {fileID: 7842358561702527256}
+  - component: {fileID: 8170472263845165246}
+  - component: {fileID: -5901361798922696678}
   m_Layer: 0
   m_Name: NetworkPlayer_NPC
   m_TagString: Untagged
@@ -105,7 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3319208734
+  GlobalObjectIdHash: 2618941016
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -181,24 +182,6 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
---- !u!114 &8795024021923995256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27c585479881dd54ebe3407ba37bb811, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.FallRecovery
-  recoverBelowY: -30
-  recoveryPoint: {fileID: 0}
-  recoveryOffset: {x: 0, y: 1, z: 0}
-  onRecovered:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!195 &8996789483217533819
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -322,6 +305,37 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &8170472263845165246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e1d399380220c24d901ca864e9d48b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.Common.System::Koiusa.Common.System.FallRecovery
+  recoverBelowY: -30
+  recoveryPoint: {fileID: 0}
+  recoveryOffset: {x: 0, y: 1, z: 0}
+  processGate: {fileID: -2727450833852221789}
+  onRecovered:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-5901361798922696678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56d1d518974365843a70fa21709b25ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.NetworkServerFallRecoveryProcessGate
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,6 +380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 327ecbedcc38d0a46b88b0a86ac9327e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
+  isLocalPlayer: 0
 --- !u!1 &8629825221293741716
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 3488588548170026997}
   - component: {fileID: 5021112773685558985}
   - component: {fileID: 4003174539648773126}
-  - component: {fileID: 8795024021923995256}
   - component: {fileID: 324244260282127880}
   - component: {fileID: 3613120474214503031}
   - component: {fileID: 626167900066496392}
@@ -25,6 +24,7 @@ GameObject:
   - component: {fileID: 6962452901085774379}
   - component: {fileID: 4331762846265168320}
   - component: {fileID: 2504532941486712691}
+  - component: {fileID: 937887151947646620}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
   m_TagString: Untagged
@@ -150,24 +150,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerController
   inputActionsProfile: {fileID: 11400000, guid: 7eca54e9ff221ea498609aef2dbc614d, type: 2}
   cameraTransform: {fileID: 0}
---- !u!114 &8795024021923995256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27c585479881dd54ebe3407ba37bb811, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.FallRecovery
-  recoverBelowY: -30
-  recoveryPoint: {fileID: 0}
-  recoveryOffset: {x: 0, y: 1, z: 0}
-  onRecovered:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &324244260282127880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,6 +268,8 @@ MonoBehaviour:
     WallRunMaxUpwardStartSpeed: 0
     WallMaxUpDot: 0.2
     WallRunStartContactFrames: 2
+    WallRunAwayFromWallMinSpeed: 0
+    WallRunInputReleaseGraceTime: 0
 --- !u!114 &7364711086840703048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,6 +309,7 @@ MonoBehaviour:
     WallSlideMinDownSpeed: 1.5
     WallSlideStartContactFrames: 2
     WallSlideExitMoveOppositeNormalDot: 0.3
+    WallSlideAwayFromWallMinSpeed: 0
 --- !u!114 &6962452901085774379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -365,6 +350,27 @@ MonoBehaviour:
     ClimbSpeed: 4
     ClimbAcceleration: 20
     ExitTopBoostSpeed: 2
+    DirectionalDetachReattachDelay: 0
+    JumpDetachReattachDelay: 0
+--- !u!114 &937887151947646620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e1d399380220c24d901ca864e9d48b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.Common.System::Koiusa.Common.System.FallRecovery
+  recoverBelowY: -30
+  recoveryPoint: {fileID: 0}
+  recoveryOffset: {x: 0, y: 1, z: 0}
+  processGate: {fileID: 0}
+  onRecovered:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,9 +1,8 @@
 using System;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.Common.System
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
@@ -14,26 +13,30 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Transform recoveryPoint;
         [SerializeField] private Vector3 recoveryOffset = new Vector3(0f, 1f, 0f);
 
+        [Header("Process")]
+        [SerializeField] private MonoBehaviour processGate;
+
         [Header("Events")]
         [SerializeField] private UnityEvent onRecovered;
 
         private Rigidbody rb;
-        private NetworkObject networkObject;
+        private IFallRecoveryProcessGate gate;
         private Vector3 initialPosition;
         private Quaternion initialRotation;
 
         public event Action Recovered;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             rb = GetComponent<Rigidbody>();
-            networkObject = GetComponent<NetworkObject>();
+            ResolveProcessGate();
             initialPosition = transform.position;
             initialRotation = transform.rotation;
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
+            ResolveProcessGate();
             initialPosition = transform.position;
             initialRotation = transform.rotation;
         }
@@ -53,22 +56,12 @@ namespace Koiusa.SteamMultiRuntime
             Recover();
         }
 
-        private bool ShouldProcess()
+        protected virtual bool ShouldProcess()
         {
-            if (networkObject == null)
-            {
-                return true;
-            }
-
-            if (!networkObject.IsSpawned)
-            {
-                return false;
-            }
-
-            return NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+            return gate == null || gate.ShouldProcess();
         }
 
-        public void Recover()
+        public virtual void Recover()
         {
             var targetPosition = recoveryPoint != null ? recoveryPoint.position + recoveryOffset : initialPosition + recoveryOffset;
             var targetRotation = recoveryPoint != null ? recoveryPoint.rotation : initialRotation;
@@ -81,6 +74,11 @@ namespace Koiusa.SteamMultiRuntime
 
             onRecovered?.Invoke();
             Recovered?.Invoke();
+        }
+
+        private void ResolveProcessGate()
+        {
+            gate = processGate as IFallRecoveryProcessGate;
         }
     }
 }

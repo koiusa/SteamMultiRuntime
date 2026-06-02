@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 2404645661678682767}
   - component: {fileID: 8293643381823499549}
   - component: {fileID: 2030767787834240538}
-  - component: {fileID: 8795024021923995256}
   - component: {fileID: 2070585055845636041}
   - component: {fileID: 324244260282127880}
   - component: {fileID: 3613120474214503031}
@@ -26,6 +25,8 @@ GameObject:
   - component: {fileID: 5494012229538613394}
   - component: {fileID: 4686477341842054326}
   - component: {fileID: 3692948723871859493}
+  - component: {fileID: 8206056860747446420}
+  - component: {fileID: 3016933102507144972}
   m_Layer: 0
   m_Name: NetworkPlayer_Runtime
   m_TagString: Untagged
@@ -208,24 +209,6 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
---- !u!114 &8795024021923995256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27c585479881dd54ebe3407ba37bb811, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.FallRecovery
-  recoverBelowY: -30
-  recoveryPoint: {fileID: 0}
-  recoveryOffset: {x: 0, y: 1, z: 0}
-  onRecovered:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &2070585055845636041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -431,6 +414,37 @@ MonoBehaviour:
     WallRunStartContactFrames: 2
     WallRunAwayFromWallMinSpeed: 0.15
     WallRunInputReleaseGraceTime: 0.2
+--- !u!114 &8206056860747446420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e1d399380220c24d901ca864e9d48b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.Common.System::Koiusa.Common.System.FallRecovery
+  recoverBelowY: -30
+  recoveryPoint: {fileID: 0}
+  recoveryOffset: {x: 0, y: 1, z: 0}
+  processGate: {fileID: -2727450833852221789}
+  onRecovered:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &3016933102507144972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56d1d518974365843a70fa21709b25ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.NetworkServerFallRecoveryProcessGate
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
