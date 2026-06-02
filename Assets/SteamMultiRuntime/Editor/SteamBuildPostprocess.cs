@@ -107,6 +107,18 @@ public sealed class SteamBuildPostprocess : IPostprocessBuildWithReport
             return directEmbedded;
         }
 
+        // Embedded package under Packages/ (non-Assets installation).
+        var embeddedPackageRoot = Path.Combine(
+            projectRoot,
+            "Packages",
+            "com.koiusa.steammultiruntime");
+
+        var embeddedFromPackages = FindSteamNativeInSteamMultiRuntimeRoot(embeddedPackageRoot);
+        if (!string.IsNullOrEmpty(embeddedFromPackages))
+        {
+            return embeddedFromPackages;
+        }
+
         // Next: UPM package under Packages.
         var packageRoot = Path.Combine(
             projectRoot,
@@ -133,17 +145,18 @@ public sealed class SteamBuildPostprocess : IPostprocessBuildWithReport
         var dirs = Directory.GetDirectories(packageCache, "com.koiusa.steammultiruntime@*", SearchOption.TopDirectoryOnly);
         foreach (var dir in dirs)
         {
-            var cacheRoot = Path.Combine(
-                dir,
-                "Runtime",
-                "Packages",
-                "com.community.netcode.transport.facepunch",
-                "Runtime",
-                "Facepunch",
-                "redistributable_bin",
-                "osx");
+            var candidate = FindSteamNativeInSteamMultiRuntimeRoot(dir);
+            if (!string.IsNullOrEmpty(candidate))
+            {
+                return candidate;
+            }
+        }
 
-            var candidate = FindSteamNativeInRoot(cacheRoot);
+        // Additional fallback for git/hash naming variants in PackageCache.
+        var broadDirs = Directory.GetDirectories(packageCache, "com.koiusa.steammultiruntime*", SearchOption.TopDirectoryOnly);
+        foreach (var dir in broadDirs)
+        {
+            var candidate = FindSteamNativeInSteamMultiRuntimeRoot(dir);
             if (!string.IsNullOrEmpty(candidate))
             {
                 return candidate;
@@ -151,6 +164,45 @@ public sealed class SteamBuildPostprocess : IPostprocessBuildWithReport
         }
 
         return string.Empty;
+    }
+
+    private static string FindSteamNativeInSteamMultiRuntimeRoot(string steamMultiRuntimeRoot)
+    {
+        if (string.IsNullOrWhiteSpace(steamMultiRuntimeRoot) || !Directory.Exists(steamMultiRuntimeRoot))
+        {
+            return string.Empty;
+        }
+
+        // Current package layout.
+        var thirdpartyRoot = Path.Combine(
+            steamMultiRuntimeRoot,
+            "Runtime",
+            "Packages",
+            "Thirdparty",
+            "com.community.netcode.transport.facepunch",
+            "Runtime",
+            "Facepunch",
+            "redistributable_bin",
+            "osx");
+
+        var fromThirdparty = FindSteamNativeInRoot(thirdpartyRoot);
+        if (!string.IsNullOrEmpty(fromThirdparty))
+        {
+            return fromThirdparty;
+        }
+
+        // Backward-compatible layout without Thirdparty/.
+        var legacyRoot = Path.Combine(
+            steamMultiRuntimeRoot,
+            "Runtime",
+            "Packages",
+            "com.community.netcode.transport.facepunch",
+            "Runtime",
+            "Facepunch",
+            "redistributable_bin",
+            "osx");
+
+        return FindSteamNativeInRoot(legacyRoot);
     }
 
     private static string FindSteamNativeInRoot(string root)
