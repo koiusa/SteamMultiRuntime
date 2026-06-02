@@ -12,5 +12,8 @@
     "driver",
     "runtime",
     "unity"
-  ]
+  ],
+  "dependencies": {
+    "com.koiusa.steammultiruntime.locomoter": "0.1.0"
+  }
 }
