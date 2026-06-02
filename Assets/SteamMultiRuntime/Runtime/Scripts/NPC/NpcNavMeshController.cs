@@ -127,6 +127,38 @@ namespace Koiusa.SteamMultiRuntime
             movement.OnCenterDestinationNeeded -= OnCenterDestinationNeeded;
             movement.OnDestinationNeeded -= OnDestinationNeeded;
             jump.OnDisable();
+
+            StopAgent();
+            ResetAgentPath();
+        }
+
+        private void OnDestroy()
+        {
+            StopAgent();
+            ResetAgentPath();
+        }
+
+        private void StopAgent()
+        {
+            if (_agent == null) return;
+            try
+            {
+                if (_agent.enabled && _agent.isOnNavMesh)
+                    _agent.isStopped = true;
+            }
+            catch { }
+        }
+
+        private void ResetAgentPath()
+        {
+            if (_agent == null)
+                return;
+            try
+            {
+                if (_agent.isOnNavMesh)
+                    _agent.ResetPath();
+            }
+            catch { }
         }
 
         private void OnValidate()
