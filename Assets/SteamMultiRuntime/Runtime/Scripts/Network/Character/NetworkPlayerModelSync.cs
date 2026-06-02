@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime.Network
     {
         [Tooltip("モデルIDリスト（RuntimeUserProfileから自動設定されます）")]
         public CharacterModelIdList modelIdList;
-        public CharacterPrefabLoader prefabLoader;
+        public ICharacterPrefabLoader prefabLoaderBehaviour;
 
         // サーバーが決定し全クライアントに同期するモデルインデックス
         public NetworkVariable<int> SelectedModelIndex = new NetworkVariable<int>(0);
@@ -27,7 +27,7 @@ namespace Koiusa.SteamMultiRuntime.Network
         public override void OnNetworkSpawn()
         {
             PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
-            PlayerModelSyncUtility.EnsurePrefabLoader(gameObject, ref prefabLoader);
+            PlayerModelSyncUtility.EnsurePrefabLoader(gameObject, ref prefabLoaderBehaviour);
             SelectedModelIndex.OnValueChanged += OnModelChanged;
             ApplyCurrentModel();
         }
@@ -48,7 +48,7 @@ namespace Koiusa.SteamMultiRuntime.Network
         {
             PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
             var resourceId = PlayerModelSyncUtility.GetCurrentResourceId(modelIdList, SelectedModelIndex.Value);
-            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoader, resourceId, nameof(NetworkPlayerModelSync));
+            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(NetworkPlayerModelSync));
         }
 
         // NetworkVariable変更時のコールバック

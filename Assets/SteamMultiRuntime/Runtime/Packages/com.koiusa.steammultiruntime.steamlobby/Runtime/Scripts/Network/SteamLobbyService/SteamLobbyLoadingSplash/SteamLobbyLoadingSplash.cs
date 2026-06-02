@@ -191,7 +191,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var prefabCharacterLoader = playerPrefab.GetComponent<CharacterPrefabLoader>();
+            var prefabCharacterLoader = playerPrefab.GetComponent<ICharacterPrefabLoader>();
             if (prefabCharacterLoader == null)
             {
                 return;
@@ -213,7 +213,7 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
 
-                var runtimeCharacterLoader = playerObject.GetComponent<CharacterPrefabLoader>();
+                var runtimeCharacterLoader = playerObject.GetComponent<ICharacterPrefabLoader>();
                 if (runtimeCharacterLoader == null)
                 {
                     return;
@@ -224,24 +224,7 @@ namespace Koiusa.SteamMultiRuntime
                     return;
                 }
 
-                // PrefabLoadedイベントで待機
-                var tcs = new TaskCompletionSource<bool>();
-                void OnLoaded(GameObject obj)
-                {
-                    runtimeCharacterLoader.PrefabLoaded -= OnLoaded;
-                    tcs.TrySetResult(true);
-                }
-                runtimeCharacterLoader.PrefabLoaded += OnLoaded;
-
-                // 既にロード済みなら即解除
-                if (runtimeCharacterLoader.IsLoaded)
-                {
-                    runtimeCharacterLoader.PrefabLoaded -= OnLoaded;
-                    return;
-                }
-
-                await tcs.Task;
-                return;
+                await Task.Yield();
             }
         }
 

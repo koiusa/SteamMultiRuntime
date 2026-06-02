@@ -3,9 +3,10 @@
     "rootNamespace": "",
     "references": [
         "Koiusa.Common.System",
-        "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
         "Unity.InputSystem",
-        "Unity.Netcode.Runtime"
+        "Unity.Netcode.Runtime",
+        "Facepunch Transport for Netcode for GameObjects",
+        "Koiusa.SteamMultiRuntime.Locomoter.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

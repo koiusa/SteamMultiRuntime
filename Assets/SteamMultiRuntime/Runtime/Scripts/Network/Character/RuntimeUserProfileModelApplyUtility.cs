@@ -29,7 +29,7 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            var loader = target.GetComponent<CharacterPrefabLoader>();
+            var loader = target.GetComponent<ICharacterPrefabLoader>();
             if (loader == null)
             {
                 return false;

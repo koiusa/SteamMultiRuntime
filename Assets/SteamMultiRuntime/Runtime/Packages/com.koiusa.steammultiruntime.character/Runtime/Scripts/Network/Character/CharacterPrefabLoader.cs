@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     }
 
     [DisallowMultipleComponent]
-    public class CharacterPrefabLoader : MonoBehaviour
+    public class CharacterPrefabLoader : MonoBehaviour, ICharacterPrefabLoader
     {
         public GameObject LoadedPrefab { get; private set; }
         public GameObject LastInstantiatedObject { get; private set; }
@@ -71,5 +71,6 @@ namespace Koiusa.SteamMultiRuntime
             PrefabInstantiated?.Invoke(instance);
             return instance;
         }
+
     }
 }

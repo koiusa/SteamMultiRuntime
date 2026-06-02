@@ -10,7 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [Tooltip("モデルIDリスト（RuntimeUserProfileから自動設定されます）")]
         public CharacterModelIdList modelIdList;
-        public CharacterPrefabLoader prefabLoader;
+        public ICharacterPrefabLoader prefabLoaderBehaviour;
 
         [SerializeField] private int selectedModelIndex;
 
@@ -38,7 +38,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
             var resourceId = PlayerModelSyncUtility.GetCurrentResourceId(modelIdList, selectedModelIndex);
-            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoader, resourceId, nameof(LocalPlayerModelSync));
+            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(LocalPlayerModelSync));
         }
     }
 }

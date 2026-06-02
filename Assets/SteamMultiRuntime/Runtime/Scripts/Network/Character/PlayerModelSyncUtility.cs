@@ -18,18 +18,21 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public static void EnsurePrefabLoader(GameObject owner, ref CharacterPrefabLoader prefabLoader)
+        public static void EnsurePrefabLoader(GameObject owner, ref ICharacterPrefabLoader prefabLoaderBehaviour)
         {
+            var prefabLoader = prefabLoaderBehaviour as ICharacterPrefabLoader;
             if (prefabLoader != null)
             {
                 return;
             }
 
-            prefabLoader = owner.GetComponent<CharacterPrefabLoader>();
+            prefabLoader = owner.GetComponent<ICharacterPrefabLoader>();
             if (prefabLoader == null)
             {
                 prefabLoader = owner.AddComponent<CharacterPrefabLoader>();
             }
+
+            prefabLoaderBehaviour = prefabLoader;
         }
 
         public static string GetCurrentResourceId(Network.CharacterModelIdList modelIdList, int selectedModelIndex)
@@ -44,9 +47,10 @@ namespace Koiusa.SteamMultiRuntime
             return modelIdList != null ? modelIdList.ResolveResourcePath(modelId) : modelId;
         }
 
-        public static void ApplyCurrentModel(GameObject owner, ref CharacterPrefabLoader prefabLoader, string resourceId, string logPrefix)
+        public static void ApplyCurrentModel(GameObject owner, ref ICharacterPrefabLoader prefabLoaderBehaviour, string resourceId, string logPrefix)
         {
-            EnsurePrefabLoader(owner, ref prefabLoader);
+            EnsurePrefabLoader(owner, ref prefabLoaderBehaviour);
+            var prefabLoader = prefabLoaderBehaviour as ICharacterPrefabLoader;
             if (prefabLoader == null || string.IsNullOrEmpty(resourceId))
             {
                 return;
