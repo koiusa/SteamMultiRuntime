@@ -17,7 +17,10 @@ Usage
 -----
 
 サンプルシーンをビルド対象に追加します。  
-1. UnityのPackage Managerで SteamMultiRuntime の「Samples」から Common Sample Asset をインポート。
-2. BuildProfiles をまだ作成していない場合は、Unityエディタのメニューから `Assets > Create > SteamMultiRuntime > BuildProfiles` を表示。
-3. シーンリストに、インポートしたサンプル`Assets/Samples/SteamMultiRuntime/<バージョン>/Samples Common Assets`のシーンを追加。
-4. 「Samples Steam Multi Player Simple」又は「Samples Steam Multi Player With Animator」をプレイ。  
+1. Unityエディタのメニューから `Assets > Create > SteamMultiRuntime > BuildProfiles` を表示してビルドプロファイルを作成。
+2. BuildProfiles ファイルを開き、以下のサンプルシーンを追加：
+   - 配下のシーンをすべて追加
+     - `Assets/SteamMultiRuntime/Samples/Common/<シーン名>.unity`
+   - ゲームシーン: 以下のいずれかを選択
+     - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
+3. Unityエディタでサンプルシーンをプレイ。  
