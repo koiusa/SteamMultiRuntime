@@ -1,8 +1,8 @@
 {
-	"name": "Koiusa.SteamMultiRuntime.Network.Editor",
+	"name": "Koiusa.SteamMultiRuntime.Integration.Editor",
 	"rootNamespace": "",
 	"references": [
-		"Koiusa.SteamMultiRuntime.Network.Runtime",
+		"Koiusa.SteamMultiRuntime.Integration.Runtime",
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime"
 	],
 	"includePlatforms": [

@@ -1,5 +1,5 @@
 {
-	"name": "Koiusa.SteamMultiRuntime.Network.Runtime",
+	"name": "Koiusa.SteamMultiRuntime.Integration.Runtime",
 	"rootNamespace": "",
 	"references": [
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
