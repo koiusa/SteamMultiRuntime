@@ -50,7 +50,7 @@ MonoBehaviour:
     rawReference:
       rid: -2
   networkManager: {fileID: 384021173469697096}
-  splashSettings: {fileID: 11400000, guid: b03839c4c062ecb45a053abbc85c6091, type: 2}
+  splashSettings: {fileID: 11400000, guid: d39f224b1ae3c224689a29688bbae369, type: 2}
   showSplashDuringSceneLoad: 1
   references:
     version: 2

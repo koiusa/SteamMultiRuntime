@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 namespace Koiusa.SteamMultiRuntime.Network
 {
     [DisallowMultipleComponent]
-    public class LocalStartupSceneLoader : MonoBehaviour, IStartupStageSceneLoaderContext
+    public class LocalStartupSceneLoader : MonoBehaviour, IStartupStageSceneLoaderContext, ILoadingSplashEventSource
     {
         [Header("Startup Scene")]
         [SerializeField] private bool loadOnStart = true;
@@ -13,6 +13,9 @@ namespace Koiusa.SteamMultiRuntime.Network
         [SerializeField, Min(0)] private int startupStageSceneIndex;
         [SerializeField] private LoadSceneMode sceneLoadMode = LoadSceneMode.Single;
         [SerializeField] private bool setLoadedSceneAsActive = true;
+
+        public event System.Action LoadingStarted;
+        public event System.Action LoadingFinished;
 
         public StageSceneList StageSceneList => stageSceneList;
         public int StartupStageSceneIndex => startupStageSceneIndex;
@@ -29,9 +32,17 @@ namespace Koiusa.SteamMultiRuntime.Network
             await LoadStartupSceneAsync();
         }
 
-        public Task<bool> LoadStartupSceneAsync()
+        public async Task<bool> LoadStartupSceneAsync()
         {
-            return StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalStartupSceneLoader));
+            LoadingStarted?.Invoke();
+            try
+            {
+                return await StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalStartupSceneLoader));
+            }
+            finally
+            {
+                LoadingFinished?.Invoke();
+            }
         }
     }
 }

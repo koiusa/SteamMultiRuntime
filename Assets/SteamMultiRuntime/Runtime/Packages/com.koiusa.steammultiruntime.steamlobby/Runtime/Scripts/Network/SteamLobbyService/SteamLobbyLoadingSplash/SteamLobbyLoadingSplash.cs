@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private NetworkManager networkManager;
-        [SerializeField] private SteamLobbyLoadingSplashSettings splashSettings;
+        [SerializeField] private LoadingSplashSettings splashSettings;
         [SerializeField] private bool showSplashDuringSceneLoad = true;
 
         private bool isSubscribed;

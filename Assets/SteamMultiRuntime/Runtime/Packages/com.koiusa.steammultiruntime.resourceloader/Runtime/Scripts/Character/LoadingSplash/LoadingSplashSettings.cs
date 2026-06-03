@@ -3,8 +3,8 @@ using UnityEngine.UIElements;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CreateAssetMenu(menuName = "SteamMultiRuntime/Steam Lobby Loading Splash Settings", fileName = "SteamLobbyLoadingSplashSettings")]
-    public sealed class SteamLobbyLoadingSplashSettings : ScriptableObject
+    [CreateAssetMenu(menuName = "SteamMultiRuntime/Loading Splash Settings", fileName = "LoadingSplashSettings")]
+    public sealed class LoadingSplashSettings : ScriptableObject
     {
         [SerializeField] private PanelSettings panelSettings;
         [SerializeField] private VisualTreeAsset splashLayoutAsset;
