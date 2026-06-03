@@ -1,5 +1,5 @@
 {
-	"name": "Koiusa.SteamMultiRuntime.Character.Runtime",
+	"name": "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
 	"rootNamespace": "",
 	"references": [],
 	"includePlatforms": [],
