@@ -143,7 +143,6 @@ namespace Koiusa.SteamMultiRuntime.Editor
             }
         }
 
-
         private enum ResourceSourceKind
         {
             Any,

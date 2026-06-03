@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 4823061881352527643}
   - component: {fileID: 2404645661678682767}
   - component: {fileID: 8293643381823499549}
-  - component: {fileID: 2849566564777730316}
   - component: {fileID: 2070585055845636041}
   - component: {fileID: 324244260282127880}
   - component: {fileID: 3613120474214503031}
@@ -29,6 +28,7 @@ GameObject:
   - component: {fileID: 7872827304047197062}
   - component: {fileID: 2911529315059979141}
   - component: {fileID: 2387919757285863628}
+  - component: {fileID: 1497320286697587687}
   m_Layer: 0
   m_Name: NetworkPlayer_WithAnimator
   m_TagString: Untagged
@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 520936048
+  GlobalObjectIdHash: 4256716526
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -285,25 +285,6 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
---- !u!114 &2849566564777730316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f94a7fdddff0afb4b9ebe8248624c261, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
-  ShowTopMostFoldoutHeaderGroup: 1
-  modelIdList: {fileID: 0}
-  SelectedModelIndex:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!114 &2070585055845636041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -540,6 +521,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d1d518974365843a70fa21709b25ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkServerFallRecoveryProcessGate
+--- !u!114 &1497320286697587687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3e6ce34ea7d6fb4795d8c4428f7d17d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
+  ShowTopMostFoldoutHeaderGroup: 1
+  modelIdList: {fileID: 0}
+  SelectedModelIndex:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,7 +550,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3338000546656025210}
   - component: {fileID: 3918581909359559565}
-  - component: {fileID: 1081504698569180867}
+  - component: {fileID: 2062928683736366048}
   m_Layer: 0
   m_Name: CharacterHeadupUI
   m_TagString: Untagged
@@ -596,7 +596,7 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &1081504698569180867
+--- !u!114 &2062928683736366048
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -605,9 +605,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4413791566816308068}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11096a26b76d02646ad1bc3a939cdc79, type: 3}
+  m_Script: {fileID: 11500000, guid: ee94f4e0b282e6a41b0372b02e1c1fc6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
   refreshInterval: 1
   labelWidth: 88
   labelHeight: 24

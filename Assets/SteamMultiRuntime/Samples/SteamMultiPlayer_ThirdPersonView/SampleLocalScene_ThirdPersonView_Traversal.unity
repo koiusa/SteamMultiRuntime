@@ -452,17 +452,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
   m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_ActionId: c95b2375-e6d9-4b88-9c4c-c5e76515df4b
---- !u!114 &1059512935 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5035609975820317628, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
-  m_PrefabInstance: {fileID: 1996098451}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d37a7669b260ad4396c1c42155901cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalRuntimeUserProfile
 --- !u!114 &1135255498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -631,23 +620,12 @@ PrefabInstance:
     - target: {fileID: 7814160326155104347, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
       propertyPath: userProfile.unityReference
       value: 
-      objectReference: {fileID: 1059512935}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
---- !u!114 &1996098452 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6634863899914174476, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
-  m_PrefabInstance: {fileID: 1996098451}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a12b66870efb2ce4a8fa09d4ba9bcbce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalManager
 --- !u!1001 &4807530093202171419
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -760,7 +738,7 @@ PrefabInstance:
     - target: {fileID: 8400822812273775864, guid: 5fc0a0bca5b4a1e4c8a7229e814f2976, type: 3}
       propertyPath: localManager
       value: 
-      objectReference: {fileID: 1996098452}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

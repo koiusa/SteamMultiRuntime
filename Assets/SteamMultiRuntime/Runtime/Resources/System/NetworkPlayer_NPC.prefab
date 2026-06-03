@@ -17,9 +17,9 @@ GameObject:
   - component: {fileID: 8996789483217533819}
   - component: {fileID: 6198608453556538922}
   - component: {fileID: 2467385649118676374}
-  - component: {fileID: 7842358561702527256}
   - component: {fileID: 8170472263845165246}
   - component: {fileID: 4967333075865679800}
+  - component: {fileID: 2875296949908125236}
   m_Layer: 0
   m_Name: NetworkPlayer_NPC
   m_TagString: Untagged
@@ -285,26 +285,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   markerScale: 0.35
   arriveBuffer: 0.1
---- !u!114 &7842358561702527256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f94a7fdddff0afb4b9ebe8248624c261, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
-  ShowTopMostFoldoutHeaderGroup: 1
-  modelIdList: {fileID: 0}
-  prefabLoader: {fileID: 0}
-  SelectedModelIndex:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!114 &8170472263845165246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,6 +316,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d1d518974365843a70fa21709b25ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkServerFallRecoveryProcessGate
+--- !u!114 &2875296949908125236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3e6ce34ea7d6fb4795d8c4428f7d17d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
+  ShowTopMostFoldoutHeaderGroup: 1
+  modelIdList: {fileID: 0}
+  SelectedModelIndex:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

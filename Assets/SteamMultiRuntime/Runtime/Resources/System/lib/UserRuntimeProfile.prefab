@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4084868574729043895}
   - component: {fileID: 6911315258925825406}
-  - component: {fileID: 6613287850122532245}
+  - component: {fileID: 6766365764021799279}
   m_Layer: 0
   m_Name: CharacterSelectService
   m_TagString: Untagged
@@ -56,7 +56,7 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &6613287850122532245
+--- !u!114 &6766365764021799279
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -65,12 +65,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 576393900189188114}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efbdf2d101bfbb648b740bb92aa711be, type: 3}
+  m_Script: {fileID: 11500000, guid: 5dec89aee47754b4093500cd03ce6d49, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectUiDocument
   userProfile:
     mode: 0
-    unityReference: {fileID: 1621035025790656703}
+    unityReference: {fileID: 1295161319961583221}
     rawReference:
       rid: -2
   layoutAsset: {fileID: 9197481963319205126, guid: 195c25ff6b312b74e87df8c2041788f1, type: 3}
@@ -89,8 +89,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 524921022119213429}
-  - component: {fileID: 1621035025790656703}
-  - component: {fileID: 3494915560006470334}
+  - component: {fileID: 1295161319961583221}
+  - component: {fileID: 4092179453155094731}
   m_Layer: 0
   m_Name: UserRuntimeProfile
   m_TagString: Untagged
@@ -114,7 +114,7 @@ Transform:
   - {fileID: 4084868574729043895}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1621035025790656703
+--- !u!114 &1295161319961583221
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -123,15 +123,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 8790052406570270819}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6db577b103c6ab4480f7b9398a8ac5a, type: 3}
+  m_Script: {fileID: 11500000, guid: c8e77bd33f5822e45aafa7844b8a35c9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.RuntimeUserProfile
   networkManager: {fileID: 0}
   modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   selectedModelIndex: 1
   applyOnEnable: 1
   applyOnSceneLoaded: 1
---- !u!114 &3494915560006470334
+--- !u!114 &4092179453155094731
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,8 +140,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 8790052406570270819}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 09299c0a471df734b931cd4564d10d90, type: 3}
+  m_Script: {fileID: 11500000, guid: e434e28d120c44c40b90e6e8fb38e507, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectMenuToggle
-  characterSelectUiDocument: {fileID: 6613287850122532245}
-  toggleAction: {fileID: 7476244043514120974, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectMenuToggle
+  characterSelectUiDocument: {fileID: 6766365764021799279}
+  toggleAction: {fileID: 7476244043514120974, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -11,7 +11,6 @@ namespace Koiusa.SteamMultiRuntime.Editor
     public class LocalRuntimeUserProfileEditor : UnityEditor.Editor
     {
         private SerializedProperty localManagerProperty;
-        private SerializedProperty localPlayerObjectProperty;
         private SerializedProperty modelIdListProperty;
         private SerializedProperty selectedModelIndexProperty;
         private SerializedProperty applyOnEnableProperty;
@@ -20,7 +19,6 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private void OnEnable()
         {
             localManagerProperty = serializedObject.FindProperty("localManager");
-            localPlayerObjectProperty = serializedObject.FindProperty("localPlayerObject");
             modelIdListProperty = serializedObject.FindProperty("modelIdList");
             selectedModelIndexProperty = serializedObject.FindProperty("selectedModelIndex");
             applyOnEnableProperty = serializedObject.FindProperty("applyOnEnable");
@@ -31,17 +29,25 @@ namespace Koiusa.SteamMultiRuntime.Editor
         {
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(localManagerProperty);
-            EditorGUILayout.PropertyField(localPlayerObjectProperty);
-            EditorGUILayout.PropertyField(modelIdListProperty);
+            if (localManagerProperty != null)
+            {
+                EditorGUILayout.PropertyField(localManagerProperty);
+            }
+            if (modelIdListProperty != null)
+            {
+                EditorGUILayout.PropertyField(modelIdListProperty);
+            }
 
-            var currentIndex = selectedModelIndexProperty.intValue;
-            var modelIdList = modelIdListProperty.objectReferenceValue as CharacterModelIdList;
+            var currentIndex = selectedModelIndexProperty != null ? selectedModelIndexProperty.intValue : -1;
+            var modelIdList = modelIdListProperty != null ? modelIdListProperty.objectReferenceValue as CharacterModelIdList : null;
 
             if (modelIdList == null)
             {
                 EditorGUILayout.HelpBox("ModelIdList を設定してください", MessageType.Warning);
-                selectedModelIndexProperty.intValue = -1;
+                if (selectedModelIndexProperty != null)
+                {
+                    selectedModelIndexProperty.intValue = -1;
+                }
             }
             else
             {
@@ -56,11 +62,20 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 }
 
                 var newIndex = EditorGUILayout.Popup("選択モデル", currentIndex, names.ToArray());
-                selectedModelIndexProperty.intValue = newIndex;
+                if (selectedModelIndexProperty != null)
+                {
+                    selectedModelIndexProperty.intValue = newIndex;
+                }
             }
 
-            EditorGUILayout.PropertyField(applyOnEnableProperty);
-            EditorGUILayout.PropertyField(applyOnSceneLoadedProperty);
+            if (applyOnEnableProperty != null)
+            {
+                EditorGUILayout.PropertyField(applyOnEnableProperty);
+            }
+            if (applyOnSceneLoadedProperty != null)
+            {
+                EditorGUILayout.PropertyField(applyOnSceneLoadedProperty);
+            }
 
             if (currentIndex >= 0 && modelIdList != null && modelIdList.modelIds != null && currentIndex < modelIdList.modelIds.Length)
             {

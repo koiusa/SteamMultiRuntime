@@ -1,0 +1,18 @@
+{
+	"name": "Koiusa.SteamMultiRuntime.Network.Runtime",
+	"rootNamespace": "",
+	"references": [
+		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
+		"Koiusa.SteamMultiRuntime.Locomoter.Runtime",
+		"Unity.Netcode.Runtime"
+	],
+	"includePlatforms": [],
+	"excludePlatforms": [],
+	"allowUnsafeCode": false,
+	"overrideReferences": false,
+	"precompiledReferences": [],
+	"autoReferenced": true,
+	"defineConstraints": [],
+	"versionDefines": [],
+	"noEngineReferences": false
+}

@@ -13,7 +13,6 @@ namespace Koiusa.SteamMultiRuntime.Network
         public CharacterModelIdList modelIdList;
         public ICharacterPrefabLoader prefabLoaderBehaviour;
 
-        // サーバーが決定し全クライアントに同期するモデルインデックス
         public NetworkVariable<int> SelectedModelIndex = new NetworkVariable<int>(0);
 
         public CharacterModelIdList ModelIdList
@@ -43,7 +42,6 @@ namespace Koiusa.SteamMultiRuntime.Network
             SetModelIndexServerRpc(index);
         }
 
-        // Prefabのロードとセットを一元化
         private void ApplyCurrentModel()
         {
             PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
@@ -51,13 +49,11 @@ namespace Koiusa.SteamMultiRuntime.Network
             PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(NetworkPlayerModelSync));
         }
 
-        // NetworkVariable変更時のコールバック
         private void OnModelChanged(int oldIndex, int newIndex)
         {
             ApplyCurrentModel();
         }
 
-        // クライアント→サーバー: モデルインデックスリクエスト
         [ServerRpc]
         public void SetModelIndexServerRpc(int index)
         {

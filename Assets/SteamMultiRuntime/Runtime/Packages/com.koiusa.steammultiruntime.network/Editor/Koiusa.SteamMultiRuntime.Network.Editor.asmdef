@@ -1,0 +1,19 @@
+{
+	"name": "Koiusa.SteamMultiRuntime.Network.Editor",
+	"rootNamespace": "",
+	"references": [
+		"Koiusa.SteamMultiRuntime.Network.Runtime",
+		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime"
+	],
+	"includePlatforms": [
+		"Editor"
+	],
+	"excludePlatforms": [],
+	"allowUnsafeCode": false,
+	"overrideReferences": false,
+	"precompiledReferences": [],
+	"autoReferenced": true,
+	"defineConstraints": [],
+	"versionDefines": [],
+	"noEngineReferences": false
+}

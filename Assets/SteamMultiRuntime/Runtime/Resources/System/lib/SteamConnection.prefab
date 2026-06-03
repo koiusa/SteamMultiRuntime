@@ -171,11 +171,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyService
   steamConnection: {fileID: 2255673815828834066}
-  sceneLoader: {fileID: 283368555198532959}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 283368555198532959}
+    rawReference:
+      rid: -2
   connectionStatus: {fileID: 6068190005020545627}
   defaultMaxPlayers: 4
   enableLogging: 0
   useAdditiveClientSynchronization: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!114 &6992672057939424112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,5 +198,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyUiDocument
   lobbyService: {fileID: 7001024383980304856}
-  sceneLoader: {fileID: 283368555198532959}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 283368555198532959}
+    rawReference:
+      rid: -2
   uiAssets: {fileID: 11400000, guid: 20f7720e98a6f314785f2a56050019fc, type: 2}
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

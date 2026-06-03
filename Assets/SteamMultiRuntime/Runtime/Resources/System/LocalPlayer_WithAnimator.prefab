@@ -380,7 +380,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3338000546656025210}
   - component: {fileID: 3918581909359559565}
-  - component: {fileID: 1081504698569180867}
+  - component: {fileID: 7715437038174053402}
   m_Layer: 0
   m_Name: CharacterHeadupUI
   m_TagString: Untagged
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &1081504698569180867
+--- !u!114 &7715437038174053402
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -435,9 +435,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4413791566816308068}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11096a26b76d02646ad1bc3a939cdc79, type: 3}
+  m_Script: {fileID: 11500000, guid: ee94f4e0b282e6a41b0372b02e1c1fc6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
   refreshInterval: 1
   labelWidth: 88
   labelHeight: 24

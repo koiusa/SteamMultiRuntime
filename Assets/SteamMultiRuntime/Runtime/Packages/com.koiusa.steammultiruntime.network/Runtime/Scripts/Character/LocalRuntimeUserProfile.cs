@@ -84,8 +84,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool TryResolveLocalPlayerObject(out GameObject target)
         {
-            // LocalManager が存在する場合はそのインスタンス済みオブジェクトを優先参照
-            // （NetworkManager.LocalClient.PlayerObject に相当）
             if (localManager != null && localManager.LocalPlayerObject != null)
             {
                 target = localManager.LocalPlayerObject;
