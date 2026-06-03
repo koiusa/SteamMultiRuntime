@@ -1,0 +1,20 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.ResourceLoader.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
+        "TNRD.SerializableInterface",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
