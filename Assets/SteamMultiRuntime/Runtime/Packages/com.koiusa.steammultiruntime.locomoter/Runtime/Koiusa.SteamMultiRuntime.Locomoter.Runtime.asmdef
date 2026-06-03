@@ -2,7 +2,7 @@
 	"name": "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
 	"rootNamespace": "",
 	"references": [
-		"Koiusa.Common.System",
+		"Koiusa.System.Core.Runtime",
 		"Koiusa.SteamMultiRuntime.EditorTools.Runtime",
 		"Unity.InputSystem"
 	],

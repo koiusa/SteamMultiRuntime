@@ -1,10 +1,12 @@
 {
-    "name": "Koiusa.Common.System",
+    "name": "Koiusa.System.Core.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:75469ad4d38634e559750d17036d5f7c"
+        "GUID:9137959953403464f926e849d8e90a3b"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
