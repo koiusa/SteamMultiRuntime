@@ -1,0 +1,17 @@
+{
+  "name": "com.koiusa.system.core",
+  "displayName": "Koiusa System Core",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "unityRelease": "9f1",
+  "description": "Core runtime and editor system utilities for SteamMultiRuntime.",
+  "author": {
+    "name": "koiusa"
+  },
+  "keywords": [
+    "core",
+    "system",
+    "runtime",
+    "unity"
+  ]
+}
