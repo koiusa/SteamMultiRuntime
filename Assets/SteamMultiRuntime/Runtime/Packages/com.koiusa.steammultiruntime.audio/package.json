@@ -1,0 +1,22 @@
+{
+  "name": "com.koiusa.steammultiruntime.audio",
+  "displayName": "Steam Multi Runtime Audio",
+  "version": "0.5.3",
+  "unity": "6000.3",
+  "unityRelease": "9f1",
+  "description": "Audio system package for Steam Multi Runtime including BGM management and footstep audio.",
+  "author": {
+    "name": "koiusa"
+  },
+
+  "dependencies": {
+  },
+
+  "keywords": [
+    "audio",
+    "bgm",
+    "footstep",
+    "sound",
+    "unity"
+  ]
+}

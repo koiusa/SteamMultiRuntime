@@ -172,7 +172,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5017994157291723496}
   - component: {fileID: 5695442659329498336}
-  - component: {fileID: 2122664579213901292}
+  - component: {fileID: 3407694686311242444}
   m_Layer: 0
   m_Name: BGMAudio
   m_TagString: Untagged
@@ -292,7 +292,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &2122664579213901292
+--- !u!114 &3407694686311242444
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -301,9 +301,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8789077299931260296}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5029df09ff8584cbf41eb65e8c22b2, type: 3}
+  m_Script: {fileID: 11500000, guid: 8bfbf0d8eea67e14e90ed155f07c181a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamBgmManager
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Audio.Runtime::Koiusa.SteamMultiRuntime.BgmManager
   playOnAwake: 1
   loop: 1
   volume: 1
@@ -315,4 +315,4 @@ MonoBehaviour:
   volumeExposedParameter: BgmVolume
   minVolumeDb: -80
   useLoopCrossfade: 1
-  loopCrossfadeDuration: 10
+  loopCrossfadeDuration: 0.15

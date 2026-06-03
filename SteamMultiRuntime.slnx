@@ -19,6 +19,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.UI.Runtime.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />

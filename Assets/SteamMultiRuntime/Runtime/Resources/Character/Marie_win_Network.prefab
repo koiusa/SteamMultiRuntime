@@ -4535,9 +4535,9 @@ GameObject:
   - component: {fileID: 95539797725731816}
   - component: {fileID: -3302680468342298301}
   - component: {fileID: 114048248925627932}
-  - component: {fileID: 1597483923444280478}
   - component: {fileID: 7068859321444224036}
   - component: {fileID: 3657775200073523375}
+  - component: {fileID: 8061203787055470703}
   m_Layer: 0
   m_Name: Marie_win_Network
   m_TagString: Untagged
@@ -4667,45 +4667,6 @@ MonoBehaviour:
   collisionColor: {r: 1, g: 0, b: 0, a: 1}
   groundCollisionColor: {r: 0, g: 1, b: 0, a: 1}
   angleLimitDrawScale: 0.05
---- !u!114 &1597483923444280478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1918851180674940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbf78ef5a4e0e9142b471c921f600359, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.FootstepColliderSpawner
-  TargetAnimator: {fileID: 95539797725731816}
-  ControllerComponent: {fileID: 0}
-  ColliderRadius: 0.08
-  LocalOffset: {x: 0, y: 0, z: 0}
-  MinInterval: 0.2
-  GroundLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  UseHumanBones: 1
-  SpeedParamName: Speed
-  MinFootstepSpeed: 0.1
-  GroundedParamName: IsGrounded
-  RequireGroundedForFootstep: 1
-  RequireGroundedForLand: 1
-  RequireGroundedTransitionForLand: 1
-  MinLandInterval: 0.2
-  FallSpeedParamName: VerticalVelocity
-  RequireFallSpeedForLand: 1
-  FallSpeedForLandThreshold: -0.5
-  MaxDistance: 500
-  Force3DAudio: 1
-  MinDistance: 1
-  RolloffMode: 0
-  CharacterAudioMixer: {fileID: 24300002, guid: 7c8ad1d49f4b84948b90b0046670be40, type: 2}
-  FootstepAudioSource: {fileID: 291213148011776385}
-  LandingAudioSource: {fileID: 7635386668408225909}
-  FootstepAudioVolume: 1
 --- !u!114 &7068859321444224036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4766,6 +4727,45 @@ MonoBehaviour:
   - surprise@sd_hmd
   - TopOfJump
   - Walking@loop
+--- !u!114 &8061203787055470703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1918851180674940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f932800d2e459da4193d936ef76e4b14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Audio.Runtime::Koiusa.SteamMultiRuntime.FootstepColliderSpawner
+  TargetAnimator: {fileID: 95539797725731816}
+  ControllerComponent: {fileID: 4422059915226684}
+  ColliderRadius: 0.08
+  LocalOffset: {x: 0, y: 0, z: 0}
+  MinInterval: 0.1
+  GroundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  UseHumanBones: 1
+  SpeedParamName: Speed
+  MinFootstepSpeed: 0.1
+  GroundedParamName: IsGrounded
+  RequireGroundedForFootstep: 1
+  RequireGroundedForLand: 1
+  RequireGroundedTransitionForLand: 1
+  MinLandInterval: 0.2
+  FallSpeedParamName: VerticalVelocity
+  RequireFallSpeedForLand: 1
+  FallSpeedForLandThreshold: -0.5
+  MaxDistance: 500
+  Force3DAudio: 1
+  MinDistance: 1
+  RolloffMode: 0
+  CharacterAudioMixer: {fileID: 24300002, guid: 7c8ad1d49f4b84948b90b0046670be40, type: 2}
+  FootstepAudioSource: {fileID: 291213148011776385}
+  LandingAudioSource: {fileID: 7635386668408225909}
+  FootstepAudioVolume: 1
 --- !u!1 &1918914304663080
 GameObject:
   m_ObjectHideFlags: 0
