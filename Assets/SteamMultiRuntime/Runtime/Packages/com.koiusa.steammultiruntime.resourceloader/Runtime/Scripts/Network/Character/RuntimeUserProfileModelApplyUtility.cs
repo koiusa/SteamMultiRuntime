@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal static class RuntimeUserProfileModelApplyUtility
+    public static class RuntimeUserProfileModelApplyUtility
     {
         public static bool ApplyToLoader(GameObject target, IRuntimeUserProfileModelSource profile, string logPrefix)
         {

@@ -1,8 +1,9 @@
+using Koiusa.SteamMultiRuntime.Network;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal static class PlayerModelSyncUtility
+    public static class PlayerModelSyncUtility
     {
         public static void EnsureModelIdList(ref Network.CharacterModelIdList modelIdList)
         {
