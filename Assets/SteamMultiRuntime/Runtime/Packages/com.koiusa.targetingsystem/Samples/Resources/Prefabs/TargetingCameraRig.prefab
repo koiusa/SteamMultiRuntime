@@ -234,7 +234,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
   binder: {fileID: 354199859479193300}
-  debugLockOnMaterial: {fileID: 2100000, guid: 6288ae4d74a079646970028f70fde2f5, type: 2}
+  debugLockOnMaterial: {fileID: 2100000, guid: 550578d939d027c4e8619c529ccad512, type: 2}
 --- !u!114 &1621374485892493988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -571,7 +571,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.LockOnTargetDebugMaterialApplier
   binder: {fileID: 4406692661628174695}
-  debugLockOnMaterial: {fileID: 2100000, guid: e7a1be69115eaa74080720812f5e4b6a, type: 2}
+  debugLockOnMaterial: {fileID: 2100000, guid: 3238a8a38c565cc48b81f76df0010e58, type: 2}
 --- !u!114 &2183135012566770961
 MonoBehaviour:
   m_ObjectHideFlags: 0
