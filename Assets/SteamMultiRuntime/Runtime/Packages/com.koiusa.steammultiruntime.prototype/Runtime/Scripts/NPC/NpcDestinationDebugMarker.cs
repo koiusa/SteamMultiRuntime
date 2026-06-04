@@ -100,10 +100,10 @@ namespace Koiusa.SteamMultiRuntime
 
         private static Shader ResolveMarkerShader()
         {
-            return Shader.Find("Universal Render Pipeline/Unlit")
+            return Shader.Find("HDRP/Lit")
+                ?? Shader.Find("Universal Render Pipeline/Unlit")
                 ?? Shader.Find("Universal Render Pipeline/Lit")
                 ?? Shader.Find("Universal Render Pipeline/Simple Lit")
-                ?? Shader.Find("HDRP/Lit")
                 ?? Shader.Find("Standard")
                 ?? Shader.Find("Unlit/Color");
         }
