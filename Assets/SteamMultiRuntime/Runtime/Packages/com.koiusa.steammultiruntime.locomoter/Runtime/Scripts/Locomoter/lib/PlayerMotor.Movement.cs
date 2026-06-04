@@ -192,7 +192,7 @@ namespace Koiusa.SteamMultiRuntime
                 return velocity;
             }
 
-            rb.position += upAxis * stepHeight;
+            rb.MovePosition(rb.position + upAxis * stepHeight);
             var verticalSpeed = Vector3.Dot(velocity, upAxis);
             if (verticalSpeed < 0f)
             {

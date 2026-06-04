@@ -179,7 +179,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 inheritedGroundVelocity = Vector3.zero;
                 groundMotionTracker.TryGetGroundMotion(rb.position, out groundVelocity, out groundDisplacement, out groundRotationDelta);
-                rb.position += groundDisplacement;
+                rb.MovePosition(rb.position + groundDisplacement);
                 velocity = PlayerMotorMovementLogic.AccelerateOnGround(
                     velocity,
                     moveDirection,
