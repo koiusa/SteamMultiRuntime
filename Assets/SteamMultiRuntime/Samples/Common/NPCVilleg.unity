@@ -199,7 +199,7 @@ Terrain:
   m_StaticShadowCaster: 0
   m_IgnoreQualitySettings: 0
   m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_MaterialTemplate: {fileID: 2100000, guid: 00cf6655484153340bc9b2d6454ffcb6, type: 2}
   m_BakeLightProbesForTrees: 1
   m_PreserveTreePrototypeLayers: 0
   m_DeringLightProbesForTrees: 1
@@ -369,7 +369,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.NetworkNpcRandomSpawner
   npcPrefab: {fileID: 3003735386717007390, guid: de53d454781550141819e4b9f7f1e642, type: 3}
-  npcResourcePath: NetworkPlayer_NPC
   npcModelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   randomizeModelOnSpawn: 1
   spawnCount: 50

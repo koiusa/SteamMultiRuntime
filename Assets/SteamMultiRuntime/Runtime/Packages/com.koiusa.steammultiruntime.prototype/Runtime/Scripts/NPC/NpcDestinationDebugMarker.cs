@@ -103,6 +103,7 @@ namespace Koiusa.SteamMultiRuntime
             return Shader.Find("Universal Render Pipeline/Unlit")
                 ?? Shader.Find("Universal Render Pipeline/Lit")
                 ?? Shader.Find("Universal Render Pipeline/Simple Lit")
+                ?? Shader.Find("HDRP/Lit")
                 ?? Shader.Find("Standard")
                 ?? Shader.Find("Unlit/Color");
         }
