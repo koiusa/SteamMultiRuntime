@@ -21,10 +21,21 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float jumpCooldownMax = 4.0f;
         [SerializeField, Min(0f)] private float minHorizontalSpeedToJump = 0.35f;
 
-        [Header("Dynamic Avoidance")]
-        [SerializeField, Min(0f)] private float collisionRepathCooldown = 0.25f;
-        [SerializeField, Min(0.1f)] private float collisionAvoidanceOffset = 1.2f;
-        [SerializeField, Min(0.1f)] private float collisionAvoidanceDuration = 0.6f;
+        [Header("Boid Separation")]
+        [SerializeField] private bool boidSeparationEnabled = true;
+        [SerializeField, Min(0.1f)] private float boidSeparationRadius = 1.6f;
+        [SerializeField, Min(0f)] private float boidGoalWeight = 1f;
+        [SerializeField, Min(0f)] private float boidSeparationWeight = 1.25f;
+        [SerializeField, Min(1f)] private float boidSeparationExponent = 2.2f;
+        [SerializeField] private bool boidUseForwardNeighborFilter = true;
+        [SerializeField, Range(-1f, 1f)] private float boidNeighborForwardDotMin = 0f;
+        [SerializeField, Min(1)] private int boidMaxNeighbors = 8;
+
+        [Header("Steering Filter")]
+        [SerializeField, Min(0.1f)] private float boidLowPassCutoffHz = 4f;
+        [SerializeField, Min(0f)] private float boidDeadband = 0.05f;
+        [SerializeField, Min(1f)] private float boidMaxTurnDegPerSec = 240f;
+
 
         private NavMeshAgent _agent;
         private Rigidbody _rigidbody;
@@ -35,15 +46,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
+        private Vector3 _filteredSteeringPlanar;
         private int _jumpToken;
         private int _lastConsumedJumpToken;
         private float _nextJumpAllowedTime;
 
-        private float _nextCollisionRepathTime;
-        private bool _isAvoidingCollision;
-        private bool _hasResumeDestination;
-        private Vector3 _resumeDestination;
-        private float _collisionAvoidanceUntilTime;
+        private readonly Collider[] _boidNeighborBuffer = new Collider[32];
+
 
         public event System.Action ReturnToCenterStarted;
         public event System.Action<Vector3> DestinationSet;
@@ -128,9 +137,6 @@ namespace Koiusa.SteamMultiRuntime
             _inputSource.Disable();
             _motor?.ResetState();
             ResetInputState();
-            _isAvoidingCollision = false;
-            _hasResumeDestination = false;
-            _collisionAvoidanceUntilTime = 0f;
             StopAgent();
             ResetAgentPath();
         }
@@ -147,7 +153,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             movement.ObserveState();
-            UpdateCollisionAvoidanceState();
             UpdateAiInputSignal();
 
             if (_rigidbody != null)
@@ -183,13 +188,11 @@ namespace Koiusa.SteamMultiRuntime
         private void OnCollisionEnter(Collision collision)
         {
             _motor?.OnCollisionEnter(collision);
-            TryRepathOnCharacterCollision(collision.collider);
         }
 
         private void OnCollisionStay(Collision collision)
         {
             _motor?.OnCollisionStay(collision);
-            TryRepathOnCharacterCollision(collision.collider);
         }
 
         private void OnCollisionExit(Collision collision)
@@ -212,6 +215,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
+
             DestinationSet?.Invoke(_agent.destination);
         }
 
@@ -231,6 +235,15 @@ namespace Koiusa.SteamMultiRuntime
                 jumpCooldownMax = jumpCooldownMin;
             if (minHorizontalSpeedToJump < 0f)
                 minHorizontalSpeedToJump = 0f;
+            if (boidSeparationExponent < 1f)
+                boidSeparationExponent = 1f;
+            boidNeighborForwardDotMin = Mathf.Clamp(boidNeighborForwardDotMin, -1f, 1f);
+            if (boidLowPassCutoffHz < 0.1f)
+                boidLowPassCutoffHz = 0.1f;
+            if (boidDeadband < 0f)
+                boidDeadband = 0f;
+            if (boidMaxTurnDegPerSec < 1f)
+                boidMaxTurnDegPerSec = 1f;
             jumpChancePerSecond = Mathf.Clamp01(jumpChancePerSecond);
             ApplyAgentSettings();
 
@@ -265,7 +278,17 @@ namespace Koiusa.SteamMultiRuntime
             if (_agent.pathPending || _agent.isStopped || !_agent.hasPath)
                 targetPlanarVelocity = Vector3.zero;
 
-            var localDesired = transform.InverseTransformDirection(targetPlanarVelocity);
+            var steeringPlanar = targetPlanarVelocity;
+            if (boidSeparationEnabled)
+            {
+                steeringPlanar = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
+            }
+
+            steeringPlanar = ApplySteeringLowPass(upAxis, steeringPlanar);
+            steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
+            steeringPlanar = ApplySteeringDeadband(steeringPlanar);
+
+            var localDesired = transform.InverseTransformDirection(steeringPlanar);
             var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
             if (nextMoveInput.sqrMagnitude > 1f)
                 nextMoveInput = nextMoveInput.normalized;
@@ -296,81 +319,144 @@ namespace Koiusa.SteamMultiRuntime
             _nextJumpAllowedTime = Time.time + (allowImmediate ? Random.Range(0f, maxCooldown) : Random.Range(minCooldown, maxCooldown));
         }
 
+        private Vector3 ApplySteeringLowPass(Vector3 upAxis, Vector3 steeringPlanar)
+        {
+            var target = Vector3.ProjectOnPlane(steeringPlanar, upAxis);
+            if (_filteredSteeringPlanar.sqrMagnitude <= 0.000001f)
+            {
+                _filteredSteeringPlanar = target;
+                return target;
+            }
+
+            var dt = Mathf.Max(Time.deltaTime, 0.0001f);
+            var cutoff = Mathf.Max(0.1f, boidLowPassCutoffHz);
+            var alpha = 1f - Mathf.Exp(-2f * Mathf.PI * cutoff * dt);
+            _filteredSteeringPlanar = Vector3.Lerp(_filteredSteeringPlanar, target, alpha);
+            return Vector3.ProjectOnPlane(_filteredSteeringPlanar, upAxis);
+        }
+
+        private Vector3 ApplySteeringTurnRateLimit(Vector3 upAxis, Vector3 steeringPlanar)
+        {
+            var current = Vector3.ProjectOnPlane(_moveDirection, upAxis);
+            var target = Vector3.ProjectOnPlane(steeringPlanar, upAxis);
+            if (target.sqrMagnitude <= 0.000001f || current.sqrMagnitude <= 0.000001f)
+                return target;
+
+            var maxTurn = Mathf.Max(1f, boidMaxTurnDegPerSec) * Time.deltaTime;
+            var limited = Vector3.RotateTowards(current.normalized, target.normalized, maxTurn * Mathf.Deg2Rad, 0f);
+            return limited * target.magnitude;
+        }
+
+        private Vector3 ApplySteeringDeadband(Vector3 steeringPlanar)
+        {
+            var deadband = Mathf.Max(0f, boidDeadband);
+            return steeringPlanar.sqrMagnitude <= deadband * deadband ? Vector3.zero : steeringPlanar;
+        }
+
+        private Vector3 BuildBoidSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
+        {
+            var radius = Mathf.Max(0.1f, boidSeparationRadius);
+            var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
+            if (count <= 0)
+                return goalPlanarVelocity;
+
+            var separation = Vector3.zero;
+            var neighborCount = 0;
+            var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _boidNeighborBuffer.Length);
+            var radiusSqr = radius * radius;
+            var uniqueNeighborIds = new int[32];
+            var uniqueNeighborCount = 0;
+
+            var referenceForward = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            if (referenceForward.sqrMagnitude <= 0.0001f)
+                referenceForward = Vector3.ProjectOnPlane(transform.forward, upAxis);
+            if (referenceForward.sqrMagnitude > 0.0001f)
+                referenceForward.Normalize();
+
+            for (var i = 0; i < count && neighborCount < maxNeighbors; i++)
+            {
+                var col = _boidNeighborBuffer[i];
+                if (col == null)
+                    continue;
+                if (col.attachedRigidbody == _rigidbody)
+                    continue;
+
+                var other = col.GetComponentInParent<IPlayerController>();
+                if (other == null)
+                    continue;
+
+                var neighborKey = col.attachedRigidbody != null
+                    ? col.attachedRigidbody.GetInstanceID()
+                    : col.transform.root.GetInstanceID();
+
+                var alreadyAdded = false;
+                for (var keyIndex = 0; keyIndex < uniqueNeighborCount; keyIndex++)
+                {
+                    if (uniqueNeighborIds[keyIndex] != neighborKey)
+                        continue;
+                    alreadyAdded = true;
+                    break;
+                }
+
+                if (alreadyAdded)
+                    continue;
+
+                uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
+
+                var neighborPosition = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
+                var delta = transform.position - neighborPosition;
+                var planarDelta = Vector3.ProjectOnPlane(delta, upAxis);
+                var sqr = planarDelta.sqrMagnitude;
+                if (sqr <= 0.0001f || sqr > radiusSqr)
+                    continue;
+
+                var directionToNeighbor = -planarDelta.normalized;
+                if (boidUseForwardNeighborFilter && referenceForward.sqrMagnitude > 0.0001f)
+                {
+                    var forwardDot = Vector3.Dot(referenceForward, directionToNeighbor);
+                    if (forwardDot < boidNeighborForwardDotMin)
+                        continue;
+                }
+
+                var distance = Mathf.Sqrt(sqr);
+                var normalizedDistance = Mathf.Clamp01(distance / radius);
+                var strength = 1f - normalizedDistance;
+                var exponent = Mathf.Max(1f, boidSeparationExponent);
+                strength = Mathf.Pow(strength, exponent);
+                separation += planarDelta.normalized * strength;
+                neighborCount++;
+            }
+
+            if (neighborCount == 0)
+                return goalPlanarVelocity;
+
+            separation /= neighborCount;
+
+            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            if (goalPlanar.sqrMagnitude > 0.0001f)
+            {
+                var goalDir = goalPlanar.normalized;
+                var lateralSeparation = Vector3.ProjectOnPlane(separation, upAxis);
+                var forwardComponent = Vector3.Dot(lateralSeparation, goalDir);
+                if (forwardComponent > 0f)
+                    lateralSeparation -= goalDir * forwardComponent;
+                separation = lateralSeparation;
+            }
+
+            var blended = goalPlanarVelocity * boidGoalWeight + separation * boidSeparationWeight;
+            return Vector3.ProjectOnPlane(blended, upAxis);
+        }
+
         private void ResetInputState()
         {
             _moveInput = Vector2.zero;
             _moveDirection = Vector3.zero;
+            _filteredSteeringPlanar = Vector3.zero;
             _jumpToken = 0;
             _lastConsumedJumpToken = 0;
             _inputSource.SetMove(Vector2.zero);
         }
 
-        private void TryRepathOnCharacterCollision(Collider otherCollider)
-        {
-            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
-                return;
-            if (otherCollider == null)
-                return;
-            if (Time.time < _nextCollisionRepathTime)
-                return;
-            if (_isAvoidingCollision)
-                return;
-
-            var otherController = otherCollider.GetComponentInParent<IPlayerController>();
-            if (otherController == null)
-                return;
-            if (!otherController.IsGrounded)
-                return;
-
-            if (!_agent.hasPath || _agent.pathPending)
-                return;
-
-            var upAxis = PlayerMotor.GetUpAxis().normalized;
-            var away = Vector3.ProjectOnPlane(transform.position - otherCollider.bounds.center, upAxis);
-            if (away.sqrMagnitude <= 0.0001f)
-            {
-                away = Vector3.ProjectOnPlane(_agent.steeringTarget - transform.position, upAxis);
-                away = away.sqrMagnitude > 0.0001f ? -away.normalized : transform.right;
-            }
-            else
-            {
-                away = away.normalized;
-            }
-
-            var avoidTarget = transform.position + away * collisionAvoidanceOffset;
-            if (!NavMesh.SamplePosition(avoidTarget, out var hit, collisionAvoidanceOffset + 1f, _agent.areaMask))
-                return;
-
-            _resumeDestination = _agent.destination;
-            _hasResumeDestination = true;
-            _isAvoidingCollision = true;
-            _collisionAvoidanceUntilTime = Time.time + collisionAvoidanceDuration;
-            _nextCollisionRepathTime = Time.time + collisionRepathCooldown;
-
-            _agent.SetDestination(hit.position);
-            DestinationSet?.Invoke(hit.position);
-        }
-
-        private void UpdateCollisionAvoidanceState()
-        {
-            if (!_isAvoidingCollision)
-                return;
-            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
-                return;
-
-            var expired = Time.time >= _collisionAvoidanceUntilTime;
-            var reachedAvoidPoint = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance);
-            if (!expired && !reachedAvoidPoint)
-                return;
-
-            _isAvoidingCollision = false;
-            if (!_hasResumeDestination)
-                return;
-
-            _hasResumeDestination = false;
-            _agent.SetDestination(_resumeDestination);
-            DestinationSet?.Invoke(_resumeDestination);
-        }
 
         private void StopAgent()
         {
