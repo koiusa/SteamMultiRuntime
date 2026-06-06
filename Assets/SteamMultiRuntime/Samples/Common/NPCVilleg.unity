@@ -378,6 +378,7 @@ MonoBehaviour:
   spawnHeightOffset: 0.05
   areaCenter: {fileID: 1586643967}
   areaSize: {x: 50, y: 0, z: 50}
+  minSpawnDistance: 1.5
   sampleOnNavMesh: 1
   navMeshSampleRadius: 6
   maxAttemptsPerNpc: 8

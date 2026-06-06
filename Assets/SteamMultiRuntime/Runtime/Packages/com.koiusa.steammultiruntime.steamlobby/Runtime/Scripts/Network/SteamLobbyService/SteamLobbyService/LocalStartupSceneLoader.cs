@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime.Network
         [SerializeField, Min(0)] private int startupStageSceneIndex;
         [SerializeField] private LoadSceneMode sceneLoadMode = LoadSceneMode.Single;
         [SerializeField] private bool setLoadedSceneAsActive = true;
+        [SerializeField] private bool disableCamerasInLoadedScenes = true;
 
         public event System.Action LoadingStarted;
         public event System.Action LoadingFinished;
@@ -21,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime.Network
         public int StartupStageSceneIndex => startupStageSceneIndex;
         public LoadSceneMode SceneLoadMode => sceneLoadMode;
         public bool SetLoadedSceneAsActive => setLoadedSceneAsActive;
+        public bool DisableCamerasInLoadedScenes => disableCamerasInLoadedScenes;
 
         private async void Start()
         {
@@ -37,11 +39,41 @@ namespace Koiusa.SteamMultiRuntime.Network
             LoadingStarted?.Invoke();
             try
             {
-                return await StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalStartupSceneLoader));
+                var loaded = await StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalStartupSceneLoader));
+                if (!loaded || !disableCamerasInLoadedScenes)
+                {
+                    return loaded;
+                }
+
+                var startupScene = StageStartupSceneLoader.ResolveStartupSceneReference(this, this, nameof(LocalStartupSceneLoader));
+                var scene = SceneUtilityEx.GetLoadedScene(startupScene);
+                DisableSceneCameras(scene);
+                return loaded;
             }
             finally
             {
                 LoadingFinished?.Invoke();
+            }
+        }
+
+        private static void DisableSceneCameras(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return;
+            }
+
+            foreach (var rootGameObject in scene.GetRootGameObjects())
+            {
+                foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
+                {
+                    camera.enabled = false;
+
+                    if (camera.gameObject.activeSelf)
+                    {
+                        camera.gameObject.SetActive(false);
+                    }
+                }
             }
         }
     }
