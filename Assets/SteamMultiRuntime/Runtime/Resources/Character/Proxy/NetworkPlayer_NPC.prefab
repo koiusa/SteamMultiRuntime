@@ -15,11 +15,17 @@ GameObject:
   - component: {fileID: 2404645661678682767}
   - component: {fileID: 8293643381823499549}
   - component: {fileID: 8996789483217533819}
-  - component: {fileID: 6198608453556538922}
-  - component: {fileID: 2467385649118676374}
   - component: {fileID: 8170472263845165246}
   - component: {fileID: 4967333075865679800}
   - component: {fileID: 2875296949908125236}
+  - component: {fileID: 1444098362467950251}
+  - component: {fileID: 7948366029806334982}
+  - component: {fileID: 626167900066496392}
+  - component: {fileID: 1926209149445560628}
+  - component: {fileID: 1027209593580285803}
+  - component: {fileID: 1723194128134958813}
+  - component: {fileID: 8884666047061710343}
+  - component: {fileID: 2604422965726946748}
   m_Layer: 0
   m_Name: NetworkPlayer_NPC
   m_TagString: Untagged
@@ -106,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2618941016
+  GlobalObjectIdHash: 3319208734
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -204,93 +210,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &6198608453556538922
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
-  movement:
-    path:
-      randomMoveEnabled: 1
-      navMeshSearchRadius: 5
-      radius: 8
-      minDistance: 0.8
-      initialDelayMax: 2
-      reachedBuffer: 0.15
-      repathCooldown: 0.1
-      noPathRetryCooldown: 0.6
-      maxAttempts: 8
-      maxConsecutiveFailures: 4
-      centerBiasWeight: 0.05
-      useWaitBeforeNextDestination: 1
-      waitChance: 0.5
-      waitDurationMin: 0
-      waitDurationMax: 5
-    stuck:
-      repathWhenStuck: 1
-      speedThreshold: 0.05
-      timeout: 1.5
-      remainingDistanceEpsilon: 0.03
-      noProgressTimeout: 1
-      movementEpsilon: 0.015
-      noMovementTimeout: 0.8
-      minDesiredSpeedForMovementCheck: 0.25
-    returnToCenter:
-      maxDistance: 30
-      exitRatio: 0.5
-      targetRadius: 15
-  rotation:
-    manualRotationSpeed: 720
-    keepUpright: 1
-    minVelocityToRotate: 0.1
-    strafeAngleToUseVelocity: 75
-  speed:
-    scale:
-      range: {x: 1, y: 1.2}
-    returnToCenter:
-      useBoost: 1
-      scale: 1.35
-    acceleration:
-      useBoost: 1
-      scale: 1.5
-      minValue: 20
-  jump:
-    randomJumpEnabled: 1
-    jumpChancePerSecond: 0.1
-    jumpVerticalVelocity: 7
-    fallMultiplier: 2
-    jumpCooldownMin: 1.5
-    jumpCooldownMax: 4
-    minHorizontalSpeedToJump: 0.35
-  moveAcceleration: 22
-  moveDeceleration: 28
-  destinationStopBuffer: 0.05
-  groundedProbeDistance: 0.08
-  collisionRepathCooldown: 0.25
-  collisionAvoidanceOffset: 1.2
-  collisionAvoidanceDuration: 0.6
---- !u!114 &2467385649118676374
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b879a5076e0c6847ad8056df67e09da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarker
-  ShowTopMostFoldoutHeaderGroup: 1
-  markerScale: 0.35
-  arriveBuffer: 0.1
 --- !u!114 &8170472263845165246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -341,6 +260,249 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+--- !u!114 &1444098362467950251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df16d6d40a5f8c41bd33737408ded3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.GroundMotionTracker
+--- !u!114 &7948366029806334982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b2d2755b45aab64a8b39250c1e0ffaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.SlopeContactResolver
+  maxClimbAngle: 45
+  allowJumpOnSteepSlope: 0
+--- !u!114 &626167900066496392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 489411f277ab91e41827b07884d5dd6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerCompositeMotor
+--- !u!114 &1926209149445560628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3d9ca43a01fc90438c3188033da8afd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerMotor
+  settings:
+    MoveSpeed: 5
+    GroundAcceleration: 30
+    AirAcceleration: 10
+    RotationSpeed: 720
+    JumpForce: 6
+    FallMultiplier: 2
+    JumpDetachDuration: 0.1
+    GroundLayer:
+      serializedVersion: 2
+      m_Bits: 1
+    MinGroundNormalDot: 0.5
+    GroundedGraceTime: 0.08
+    NearbyGroundDistance: 0.3
+    StrafeMoveSpeedMultiplier: 0.7
+    StrafeAccelerationMultiplier: 1.5
+    StrafeRotationSpeed: 300
+    BackwardSpeedMultiplier: 0.5
+    EnableStepAssist: 1
+    StepAssistMaxHeight: 0.28
+    StepAssistCheckDistance: 0.35
+    StepAssistMinMoveSpeed: 1
+    StepAssistObstacleUpDot: 0.35
+  initialSettings:
+    MoveSpeed: 0
+    GroundAcceleration: 0
+    AirAcceleration: 0
+    RotationSpeed: 0
+    JumpForce: 0
+    FallMultiplier: 0
+    JumpDetachDuration: 0
+    GroundLayer:
+      serializedVersion: 2
+      m_Bits: 0
+    MinGroundNormalDot: 0
+    GroundedGraceTime: 0
+    NearbyGroundDistance: 0
+    StrafeMoveSpeedMultiplier: 0
+    StrafeAccelerationMultiplier: 0
+    StrafeRotationSpeed: 0
+    BackwardSpeedMultiplier: 0
+    EnableStepAssist: 0
+    StepAssistMaxHeight: 0
+    StepAssistCheckDistance: 0
+    StepAssistMinMoveSpeed: 0
+    StepAssistObstacleUpDot: 0
+--- !u!114 &1027209593580285803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+--- !u!114 &1723194128134958813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
+  movement:
+    path:
+      randomMoveEnabled: 1
+      navMeshSearchRadius: 5
+      radius: 8
+      minDistance: 0.8
+      initialDelayMax: 2
+      reachedBuffer: 0.15
+      repathCooldown: 0.1
+      noPathRetryCooldown: 0.6
+      maxAttempts: 8
+      maxConsecutiveFailures: 4
+      centerBiasWeight: 0.05
+      useWaitBeforeNextDestination: 1
+      waitChance: 0.5
+      waitDurationMin: 0
+      waitDurationMax: 1.2
+    stuck:
+      repathWhenStuck: 1
+      speedThreshold: 0.05
+      timeout: 1.5
+      remainingDistanceEpsilon: 0.03
+      noProgressTimeout: 1
+      movementEpsilon: 0.015
+      noMovementTimeout: 0.8
+      minDesiredSpeedForMovementCheck: 0.25
+    returnToCenter:
+      maxDistance: 14
+      exitRatio: 0.5
+      targetRadius: 2
+  speed:
+    scale:
+      range: {x: 1, y: 1.2}
+    returnToCenter:
+      useBoost: 1
+      scale: 1.35
+    acceleration:
+      useBoost: 1
+      scale: 2.25
+      minValue: 20
+  randomJumpEnabled: 1
+  jumpChancePerSecond: 0.1
+  jumpCooldownMin: 1.5
+  jumpCooldownMax: 4
+  minHorizontalSpeedToJump: 0.35
+  collisionRepathCooldown: 0.25
+  collisionAvoidanceOffset: 1.2
+  collisionAvoidanceDuration: 0.6
+--- !u!114 &8884666047061710343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b879a5076e0c6847ad8056df67e09da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarker
+  ShowTopMostFoldoutHeaderGroup: 1
+  markerScale: 0.35
+  arriveBuffer: 0.1
+--- !u!114 &2604422965726946748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
+  movement:
+    path:
+      randomMoveEnabled: 1
+      navMeshSearchRadius: 5
+      radius: 8
+      minDistance: 0.8
+      initialDelayMax: 2
+      reachedBuffer: 0.15
+      repathCooldown: 0.1
+      noPathRetryCooldown: 0.6
+      maxAttempts: 8
+      maxConsecutiveFailures: 4
+      centerBiasWeight: 0.05
+      useWaitBeforeNextDestination: 1
+      waitChance: 0.5
+      waitDurationMin: 0
+      waitDurationMax: 1.2
+    stuck:
+      repathWhenStuck: 1
+      speedThreshold: 0.05
+      timeout: 1.5
+      remainingDistanceEpsilon: 0.03
+      noProgressTimeout: 1
+      movementEpsilon: 0.015
+      noMovementTimeout: 0.8
+      minDesiredSpeedForMovementCheck: 0.25
+    returnToCenter:
+      maxDistance: 14
+      exitRatio: 0.5
+      targetRadius: 2
+  speed:
+    scale:
+      range: {x: 1, y: 1.2}
+    returnToCenter:
+      useBoost: 1
+      scale: 1.35
+    acceleration:
+      useBoost: 1
+      scale: 2.25
+      minValue: 20
+  randomJumpEnabled: 1
+  jumpChancePerSecond: 0.1
+  jumpCooldownMin: 1.5
+  jumpCooldownMax: 4
+  minHorizontalSpeedToJump: 0.35
+  collisionRepathCooldown: 0.25
+  collisionAvoidanceOffset: 1.2
+  collisionAvoidanceDuration: 0.6
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

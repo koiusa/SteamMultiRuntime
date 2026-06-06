@@ -5,19 +5,21 @@ namespace Koiusa.SteamMultiRuntime
 {
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(GroundMotionTracker))]
+    [RequireComponent(typeof(SlopeContactResolver))]
+    [RequireComponent(typeof(PlayerCompositeMotor))]
     public class NpcNavMeshController : MonoBehaviour, IPlayerController
     {
-        [SerializeField] private NpcNavMeshMovementModule movement = new();
-        [SerializeField] private NpcNavMeshRotationModule rotation = new();
-        [SerializeField] private NpcNavMeshSpeedModule speed = new();
-        [SerializeField] private NpcNavMeshJumpModule jump = new();
 
-        [Header("Manual Locomotion")]
-        [SerializeField, Min(0f)] private float moveAcceleration = 22f;
-        [SerializeField, Min(0f)] private float moveDeceleration = 28f;
-        [SerializeField, Min(0f)] private float destinationStopBuffer = 0.05f;
-        [SerializeField, Min(0f)] private float groundedProbeDistance = 0.08f;
+        [SerializeField] private NpcNavMeshMovementModule movement = new();
+        [SerializeField] private NpcNavMeshSpeedModule speed = new();
+
+        [Header("AI Input")]
+        [SerializeField] private bool randomJumpEnabled = true;
+        [SerializeField, Range(0f, 1f)] private float jumpChancePerSecond = 0.1f;
+        [SerializeField, Min(0f)] private float jumpCooldownMin = 1.5f;
+        [SerializeField, Min(0f)] private float jumpCooldownMax = 4.0f;
+        [SerializeField, Min(0f)] private float minHorizontalSpeedToJump = 0.35f;
 
         [Header("Dynamic Avoidance")]
         [SerializeField, Min(0f)] private float collisionRepathCooldown = 0.25f;
@@ -26,12 +28,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private NavMeshAgent _agent;
         private Rigidbody _rigidbody;
-        private Collider _bodyCollider;
-        private Vector3 _estimatedVelocity;
-        private Vector3 _simulatedPlanarVelocity;
-        private Vector3 _previousPosition;
-        private bool _hasPreviousPosition;
-        private bool _isGrounded;
+        private PlayerCompositeMotor _motor;
+        private IPlayerMoveInputReceiver _moveInputReceiver;
+        private IPlayerMotor _baseMotor;
+        private AiPlayerInputSource _inputSource;
+
+        private Vector2 _moveInput;
+        private Vector3 _moveDirection;
+        private int _jumpToken;
+        private int _lastConsumedJumpToken;
+        private float _nextJumpAllowedTime;
+
         private float _nextCollisionRepathTime;
         private bool _isAvoidingCollision;
         private bool _hasResumeDestination;
@@ -42,65 +49,28 @@ namespace Koiusa.SteamMultiRuntime
         public event System.Action<Vector3> DestinationSet;
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
-        public bool IsMoving => _agent != null && _agent.isOnNavMesh && !_agent.isStopped && _simulatedPlanarVelocity.sqrMagnitude > 0.01f;
-        public bool IsGrounded => _isGrounded;
-        public bool IsJumping => jump.IsJumping;
-        public bool IsFreefall => !_isGrounded && !jump.IsJumping;
-        public bool IsFallingAfterJump => jump.IsFallingAfterJump;
+        public bool IsMoving => _motor != null && _motor.HorizontalVelocity > 0.01f;
+        public bool IsGrounded => _motor != null && _motor.IsGrounded;
+        public bool IsJumping => _motor != null && _motor.IsJumping;
+        public bool IsFreefall => _motor != null && _motor.IsFreefall;
+        public bool IsFallingAfterJump => _motor != null && _motor.IsFallingAfterJump;
         public bool IsStrafeMode => false;
-        public Vector3 InheritedGroundVelocity => Vector3.zero;
-        public Vector2 MoveInput
-        {
-            get
-            {
-                if (_agent == null || !_agent.isOnNavMesh)
-                    return Vector2.zero;
-
-                var localDesired = transform.InverseTransformDirection(_agent.desiredVelocity);
-                var planar = new Vector2(localDesired.x, localDesired.z);
-                return planar.sqrMagnitude > 1f ? planar.normalized : planar;
-            }
-        }
-
-        public Vector3 MoveDirection
-        {
-            get
-            {
-                if (_agent == null || !_agent.isOnNavMesh)
-                    return Vector3.zero;
-
-                var upAxis = PlayerMotor.GetUpAxis();
-                var direction = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
-                return direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.zero;
-            }
-        }
-
-        public float HorizontalVelocity
-        {
-            get
-            {
-                if (_agent == null || !_agent.isOnNavMesh)
-                    return 0f;
-                return _simulatedPlanarVelocity.magnitude;
-            }
-        }
-
-        public float VerticalVelocity
-        {
-            get
-            {
-                if (_agent == null || !_agent.isOnNavMesh)
-                    return 0f;
-                if (jump.IsJumpActive)
-                    return jump.VerticalVelocity;
-                return Vector3.Dot(_estimatedVelocity, PlayerMotor.GetUpAxis());
-            }
-        }
-
+        public Vector3 InheritedGroundVelocity => _motor != null ? _motor.InheritedGroundVelocity : Vector3.zero;
+        public Vector2 MoveInput => _moveInput;
+        public Vector3 MoveDirection => _moveDirection;
+        public float HorizontalVelocity => _motor != null ? _motor.HorizontalVelocity : 0f;
+        public float VerticalVelocity => _motor != null ? _motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed
         {
             get
             {
+                if (_baseMotor != null)
+                {
+                    var settings = _baseMotor.GetSettings();
+                    if (settings.MoveSpeed > 0f)
+                        return settings.MoveSpeed;
+                }
+
                 var baseSpeed = speed.BaseAgentSpeed;
                 if (baseSpeed > 0f)
                     return Mathf.Max(baseSpeed, 0.01f);
@@ -112,52 +82,40 @@ namespace Koiusa.SteamMultiRuntime
         {
             _agent = GetComponent<NavMeshAgent>();
             _rigidbody = GetComponent<Rigidbody>();
-            _bodyCollider = GetComponent<Collider>();
+            _motor = GetComponent<PlayerCompositeMotor>();
+            _moveInputReceiver = _motor as IPlayerMoveInputReceiver;
+            _baseMotor = GetComponent<IPlayerMotor>();
+            _inputSource = new AiPlayerInputSource();
+
             movement.NormalizeSettings();
             speed.NormalizeSettings();
-            jump.NormalizeSettings();
-            ApplyAgentOrientationSettings();
+            ApplyAgentSettings();
 
-            if (_agent != null)
+            if (_rigidbody != null)
             {
-                _agent.updatePosition = false;
-                _agent.nextPosition = transform.position;
+                _rigidbody.freezeRotation = true;
+                _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
             }
 
             speed.Initialize(_agent);
             movement.Initialize(_agent, transform);
-            rotation.Initialize(_agent, transform);
-            jump.Initialize(_agent);
-
-            _previousPosition = transform.position;
-            _hasPreviousPosition = true;
-            _estimatedVelocity = Vector3.zero;
-            _simulatedPlanarVelocity = Vector3.zero;
-            _isGrounded = true;
+            ResetInputState();
+            ScheduleNextJump(true);
         }
 
         private void OnEnable()
         {
-            ApplyAgentOrientationSettings();
-            if (_agent != null)
-            {
-                _agent.updatePosition = false;
-                _agent.nextPosition = transform.position;
-            }
-
+            ApplyAgentSettings();
             speed.OnEnable();
             movement.OnEnable();
-            jump.OnEnable();
             movement.OnReturnToCenterStarted += OnReturnToCenterStarted;
             movement.OnRandomDestinationNeeded += OnRandomDestinationNeeded;
             movement.OnCenterDestinationNeeded += OnCenterDestinationNeeded;
             movement.OnDestinationNeeded += OnDestinationNeeded;
 
-            _previousPosition = transform.position;
-            _hasPreviousPosition = true;
-            _estimatedVelocity = Vector3.zero;
-            _simulatedPlanarVelocity = Vector3.zero;
-            _isGrounded = true;
+            _inputSource.Enable();
+            ResetInputState();
+            ScheduleNextJump(true);
         }
 
         private void OnDisable()
@@ -166,10 +124,10 @@ namespace Koiusa.SteamMultiRuntime
             movement.OnRandomDestinationNeeded -= OnRandomDestinationNeeded;
             movement.OnCenterDestinationNeeded -= OnCenterDestinationNeeded;
             movement.OnDestinationNeeded -= OnDestinationNeeded;
-            jump.OnDisable();
 
-            _simulatedPlanarVelocity = Vector3.zero;
-            _isGrounded = false;
+            _inputSource.Disable();
+            _motor?.ResetState();
+            ResetInputState();
             _isAvoidingCollision = false;
             _hasResumeDestination = false;
             _collisionAvoidanceUntilTime = 0f;
@@ -183,50 +141,6 @@ namespace Koiusa.SteamMultiRuntime
             ResetAgentPath();
         }
 
-        private void OnCollisionStay(Collision collision)
-        {
-            TryRepathOnCharacterCollision(collision.collider);
-        }
-
-        private void OnCollisionEnter(Collision collision)
-        {
-            TryRepathOnCharacterCollision(collision.collider);
-        }
-
-        private void StopAgent()
-        {
-            if (_agent == null) return;
-            try
-            {
-                if (_agent.enabled && _agent.isOnNavMesh)
-                    _agent.isStopped = true;
-            }
-            catch { }
-        }
-
-        private void ResetAgentPath()
-        {
-            if (_agent == null)
-                return;
-            try
-            {
-                if (_agent.isOnNavMesh)
-                    _agent.ResetPath();
-            }
-            catch { }
-        }
-
-        private void OnValidate()
-        {
-            movement.NormalizeSettings();
-            speed.NormalizeSettings();
-            jump.NormalizeSettings();
-            ApplyAgentOrientationSettings();
-
-            if (Application.isPlaying)
-                speed.ApplyAgentSpeedScale();
-        }
-
         private void Update()
         {
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
@@ -234,29 +148,53 @@ namespace Koiusa.SteamMultiRuntime
 
             movement.ObserveState();
             UpdateCollisionAvoidanceState();
-            rotation.UpdateRotation();
-            UpdateEstimatedVelocity();
+            UpdateAiInputSignal();
 
-            _agent.nextPosition = transform.position;
+            if (_rigidbody != null)
+                _agent.nextPosition = _rigidbody.position;
+            else
+                _agent.nextPosition = transform.position;
         }
 
         private void FixedUpdate()
         {
-            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh || _rigidbody == null)
+            if (_motor == null)
                 return;
 
-            UpdateGroundedState();
-            jump.UpdateState();
-            ApplyJumpPhysics();
-            UpdateManualLocomotion();
-            _agent.nextPosition = _rigidbody.position;
+            var inputState = _inputSource.ReadState();
+            _moveInput = inputState.Move;
+            _moveDirection = PlayerMotor.GetMoveDirection(transform, _moveInput);
+
+            if (inputState.JumpPressed)
+                _jumpToken++;
+
+            var jumpThisFrame = _jumpToken != _lastConsumedJumpToken;
+            if (jumpThisFrame)
+                _lastConsumedJumpToken = _jumpToken;
+
+            _baseMotor?.SetStrafeMode(false);
+            _moveInputReceiver?.SetMoveInput(_moveInput);
+            _motor.Tick(_moveDirection, jumpThisFrame);
+
+            if (_agent != null && _agent.isOnNavMesh && _rigidbody != null)
+                _agent.nextPosition = _rigidbody.position;
         }
 
-        private void LateUpdate()
+        private void OnCollisionEnter(Collision collision)
         {
-            if (!rotation.KeepUpright)
-                return;
-            rotation.StabilizeUpright();
+            _motor?.OnCollisionEnter(collision);
+            TryRepathOnCharacterCollision(collision.collider);
+        }
+
+        private void OnCollisionStay(Collision collision)
+        {
+            _motor?.OnCollisionStay(collision);
+            TryRepathOnCharacterCollision(collision.collider);
+        }
+
+        private void OnCollisionExit(Collision collision)
+        {
+            _motor?.OnCollisionExit(collision);
         }
 
         private void OnRandomDestinationNeeded()
@@ -283,84 +221,88 @@ namespace Koiusa.SteamMultiRuntime
             ReturnToCenterStarted?.Invoke();
         }
 
-        private void ApplyAgentOrientationSettings()
+        private void OnValidate()
+        {
+            movement.NormalizeSettings();
+            speed.NormalizeSettings();
+            if (jumpCooldownMin < 0f)
+                jumpCooldownMin = 0f;
+            if (jumpCooldownMax < jumpCooldownMin)
+                jumpCooldownMax = jumpCooldownMin;
+            if (minHorizontalSpeedToJump < 0f)
+                minHorizontalSpeedToJump = 0f;
+            jumpChancePerSecond = Mathf.Clamp01(jumpChancePerSecond);
+            ApplyAgentSettings();
+
+            if (Application.isPlaying)
+                speed.ApplyAgentSpeedScale();
+        }
+
+        private void ApplyAgentSettings()
         {
             if (_agent == null)
                 _agent = GetComponent<NavMeshAgent>();
             if (_agent == null)
                 return;
+
             _agent.updateRotation = false;
             _agent.updateUpAxis = false;
             _agent.updatePosition = false;
             _agent.autoRepath = true;
         }
 
-        private void UpdateManualLocomotion()
+        private void UpdateAiInputSignal()
         {
+            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+            {
+                _inputSource.SetMove(Vector2.zero);
+                return;
+            }
+
             var upAxis = PlayerMotor.GetUpAxis();
             var desiredPlanar = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
             var targetPlanarVelocity = desiredPlanar;
-
             if (_agent.pathPending || _agent.isStopped || !_agent.hasPath)
                 targetPlanarVelocity = Vector3.zero;
 
-            var remainingDistance = _agent.remainingDistance;
-            var stopDistance = _agent.stoppingDistance + destinationStopBuffer;
-            if (!_agent.pathPending && _agent.hasPath && remainingDistance <= stopDistance)
-                targetPlanarVelocity = Vector3.zero;
+            var localDesired = transform.InverseTransformDirection(targetPlanarVelocity);
+            var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
+            if (nextMoveInput.sqrMagnitude > 1f)
+                nextMoveInput = nextMoveInput.normalized;
 
-            var currentSpeed = _simulatedPlanarVelocity.magnitude;
-            var targetSpeed = targetPlanarVelocity.magnitude;
-            var accel = targetSpeed >= currentSpeed ? moveAcceleration : moveDeceleration;
-            var maxDelta = Mathf.Max(0f, accel) * Time.fixedDeltaTime;
-            _simulatedPlanarVelocity = Vector3.MoveTowards(_simulatedPlanarVelocity, targetPlanarVelocity, maxDelta);
+            _inputSource.SetMove(nextMoveInput);
 
-            var currentVelocity = _rigidbody.linearVelocity;
-            var verticalVelocity = Vector3.Project(currentVelocity, upAxis);
-            _rigidbody.linearVelocity = _simulatedPlanarVelocity + verticalVelocity;
+            if (!randomJumpEnabled)
+                return;
+            if (Time.time < _nextJumpAllowedTime)
+                return;
+            if (!IsGrounded)
+                return;
+            if (targetPlanarVelocity.magnitude < minHorizontalSpeedToJump)
+                return;
+
+            var chanceThisFrame = jumpChancePerSecond * Time.deltaTime;
+            if (Random.value > chanceThisFrame)
+                return;
+
+            _inputSource.QueueJump();
+            ScheduleNextJump(false);
         }
 
-        private void ApplyJumpPhysics()
+        private void ScheduleNextJump(bool allowImmediate)
         {
-            var upAxis = PlayerMotor.GetUpAxis();
-            var velocity = _rigidbody.linearVelocity;
-            var verticalVelocity = Vector3.Dot(velocity, upAxis);
-
-            if (jump.ConsumeJumpRequest() && _isGrounded)
-            {
-                velocity -= upAxis * verticalVelocity;
-                velocity += upAxis * jump.JumpVerticalVelocity;
-                _rigidbody.linearVelocity = velocity;
-                jump.NotifyJumpStarted(jump.JumpVerticalVelocity);
-                _isGrounded = false;
-                return;
-            }
-
-            if (jump.IsJumpActive && verticalVelocity < 0f)
-            {
-                _rigidbody.linearVelocity += Physics.gravity * (jump.FallMultiplier - 1f) * Time.fixedDeltaTime;
-            }
-
-            if (jump.IsJumpActive && _isGrounded && verticalVelocity <= 0.05f)
-            {
-                jump.NotifyLanded();
-            }
+            var minCooldown = jumpCooldownMin;
+            var maxCooldown = Mathf.Max(minCooldown, jumpCooldownMax);
+            _nextJumpAllowedTime = Time.time + (allowImmediate ? Random.Range(0f, maxCooldown) : Random.Range(minCooldown, maxCooldown));
         }
 
-        private void UpdateGroundedState()
+        private void ResetInputState()
         {
-            if (_bodyCollider == null)
-            {
-                _isGrounded = false;
-                return;
-            }
-
-            var upAxis = PlayerMotor.GetUpAxis().normalized;
-            var bounds = _bodyCollider.bounds;
-            var upExtent = Mathf.Abs(upAxis.x) * bounds.extents.x + Mathf.Abs(upAxis.y) * bounds.extents.y + Mathf.Abs(upAxis.z) * bounds.extents.z;
-            var origin = bounds.center;
-            var maxDistance = upExtent + Mathf.Max(0.01f, groundedProbeDistance);
-            _isGrounded = Physics.Raycast(origin, -upAxis, maxDistance, ~0, QueryTriggerInteraction.Ignore);
+            _moveInput = Vector2.zero;
+            _moveDirection = Vector3.zero;
+            _jumpToken = 0;
+            _lastConsumedJumpToken = 0;
+            _inputSource.SetMove(Vector2.zero);
         }
 
         private void TryRepathOnCharacterCollision(Collider otherCollider)
@@ -370,6 +312,8 @@ namespace Koiusa.SteamMultiRuntime
             if (otherCollider == null)
                 return;
             if (Time.time < _nextCollisionRepathTime)
+                return;
+            if (_isAvoidingCollision)
                 return;
 
             var otherController = otherCollider.GetComponentInParent<IPlayerController>();
@@ -415,7 +359,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             var expired = Time.time >= _collisionAvoidanceUntilTime;
-            var reachedAvoidPoint = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance + destinationStopBuffer);
+            var reachedAvoidPoint = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance);
             if (!expired && !reachedAvoidPoint)
                 return;
 
@@ -428,49 +372,30 @@ namespace Koiusa.SteamMultiRuntime
             DestinationSet?.Invoke(_resumeDestination);
         }
 
-        private void UpdateEstimatedVelocity()
+        private void StopAgent()
         {
-            if (_rigidbody != null)
+            if (_agent == null)
+                return;
+
+            try
             {
-                _estimatedVelocity = _rigidbody.linearVelocity;
-                _previousPosition = transform.position;
-                _hasPreviousPosition = true;
-                return;
+                if (_agent.enabled && _agent.isOnNavMesh)
+                    _agent.isStopped = true;
             }
+            catch { }
+        }
 
-            if (!_hasPreviousPosition)
+        private void ResetAgentPath()
+        {
+            if (_agent == null)
+                return;
+
+            try
             {
-                _previousPosition = transform.position;
-                _hasPreviousPosition = true;
-                _estimatedVelocity = Vector3.zero;
-                return;
+                if (_agent.isOnNavMesh)
+                    _agent.ResetPath();
             }
-
-            var deltaTime = Time.deltaTime;
-            if (deltaTime <= Mathf.Epsilon)
-                return;
-
-            var currentPosition = transform.position;
-            var rawVelocity = (currentPosition - _previousPosition) / deltaTime;
-            _previousPosition = currentPosition;
-
-            const float lerp = 0.35f;
-            const float stopLerp = 0.7f;
-            const float deadZone = 0.08f;
-            var deadZoneSqr = deadZone * deadZone;
-
-            if (rawVelocity.sqrMagnitude <= deadZoneSqr)
-                rawVelocity = Vector3.zero;
-
-            var nearStopped = _agent.isStopped || (!_agent.pathPending && !_agent.hasPath);
-            if (nearStopped)
-            {
-                var damped = Vector3.Lerp(_estimatedVelocity, Vector3.zero, stopLerp);
-                _estimatedVelocity = damped.sqrMagnitude <= deadZoneSqr ? Vector3.zero : damped;
-                return;
-            }
-
-            _estimatedVelocity = Vector3.Lerp(_estimatedVelocity, rawVelocity, lerp);
+            catch { }
         }
     }
 }
