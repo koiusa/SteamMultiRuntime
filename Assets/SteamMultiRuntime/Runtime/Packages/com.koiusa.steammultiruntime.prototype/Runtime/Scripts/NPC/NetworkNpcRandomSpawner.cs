@@ -80,7 +80,7 @@ namespace Koiusa.SteamMultiRuntime
             var networkManager = NetworkManager.Singleton;
             if (networkManager == null)
             {
-                nextSpawnRetryTime = Time.time + spawnRetryInterval;
+                SpawnInternal();
                 return;
             }
 
@@ -135,20 +135,24 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 var spawnUp = Physics.gravity.sqrMagnitude > 0f ? -Physics.gravity.normalized : Vector3.up;
-                var finalSpawnPosition = spawnPosition + spawnUp * spawnHeightOffset;
+                var finalSpawnPosition = prefabAgent != null
+                    ? spawnPosition
+                    : spawnPosition + spawnUp * spawnHeightOffset;
 
                 var instance = Instantiate(prefab, finalSpawnPosition, Quaternion.identity);
                 var networkObject = instance.GetComponent<NetworkObject>();
-                if (networkObject == null)
-                {
-                    Debug.LogError("[NetworkNpcRandomSpawner] Spawned prefab does not have NetworkObject.", instance);
-                    Destroy(instance);
-                    continue;
-                }
+                var networkManager = NetworkManager.Singleton;
 
-                if (!networkObject.IsSpawned)
+                if (networkObject != null && networkManager != null && networkManager.IsListening)
                 {
-                    networkObject.Spawn();
+                    if (!networkObject.IsSpawned)
+                    {
+                        networkObject.Spawn();
+                    }
+                }
+                else if (networkObject == null)
+                {
+                    Debug.LogWarning("[NetworkNpcRandomSpawner] Spawned prefab does not have NetworkObject. Spawned as local instance.", instance);
                 }
 
                 ApplyModelSync(instance);

@@ -1,54 +1,56 @@
 using UnityEngine;
 using UnityEngine.AI;
-using Unity.Netcode;
 
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NpcNavMeshController))]
     [RequireComponent(typeof(NavMeshAgent))]
-    [RequireComponent(typeof(NetworkObject))]
-    public class NpcDestinationDebugMarker : NetworkBehaviour
+    public class NpcDestinationDebugMarker : MonoBehaviour
     {
         [SerializeField] private float markerScale = 0.35f;
         [SerializeField] private float arriveBuffer = 0.1f;
 
-        private NpcNavMeshController _controller;
         private NavMeshAgent _agent;
         private GameObject _marker;
-
-        private NetworkVariable<Vector3> _syncedDestination = new NetworkVariable<Vector3>(Vector3.zero);
+        private Vector3 _currentDestination;
+        private bool _hasDestination;
+        private System.Action<Vector3> _destinationProvider;
 
         private void Awake()
         {
-            _controller = GetComponent<NpcNavMeshController>();
             _agent = GetComponent<NavMeshAgent>();
         }
 
-        public override void OnNetworkSpawn()
+        private void OnDisable()
         {
-            base.OnNetworkSpawn();
-            
-            if (_controller != null)
-                _controller.DestinationSet += OnDestinationSet;
-
-            _syncedDestination.OnValueChanged += OnSyncedDestinationChanged;
+            UnregisterDestinationProvider();
+            DestroyMarker();
+            _hasDestination = false;
         }
 
-        public override void OnNetworkDespawn()
+        public void RegisterDestinationProvider(System.Action<Vector3> destinationProvider)
         {
-            if (_controller != null)
-                _controller.DestinationSet -= OnDestinationSet;
+            UnregisterDestinationProvider();
+            _destinationProvider = destinationProvider;
+            if (_destinationProvider != null)
+            {
+                _destinationProvider += OnDestinationSet;
+            }
+        }
 
-            _syncedDestination.OnValueChanged -= OnSyncedDestinationChanged;
-            DestroyMarker();
-            
-            base.OnNetworkDespawn();
+        public void UnregisterDestinationProvider()
+        {
+            if (_destinationProvider != null)
+            {
+                _destinationProvider -= OnDestinationSet;
+                _destinationProvider = null;
+            }
         }
 
         private void Update()
         {
-            if (_marker == null || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+            if (!_hasDestination || _marker == null || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
 
             var arrived = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance + arriveBuffer);
@@ -56,21 +58,27 @@ namespace Koiusa.SteamMultiRuntime
                 DestroyMarker();
         }
 
-        private void OnDestinationSet(Vector3 destination)
+        public void SetDestination(Vector3 destination)
         {
-            if (IsServer)
-            {
-                _syncedDestination.Value = destination;
-            }
-        }
+            _currentDestination = destination;
+            _hasDestination = true;
 
-        private void OnSyncedDestinationChanged(Vector3 previousValue, Vector3 newValue)
-        {
             if (_marker == null)
                 _marker = CreateMarker();
 
-            _marker.transform.position = newValue;
+            _marker.transform.position = _currentDestination;
             _marker.SetActive(true);
+        }
+
+        public void ClearDestination()
+        {
+            _hasDestination = false;
+            DestroyMarker();
+        }
+
+        private void OnDestinationSet(Vector3 destination)
+        {
+            SetDestination(destination);
         }
 
         private GameObject CreateMarker()
