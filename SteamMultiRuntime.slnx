@@ -1,10 +1,10 @@
 ﻿<Solution>
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Packages.csproj" />
   <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Runtime.csproj" />
   <Project Path="TNRD.SerializableInterface.Editor.csproj" />
   <Project Path="UnityChan.Common.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Integration.Editor.csproj" />

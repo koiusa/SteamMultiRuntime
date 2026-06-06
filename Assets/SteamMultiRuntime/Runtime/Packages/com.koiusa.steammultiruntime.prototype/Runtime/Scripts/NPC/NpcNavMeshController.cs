@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(PlayerCompositeMotor))]
-    public class NpcNavMeshController : MonoBehaviour, IPlayerController
+    public partial class NpcNavMeshController : MonoBehaviour, IPlayerController
     {
 
         [SerializeField] private NpcNavMeshMovementModule movement = new();
@@ -21,8 +21,21 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float jumpCooldownMax = 4.0f;
         [SerializeField, Min(0f)] private float minHorizontalSpeedToJump = 0.35f;
 
+        private enum LocalAvoidanceMode
+        {
+            None = 0,
+            Boid = 1,
+            Rvo = 2
+        }
+
+        [Header("Local Avoidance")]
+        [SerializeField] private LocalAvoidanceMode localAvoidanceMode = LocalAvoidanceMode.Rvo;
+        [SerializeField, Min(0.01f)] private float steeringUpdateInterval = 0.08f;
+        [SerializeField] private bool steeringHoldLastValueBetweenUpdates = true;
+        [SerializeField, Range(0f, 1f)] private float navCornerDirectionWeight = 0.65f;
+        [SerializeField, Min(0f)] private float navCornerMinDistance = 0.1f;
+
         [Header("Boid Separation")]
-        [SerializeField] private bool boidSeparationEnabled = true;
         [SerializeField, Min(0.1f)] private float boidSeparationRadius = 1.6f;
         [SerializeField, Min(0f)] private float boidGoalWeight = 1f;
         [SerializeField, Min(0f)] private float boidSeparationWeight = 1.25f;
@@ -31,10 +44,25 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Range(-1f, 1f)] private float boidNeighborForwardDotMin = 0f;
         [SerializeField, Min(1)] private int boidMaxNeighbors = 8;
 
+        [Header("RVO-style Local Avoidance")]
+        [SerializeField, Min(0.1f)] private float rvoNeighborRadius = 2f;
+        [SerializeField, Min(0.05f)] private float rvoAgentRadius = 0.45f;
+        [SerializeField, Min(0.1f)] private float rvoTimeHorizon = 1.2f;
+        [SerializeField, Min(0f)] private float rvoGoalWeight = 1f;
+        [SerializeField, Min(0f)] private float rvoAvoidanceWeight = 1.35f;
+        [SerializeField, Min(0f)] private float rvoMinApproachSpeed = 0.05f;
+        [SerializeField, Min(1)] private int rvoMaxNeighbors = 10;
+        [SerializeField, Min(0f)] private float rvoSideBias = 0.15f;
+        [SerializeField, Min(0f)] private float rvoSideSwitchThreshold = 0.2f;
+        [SerializeField, Min(0f)] private float rvoSideHoldTime = 0.35f;
+        [SerializeField, Min(1)] private int rvoPrimaryNeighborCount = 2;
+
         [Header("Steering Filter")]
-        [SerializeField, Min(0.1f)] private float boidLowPassCutoffHz = 4f;
-        [SerializeField, Min(0f)] private float boidDeadband = 0.05f;
-        [SerializeField, Min(1f)] private float boidMaxTurnDegPerSec = 240f;
+        [SerializeField, Min(0.1f)] private float boidLowPassCutoffHz = 3f;
+        [SerializeField, Min(0f)] private float boidDeadband = 0.06f;
+        [SerializeField, Min(1f)] private float boidMaxTurnDegPerSec = 180f;
+        [SerializeField, Min(0f)] private float boidSideSwitchMin = 0.18f;
+        [SerializeField, Min(0f)] private float boidSideHoldTime = 0.2f;
 
 
         private NavMeshAgent _agent;
@@ -47,6 +75,11 @@ namespace Koiusa.SteamMultiRuntime
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
         private Vector3 _filteredSteeringPlanar;
+        private Vector3 _cachedRawSteeringPlanar;
+        private Vector3 _cachedSteeringPlanar;
+        private float _nextSteeringUpdateTime;
+        private float _avoidanceSideSign = 1f;
+        private float _avoidanceSideLockUntilTime;
         private int _jumpToken;
         private int _lastConsumedJumpToken;
         private float _nextJumpAllowedTime;
@@ -153,7 +186,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             movement.ObserveState();
-            UpdateAiInputSignal();
 
             if (_rigidbody != null)
                 _agent.nextPosition = _rigidbody.position;
@@ -165,6 +197,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (_motor == null)
                 return;
+
+            UpdateAiInputSignal();
 
             var inputState = _inputSource.ReadState();
             _moveInput = inputState.Move;
@@ -235,15 +269,50 @@ namespace Koiusa.SteamMultiRuntime
                 jumpCooldownMax = jumpCooldownMin;
             if (minHorizontalSpeedToJump < 0f)
                 minHorizontalSpeedToJump = 0f;
+            if (steeringUpdateInterval < 0.01f)
+                steeringUpdateInterval = 0.01f;
+            navCornerDirectionWeight = Mathf.Clamp01(navCornerDirectionWeight);
+            if (navCornerMinDistance < 0f)
+                navCornerMinDistance = 0f;
+            if (boidSeparationRadius < 0.1f)
+                boidSeparationRadius = 0.1f;
             if (boidSeparationExponent < 1f)
                 boidSeparationExponent = 1f;
             boidNeighborForwardDotMin = Mathf.Clamp(boidNeighborForwardDotMin, -1f, 1f);
+            if (boidMaxNeighbors < 1)
+                boidMaxNeighbors = 1;
+            if (rvoNeighborRadius < 0.1f)
+                rvoNeighborRadius = 0.1f;
+            if (rvoAgentRadius < 0.05f)
+                rvoAgentRadius = 0.05f;
+            if (rvoTimeHorizon < 0.1f)
+                rvoTimeHorizon = 0.1f;
+            if (rvoGoalWeight < 0f)
+                rvoGoalWeight = 0f;
+            if (rvoAvoidanceWeight < 0f)
+                rvoAvoidanceWeight = 0f;
+            if (rvoMinApproachSpeed < 0f)
+                rvoMinApproachSpeed = 0f;
+            if (rvoMaxNeighbors < 1)
+                rvoMaxNeighbors = 1;
+            if (rvoSideBias < 0f)
+                rvoSideBias = 0f;
+            if (rvoSideSwitchThreshold < 0f)
+                rvoSideSwitchThreshold = 0f;
+            if (rvoSideHoldTime < 0f)
+                rvoSideHoldTime = 0f;
+            if (rvoPrimaryNeighborCount < 1)
+                rvoPrimaryNeighborCount = 1;
             if (boidLowPassCutoffHz < 0.1f)
                 boidLowPassCutoffHz = 0.1f;
             if (boidDeadband < 0f)
                 boidDeadband = 0f;
             if (boidMaxTurnDegPerSec < 1f)
                 boidMaxTurnDegPerSec = 1f;
+            if (boidSideSwitchMin < 0f)
+                boidSideSwitchMin = 0f;
+            if (boidSideHoldTime < 0f)
+                boidSideHoldTime = 0f;
             jumpChancePerSecond = Mathf.Clamp01(jumpChancePerSecond);
             ApplyAgentSettings();
 
@@ -266,6 +335,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void UpdateAiInputSignal()
         {
+            if (_inputSource == null)
+                return;
+
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
             {
                 _inputSource.SetMove(Vector2.zero);
@@ -273,20 +345,38 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var upAxis = PlayerMotor.GetUpAxis();
-            var desiredPlanar = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
-            var targetPlanarVelocity = desiredPlanar;
-            if (_agent.pathPending || _agent.isStopped || !_agent.hasPath)
-                targetPlanarVelocity = Vector3.zero;
+            var targetPlanarVelocity = BuildTargetPlanarVelocity(upAxis);
 
-            var steeringPlanar = targetPlanarVelocity;
-            if (boidSeparationEnabled)
+            var now = Time.time;
+            if (now >= _nextSteeringUpdateTime)
             {
-                steeringPlanar = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
+                _nextSteeringUpdateTime = now + steeringUpdateInterval;
+
+                var rawSteering = targetPlanarVelocity;
+                switch (localAvoidanceMode)
+                {
+                    case LocalAvoidanceMode.Boid:
+                        rawSteering = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
+                        break;
+                    case LocalAvoidanceMode.Rvo:
+                        rawSteering = BuildRvoSteeringPlanar(upAxis, targetPlanarVelocity);
+                        break;
+                    default:
+                        rawSteering = targetPlanarVelocity;
+                        break;
+                }
+
+                _cachedRawSteeringPlanar = rawSteering;
+            }
+            else if (!steeringHoldLastValueBetweenUpdates)
+            {
+                _cachedRawSteeringPlanar = targetPlanarVelocity;
             }
 
-            steeringPlanar = ApplySteeringLowPass(upAxis, steeringPlanar);
+            var steeringPlanar = ApplySteeringLowPass(upAxis, _cachedRawSteeringPlanar);
             steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
             steeringPlanar = ApplySteeringDeadband(steeringPlanar);
+            _cachedSteeringPlanar = steeringPlanar;
 
             var localDesired = transform.InverseTransformDirection(steeringPlanar);
             var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
@@ -317,6 +407,45 @@ namespace Koiusa.SteamMultiRuntime
             var minCooldown = jumpCooldownMin;
             var maxCooldown = Mathf.Max(minCooldown, jumpCooldownMax);
             _nextJumpAllowedTime = Time.time + (allowImmediate ? Random.Range(0f, maxCooldown) : Random.Range(minCooldown, maxCooldown));
+        }
+
+        private Vector3 BuildTargetPlanarVelocity(Vector3 upAxis)
+        {
+            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+                return Vector3.zero;
+            if (_agent.pathPending || _agent.isStopped || !_agent.hasPath)
+                return Vector3.zero;
+
+            var desiredPlanar = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
+            var desiredSpeed = desiredPlanar.magnitude;
+            if (desiredSpeed <= 0.0001f)
+                return Vector3.zero;
+
+            var desiredDirection = desiredPlanar / desiredSpeed;
+            var cornerDirection = desiredDirection;
+            var corners = _agent.path.corners;
+            if (corners != null && corners.Length > 1)
+            {
+                var cornerIndex = 1;
+                var minDistance = Mathf.Max(0f, navCornerMinDistance);
+                while (cornerIndex < corners.Length)
+                {
+                    var toCorner = Vector3.ProjectOnPlane(corners[cornerIndex] - transform.position, upAxis);
+                    if (toCorner.magnitude > minDistance)
+                    {
+                        cornerDirection = toCorner.normalized;
+                        break;
+                    }
+                    cornerIndex++;
+                }
+            }
+
+            var cornerWeight = Mathf.Clamp01(navCornerDirectionWeight);
+            var blendedDirection = Vector3.Lerp(desiredDirection, cornerDirection, cornerWeight);
+            if (blendedDirection.sqrMagnitude <= 0.000001f)
+                blendedDirection = desiredDirection;
+
+            return Vector3.ProjectOnPlane(blendedDirection.normalized * desiredSpeed, upAxis);
         }
 
         private Vector3 ApplySteeringLowPass(Vector3 upAxis, Vector3 steeringPlanar)
@@ -353,27 +482,31 @@ namespace Koiusa.SteamMultiRuntime
             return steeringPlanar.sqrMagnitude <= deadband * deadband ? Vector3.zero : steeringPlanar;
         }
 
-        private Vector3 BuildBoidSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
+        private Vector3 BuildRvoSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
         {
-            var radius = Mathf.Max(0.1f, boidSeparationRadius);
+            var radius = Mathf.Max(0.1f, rvoNeighborRadius);
             var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
             if (count <= 0)
                 return goalPlanarVelocity;
 
-            var separation = Vector3.zero;
-            var neighborCount = 0;
-            var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _boidNeighborBuffer.Length);
-            var radiusSqr = radius * radius;
+            var maxNeighbors = Mathf.Clamp(rvoMaxNeighbors, 1, _boidNeighborBuffer.Length);
+            var primaryNeighborCount = Mathf.Clamp(rvoPrimaryNeighborCount, 1, maxNeighbors);
             var uniqueNeighborIds = new int[32];
             var uniqueNeighborCount = 0;
+            var candidateScores = new float[32];
+            var candidateAvoidances = new Vector3[32];
+            var candidateCount = 0;
+            var selfPos = transform.position;
+            var selfVel = _rigidbody != null ? _rigidbody.linearVelocity : Vector3.zero;
+            var selfPlanarVel = Vector3.ProjectOnPlane(selfVel, upAxis);
+            var agentRadius = Mathf.Max(0.05f, rvoAgentRadius);
+            var timeHorizon = Mathf.Max(0.1f, rvoTimeHorizon);
+            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            var goalDirection = goalPlanar.sqrMagnitude > 0.000001f ? goalPlanar.normalized : transform.forward;
+            goalDirection = Vector3.ProjectOnPlane(goalDirection, upAxis).normalized;
+            var now = Time.time;
 
-            var referenceForward = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
-            if (referenceForward.sqrMagnitude <= 0.0001f)
-                referenceForward = Vector3.ProjectOnPlane(transform.forward, upAxis);
-            if (referenceForward.sqrMagnitude > 0.0001f)
-                referenceForward.Normalize();
-
-            for (var i = 0; i < count && neighborCount < maxNeighbors; i++)
+            for (var i = 0; i < count && candidateCount < maxNeighbors; i++)
             {
                 var col = _boidNeighborBuffer[i];
                 if (col == null)
@@ -397,53 +530,98 @@ namespace Koiusa.SteamMultiRuntime
                     alreadyAdded = true;
                     break;
                 }
-
                 if (alreadyAdded)
                     continue;
 
                 uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
 
-                var neighborPosition = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
-                var delta = transform.position - neighborPosition;
-                var planarDelta = Vector3.ProjectOnPlane(delta, upAxis);
-                var sqr = planarDelta.sqrMagnitude;
-                if (sqr <= 0.0001f || sqr > radiusSqr)
+                var otherPos = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
+                var relPos = Vector3.ProjectOnPlane(otherPos - selfPos, upAxis);
+                var dist = relPos.magnitude;
+                if (dist <= 0.0001f || dist > radius)
                     continue;
 
-                var directionToNeighbor = -planarDelta.normalized;
-                if (boidUseForwardNeighborFilter && referenceForward.sqrMagnitude > 0.0001f)
+                var relDir = relPos / dist;
+                var otherVel = col.attachedRigidbody != null ? col.attachedRigidbody.linearVelocity : Vector3.zero;
+                var otherPlanarVel = Vector3.ProjectOnPlane(otherVel, upAxis);
+                var relVel = selfPlanarVel - otherPlanarVel;
+                var approachSpeed = Vector3.Dot(relVel, relDir);
+                if (approachSpeed <= rvoMinApproachSpeed)
+                    continue;
+
+                var combinedRadius = agentRadius * 2f;
+                var timeToCollision = (dist - combinedRadius) / Mathf.Max(approachSpeed, 0.001f);
+                if (timeToCollision < 0f || timeToCollision > timeHorizon)
+                    continue;
+
+                var side = Vector3.Cross(upAxis, relDir);
+                if (side.sqrMagnitude <= 0.0001f)
+                    continue;
+
+                side.Normalize();
+                var preferredSign = Vector3.Dot(side, goalDirection) >= 0f ? 1f : -1f;
+                var chosenSign = preferredSign;
+                var signedPreference = preferredSign * _avoidanceSideSign;
+                var canSwitchSide = now >= _avoidanceSideLockUntilTime;
+                if (!canSwitchSide)
                 {
-                    var forwardDot = Vector3.Dot(referenceForward, directionToNeighbor);
-                    if (forwardDot < boidNeighborForwardDotMin)
-                        continue;
+                    chosenSign = _avoidanceSideSign;
+                }
+                else if (signedPreference < -Mathf.Max(0f, rvoSideSwitchThreshold))
+                {
+                    chosenSign = preferredSign;
+                    _avoidanceSideSign = preferredSign;
+                    _avoidanceSideLockUntilTime = now + Mathf.Max(0f, rvoSideHoldTime);
+                }
+                else
+                {
+                    chosenSign = _avoidanceSideSign;
                 }
 
-                var distance = Mathf.Sqrt(sqr);
-                var normalizedDistance = Mathf.Clamp01(distance / radius);
-                var strength = 1f - normalizedDistance;
-                var exponent = Mathf.Max(1f, boidSeparationExponent);
-                strength = Mathf.Pow(strength, exponent);
-                separation += planarDelta.normalized * strength;
-                neighborCount++;
+                var urgency = 1f - Mathf.Clamp01(timeToCollision / timeHorizon);
+                var proximity = 1f - Mathf.Clamp01(dist / radius);
+                var score = urgency * urgency + proximity * 0.5f;
+                var bias = chosenSign == _avoidanceSideSign ? rvoSideBias : 0f;
+                candidateScores[candidateCount] = score + bias;
+                candidateAvoidances[candidateCount] = side * (chosenSign * (score + bias));
+                candidateCount++;
             }
 
-            if (neighborCount == 0)
+            if (candidateCount == 0)
                 return goalPlanarVelocity;
 
-            separation /= neighborCount;
-
-            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
-            if (goalPlanar.sqrMagnitude > 0.0001f)
+            var selectedCount = 0;
+            var avoidance = Vector3.zero;
+            for (var selectedIndex = 0; selectedIndex < primaryNeighborCount; selectedIndex++)
             {
-                var goalDir = goalPlanar.normalized;
-                var lateralSeparation = Vector3.ProjectOnPlane(separation, upAxis);
-                var forwardComponent = Vector3.Dot(lateralSeparation, goalDir);
-                if (forwardComponent > 0f)
-                    lateralSeparation -= goalDir * forwardComponent;
-                separation = lateralSeparation;
+                var bestIndex = -1;
+                var bestScore = float.MinValue;
+                for (var candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++)
+                {
+                    var score = candidateScores[candidateIndex];
+                    if (score <= bestScore)
+                        continue;
+                    bestScore = score;
+                    bestIndex = candidateIndex;
+                }
+
+                if (bestIndex < 0)
+                    break;
+
+                avoidance += candidateAvoidances[bestIndex];
+                candidateScores[bestIndex] = float.MinValue;
+                selectedCount++;
             }
 
-            var blended = goalPlanarVelocity * boidGoalWeight + separation * boidSeparationWeight;
+            if (selectedCount == 0)
+                return goalPlanarVelocity;
+
+            avoidance /= selectedCount;
+            _avoidanceSideSign = Mathf.Sign(Vector3.Dot(Vector3.Cross(upAxis, avoidance), goalDirection));
+            if (Mathf.Approximately(_avoidanceSideSign, 0f))
+                _avoidanceSideSign = 1f;
+
+            var blended = goalPlanarVelocity * rvoGoalWeight + avoidance * rvoAvoidanceWeight;
             return Vector3.ProjectOnPlane(blended, upAxis);
         }
 
@@ -452,6 +630,11 @@ namespace Koiusa.SteamMultiRuntime
             _moveInput = Vector2.zero;
             _moveDirection = Vector3.zero;
             _filteredSteeringPlanar = Vector3.zero;
+            _cachedRawSteeringPlanar = Vector3.zero;
+            _cachedSteeringPlanar = Vector3.zero;
+            _nextSteeringUpdateTime = 0f;
+            _avoidanceSideSign = 1f;
+            _avoidanceSideLockUntilTime = 0f;
             _jumpToken = 0;
             _lastConsumedJumpToken = 0;
             _inputSource.SetMove(Vector2.zero);

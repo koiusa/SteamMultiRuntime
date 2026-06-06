@@ -25,7 +25,6 @@ GameObject:
   - component: {fileID: 1027209593580285803}
   - component: {fileID: 1723194128134958813}
   - component: {fileID: 8884666047061710343}
-  - component: {fileID: 2604422965726946748}
   m_Layer: 0
   m_Name: NetworkPlayer_NPC
   m_TagString: Untagged
@@ -112,7 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3319208734
+  GlobalObjectIdHash: 2618941016
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -425,9 +424,34 @@ MonoBehaviour:
   jumpCooldownMin: 1.5
   jumpCooldownMax: 4
   minHorizontalSpeedToJump: 0.35
-  collisionRepathCooldown: 0.25
-  collisionAvoidanceOffset: 1.2
-  collisionAvoidanceDuration: 0.6
+  localAvoidanceMode: 1
+  steeringUpdateInterval: 0.08
+  steeringHoldLastValueBetweenUpdates: 1
+  navCornerDirectionWeight: 0.65
+  navCornerMinDistance: 0.1
+  boidSeparationRadius: 1.6
+  boidGoalWeight: 1
+  boidSeparationWeight: 1.25
+  boidSeparationExponent: 2.2
+  boidUseForwardNeighborFilter: 1
+  boidNeighborForwardDotMin: 0
+  boidMaxNeighbors: 8
+  rvoNeighborRadius: 2
+  rvoAgentRadius: 0.45
+  rvoTimeHorizon: 1.2
+  rvoGoalWeight: 1
+  rvoAvoidanceWeight: 1.35
+  rvoMinApproachSpeed: 0.05
+  rvoMaxNeighbors: 10
+  rvoSideBias: 0.15
+  rvoSideSwitchThreshold: 0.2
+  rvoSideHoldTime: 0.35
+  rvoPrimaryNeighborCount: 2
+  boidLowPassCutoffHz: 3
+  boidDeadband: 0.06
+  boidMaxTurnDegPerSec: 180
+  boidSideSwitchMin: 0.18
+  boidSideHoldTime: 0.2
 --- !u!114 &8884666047061710343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -443,66 +467,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   markerScale: 0.35
   arriveBuffer: 0.1
---- !u!114 &2604422965726946748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
-  movement:
-    path:
-      randomMoveEnabled: 1
-      navMeshSearchRadius: 5
-      radius: 8
-      minDistance: 0.8
-      initialDelayMax: 2
-      reachedBuffer: 0.15
-      repathCooldown: 0.1
-      noPathRetryCooldown: 0.6
-      maxAttempts: 8
-      maxConsecutiveFailures: 4
-      centerBiasWeight: 0.05
-      useWaitBeforeNextDestination: 1
-      waitChance: 0.5
-      waitDurationMin: 0
-      waitDurationMax: 1.2
-    stuck:
-      repathWhenStuck: 1
-      speedThreshold: 0.05
-      timeout: 1.5
-      remainingDistanceEpsilon: 0.03
-      noProgressTimeout: 1
-      movementEpsilon: 0.015
-      noMovementTimeout: 0.8
-      minDesiredSpeedForMovementCheck: 0.25
-    returnToCenter:
-      maxDistance: 14
-      exitRatio: 0.5
-      targetRadius: 2
-  speed:
-    scale:
-      range: {x: 1, y: 1.2}
-    returnToCenter:
-      useBoost: 1
-      scale: 1.35
-    acceleration:
-      useBoost: 1
-      scale: 2.25
-      minValue: 20
-  randomJumpEnabled: 1
-  jumpChancePerSecond: 0.1
-  jumpCooldownMin: 1.5
-  jumpCooldownMax: 4
-  minHorizontalSpeedToJump: 0.35
-  collisionRepathCooldown: 0.25
-  collisionAvoidanceOffset: 1.2
-  collisionAvoidanceDuration: 0.6
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0
