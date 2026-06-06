@@ -38,6 +38,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            ResolveLocalManager();
+
+            if (localManager != null)
+            {
+                localManager.PlayerSpawned += OnPlayerSpawned;
+            }
+
             if (applyOnEnable)
             {
                 ApplyToLocalPlayerPrefabLoader();
@@ -51,7 +58,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            if (localManager != null)
+            {
+                localManager.PlayerSpawned -= OnPlayerSpawned;
+            }
+
             SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnPlayerSpawned(GameObject player)
+        {
+            RuntimeUserProfileModelApplyUtility.ApplyToLoader(player, this, nameof(LocalRuntimeUserProfile));
         }
 
         private void OnSceneLoaded(Scene _, LoadSceneMode __)
@@ -75,10 +92,23 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            localManager = LocalManager.Singleton;
-            if (localManager == null)
+            var resolved = LocalManager.Singleton;
+            if (resolved == null)
             {
-                localManager = FindFirstObjectByType<LocalManager>();
+                resolved = FindFirstObjectByType<LocalManager>();
+            }
+
+            if (resolved == null)
+            {
+                return;
+            }
+
+            localManager = resolved;
+
+            // 有効時に購読を逃した場合のために、ここでも購読する
+            if (isActiveAndEnabled)
+            {
+                localManager.PlayerSpawned += OnPlayerSpawned;
             }
         }
 

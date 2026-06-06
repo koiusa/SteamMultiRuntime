@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,6 +29,11 @@ namespace Koiusa.SteamMultiRuntime
         /// NetworkManager.LocalClient.PlayerObject に相当する。
         /// </summary>
         public GameObject LocalPlayerObject { get; private set; }
+
+        /// <summary>
+        /// Playerがスポーンされた時に発火する。引数はスポーンされたPlayerObject。
+        /// </summary>
+        public event Action<GameObject> PlayerSpawned;
 
         private void Awake()
         {
@@ -96,6 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             LocalPlayerObject = Instantiate(playerPrefab, spawnPosition, spawnRotation);
+            PlayerSpawned?.Invoke(LocalPlayerObject);
         }
     }
 }
