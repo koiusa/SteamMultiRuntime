@@ -114,9 +114,9 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (lobbyService != null)
+            if (SceneLoader != null)
             {
-                view.SetCreatableStageScenes(lobbyService.CreatableStageSceneNames);
+                view.SetCreatableStageScenes(SceneLoader.CreatableStageSceneNames);
             }
 
             view.BindActions(OnCreateClicked, OnJoinByIdClicked, OnSearchByNameClicked, OnRefreshClicked, OnLeaveClicked);

@@ -46,9 +46,6 @@ namespace Koiusa.SteamMultiRuntime
         public string LocalPlayerName => IsReady ? SteamClient.Name : "Not Connected";
         public ulong CurrentLobbyId => lobbyManager?.CurrentLobbyId ?? 0;
         public IReadOnlyList<Lobby> LobbyCache => lobbyManager?.LobbyCache ?? new List<Lobby>();
-        public IReadOnlyList<string> CreatableStageSceneNames => SceneLoader != null
-            ? SceneLoader.CreatableStageSceneNames
-            : (IReadOnlyList<string>)Array.Empty<string>();
 
         private void Awake()
         {

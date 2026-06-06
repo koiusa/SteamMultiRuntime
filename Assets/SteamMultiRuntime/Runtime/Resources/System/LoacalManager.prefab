@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2908549603933373339}
   - component: {fileID: 2961571088981984069}
-  - component: {fileID: 2170096241013433035}
+  - component: {fileID: 3387406875687767959}
   m_Layer: 0
   m_Name: LoacalManager
   m_TagString: Untagged
@@ -33,6 +33,7 @@ Transform:
   m_Children:
   - {fileID: 7815715364185283209}
   - {fileID: 3229245322879025074}
+  - {fileID: 7972860385301624125}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2961571088981984069
@@ -50,7 +51,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 3003735386717007390, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
   spawnPosition: {x: 0, y: 0, z: 0}
   spawnRotation: {x: 0, y: 0, z: 0, w: 1}
---- !u!114 &2170096241013433035
+--- !u!114 &3387406875687767959
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -59,12 +60,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2878691181821668514}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2d66663b343cc447b20d564145e99f6, type: 3}
+  m_Script: {fileID: 11500000, guid: 39119db29b222b149ac40bf9b0f2b8a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.Network.LocalStartupSceneLoader
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalSceneFlowLoader
   loadOnStart: 1
-  stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
   startupStageSceneIndex: 0
+  stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
   sceneLoadMode: 1
   setLoadedSceneAsActive: 1
   disableCamerasInLoadedScenes: 1
@@ -148,6 +149,131 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+--- !u!1 &4970446692629613301
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7972860385301624125}
+  - component: {fileID: 3366605883488327836}
+  m_Layer: 0
+  m_Name: StageSelector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7972860385301624125
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4970446692629613301}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3065880095249118851}
+  m_Father: {fileID: 2908549603933373339}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3366605883488327836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4970446692629613301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 603df823de6b09e47b7130e99bcb79b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalStageSelector
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 3387406875687767959}
+    rawReference:
+      rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+--- !u!1 &5630808608054981398
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3065880095249118851}
+  - component: {fileID: 2051045168484900395}
+  - component: {fileID: 2818232799923875586}
+  m_Layer: 0
+  m_Name: StageSelectorService
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3065880095249118851
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5630808608054981398}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7972860385301624125}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2051045168484900395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5630808608054981398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3def0ceaa994b0d428043b004fad5e26, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 203e8386db427fb48ae9aff4d7fbb5ac, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &2818232799923875586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5630808608054981398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eedcf0e8d2861649b95f5aceb838d97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalStageSelectUIDocument
+  uiAssets: {fileID: 11400000, guid: 3cb1906c4d173ab45a05933d9a56c660, type: 2}
+  sceneLoaderObject: {fileID: 2878691181821668514}
 --- !u!1 &6086978689243857597
 GameObject:
   m_ObjectHideFlags: 0
@@ -259,7 +385,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalLoadingSplash
   sceneLoader:
     mode: 0
-    unityReference: {fileID: 2170096241013433035}
+    unityReference: {fileID: 3387406875687767959}
     rawReference:
       rid: -2
   splashSettings: {fileID: 11400000, guid: d39f224b1ae3c224689a29688bbae369, type: 2}

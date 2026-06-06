@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+	<ui:Style src="../SteamLobby/Styles/SteamLobbyCommon.uss" />
+	<ui:Style src="LocalStageSelectTheme.uss" />
+	<ui:VisualElement class="root">
+		<ui:VisualElement class="panel stage-select-panel">
+			<ui:Label text="Stage Selection" class="title" />
+			<ui:VisualElement class="stage-controls">
+				<ui:DropdownField name="stage-scene-field" label="Stage" class="field stage-dropdown" />
+			</ui:VisualElement>
+		</ui:VisualElement>
+	</ui:VisualElement>
+</ui:UXML>

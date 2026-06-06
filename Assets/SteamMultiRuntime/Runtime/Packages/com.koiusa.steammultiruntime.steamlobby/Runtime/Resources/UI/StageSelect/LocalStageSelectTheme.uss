@@ -1,0 +1,64 @@
+/* Stage Select Theme Styles */
+
+.stage-select-panel {
+	padding: 20px;
+	margin: 10px;
+	min-height: 200px;
+	flex-direction: column;
+}
+
+.title {
+	-unity-font-style: bold;
+	font-size: 24px;
+	color: rgba(196, 245, 255, 255);
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom-width: 2px;
+	border-bottom-color: rgba(51, 168, 204, 180);
+}
+
+.stage-controls {
+	flex-direction: column;
+	padding: 15px;
+	min-height: 80px;
+	gap: 15px;
+}
+
+.stage-dropdown {
+	color: rgba(226, 245, 255, 255);
+	--unity-cursor-color: rgba(150, 245, 255, 255);
+	--unity-selection-color: rgba(65, 165, 210, 140);
+}
+
+.stage-dropdown > .unity-base-field__label {
+	color: rgba(148, 228, 255, 255);
+	font-size: 14px;
+	-unity-font-style: bold;
+	margin-bottom: 8px;
+}
+
+.stage-dropdown > .unity-base-popup-field__input {
+	color: rgba(220, 244, 255, 255);
+	background-color: rgba(9, 24, 40, 230);
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-top-color: rgba(83, 208, 235, 180);
+	border-bottom-color: rgba(83, 208, 235, 180);
+	border-left-color: rgba(83, 208, 235, 180);
+	border-right-color: rgba(83, 208, 235, 180);
+	padding: 8px;
+}
+
+.stage-dropdown > .unity-base-popup-field__input:focus {
+	background-color: rgba(15, 40, 66, 245);
+	border-top-color: rgba(117, 236, 255, 220);
+	border-bottom-color: rgba(117, 236, 255, 220);
+	border-left-color: rgba(117, 236, 255, 220);
+	border-right-color: rgba(117, 236, 255, 220);
+}
+
+.stage-dropdown > .unity-base-popup-field__arrow {
+	color: rgba(117, 236, 255, 220);
+}

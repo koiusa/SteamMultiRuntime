@@ -1,0 +1,38 @@
+/* Local Stage Select Common Styles */
+/* Shared styles between Stage Select and other Local UI components */
+
+.root {
+	flex-grow: 1;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background-color: rgba(5, 10, 20, 200);
+}
+
+.panel {
+	background-color: rgba(7, 20, 34, 200);
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-top-color: rgba(51, 168, 204, 180);
+	border-bottom-color: rgba(51, 168, 204, 180);
+	border-left-color: rgba(51, 168, 204, 180);
+	border-right-color: rgba(51, 168, 204, 180);
+	border-radius: 4px;
+	padding: 20px;
+	min-width: 400px;
+	max-width: 600px;
+}
+
+.field {
+	color: rgba(226, 245, 255, 255);
+	--unity-cursor-color: rgba(150, 245, 255, 255);
+	--unity-selection-color: rgba(65, 165, 210, 140);
+}
+
+.field > .unity-base-field__label {
+	color: rgba(148, 228, 255, 255);
+	font-size: 12px;
+	-unity-font-style: bold;
+}

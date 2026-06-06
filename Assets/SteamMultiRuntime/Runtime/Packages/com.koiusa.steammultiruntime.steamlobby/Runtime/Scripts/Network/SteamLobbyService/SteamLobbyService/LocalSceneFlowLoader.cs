@@ -1,106 +1,137 @@
+using Koiusa.SteamMultiRuntime.Network;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    /// <summary>
+    /// Local版シーン管理コンポーネント
+    /// スタートアップシーン読み込みとステージシーン選択に特化
+    /// SteamロビーなどのNetwork機能は含まない
+    /// </summary>
     [DisallowMultipleComponent]
-    public class LocalSceneFlowLoader : MonoBehaviour, ISceneLoadContext, ISteamLobbySceneLoader
+    public class LocalSceneFlowLoader : MonoBehaviour, ISceneLoadContext, ILoadingSplashEventSource, ISteamLobbySceneLoader, Network.IStartupStageSceneLoaderContext
     {
-        [Header("Scenes")]
-        [SerializeField] private string defaultSceneName = "";
-        [SerializeField] private string lobbySceneName = "";
+        [Header("Startup Scene")]
+        [SerializeField] private bool loadOnStart = true;
+        [SerializeField, Min(0)] private int startupStageSceneIndex;
+
+        [Header("Stage Scenes")]
+        [SerializeField] private Network.StageSceneList stageSceneList;
 
         [Header("Policy")]
+        [SerializeField] private LoadSceneMode sceneLoadMode = LoadSceneMode.Single;
+        [SerializeField] private bool setLoadedSceneAsActive = true;
         [SerializeField] private bool disableCamerasInLoadedScenes = true;
-        [SerializeField] private bool unloadDefaultSceneOnLobbyEntered = true;
-        [SerializeField] private bool loadDefaultSceneOnLobbyLeft = true;
-        [SerializeField] private bool unloadLobbySceneOnLeft = true;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
 
-        public string DefaultSceneName => defaultSceneName;
-        public string LobbySceneName => lobbySceneName;
+        // ISceneLoadContext implementation
+        public string DefaultSceneName => string.Empty;
+        public string LobbySceneName => string.Empty;
         public bool DisableCamerasInLoadedScenes => disableCamerasInLoadedScenes;
-        public bool UnloadDefaultSceneOnLobbyEntered => unloadDefaultSceneOnLobbyEntered;
-        public bool LoadDefaultSceneOnLobbyLeft => loadDefaultSceneOnLobbyLeft;
-        public bool ShouldUnloadLobbySceneOnLeft => unloadLobbySceneOnLeft;
+        public bool UnloadDefaultSceneOnLobbyEntered => false;
+        public bool LoadDefaultSceneOnLobbyLeft => false;
+        public bool ShouldUnloadLobbySceneOnLeft => false;
 
-        public IReadOnlyList<string> CreatableStageSceneNames => Array.Empty<string>();
-
-        public Task<bool> LoadLobbySceneAsync()
+        // ISteamLobbySceneLoader implementation
+        public IReadOnlyList<string> CreatableStageSceneNames
         {
-            return SceneLoadUtility.LoadPresentationSceneAsync(lobbySceneName, this, this, nameof(LocalSceneFlowLoader));
-        }
-
-        public Task<bool> LoadDefaultSceneAsync()
-        {
-            return SceneLoadUtility.LoadPresentationSceneAsync(defaultSceneName, this, this, nameof(LocalSceneFlowLoader));
-        }
-
-        public Task<bool> UnloadLobbySceneAsync()
-        {
-            return SceneLoadUtility.UnloadSceneAsync(lobbySceneName);
-        }
-
-        public Task<bool> UnloadDefaultSceneAsync()
-        {
-            return SceneLoadUtility.UnloadSceneAsync(defaultSceneName);
-        }
-
-        public async Task<bool> LoadLobbySceneOnEnteredAsync()
-        {
-            LoadingStarted?.Invoke();
-            try
+            get
             {
-                return await LoadLobbySceneAsync();
-            }
-            finally
-            {
-                LoadingFinished?.Invoke();
-            }
-        }
-
-        public void UnloadLobbySceneOnLeft()
-        {
-            _ = UnloadLobbySceneAsync();
-        }
-
-        public async Task HandleLobbyLeftAsync(string sceneNameToUnload)
-        {
-            LoadingStarted?.Invoke();
-            try
-            {
-                if (unloadLobbySceneOnLeft)
+                if (stageSceneList == null)
                 {
-                    var targetScene = string.IsNullOrWhiteSpace(sceneNameToUnload) ? lobbySceneName : sceneNameToUnload;
-                    if (!string.IsNullOrWhiteSpace(targetScene))
-                    {
-                        await SceneLoadUtility.UnloadSceneAsync(targetScene);
-                    }
+                    return Array.Empty<string>();
                 }
 
-                if (loadDefaultSceneOnLobbyLeft && !string.IsNullOrWhiteSpace(defaultSceneName))
-                {
-                    await LoadDefaultSceneAsync();
-                }
-            }
-            finally
-            {
-                LoadingFinished?.Invoke();
+                return stageSceneList.sceneNames ?? Array.Empty<string>();
             }
         }
 
-        public void SetLobbySceneName(string sceneName)
+        // IStartupStageSceneLoaderContext implementation
+        public Network.StageSceneList StageSceneList => stageSceneList;
+        public int StartupStageSceneIndex => startupStageSceneIndex;
+        public LoadSceneMode SceneLoadMode => sceneLoadMode;
+        public bool SetLoadedSceneAsActive => setLoadedSceneAsActive;
+
+        private async void Start()
         {
-            if (string.IsNullOrWhiteSpace(sceneName))
+            if (!loadOnStart)
             {
                 return;
             }
 
-            lobbySceneName = sceneName;
+            await LoadStartupSceneAsync();
+        }
+
+        public async Task<bool> LoadStartupSceneAsync()
+        {
+            LoadingStarted?.Invoke();
+            try
+            {
+                var loaded = await Network.StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalSceneFlowLoader));
+                if (!loaded || !disableCamerasInLoadedScenes)
+                {
+                    return loaded;
+                }
+
+                var startupScene = Network.StageStartupSceneLoader.ResolveStartupSceneReference(this, this, nameof(LocalSceneFlowLoader));
+                var scene = SceneUtilityEx.GetLoadedScene(startupScene);
+                DisableSceneCameras(scene);
+                return loaded;
+            }
+            finally
+            {
+                LoadingFinished?.Invoke();
+            }
+        }
+
+        private static void DisableSceneCameras(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return;
+            }
+
+            foreach (var rootGameObject in scene.GetRootGameObjects())
+            {
+                foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
+                {
+                    camera.enabled = false;
+
+                    if (camera.gameObject.activeSelf)
+                    {
+                        camera.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+
+        // ISteamLobbySceneLoader implementation (not used in Local version)
+        public Task<bool> LoadLobbySceneOnEnteredAsync()
+        {
+            Debug.LogWarning("LocalSceneFlowLoader: LoadLobbySceneOnEnteredAsync is not implemented for Local version.");
+            return Task.FromResult(false);
+        }
+
+        public void UnloadLobbySceneOnLeft()
+        {
+            Debug.LogWarning("LocalSceneFlowLoader: UnloadLobbySceneOnLeft is not implemented for Local version.");
+        }
+
+        public async Task HandleLobbyLeftAsync(string sceneNameToUnload)
+        {
+            Debug.LogWarning("LocalSceneFlowLoader: HandleLobbyLeftAsync is not implemented for Local version.");
+            await Task.CompletedTask;
+        }
+
+        public void SetLobbySceneName(string sceneName)
+        {
+            Debug.LogWarning("LocalSceneFlowLoader: SetLobbySceneName is not implemented for Local version.");
         }
     }
 }

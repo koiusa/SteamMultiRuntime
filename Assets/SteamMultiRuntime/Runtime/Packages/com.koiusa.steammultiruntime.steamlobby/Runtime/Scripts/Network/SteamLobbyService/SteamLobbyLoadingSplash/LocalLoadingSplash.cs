@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Koiusa.SteamMultiRuntime.Network;
 using TNRD;
@@ -16,18 +17,18 @@ namespace Koiusa.SteamMultiRuntime
         private LoadingSplashPresenter splashPresenter;
         private int splashVisibilityVersion;
         private const float SceneReadyWaitTimeoutSeconds = 15f;
-        private ILoadingSplashEventSource resolvedSceneLoader;
-        private bool isSubscribed;
+        private readonly List<ILoadingSplashEventSource> resolvedSources = new List<ILoadingSplashEventSource>();
+        private readonly HashSet<ILoadingSplashEventSource> subscribedSources = new HashSet<ILoadingSplashEventSource>();
 
         private void Awake()
         {
-            ResolveSceneLoader();
+            ResolveSources();
             EnsureSplashPresenter();
         }
 
         private void OnEnable()
         {
-            ResolveSceneLoader();
+            ResolveSources();
             EnsureSplashPresenter();
             SubscribeLoaderEvents();
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -48,23 +49,30 @@ namespace Koiusa.SteamMultiRuntime
             splashPresenter = null;
         }
 
-        private void ResolveSceneLoader()
+        private void ResolveSources()
         {
-            if (resolvedSceneLoader != null)
+            TryAddSource(sceneLoader?.Value);
+
+            foreach (var src in GetComponents<ILoadingSplashEventSource>())
             {
-                return;
+                TryAddSource(src);
             }
 
-            var loader = sceneLoader != null ? sceneLoader.Value : null;
-            if (loader != null)
+            foreach (var src in GetComponentsInChildren<ILoadingSplashEventSource>(true))
             {
-                resolvedSceneLoader = loader;
-                return;
+                TryAddSource(src);
             }
 
-            resolvedSceneLoader = GetComponent<ILoadingSplashEventSource>()
-                ?? GetComponentInChildren<ILoadingSplashEventSource>(true)
-                ?? FindFirstObjectByType<LocalStartupSceneLoader>(FindObjectsInactive.Include);
+            TryAddSource(FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
+            TryAddSource(FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
+        }
+
+        private void TryAddSource(ILoadingSplashEventSource source)
+        {
+            if (source != null && !resolvedSources.Contains(source))
+            {
+                resolvedSources.Add(source);
+            }
         }
 
         private void EnsureSplashPresenter()
@@ -74,38 +82,29 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SubscribeLoaderEvents()
         {
-            var loader = resolvedSceneLoader;
-            if (loader == null)
+            foreach (var source in resolvedSources)
             {
-                return;
+                if (subscribedSources.Add(source))
+                {
+                    source.LoadingStarted += OnLoadingStarted;
+                    source.LoadingFinished += OnLoadingFinished;
+                }
             }
-
-            if (isSubscribed)
-            {
-                return;
-            }
-
-            loader.LoadingStarted += OnLoadingStarted;
-            loader.LoadingFinished += OnLoadingFinished;
-            isSubscribed = true;
         }
 
         private void UnsubscribeLoaderEvents()
         {
-            if (!isSubscribed || resolvedSceneLoader == null)
+            foreach (var source in subscribedSources)
             {
-                isSubscribed = false;
-                return;
+                source.LoadingStarted -= OnLoadingStarted;
+                source.LoadingFinished -= OnLoadingFinished;
             }
-
-            resolvedSceneLoader.LoadingStarted -= OnLoadingStarted;
-            resolvedSceneLoader.LoadingFinished -= OnLoadingFinished;
-            isSubscribed = false;
+            subscribedSources.Clear();
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            ResolveSceneLoader();
+            ResolveSources();
             SubscribeLoaderEvents();
         }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -19,6 +20,8 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Spawn Settings")]
         [SerializeField] private Vector3 spawnPosition;
         [SerializeField] private Quaternion spawnRotation = Quaternion.identity;
+        [Tooltip("アクティブシーンが変わった時にPlayerを再スポーンする")]
+        [SerializeField] private bool respawnOnActiveSceneChanged = true;
 
         /// <summary>
         /// インスタンス化済みのローカルプレイヤーオブジェクト。
@@ -37,6 +40,16 @@ namespace Koiusa.SteamMultiRuntime
             Singleton = this;
         }
 
+        private void OnEnable()
+        {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        }
+
         private void Start()
         {
             SpawnLocalPlayer();
@@ -48,6 +61,21 @@ namespace Koiusa.SteamMultiRuntime
             {
                 Singleton = null;
             }
+        }
+
+        private void OnActiveSceneChanged(Scene previousScene, Scene newScene)
+        {
+            if (!respawnOnActiveSceneChanged)
+            {
+                return;
+            }
+
+            if (!newScene.IsValid())
+            {
+                return;
+            }
+
+            SpawnLocalPlayer();
         }
 
         /// <summary>

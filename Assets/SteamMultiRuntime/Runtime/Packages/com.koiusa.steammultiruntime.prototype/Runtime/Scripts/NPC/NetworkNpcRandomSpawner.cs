@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 using Koiusa.SteamMultiRuntime.Network;
 
 namespace Koiusa.SteamMultiRuntime
@@ -145,6 +146,14 @@ namespace Koiusa.SteamMultiRuntime
                     : spawnPosition + spawnUp * spawnHeightOffset;
 
                 var instance = Instantiate(prefab, finalSpawnPosition, Quaternion.identity);
+
+                // Instantiate はアクティブシーンに生成するため、スポナー自身のシーンへ明示的に移動する
+                var spawnerScene = gameObject.scene;
+                if (spawnerScene.IsValid() && instance.scene != spawnerScene)
+                {
+                    SceneManager.MoveGameObjectToScene(instance, spawnerScene);
+                }
+
                 var networkObject = instance.GetComponent<NetworkObject>();
 
                 if (networkObject != null && useNetworkSpawn)
