@@ -4,6 +4,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Packages.csproj" />
   <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
   <Project Path="TNRD.SerializableInterface.Editor.csproj" />
   <Project Path="UnityChan.Common.csproj" />
@@ -15,7 +16,6 @@
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
   <Project Path="Koiusa.System.Core.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Editor.csproj" />

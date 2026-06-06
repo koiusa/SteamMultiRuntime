@@ -23,7 +23,6 @@ namespace Koiusa.SteamMultiRuntime
         private UIDocument uiDocument;
         private StageSelectUI stageSelectUI;
         private bool isLoading;
-        private string previouslyLoadedStageName = string.Empty;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -112,9 +111,8 @@ namespace Koiusa.SteamMultiRuntime
             // StageSelectUIを初期化
             stageSelectUI = new StageSelectUI(uiDocument);
             stageSelectUI.Build("stage-scene-field");
-            stageSelectUI.StageSelected += OnStageSelected;
 
-            // ステージ一覧をUIに反映
+            // ステージ一覧をUIに反映（StageSelected購読前に行うことで初期値セット時のイベント発火を防ぐ）
             if (SceneLoader != null)
             {
                 stageSelectUI.PopulateStageScenes(SceneLoader.CreatableStageSceneNames);
@@ -123,6 +121,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 Debug.LogWarning("LocalStageSelectUIDocument: SceneLoader is null. No stages will be populated.");
             }
+
+            stageSelectUI.StageSelected += OnStageSelected;
         }
 
         private void UnbindUI()
@@ -153,15 +153,11 @@ namespace Koiusa.SteamMultiRuntime
 
             try
             {
-                // 前のシーンをアンロード
-                if (!string.IsNullOrEmpty(previouslyLoadedStageName))
-                {
-                    await UnloadPreviousSceneAsync();
-                }
+                // ステージ一覧にある既存のロード済みシーンをすべてアンロード（読み込み対象は除く）
+                await UnloadOtherStagesAsync(stageName);
 
                 // 新しいシーンを読み込む
                 await LoadStageSceneAsync(stageName);
-                previouslyLoadedStageName = stageName;
             }
             catch (Exception ex)
             {
@@ -174,33 +170,37 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private async Task UnloadPreviousSceneAsync()
+        private async Task UnloadOtherStagesAsync(string exceptStageName)
         {
-            if (string.IsNullOrEmpty(previouslyLoadedStageName))
+            if (SceneLoader == null)
             {
                 return;
             }
 
-            var scene = SceneManager.GetSceneByName(previouslyLoadedStageName);
-            if (!scene.IsValid())
+            foreach (var name in SceneLoader.CreatableStageSceneNames)
             {
-                Debug.LogWarning($"LocalStageSelectUIDocument: Scene '{previouslyLoadedStageName}' not found to unload.");
-                return;
-            }
+                if (name == exceptStageName)
+                {
+                    continue;
+                }
 
-            var asyncOp = SceneManager.UnloadSceneAsync(scene);
-            if (asyncOp == null)
-            {
-                Debug.LogWarning($"LocalStageSelectUIDocument: Failed to start unloading scene '{previouslyLoadedStageName}'");
-                return;
-            }
+                var scene = SceneManager.GetSceneByName(name);
+                if (!scene.IsValid() || !scene.isLoaded)
+                {
+                    continue;
+                }
 
-            while (!asyncOp.isDone)
-            {
-                await Task.Yield();
-            }
+                var asyncOp = SceneManager.UnloadSceneAsync(scene);
+                if (asyncOp == null)
+                {
+                    continue;
+                }
 
-            Debug.Log($"LocalStageSelectUIDocument: Scene '{previouslyLoadedStageName}' unloaded successfully.");
+                while (!asyncOp.isDone)
+                {
+                    await Task.Yield();
+                }
+            }
         }
 
         private async Task LoadStageSceneAsync(string stageName)
