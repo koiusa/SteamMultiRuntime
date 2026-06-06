@@ -114,7 +114,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
   m_PanelSettings: {fileID: 11400000, guid: 902f6d99da671d744be5a3ddcb34b6a3, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: f5a6670c265414049a8a26ae4c030849, type: 3}
+  sourceAsset: {fileID: 9197481963319205126, guid: 195c25ff6b312b74e87df8c2041788f1, type: 3}
   m_SortingOrder: 0
   m_Position: 0
   m_WorldSpaceSizeMode: 1
@@ -137,10 +137,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectUiDocument
   userProfile:
     mode: 0
-    unityReference: {fileID: 0}
+    unityReference: {fileID: 8971830613758992976}
     rawReference:
       rid: -2
-  layoutAsset: {fileID: 9197481963319205126, guid: f5a6670c265414049a8a26ae4c030849, type: 3}
+  layoutAsset: {fileID: 9197481963319205126, guid: 195c25ff6b312b74e87df8c2041788f1, type: 3}
   styleSheet: {fileID: 7433441132597879392, guid: a7551227f3e7d384b8a1bde7ae03b70e, type: 3}
   references:
     version: 2
@@ -256,6 +256,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd60f3e27fc69a44b63c3a210e4ba5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalLoadingSplash
-  sceneLoader: {fileID: 2170096241013433035}
+  sceneLoaderBehaviour: {fileID: 2961571088981984069}
   splashSettings: {fileID: 11400000, guid: d39f224b1ae3c224689a29688bbae369, type: 2}
   showSplashDuringSceneLoad: 1

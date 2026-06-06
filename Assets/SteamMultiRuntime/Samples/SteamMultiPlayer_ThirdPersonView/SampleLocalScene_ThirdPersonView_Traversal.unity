@@ -617,6 +617,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4176095736983990773, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
+      propertyPath: userProfile.unityReference
+      value: 
+      objectReference: {fileID: 1996098452}
     - target: {fileID: 7814160326155104347, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
       propertyPath: userProfile.unityReference
       value: 
@@ -626,6 +630,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
+--- !u!114 &1996098452 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8971830613758992976, guid: c13de4900c2486d479c7ae4797de6651, type: 3}
+  m_PrefabInstance: {fileID: 1996098451}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82e80e5d40ab8b748a1994fb83cf8e17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.LocalRuntimeUserProfile
 --- !u!1001 &4807530093202171419
 PrefabInstance:
   m_ObjectHideFlags: 0
