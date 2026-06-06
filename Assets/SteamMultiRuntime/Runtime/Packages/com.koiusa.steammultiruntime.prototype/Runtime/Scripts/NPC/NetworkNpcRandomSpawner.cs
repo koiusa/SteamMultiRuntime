@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -25,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Area")]
         [SerializeField] private Transform areaCenter;
         [SerializeField] private Vector3 areaSize = new Vector3(20f, 0f, 20f);
+        [SerializeField, Min(0f)] private float minSpawnDistance = 1.5f;
 
         [Header("NavMesh")]
         [SerializeField] private bool sampleOnNavMesh = true;
@@ -124,9 +126,10 @@ namespace Koiusa.SteamMultiRuntime
             var sampleAreaMask = prefabAgent != null ? prefabAgent.areaMask : NavMesh.AllAreas;
 
             var spawnedCount = 0;
+            var usedSpawnPositions = new List<Vector3>(spawnCount);
             for (var i = 0; i < spawnCount; i++)
             {
-                if (!TryGetSpawnPosition(sampleAgentTypeId, sampleAreaMask, out var spawnPosition))
+                if (!TryGetSpawnPosition(sampleAgentTypeId, sampleAreaMask, usedSpawnPositions, out var spawnPosition))
                 {
                     continue;
                 }
@@ -150,6 +153,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 ApplyModelSync(instance);
 
+                usedSpawnPositions.Add(spawnPosition);
                 spawnedCount++;
             }
 
@@ -186,11 +190,11 @@ namespace Koiusa.SteamMultiRuntime
             modelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
         }
 
-        private bool TryGetSpawnPosition(int agentTypeId, int areaMask, out Vector3 spawnPosition)
+        private bool TryGetSpawnPosition(int agentTypeId, int areaMask, List<Vector3> usedPositions, out Vector3 spawnPosition)
         {
             var center = areaCenter != null ? areaCenter.position : transform.position;
 
-            if (TryGetSpawnPositionInternal(center, navMeshSampleRadius, maxAttemptsPerNpc, true, agentTypeId, areaMask, out spawnPosition))
+            if (TryGetSpawnPositionInternal(center, navMeshSampleRadius, maxAttemptsPerNpc, true, agentTypeId, areaMask, usedPositions, out spawnPosition))
             {
                 return true;
             }
@@ -201,7 +205,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            return TryGetSpawnPositionInternal(center, fallbackNavMeshSampleRadius, fallbackMaxAttemptsPerNpc, false, 0, NavMesh.AllAreas, out spawnPosition);
+            return TryGetSpawnPositionInternal(center, fallbackNavMeshSampleRadius, fallbackMaxAttemptsPerNpc, false, 0, NavMesh.AllAreas, usedPositions, out spawnPosition);
         }
 
         private bool TryGetSpawnPositionInternal(
@@ -211,15 +215,26 @@ namespace Koiusa.SteamMultiRuntime
             bool useAgentTypeFilter,
             int agentTypeId,
             int areaMask,
+            List<Vector3> usedPositions,
             out Vector3 spawnPosition)
         {
             if (!sampleOnNavMesh)
             {
-                spawnPosition = center + GetRandomOffset();
-                return true;
+                for (var attempt = 0; attempt < attempts; attempt++)
+                {
+                    var raw = center + GetRandomOffset();
+                    if (!IsFarEnoughFromUsedPositions(raw, usedPositions))
+                        continue;
+
+                    spawnPosition = raw;
+                    return true;
+                }
+
+                spawnPosition = center;
+                return false;
             }
 
-            if (TrySampleNavMesh(center, sampleRadius, useAgentTypeFilter, agentTypeId, areaMask, out spawnPosition))
+            if (TrySampleNavMesh(center, sampleRadius, useAgentTypeFilter, agentTypeId, areaMask, usedPositions, out spawnPosition))
             {
                 return true;
             }
@@ -227,7 +242,7 @@ namespace Koiusa.SteamMultiRuntime
             for (var attempt = 0; attempt < attempts; attempt++)
             {
                 var candidate = center + GetRandomOffset();
-                if (TrySampleNavMesh(candidate, sampleRadius, useAgentTypeFilter, agentTypeId, areaMask, out spawnPosition))
+                if (TrySampleNavMesh(candidate, sampleRadius, useAgentTypeFilter, agentTypeId, areaMask, usedPositions, out spawnPosition))
                 {
                     return true;
                 }
@@ -249,12 +264,13 @@ namespace Koiusa.SteamMultiRuntime
                 Random.Range(-areaSize.z * 0.5f, areaSize.z * 0.5f));
         }
 
-        private static bool TrySampleNavMesh(
+        private bool TrySampleNavMesh(
             Vector3 candidate,
             float sampleRadius,
             bool useAgentTypeFilter,
             int agentTypeId,
             int areaMask,
+            List<Vector3> usedPositions,
             out Vector3 sampledPosition)
         {
             if (useAgentTypeFilter)
@@ -265,13 +281,15 @@ namespace Koiusa.SteamMultiRuntime
                     areaMask = areaMask
                 };
 
-                if (NavMesh.SamplePosition(candidate, out var filteredHit, sampleRadius, filter))
+                if (NavMesh.SamplePosition(candidate, out var filteredHit, sampleRadius, filter)
+                    && IsFarEnoughFromUsedPositions(filteredHit.position, usedPositions))
                 {
                     sampledPosition = filteredHit.position;
                     return true;
                 }
             }
-            else if (NavMesh.SamplePosition(candidate, out var anyHit, sampleRadius, NavMesh.AllAreas))
+            else if (NavMesh.SamplePosition(candidate, out var anyHit, sampleRadius, NavMesh.AllAreas)
+                && IsFarEnoughFromUsedPositions(anyHit.position, usedPositions))
             {
                 sampledPosition = anyHit.position;
                 return true;
@@ -279,6 +297,21 @@ namespace Koiusa.SteamMultiRuntime
 
             sampledPosition = candidate;
             return false;
+        }
+
+        private bool IsFarEnoughFromUsedPositions(Vector3 position, List<Vector3> usedPositions)
+        {
+            if (usedPositions == null || usedPositions.Count == 0 || minSpawnDistance <= 0f)
+                return true;
+
+            var minDistanceSqr = minSpawnDistance * minSpawnDistance;
+            for (var i = 0; i < usedPositions.Count; i++)
+            {
+                if ((position - usedPositions[i]).sqrMagnitude < minDistanceSqr)
+                    return false;
+            }
+
+            return true;
         }
 
         private void UnsubscribeServerStarted()
