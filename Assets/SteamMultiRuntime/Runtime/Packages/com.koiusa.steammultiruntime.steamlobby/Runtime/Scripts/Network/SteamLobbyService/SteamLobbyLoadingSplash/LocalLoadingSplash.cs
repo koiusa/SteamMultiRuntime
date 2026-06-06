@@ -17,20 +17,17 @@ namespace Koiusa.SteamMultiRuntime
         private LoadingSplashPresenter splashPresenter;
         private int splashVisibilityVersion;
         private const float SceneReadyWaitTimeoutSeconds = 15f;
-        private readonly List<ILoadingSplashEventSource> resolvedSources = new List<ILoadingSplashEventSource>();
         private readonly HashSet<ILoadingSplashEventSource> subscribedSources = new HashSet<ILoadingSplashEventSource>();
 
         private void Awake()
         {
-            ResolveSources();
             EnsureSplashPresenter();
         }
 
         private void OnEnable()
         {
-            ResolveSources();
             EnsureSplashPresenter();
-            SubscribeLoaderEvents();
+            ResolveSources();
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
@@ -51,45 +48,31 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveSources()
         {
-            TryAddSource(sceneLoader?.Value);
-
-            foreach (var src in GetComponents<ILoadingSplashEventSource>())
-            {
-                TryAddSource(src);
-            }
+            TrySubscribe(sceneLoader?.Value);
 
             foreach (var src in GetComponentsInChildren<ILoadingSplashEventSource>(true))
             {
-                TryAddSource(src);
+                TrySubscribe(src);
             }
 
-            TryAddSource(FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
-            TryAddSource(FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
+            TrySubscribe(FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
+            TrySubscribe(FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
         }
 
-        private void TryAddSource(ILoadingSplashEventSource source)
+        private void TrySubscribe(ILoadingSplashEventSource source)
         {
-            if (source != null && !resolvedSources.Contains(source))
+            if (source == null || !subscribedSources.Add(source))
             {
-                resolvedSources.Add(source);
+                return;
             }
+
+            source.LoadingStarted += OnLoadingStarted;
+            source.LoadingFinished += OnLoadingFinished;
         }
 
         private void EnsureSplashPresenter()
         {
             splashPresenter ??= new LoadingSplashPresenter(this, splashSettings);
-        }
-
-        private void SubscribeLoaderEvents()
-        {
-            foreach (var source in resolvedSources)
-            {
-                if (subscribedSources.Add(source))
-                {
-                    source.LoadingStarted += OnLoadingStarted;
-                    source.LoadingFinished += OnLoadingFinished;
-                }
-            }
         }
 
         private void UnsubscribeLoaderEvents()
@@ -105,7 +88,6 @@ namespace Koiusa.SteamMultiRuntime
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             ResolveSources();
-            SubscribeLoaderEvents();
         }
 
         private void OnLoadingStarted()

@@ -1,6 +1,5 @@
 using Koiusa.SteamMultiRuntime.Network;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -16,7 +15,6 @@ namespace Koiusa.SteamMultiRuntime
         [Tooltip("選択するモデルIDのインデックス")]
         [SerializeField] private int selectedModelIndex;
         [SerializeField] private bool applyOnEnable = true;
-        [SerializeField] private bool applyOnSceneLoaded = true;
 
         public override CharacterModelIdList ModelIdList => modelIdList;
         public override int SelectedModelIndex => selectedModelIndex;
@@ -49,11 +47,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 ApplyToLocalPlayerPrefabLoader();
             }
-
-            if (applyOnSceneLoaded)
-            {
-                SceneManager.sceneLoaded += OnSceneLoaded;
-            }
         }
 
         private void OnDisable()
@@ -62,18 +55,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 localManager.PlayerSpawned -= OnPlayerSpawned;
             }
-
-            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         private void OnPlayerSpawned(GameObject player)
         {
             RuntimeUserProfileModelApplyUtility.ApplyToLoader(player, this, nameof(LocalRuntimeUserProfile));
-        }
-
-        private void OnSceneLoaded(Scene _, LoadSceneMode __)
-        {
-            ApplyToLocalPlayerPrefabLoader();
         }
 
         public void ApplyToLocalPlayerPrefabLoader()
@@ -92,24 +78,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var resolved = LocalManager.Singleton;
-            if (resolved == null)
-            {
-                resolved = FindFirstObjectByType<LocalManager>();
-            }
-
-            if (resolved == null)
-            {
-                return;
-            }
-
-            localManager = resolved;
-
-            // 有効時に購読を逃した場合のために、ここでも購読する
-            if (isActiveAndEnabled)
-            {
-                localManager.PlayerSpawned += OnPlayerSpawned;
-            }
+            localManager = LocalManager.Singleton ?? FindFirstObjectByType<LocalManager>();
         }
 
         private bool TryResolveLocalPlayerObject(out GameObject target)
@@ -139,3 +108,4 @@ namespace Koiusa.SteamMultiRuntime
         }
     }
 }
+
