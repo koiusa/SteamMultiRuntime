@@ -8,7 +8,6 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private ScaleSettings scale = new();
         [SerializeField] private ReturnToCenterSpeedSettings returnToCenter = new();
-        [SerializeField] private AccelerationSettings acceleration = new();
 
         [System.Serializable]
         public sealed class ScaleSettings
@@ -23,20 +22,9 @@ namespace Koiusa.SteamMultiRuntime
             [Min(1f)] public float scale = 1.35f;
         }
 
-        [System.Serializable]
-        public sealed class AccelerationSettings
-        {
-            public bool useBoost = true;
-            [Min(1f)] public float scale = 2.25f;
-            [Min(0.01f)] public float minValue = 20f;
-        }
-
         private NavMeshAgent _agent;
         private float _moveSpeedScale = 1f;
         private float _baseAgentSpeed;
-        private float _baseAgentAcceleration;
-
-        public float BaseAgentSpeed => _baseAgentSpeed;
 
         public void Initialize(NavMeshAgent agent)
         {
@@ -44,7 +32,6 @@ namespace Koiusa.SteamMultiRuntime
             if (agent != null)
             {
                 _baseAgentSpeed = agent.speed;
-                _baseAgentAcceleration = agent.acceleration;
             }
             RandomizeForSegment();
         }
@@ -62,10 +49,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ApplyAgentSpeedScale()
         {
-            if (_agent == null) return;
+            if (_agent == null)
+                return;
+
             var baseSpeed = _baseAgentSpeed > 0f ? _baseAgentSpeed : _agent.speed;
             _agent.speed = Mathf.Max(0.01f, baseSpeed * _moveSpeedScale);
-            ApplyAgentAccelerationScale();
         }
 
         public void ApplyReturnToCenterSpeedBoost()
@@ -77,18 +65,6 @@ namespace Koiusa.SteamMultiRuntime
 
             var baseSpeed = _baseAgentSpeed > 0f ? _baseAgentSpeed : _agent.speed;
             _agent.speed = Mathf.Max(0.01f, baseSpeed * returnToCenter.scale);
-            ApplyAgentAccelerationScale();
-        }
-
-        private void ApplyAgentAccelerationScale()
-        {
-            if (_agent == null)
-                return;
-
-            var baseAcceleration = _baseAgentAcceleration > 0f ? _baseAgentAcceleration : _agent.acceleration;
-            var scaleValue = acceleration.useBoost ? acceleration.scale : 1f;
-            var boosted = baseAcceleration * scaleValue;
-            _agent.acceleration = Mathf.Max(0.01f, acceleration.minValue, boosted);
         }
 
         public void NormalizeSettings()
@@ -99,10 +75,6 @@ namespace Koiusa.SteamMultiRuntime
 
             if (returnToCenter.scale < 1f)
                 returnToCenter.scale = 1f;
-            if (acceleration.scale < 1f)
-                acceleration.scale = 1f;
-            if (acceleration.minValue < 0.01f)
-                acceleration.minValue = 0.01f;
         }
     }
 }

@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2618941016
+  GlobalObjectIdHash: 3319208734
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -451,9 +451,9 @@ MonoBehaviour:
   rvoSideSwitchThreshold: 0.2
   rvoSideHoldTime: 0.35
   rvoPrimaryNeighborCount: 2
-  boidLowPassCutoffHz: 3
-  boidDeadband: 0.06
-  boidMaxTurnDegPerSec: 180
+  steeringLowPassCutoffHz: 3
+  steeringDeadband: 0.06
+  steeringMaxTurnDegPerSec: 180
   boidSideSwitchMin: 0.18
   boidSideHoldTime: 0.2
 --- !u!114 &8884666047061710343

@@ -63,9 +63,9 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(1)] private int rvoPrimaryNeighborCount = 2;
 
         [Header("Steering Filter")]
-        [SerializeField, Min(0.1f)] private float boidLowPassCutoffHz = 3f;
-        [SerializeField, Min(0f)] private float boidDeadband = 0.06f;
-        [SerializeField, Min(1f)] private float boidMaxTurnDegPerSec = 180f;
+        [SerializeField, Min(0.1f)] private float steeringLowPassCutoffHz = 3f;
+        [SerializeField, Min(0f)] private float steeringDeadband = 0.06f;
+        [SerializeField, Min(1f)] private float steeringMaxTurnDegPerSec = 180f;
         [SerializeField, Min(0f)] private float boidSideSwitchMin = 0.18f;
         [SerializeField, Min(0f)] private float boidSideHoldTime = 0.2f;
 
@@ -81,7 +81,6 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 _moveDirection;
         private Vector3 _filteredSteeringPlanar;
         private Vector3 _cachedRawSteeringPlanar;
-        private Vector3 _cachedSteeringPlanar;
         private float _nextSteeringUpdateTime;
         private float _avoidanceSideSign = 1f;
         private float _avoidanceSideLockUntilTime;
@@ -118,9 +117,6 @@ namespace Koiusa.SteamMultiRuntime
                         return settings.MoveSpeed;
                 }
 
-                var baseSpeed = speed.BaseAgentSpeed;
-                if (baseSpeed > 0f)
-                    return Mathf.Max(baseSpeed, 0.01f);
                 return _agent != null ? Mathf.Max(_agent.speed, 0.01f) : 1f;
             }
         }
@@ -314,12 +310,12 @@ namespace Koiusa.SteamMultiRuntime
                 rvoSideHoldTime = 0f;
             if (rvoPrimaryNeighborCount < 1)
                 rvoPrimaryNeighborCount = 1;
-            if (boidLowPassCutoffHz < 0.1f)
-                boidLowPassCutoffHz = 0.1f;
-            if (boidDeadband < 0f)
-                boidDeadband = 0f;
-            if (boidMaxTurnDegPerSec < 1f)
-                boidMaxTurnDegPerSec = 1f;
+            if (steeringLowPassCutoffHz < 0.1f)
+                steeringLowPassCutoffHz = 0.1f;
+            if (steeringDeadband < 0f)
+                steeringDeadband = 0f;
+            if (steeringMaxTurnDegPerSec < 1f)
+                steeringMaxTurnDegPerSec = 1f;
             if (boidSideSwitchMin < 0f)
                 boidSideSwitchMin = 0f;
             if (boidSideHoldTime < 0f)
@@ -387,7 +383,6 @@ namespace Koiusa.SteamMultiRuntime
             var steeringPlanar = ApplySteeringLowPass(upAxis, _cachedRawSteeringPlanar);
             steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
             steeringPlanar = ApplySteeringDeadband(steeringPlanar);
-            _cachedSteeringPlanar = steeringPlanar;
 
             var localDesired = transform.InverseTransformDirection(steeringPlanar);
             var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
@@ -508,7 +503,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var dt = Mathf.Max(Time.deltaTime, 0.0001f);
-            var cutoff = Mathf.Max(0.1f, boidLowPassCutoffHz);
+            var cutoff = Mathf.Max(0.1f, steeringLowPassCutoffHz);
             var alpha = 1f - Mathf.Exp(-2f * Mathf.PI * cutoff * dt);
             _filteredSteeringPlanar = Vector3.Lerp(_filteredSteeringPlanar, target, alpha);
             return Vector3.ProjectOnPlane(_filteredSteeringPlanar, upAxis);
@@ -521,14 +516,14 @@ namespace Koiusa.SteamMultiRuntime
             if (target.sqrMagnitude <= 0.000001f || current.sqrMagnitude <= 0.000001f)
                 return target;
 
-            var maxTurn = Mathf.Max(1f, boidMaxTurnDegPerSec) * Time.deltaTime;
+            var maxTurn = Mathf.Max(1f, steeringMaxTurnDegPerSec) * Time.deltaTime;
             var limited = Vector3.RotateTowards(current.normalized, target.normalized, maxTurn * Mathf.Deg2Rad, 0f);
             return limited * target.magnitude;
         }
 
         private Vector3 ApplySteeringDeadband(Vector3 steeringPlanar)
         {
-            var deadband = Mathf.Max(0f, boidDeadband);
+            var deadband = Mathf.Max(0f, steeringDeadband);
             return steeringPlanar.sqrMagnitude <= deadband * deadband ? Vector3.zero : steeringPlanar;
         }
 
@@ -681,7 +676,6 @@ namespace Koiusa.SteamMultiRuntime
             _moveDirection = Vector3.zero;
             _filteredSteeringPlanar = Vector3.zero;
             _cachedRawSteeringPlanar = Vector3.zero;
-            _cachedSteeringPlanar = Vector3.zero;
             _nextSteeringUpdateTime = 0f;
             _avoidanceSideSign = 1f;
             _avoidanceSideLockUntilTime = 0f;
