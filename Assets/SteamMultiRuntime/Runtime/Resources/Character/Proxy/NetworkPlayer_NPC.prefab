@@ -264,12 +264,15 @@ MonoBehaviour:
   jump:
     randomJumpEnabled: 1
     jumpChancePerSecond: 0.1
-    jumpDuration: 1
-    jumpVerticalVelocity: 2.5
-    jumpHeight: 3
+    jumpVerticalVelocity: 7
+    fallMultiplier: 2
     jumpCooldownMin: 1.5
     jumpCooldownMax: 4
     minHorizontalSpeedToJump: 0.35
+  moveAcceleration: 22
+  moveDeceleration: 28
+  destinationStopBuffer: 0.05
+  groundedProbeDistance: 0.08
 --- !u!114 &2467385649118676374
 MonoBehaviour:
   m_ObjectHideFlags: 0
