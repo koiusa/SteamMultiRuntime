@@ -10,7 +10,8 @@ namespace Koiusa.SteamMultiRuntime
     public class NetworkNpcRandomSpawner : MonoBehaviour
     {
         [Header("NPC Prefab")]
-        [SerializeField] private GameObject npcPrefab;
+        [SerializeField] private GameObject networkNpcPrefab;
+        [SerializeField] private GameObject localNpcPrefab;
 
         [Header("Model")]
         [SerializeField] private CharacterModelIdList npcModelIdList;
@@ -113,10 +114,14 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var prefab = npcPrefab;
+            var networkManager = NetworkManager.Singleton;
+            var useNetworkSpawn = networkManager != null && networkManager.IsListening;
+            var prefab = SelectNpcPrefab(useNetworkSpawn);
             if (prefab == null)
             {
-                Debug.LogError("[NetworkNpcRandomSpawner] NPC prefab is not assigned.", this);
+                Debug.LogError(useNetworkSpawn
+                    ? "[NetworkNpcRandomSpawner] networkNpcPrefab is not assigned."
+                    : "[NetworkNpcRandomSpawner] localNpcPrefab is not assigned.", this);
                 nextSpawnRetryTime = Time.time + spawnRetryInterval;
                 return;
             }
@@ -141,21 +146,20 @@ namespace Koiusa.SteamMultiRuntime
 
                 var instance = Instantiate(prefab, finalSpawnPosition, Quaternion.identity);
                 var networkObject = instance.GetComponent<NetworkObject>();
-                var networkManager = NetworkManager.Singleton;
 
-                if (networkObject != null && networkManager != null && networkManager.IsListening)
+                if (networkObject != null && useNetworkSpawn)
                 {
                     if (!networkObject.IsSpawned)
                     {
                         networkObject.Spawn();
                     }
                 }
-                else if (networkObject == null)
+                else if (networkObject == null && useNetworkSpawn)
                 {
-                    Debug.LogWarning("[NetworkNpcRandomSpawner] Spawned prefab does not have NetworkObject. Spawned as local instance.", instance);
+                    Debug.LogWarning("[NetworkNpcRandomSpawner] Spawned network NPC prefab does not have NetworkObject. Spawned as local instance.", instance);
                 }
 
-                ApplyModelSync(instance);
+                ApplyModelSync(instance, useNetworkSpawn);
 
                 usedSpawnPositions.Add(spawnPosition);
                 spawnedCount++;
@@ -171,27 +175,44 @@ namespace Koiusa.SteamMultiRuntime
             nextSpawnRetryTime = Time.time + spawnRetryInterval;
         }
 
-        private void ApplyModelSync(GameObject instance)
+        private GameObject SelectNpcPrefab(bool useNetworkSpawn)
+        {
+            return useNetworkSpawn ? networkNpcPrefab : localNpcPrefab;
+        }
+
+        private void ApplyModelSync(GameObject instance, bool useNetworkSpawn)
         {
             if (npcModelIdList == null)
             {
                 return;
             }
 
-            var modelSync = instance.GetComponent<NetworkPlayerModelSync>();
-            if (modelSync == null)
+            if (useNetworkSpawn)
             {
-                return;
+                var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
+                if (networkModelSync != null)
+                {
+                    networkModelSync.modelIdList = npcModelIdList;
+
+                    if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
+                    {
+                        networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
+                    }
+                }
             }
-
-            modelSync.modelIdList = npcModelIdList;
-
-            if (!randomizeModelOnSpawn || npcModelIdList.modelIds == null || npcModelIdList.modelIds.Length == 0)
+            else
             {
-                return;
-            }
+                var localModelSync = instance.GetComponent<LocalPlayerModelSync>();
+                if (localModelSync != null)
+                {
+                    localModelSync.modelIdList = npcModelIdList;
 
-            modelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
+                    if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
+                    {
+                        localModelSync.ApplyModelIndex(Random.Range(0, npcModelIdList.modelIds.Length));
+                    }
+                }
+            }
         }
 
         private bool TryGetSpawnPosition(int agentTypeId, int areaMask, List<Vector3> usedPositions, out Vector3 spawnPosition)
