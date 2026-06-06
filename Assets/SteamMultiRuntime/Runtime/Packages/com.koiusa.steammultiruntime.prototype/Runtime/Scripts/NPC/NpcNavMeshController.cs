@@ -20,6 +20,11 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float jumpCooldownMin = 1.5f;
         [SerializeField, Min(0f)] private float jumpCooldownMax = 4.0f;
         [SerializeField, Min(0f)] private float minHorizontalSpeedToJump = 0.35f;
+        [SerializeField, Range(0f, 1f)] private float minMoveInputMagnitude = 0.2f;
+        [SerializeField, Range(0f, 1f)] private float corneringInputReduction = 0.35f;
+        [SerializeField, Range(0f, 180f)] private float corneringInputMaxAngle = 90f;
+        [SerializeField, Min(0f)] private float arrivalInputSlowDistance = 1.25f;
+        [SerializeField, Range(0f, 1f)] private float arrivalInputMinScale = 0.3f;
 
         private enum LocalAvoidanceMode
         {
@@ -269,6 +274,12 @@ namespace Koiusa.SteamMultiRuntime
                 jumpCooldownMax = jumpCooldownMin;
             if (minHorizontalSpeedToJump < 0f)
                 minHorizontalSpeedToJump = 0f;
+            minMoveInputMagnitude = Mathf.Clamp01(minMoveInputMagnitude);
+            corneringInputReduction = Mathf.Clamp01(corneringInputReduction);
+            corneringInputMaxAngle = Mathf.Clamp(corneringInputMaxAngle, 0f, 180f);
+            if (arrivalInputSlowDistance < 0f)
+                arrivalInputSlowDistance = 0f;
+            arrivalInputMinScale = Mathf.Clamp01(arrivalInputMinScale);
             if (steeringUpdateInterval < 0.01f)
                 steeringUpdateInterval = 0.01f;
             navCornerDirectionWeight = Mathf.Clamp01(navCornerDirectionWeight);
@@ -380,6 +391,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var localDesired = transform.InverseTransformDirection(steeringPlanar);
             var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
+            nextMoveInput = ApplyAdaptiveMoveInputMagnitude(nextMoveInput, targetPlanarVelocity, upAxis);
             if (nextMoveInput.sqrMagnitude > 1f)
                 nextMoveInput = nextMoveInput.normalized;
 
@@ -446,6 +458,44 @@ namespace Koiusa.SteamMultiRuntime
                 blendedDirection = desiredDirection;
 
             return Vector3.ProjectOnPlane(blendedDirection.normalized * desiredSpeed, upAxis);
+        }
+
+        private Vector2 ApplyAdaptiveMoveInputMagnitude(Vector2 moveInput, Vector3 targetPlanarVelocity, Vector3 upAxis)
+        {
+            var directionMagnitude = moveInput.magnitude;
+            if (directionMagnitude <= 0.0001f)
+                return Vector2.zero;
+
+            var normalizedInput = moveInput / directionMagnitude;
+            var maxMoveSpeed = Mathf.Max(0.01f, MaxMoveSpeed);
+            var targetSpeedRatio = Mathf.Clamp01(targetPlanarVelocity.magnitude / maxMoveSpeed);
+            var inputScale = Mathf.Lerp(minMoveInputMagnitude, 1f, targetSpeedRatio);
+
+            var currentPlanarDirection = Vector3.ProjectOnPlane(transform.forward, upAxis);
+            if (currentPlanarDirection.sqrMagnitude > 0.0001f && targetPlanarVelocity.sqrMagnitude > 0.0001f)
+            {
+                var targetDirection = targetPlanarVelocity.normalized;
+                var turnAngle = Vector3.Angle(currentPlanarDirection.normalized, targetDirection);
+                var maxAngle = Mathf.Max(0.0001f, corneringInputMaxAngle);
+                var turnRatio = Mathf.Clamp01(turnAngle / maxAngle);
+                var cornerScale = Mathf.Lerp(1f, 1f - corneringInputReduction, turnRatio);
+                inputScale *= cornerScale;
+            }
+
+            if (_agent != null && _agent.enabled && _agent.isOnNavMesh && _agent.hasPath)
+            {
+                var remainingDistance = _agent.remainingDistance;
+                if (!float.IsInfinity(remainingDistance) && !float.IsNaN(remainingDistance))
+                {
+                    var slowDistance = Mathf.Max(0.001f, arrivalInputSlowDistance);
+                    var arrivalRatio = Mathf.Clamp01(remainingDistance / slowDistance);
+                    var arrivalScale = Mathf.Lerp(arrivalInputMinScale, 1f, arrivalRatio);
+                    inputScale *= arrivalScale;
+                }
+            }
+
+            inputScale = Mathf.Clamp(inputScale, 0f, 1f);
+            return normalizedInput * inputScale;
         }
 
         private Vector3 ApplySteeringLowPass(Vector3 upAxis, Vector3 steeringPlanar)
