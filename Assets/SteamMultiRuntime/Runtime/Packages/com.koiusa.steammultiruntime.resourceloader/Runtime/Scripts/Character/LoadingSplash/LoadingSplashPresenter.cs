@@ -105,6 +105,57 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        public async Task WaitForLocalCharacterReadyAsync(object localManagerOrPlayerObject, int visibilityVersion, System.Func<int> getVisibilityVersion)
+        {
+            GameObject playerObject = null;
+
+            // Attempt to get LocalPlayerObject from localManagerOrPlayerObject
+            // This avoids direct type reference to LocalManager
+            if (localManagerOrPlayerObject != null)
+            {
+                var localPlayerObjectProperty = localManagerOrPlayerObject.GetType().GetProperty("LocalPlayerObject");
+                if (localPlayerObjectProperty != null)
+                {
+                    playerObject = localPlayerObjectProperty.GetValue(localManagerOrPlayerObject) as GameObject;
+                }
+                else if (localManagerOrPlayerObject is GameObject go)
+                {
+                    playerObject = go;
+                }
+            }
+
+            while (owner != null && owner.isActiveAndEnabled && visibilityVersion == getVisibilityVersion())
+            {
+                if (playerObject == null && localManagerOrPlayerObject != null)
+                {
+                    var localPlayerObjectProperty = localManagerOrPlayerObject.GetType().GetProperty("LocalPlayerObject");
+                    if (localPlayerObjectProperty != null)
+                    {
+                        playerObject = localPlayerObjectProperty.GetValue(localManagerOrPlayerObject) as GameObject;
+                    }
+                }
+
+                if (playerObject == null)
+                {
+                    await Task.Yield();
+                    continue;
+                }
+
+                var runtimeCharacterLoader = playerObject.GetComponent<ICharacterPrefabLoader>();
+                if (runtimeCharacterLoader == null)
+                {
+                    return;
+                }
+
+                if (runtimeCharacterLoader.IsLoaded)
+                {
+                    return;
+                }
+
+                await Task.Yield();
+            }
+        }
+
         private void EnsureSplashUi()
         {
             if (splashUiObject != null)

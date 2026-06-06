@@ -67,6 +67,7 @@ MonoBehaviour:
   startupStageSceneIndex: 0
   sceneLoadMode: 1
   setLoadedSceneAsActive: 1
+  disableCamerasInLoadedScenes: 1
 --- !u!1 &3479492620087174620
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,7 +239,7 @@ Transform:
   m_GameObject: {fileID: 9165860267327548677}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 39.51506, y: -76.09466, z: 5.40937}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -256,6 +257,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd60f3e27fc69a44b63c3a210e4ba5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.LocalLoadingSplash
-  sceneLoaderBehaviour: {fileID: 2961571088981984069}
+  sceneLoader:
+    mode: 0
+    unityReference: {fileID: 2170096241013433035}
+    rawReference:
+      rid: -2
   splashSettings: {fileID: 11400000, guid: d39f224b1ae3c224689a29688bbae369, type: 2}
   showSplashDuringSceneLoad: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

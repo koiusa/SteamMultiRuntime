@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Koiusa.SteamMultiRuntime.Network;
+using TNRD;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,14 +9,15 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class LocalLoadingSplash : MonoBehaviour
     {
-        [SerializeField] private MonoBehaviour sceneLoaderBehaviour;
+        [SerializeField] private SerializableInterface<ILoadingSplashEventSource> sceneLoader;
         [SerializeField] private LoadingSplashSettings splashSettings;
         [SerializeField] private bool showSplashDuringSceneLoad = true;
 
         private LoadingSplashPresenter splashPresenter;
         private int splashVisibilityVersion;
         private const float SceneReadyWaitTimeoutSeconds = 15f;
-        private ILoadingSplashEventSource sceneLoader;
+        private ILoadingSplashEventSource resolvedSceneLoader;
+        private bool isSubscribed;
 
         private void Awake()
         {
@@ -48,18 +50,19 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveSceneLoader()
         {
-            if (sceneLoader != null)
+            if (resolvedSceneLoader != null)
             {
                 return;
             }
 
-            if (sceneLoaderBehaviour != null)
+            var loader = sceneLoader != null ? sceneLoader.Value : null;
+            if (loader != null)
             {
-                sceneLoader = sceneLoaderBehaviour as ILoadingSplashEventSource;
+                resolvedSceneLoader = loader;
                 return;
             }
 
-            sceneLoader = GetComponent<ILoadingSplashEventSource>()
+            resolvedSceneLoader = GetComponent<ILoadingSplashEventSource>()
                 ?? GetComponentInChildren<ILoadingSplashEventSource>(true)
                 ?? FindFirstObjectByType<LocalStartupSceneLoader>(FindObjectsInactive.Include);
         }
@@ -71,26 +74,33 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SubscribeLoaderEvents()
         {
-            if (sceneLoader == null)
+            var loader = resolvedSceneLoader;
+            if (loader == null)
             {
                 return;
             }
 
-            sceneLoader.LoadingStarted -= OnLoadingStarted;
-            sceneLoader.LoadingFinished -= OnLoadingFinished;
-            sceneLoader.LoadingStarted += OnLoadingStarted;
-            sceneLoader.LoadingFinished += OnLoadingFinished;
+            if (isSubscribed)
+            {
+                return;
+            }
+
+            loader.LoadingStarted += OnLoadingStarted;
+            loader.LoadingFinished += OnLoadingFinished;
+            isSubscribed = true;
         }
 
         private void UnsubscribeLoaderEvents()
         {
-            if (sceneLoader == null)
+            if (!isSubscribed || resolvedSceneLoader == null)
             {
+                isSubscribed = false;
                 return;
             }
 
-            sceneLoader.LoadingStarted -= OnLoadingStarted;
-            sceneLoader.LoadingFinished -= OnLoadingFinished;
+            resolvedSceneLoader.LoadingStarted -= OnLoadingStarted;
+            resolvedSceneLoader.LoadingFinished -= OnLoadingFinished;
+            isSubscribed = false;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -119,11 +129,12 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var visibilityVersion = splashVisibilityVersion;
-            _ = HideSplashWhenSceneReadyAsync(visibilityVersion);
+            _ = HideSplashWhenCharacterReadyAsync(visibilityVersion);
         }
 
-        private async Task HideSplashWhenSceneReadyAsync(int visibilityVersion)
+        private async Task HideSplashWhenCharacterReadyAsync(int visibilityVersion)
         {
+            await WaitForCharacterReadyAsync(visibilityVersion);
             await WaitForSceneReadyAsync(visibilityVersion);
 
             if (!isActiveAndEnabled || visibilityVersion != splashVisibilityVersion)
@@ -132,6 +143,24 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             splashPresenter?.Hide();
+        }
+
+        private async Task WaitForCharacterReadyAsync(int visibilityVersion)
+        {
+            // Get LocalManager singleton via reflection to avoid direct asmdef reference
+            var localManagerType = System.Type.GetType("Koiusa.SteamMultiRuntime.LocalManager, Koiusa.SteamMultiRuntime.Integration.Runtime");
+            if (localManagerType != null)
+            {
+                var singletonProperty = localManagerType.GetProperty("Singleton");
+                if (singletonProperty != null)
+                {
+                    var localManager = singletonProperty.GetValue(null);
+                    if (localManager != null)
+                    {
+                        await splashPresenter.WaitForLocalCharacterReadyAsync(localManager, visibilityVersion, () => splashVisibilityVersion);
+                    }
+                }
+            }
         }
 
         private async Task WaitForSceneReadyAsync(int visibilityVersion)
