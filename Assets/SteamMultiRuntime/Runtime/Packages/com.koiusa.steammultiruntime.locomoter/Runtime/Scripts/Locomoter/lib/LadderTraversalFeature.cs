@@ -62,7 +62,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             currentLadder = null;
             activeLadders.Clear();
-            rb.useGravity = true;
+            if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = 0f;
             hasClimbAxisLock = false;
             xAxisClimbSign = -1f;
@@ -72,7 +72,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             currentLadder = null;
             activeLadders.Clear();
-            rb.useGravity = true;
+            if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
             hasClimbAxisLock = false;
             xAxisClimbSign = -1f;
@@ -97,7 +97,7 @@ namespace Koiusa.SteamMultiRuntime
             if (activeLadders.Count == 0)
             {
                 currentLadder = null;
-                rb.useGravity = true;
+                if (rb != null) rb.useGravity = true;
 
                 // 本当に梯子コライダー外へ出た時だけ再捕捉ブロックを解除する
                 // （ジャンプ離脱直後の即再捕捉は維持）
