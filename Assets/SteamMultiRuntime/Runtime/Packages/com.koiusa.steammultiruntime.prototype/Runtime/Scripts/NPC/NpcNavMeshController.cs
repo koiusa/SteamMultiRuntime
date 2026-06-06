@@ -19,6 +19,11 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float destinationStopBuffer = 0.05f;
         [SerializeField, Min(0f)] private float groundedProbeDistance = 0.08f;
 
+        [Header("Dynamic Avoidance")]
+        [SerializeField, Min(0f)] private float collisionRepathCooldown = 0.25f;
+        [SerializeField, Min(0.1f)] private float collisionAvoidanceOffset = 1.2f;
+        [SerializeField, Min(0.1f)] private float collisionAvoidanceDuration = 0.6f;
+
         private NavMeshAgent _agent;
         private Rigidbody _rigidbody;
         private Collider _bodyCollider;
@@ -27,6 +32,11 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 _previousPosition;
         private bool _hasPreviousPosition;
         private bool _isGrounded;
+        private float _nextCollisionRepathTime;
+        private bool _isAvoidingCollision;
+        private bool _hasResumeDestination;
+        private Vector3 _resumeDestination;
+        private float _collisionAvoidanceUntilTime;
 
         public event System.Action ReturnToCenterStarted;
         public event System.Action<Vector3> DestinationSet;
@@ -160,6 +170,9 @@ namespace Koiusa.SteamMultiRuntime
 
             _simulatedPlanarVelocity = Vector3.zero;
             _isGrounded = false;
+            _isAvoidingCollision = false;
+            _hasResumeDestination = false;
+            _collisionAvoidanceUntilTime = 0f;
             StopAgent();
             ResetAgentPath();
         }
@@ -168,6 +181,16 @@ namespace Koiusa.SteamMultiRuntime
         {
             StopAgent();
             ResetAgentPath();
+        }
+
+        private void OnCollisionStay(Collision collision)
+        {
+            TryRepathOnCharacterCollision(collision.collider);
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            TryRepathOnCharacterCollision(collision.collider);
         }
 
         private void StopAgent()
@@ -210,6 +233,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             movement.ObserveState();
+            UpdateCollisionAvoidanceState();
             rotation.UpdateRotation();
             UpdateEstimatedVelocity();
 
@@ -268,6 +292,7 @@ namespace Koiusa.SteamMultiRuntime
             _agent.updateRotation = false;
             _agent.updateUpAxis = false;
             _agent.updatePosition = false;
+            _agent.autoRepath = true;
         }
 
         private void UpdateManualLocomotion()
@@ -336,6 +361,71 @@ namespace Koiusa.SteamMultiRuntime
             var origin = bounds.center;
             var maxDistance = upExtent + Mathf.Max(0.01f, groundedProbeDistance);
             _isGrounded = Physics.Raycast(origin, -upAxis, maxDistance, ~0, QueryTriggerInteraction.Ignore);
+        }
+
+        private void TryRepathOnCharacterCollision(Collider otherCollider)
+        {
+            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+                return;
+            if (otherCollider == null)
+                return;
+            if (Time.time < _nextCollisionRepathTime)
+                return;
+
+            var otherController = otherCollider.GetComponentInParent<IPlayerController>();
+            if (otherController == null)
+                return;
+            if (!otherController.IsGrounded)
+                return;
+
+            if (!_agent.hasPath || _agent.pathPending)
+                return;
+
+            var upAxis = PlayerMotor.GetUpAxis().normalized;
+            var away = Vector3.ProjectOnPlane(transform.position - otherCollider.bounds.center, upAxis);
+            if (away.sqrMagnitude <= 0.0001f)
+            {
+                away = Vector3.ProjectOnPlane(_agent.steeringTarget - transform.position, upAxis);
+                away = away.sqrMagnitude > 0.0001f ? -away.normalized : transform.right;
+            }
+            else
+            {
+                away = away.normalized;
+            }
+
+            var avoidTarget = transform.position + away * collisionAvoidanceOffset;
+            if (!NavMesh.SamplePosition(avoidTarget, out var hit, collisionAvoidanceOffset + 1f, _agent.areaMask))
+                return;
+
+            _resumeDestination = _agent.destination;
+            _hasResumeDestination = true;
+            _isAvoidingCollision = true;
+            _collisionAvoidanceUntilTime = Time.time + collisionAvoidanceDuration;
+            _nextCollisionRepathTime = Time.time + collisionRepathCooldown;
+
+            _agent.SetDestination(hit.position);
+            DestinationSet?.Invoke(hit.position);
+        }
+
+        private void UpdateCollisionAvoidanceState()
+        {
+            if (!_isAvoidingCollision)
+                return;
+            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+                return;
+
+            var expired = Time.time >= _collisionAvoidanceUntilTime;
+            var reachedAvoidPoint = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance + destinationStopBuffer);
+            if (!expired && !reachedAvoidPoint)
+                return;
+
+            _isAvoidingCollision = false;
+            if (!_hasResumeDestination)
+                return;
+
+            _hasResumeDestination = false;
+            _agent.SetDestination(_resumeDestination);
+            DestinationSet?.Invoke(_resumeDestination);
         }
 
         private void UpdateEstimatedVelocity()
