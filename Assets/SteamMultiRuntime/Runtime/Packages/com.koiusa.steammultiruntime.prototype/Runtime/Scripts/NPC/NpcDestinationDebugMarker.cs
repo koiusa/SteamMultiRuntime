@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -125,12 +126,25 @@ namespace Koiusa.SteamMultiRuntime
 
         private static Shader ResolveMarkerShader()
         {
-            return Shader.Find("HDRP/Lit")
-                ?? Shader.Find("Universal Render Pipeline/Unlit")
-                ?? Shader.Find("Universal Render Pipeline/Lit")
-                ?? Shader.Find("Universal Render Pipeline/Simple Lit")
-                ?? Shader.Find("Standard")
-                ?? Shader.Find("Unlit/Color");
+            var pipeline = GraphicsSettings.defaultRenderPipeline;
+            var pipelineName = pipeline != null ? pipeline.GetType().Name : string.Empty;
+
+            if (pipelineName.Contains("HighDefinition") || pipelineName.Contains("HDRP"))
+            {
+                return Shader.Find("HDRP/Unlit")
+                    ?? Shader.Find("HDRP/Lit");
+            }
+
+            if (pipelineName.Contains("Universal") || pipelineName.Contains("URP"))
+            {
+                return Shader.Find("Universal Render Pipeline/Unlit")
+                    ?? Shader.Find("Universal Render Pipeline/Lit")
+                    ?? Shader.Find("Universal Render Pipeline/Simple Lit");
+            }
+
+            // Built-in
+            return Shader.Find("Unlit/Color")
+                ?? Shader.Find("Standard");
         }
 
         private void DestroyMarker()
