@@ -25,7 +25,6 @@ public class FaceAnimationDriver : MonoBehaviour {
         m_hasStarted = true;
         m_shouldResetFaceLayerWeight = true;
         m_curFaceLayerWeight = 1f;
-        TryApplyFaceLayerMask(true);
     }
 
     void InitializeForCharacter() {
@@ -59,6 +58,7 @@ public class FaceAnimationDriver : MonoBehaviour {
 
         m_cachedFaceLayerMixer = layerMixer;
         m_hasCachedFaceLayerMixer = true;
+        ApplyFaceLayerMask();
     }
 
     void SetResolvedAnimator(Animator animator) {
@@ -111,18 +111,23 @@ public class FaceAnimationDriver : MonoBehaviour {
         }
 
         m_animator.SetLayerWeight(m_faceLayerIndex, m_curFaceLayerWeight);
-        TryApplyFaceLayerMask(false);
         UpdateReturnToDefaultTimer();
     }
 
-    void TryApplyFaceLayerMask(bool force) {
-        if (m_animator == null || m_faceAvatarMask == null)
+    void ApplyFaceLayerMask() {
+        if (m_faceAvatarMask == null || !m_hasCachedFaceLayerMixer || !m_cachedFaceLayerMixer.IsValid())
             return;
 
-        if (!CanControlFaceLayer())
+        Playable currentMixer = m_cachedFaceLayerMixer;
+        if (m_maskAppliedAvatarMask == m_faceAvatarMask
+            && m_maskAppliedMixer.IsValid()
+            && m_maskAppliedMixer.Equals(currentMixer)) {
             return;
+        }
 
         m_cachedFaceLayerMixer.SetLayerMaskFromAvatarMask((uint)m_faceLayerIndex, m_faceAvatarMask);
+        m_maskAppliedMixer = currentMixer;
+        m_maskAppliedAvatarMask = m_faceAvatarMask;
     }
 
     static bool TryGetFaceLayerMixer(Animator animator, int layerIndex, out AnimationLayerMixerPlayable layerMixer) {
@@ -293,7 +298,6 @@ public class FaceAnimationDriver : MonoBehaviour {
         EnsureAnimatorReference();
         RefreshFaceStateNames();
         CacheFaceLayerMixer();
-        TryApplyFaceLayerMask(true);
     }
     
 
@@ -321,6 +325,8 @@ public class FaceAnimationDriver : MonoBehaviour {
     AnimationLayerMixerPlayable m_cachedFaceLayerMixer;
     RuntimeAnimatorController m_cachedController;
     bool m_hasCachedFaceLayerMixer;
+    Playable m_maskAppliedMixer;
+    AvatarMask m_maskAppliedAvatarMask;
 
     void EnsureAnimatorReference() {
         if (m_animator == null) {
