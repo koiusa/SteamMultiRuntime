@@ -53,11 +53,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             // ISteamLobbySceneLoaderを実装するローダーを探す
-            // 優先順: 同じGameObject → 子要素 → SteamLobbySceneLoader → SteamLobbyDedicatedServer → LocalSceneFlowLoader
+            // 優先順: 同じGameObject → 子要素 → LocalSceneFlowLoader
             var loader = GetComponent<ISteamLobbySceneLoader>()
                 ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                ?? FindFirstObjectByType<SteamLobbySceneLoader>() as ISteamLobbySceneLoader
-                ?? FindFirstObjectByType<Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
                 ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
 
             if (loader == null)
@@ -196,27 +194,26 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
 
-                while (!asyncOp.isDone)
-                {
-                    await Task.Yield();
-                }
+                await SceneUtilityEx.WaitForOperationAsync(asyncOp);
             }
         }
 
         private async Task LoadStageSceneAsync(string stageName)
         {
-            // シーンを追加的にロードする
-            var asyncOp = SceneManager.LoadSceneAsync(stageName, LoadSceneMode.Additive);
-
-            if (asyncOp == null)
+            // 同じシーンが既にロード済みの場合は追加ロードをスキップする
+            // （UnloadOtherStagesAsync はロード対象をアンロードしないため、
+            //   同一シーンを再選択すると二重にロードされてしまう）
+            var existingScene = SceneManager.GetSceneByName(stageName);
+            if (!existingScene.IsValid() || !existingScene.isLoaded)
             {
-                throw new InvalidOperationException($"Failed to start loading scene '{stageName}'");
-            }
+                var asyncOp = SceneManager.LoadSceneAsync(stageName, LoadSceneMode.Additive);
 
-            // シーンロード完了を待機
-            while (!asyncOp.isDone)
-            {
-                await Task.Yield();
+                if (asyncOp == null)
+                {
+                    throw new InvalidOperationException($"Failed to start loading scene '{stageName}'");
+                }
+
+                await SceneUtilityEx.WaitForOperationAsync(asyncOp);
             }
 
             var loadedScene = SceneManager.GetSceneByName(stageName);
