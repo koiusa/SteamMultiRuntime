@@ -17,7 +17,7 @@ Usage
 -----
 
 サンプルシーンをビルド対象に追加します。  
-1. Unityエディタのメニューから `File > SteamMultiRuntime > BuildProfiles` を表示してビルドプロファイルを作成。
+1. Unityエディタのメニューから `File > BuildProfiles` を表示してビルドプロファイルを作成。
 2. BuildProfiles ファイルを開き、以下のサンプルシーンを追加：
    - 配下のシーンをすべて追加
      - `Assets/SteamMultiRuntime/Samples/Common/<シーン名>.unity`
