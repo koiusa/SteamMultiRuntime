@@ -41,6 +41,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasSpawned;
         private bool hasSubscribedServerStarted;
         private float nextSpawnRetryTime;
+        private bool isWaitingForActiveScene;
 
         private void Start()
         {
@@ -54,7 +55,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
-            if (!spawnOnStart || hasSpawned || Time.time < nextSpawnRetryTime)
+            if (!spawnOnStart || hasSpawned || isWaitingForActiveScene || Time.time < nextSpawnRetryTime)
             {
                 return;
             }
@@ -64,7 +65,27 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             UnsubscribeServerStarted();
+        }
+
+        private void OnActiveSceneChanged(Scene previous, Scene next)
+        {
+            if (!isWaitingForActiveScene || !IsOwnSceneActive())
+            {
+                return;
+            }
+
+            // activeSceneChanged は SetActiveScene と同期的に発火するため、
+            // この時点では NavMesh がまだ初期化されていない。
+            // フラグだけ解除して次フレームの Update に委ねる。
+            isWaitingForActiveScene = false;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        }
+
+        private bool IsOwnSceneActive()
+        {
+            return gameObject.scene == SceneManager.GetActiveScene();
         }
 
         public void SpawnNow()
@@ -79,14 +100,20 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
+            // NavMesh はアクティブシーンに紐付くため、自シーンがアクティブになるまで待つ
+            // Local/Network を問わず共通のガード
+            if (!IsOwnSceneActive())
             {
-                SpawnInternal();
+                if (!isWaitingForActiveScene)
+                {
+                    isWaitingForActiveScene = true;
+                    SceneManager.activeSceneChanged += OnActiveSceneChanged;
+                }
                 return;
             }
 
-            if (networkManager.IsServer)
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || networkManager.IsServer)
             {
                 SpawnInternal();
                 return;
@@ -103,13 +130,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnServerStarted()
         {
-            SpawnInternal();
+            UnsubscribeServerStarted();
+            TrySpawnOrSubscribe();
         }
 
         private void SpawnInternal()
         {
-            UnsubscribeServerStarted();
-
             if (oneShot && hasSpawned)
             {
                 return;
@@ -131,6 +157,21 @@ namespace Koiusa.SteamMultiRuntime
             var sampleAgentTypeId = prefabAgent != null ? prefabAgent.agentTypeID : 0;
             var sampleAreaMask = prefabAgent != null ? prefabAgent.areaMask : NavMesh.AllAreas;
 
+            // prefab の agentTypeID に対応する NavMesh 面が存在するか事前確認
+            // agentTypeID 不一致の場合 "Failed to create agent" が発生する
+            if (prefabAgent != null && sampleOnNavMesh)
+            {
+                var center = areaCenter != null ? areaCenter.position : transform.position;
+                var check = new NavMeshQueryFilter { agentTypeID = sampleAgentTypeId, areaMask = sampleAreaMask };
+                if (!NavMesh.SamplePosition(center, out _, fallbackNavMeshSampleRadius, check))
+                {
+                    Debug.LogWarning(
+                        $"[NetworkNpcRandomSpawner] agentTypeID={sampleAgentTypeId} に対応する NavMesh 面が見つかりません。" +
+                        "Prefab の NavMeshAgent.AgentType と NavMesh のベイク設定が一致しているか確認してください。",
+                        this);
+                }
+            }
+
             var spawnedCount = 0;
             var usedSpawnPositions = new List<Vector3>(spawnCount);
             for (var i = 0; i < spawnCount; i++)
@@ -147,7 +188,8 @@ namespace Koiusa.SteamMultiRuntime
 
                 var instance = Instantiate(prefab, finalSpawnPosition, Quaternion.identity);
 
-                // Instantiate はアクティブシーンに生成するため、スポナー自身のシーンへ明示的に移動する
+                // スポナー自身のシーンへ移動する
+                // （スポナーのシーンがアクティブであれば Instantiate は既に同シーンに生成するため通常は no-op）
                 var spawnerScene = gameObject.scene;
                 if (spawnerScene.IsValid() && instance.scene != spawnerScene)
                 {

@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private float arriveBuffer = 0.1f;
 
         private NavMeshAgent _agent;
+        private NpcNavMeshController _controller;
         private GameObject _marker;
         private Vector3 _currentDestination;
         private bool _hasDestination;
@@ -20,10 +21,26 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
+            _controller = GetComponent<NpcNavMeshController>();
+        }
+
+        private void OnEnable()
+        {
+            // NetworkObject がない（ローカルモード）場合は自分で DestinationSet を購読する
+            // Network モードは NpcDestinationDebugMarkerNetSync が NetworkVariable 経由で処理する
+            if (_controller != null && GetComponent<Unity.Netcode.NetworkObject>() == null)
+            {
+                _controller.DestinationSet += SetDestination;
+            }
         }
 
         private void OnDisable()
         {
+            if (_controller != null)
+            {
+                _controller.DestinationSet -= SetDestination;
+            }
+
             UnregisterDestinationProvider();
             DestroyMarker();
             _hasDestination = false;
