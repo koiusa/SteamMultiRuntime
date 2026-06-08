@@ -56,11 +56,6 @@ namespace Koiusa.SteamMultiRuntime
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
         }
 
-        private void Start()
-        {
-            SpawnLocalPlayer();
-        }
-
         private void OnDestroy()
         {
             if (Singleton == this)
@@ -97,6 +92,9 @@ namespace Koiusa.SteamMultiRuntime
 
             if (LocalPlayerObject != null)
             {
+                // Destroy は実フレーム末まで遅延するため、旧プレイヤーが新プレイヤーと
+                // 物理的に干渉しないよう先に無効化してから破棄する。
+                LocalPlayerObject.SetActive(false);
                 Destroy(LocalPlayerObject);
                 LocalPlayerObject = null;
             }
