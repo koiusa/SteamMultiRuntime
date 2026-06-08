@@ -14,6 +14,9 @@ namespace Koiusa.SteamMultiRuntime
         /// <summary>梯子の上方向（正規化済み）。デフォルトは World Up。</summary>
         public Vector3 UpDirection => transform.up;
 
+        /// <summary>梯子面の法線方向（正規化済み）。プレイヤーが正対する向きのフォールバック基準に使う。</summary>
+        public Vector3 PlaneNormal => transform.forward;
+
         // Enter/Exit をコライダー単位で追跡し、feature 単位の参照カウントで管理する
         private readonly Dictionary<Collider, ILadderTraversalFeature> colliderOwners = new Dictionary<Collider, ILadderTraversalFeature>();
         private readonly Dictionary<ILadderTraversalFeature, int> featureRefCounts = new Dictionary<ILadderTraversalFeature, int>();

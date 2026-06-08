@@ -24,8 +24,12 @@ namespace Koiusa.SteamMultiRuntime
         private float xAxisClimbSign = -1f;
         private float ladderEnteredTime;
 
+        private Vector3 facingDirection;
+        private bool hasFacing;
+
         private const float ClimbAxisLockEnterThreshold = 0.2f;
         private const float GroundEnterDetachGraceTime = 0.2f;
+        private const float FacingRotationSpeed = 720f;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
@@ -66,6 +70,7 @@ namespace Koiusa.SteamMultiRuntime
             reattachBlockedUntilTime = 0f;
             hasClimbAxisLock = false;
             xAxisClimbSign = -1f;
+            hasFacing = false;
         }
 
         public void DetachFromLadder(float reattachDelaySeconds)
@@ -76,6 +81,7 @@ namespace Koiusa.SteamMultiRuntime
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
             hasClimbAxisLock = false;
             xAxisClimbSign = -1f;
+            hasFacing = false;
         }
 
         public void NotifyEnterLadder(LadderVolume ladder)
@@ -88,6 +94,7 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Add(ladder);
             currentLadder = ladder;
             ladderEnteredTime = Time.time;
+            UpdateFacingDirection(ladder);
         }
 
         public void NotifyExitLadder(LadderVolume ladder)
@@ -110,6 +117,7 @@ namespace Koiusa.SteamMultiRuntime
                 {
                     currentLadder = remaining;
                 }
+                UpdateFacingDirection(currentLadder);
             }
         }
 
@@ -139,6 +147,9 @@ namespace Koiusa.SteamMultiRuntime
             var nextClimbVelocity = Vector3.MoveTowards(currentClimbVelocity, targetClimbVelocity, settings.ClimbAcceleration * Time.fixedDeltaTime);
 
             nextVelocity = nextHorizontal + nextClimbVelocity;
+
+            // 梯子昇降中は常に梯子の方を向く
+            ApplyFacingRotation(upAxis);
             return true;
         }
 
@@ -240,6 +251,77 @@ namespace Koiusa.SteamMultiRuntime
 
             detachInput = moveInput.x;
             return moveInput.y;
+        }
+
+        private void UpdateFacingDirection(LadderVolume ladder)
+        {
+            hasFacing = false;
+
+            if (ladder == null || rb == null)
+            {
+                return;
+            }
+
+            var up = GetUpAxis();
+
+            // 梯子面の法線を主基準にして常に面へ垂直に正対させる。
+            // 侵入位置（梯子コライダーのどこで触れたか）のブレに影響されず、
+            // 同じ梯子なら常に同じ向きで張り付くようにする。
+            var normal = Vector3.ProjectOnPlane(ladder.PlaneNormal, up);
+            if (normal.sqrMagnitude > 0.0001f)
+            {
+                normal.Normalize();
+
+                // プレイヤーが梯子のどちら側にいるかで符号を決め、梯子面へ向かう向きを採用する。
+                var toLadder = Vector3.ProjectOnPlane(ladder.transform.position - rb.position, up);
+                float sign;
+                if (toLadder.sqrMagnitude > 0.0001f)
+                {
+                    sign = Vector3.Dot(normal, toLadder) >= 0f ? 1f : -1f;
+                }
+                else
+                {
+                    // 梯子軸の真上／真下にいる場合は現在の前方に近い符号を維持する。
+                    var forward = rb.rotation * Vector3.forward;
+                    sign = Vector3.Dot(normal, forward) >= 0f ? 1f : -1f;
+                }
+
+                facingDirection = normal * sign;
+                hasFacing = true;
+                return;
+            }
+
+            // 梯子面の法線が水平面上で取得できない異常時のみ、梯子中心へ向かう方向へフォールバックする。
+            var fallback = Vector3.ProjectOnPlane(ladder.transform.position - rb.position, up);
+            if (fallback.sqrMagnitude > 0.0001f)
+            {
+                facingDirection = fallback.normalized;
+                hasFacing = true;
+            }
+        }
+
+        private void ApplyFacingRotation(Vector3 upAxis)
+        {
+            if (!hasFacing || rb == null)
+            {
+                return;
+            }
+
+            var up = upAxis.sqrMagnitude > 0.0001f ? upAxis.normalized : GetUpAxis();
+            var facing = Vector3.ProjectOnPlane(facingDirection, up);
+            if (facing.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            var targetRotation = Quaternion.LookRotation(facing.normalized, up);
+            var nextRotation = Quaternion.RotateTowards(rb.rotation, targetRotation, FacingRotationSpeed * Time.fixedDeltaTime);
+            rb.MoveRotation(nextRotation);
+        }
+
+        private static Vector3 GetUpAxis()
+        {
+            return Physics.gravity.sqrMagnitude > 0f ? -Physics.gravity.normalized : Vector3.up;
         }
 
         private static bool IsSettingsEmpty(LadderTraversalSettings s)
