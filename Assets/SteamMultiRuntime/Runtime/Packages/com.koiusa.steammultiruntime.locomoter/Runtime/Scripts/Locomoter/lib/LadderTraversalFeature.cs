@@ -33,6 +33,9 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
+        public float ClimbSpeed => IsOnLadder && rb != null
+            ? Vector3.Dot(rb.linearVelocity, currentLadder.UpDirection)
+            : 0f;
 
         private void Awake()
         {

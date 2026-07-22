@@ -24,6 +24,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private string moveDirectionForwardParameter = "MoveDirectionForward";
         [SerializeField] private string moveDirectionRightParameter = "MoveDirectionRight";
         [SerializeField] private string strafeModeParameter = "IsStrafeMode";
+        [SerializeField] private string ladderParameter = "IsLadder";
+        [SerializeField] private string ladderSpeedParameter = "LadderSpeed";
         [SerializeField] private string animationFinishedParameter = "IsAnimationFinished";
         [SerializeField, Min(0)] private int animationFinishedLayerIndex = 0;
 
@@ -43,6 +45,8 @@ namespace Koiusa.SteamMultiRuntime
         private int moveDirectionForwardHash;
         private int moveDirectionRightHash;
         private int strafeModeHash;
+        private int ladderHash;
+        private int ladderSpeedHash;
         private int animationFinishedHash;
         private bool hasHorizontalSpeedParameter;
         private bool hasVerticalSpeedParameter;
@@ -56,8 +60,11 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasMoveDirectionForwardParameter;
         private bool hasMoveDirectionRightParameter;
         private bool hasStrafeModeParameter;
+        private bool hasLadderParameter;
+        private bool hasLadderSpeedParameter;
         private bool hasAnimationFinishedParameter;
         private IPlayerController playerController;
+        private ILadderTraversalFeature ladderTraversalFeature;
         private Vector3 previousPosition;
 
         private void Reset()
@@ -81,6 +88,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             playerController = GetComponentInParent<IPlayerController>();
+            ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
 
             CacheParameterHashes();
             previousPosition = transform.position;
@@ -112,6 +120,8 @@ namespace Koiusa.SteamMultiRuntime
             var moveDirectionForward = Vector3.Dot(moveDirection, transform.forward);
             var moveDirectionRight = Vector3.Dot(moveDirection, transform.right);
             var isStrafeMode = playerController != null && playerController.IsStrafeMode;
+            var isLadder = ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
+            var ladderSpeed = ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
             var isAnimationFinished = IsCurrentStateFinished(animationFinishedLayerIndex);
 
             if (hasHorizontalSpeedParameter)
@@ -172,6 +182,16 @@ namespace Koiusa.SteamMultiRuntime
             if (hasStrafeModeParameter)
             {
                 targetAnimator.SetBool(strafeModeHash, isStrafeMode);
+            }
+
+            if (hasLadderParameter)
+            {
+                targetAnimator.SetBool(ladderHash, isLadder);
+            }
+
+            if (hasLadderSpeedParameter)
+            {
+                targetAnimator.SetFloat(ladderSpeedHash, ladderSpeed);
             }
 
             if (hasAnimationFinishedParameter)
@@ -266,6 +286,8 @@ namespace Koiusa.SteamMultiRuntime
             hasMoveDirectionForwardParameter = !string.IsNullOrWhiteSpace(moveDirectionForwardParameter);
             hasMoveDirectionRightParameter = !string.IsNullOrWhiteSpace(moveDirectionRightParameter);
             hasStrafeModeParameter = !string.IsNullOrWhiteSpace(strafeModeParameter);
+            hasLadderParameter = !string.IsNullOrWhiteSpace(ladderParameter);
+            hasLadderSpeedParameter = !string.IsNullOrWhiteSpace(ladderSpeedParameter);
             hasAnimationFinishedParameter = !string.IsNullOrWhiteSpace(animationFinishedParameter);
 
             horizontalSpeedHash = hasHorizontalSpeedParameter ? Animator.StringToHash(horizontalSpeedParameter) : 0;
@@ -280,6 +302,8 @@ namespace Koiusa.SteamMultiRuntime
             moveDirectionForwardHash = hasMoveDirectionForwardParameter ? Animator.StringToHash(moveDirectionForwardParameter) : 0;
             moveDirectionRightHash = hasMoveDirectionRightParameter ? Animator.StringToHash(moveDirectionRightParameter) : 0;
             strafeModeHash = hasStrafeModeParameter ? Animator.StringToHash(strafeModeParameter) : 0;
+            ladderHash = hasLadderParameter ? Animator.StringToHash(ladderParameter) : 0;
+            ladderSpeedHash = hasLadderSpeedParameter ? Animator.StringToHash(ladderSpeedParameter) : 0;
             animationFinishedHash = hasAnimationFinishedParameter ? Animator.StringToHash(animationFinishedParameter) : 0;
         }
     }
