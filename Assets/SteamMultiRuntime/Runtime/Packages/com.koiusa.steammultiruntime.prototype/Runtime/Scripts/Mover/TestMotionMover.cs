@@ -73,15 +73,18 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
-            var motionTime = GetMotionTime();
             if (!ShouldApplyMotionLocally())
             {
                 return;
             }
 
-            ApplyMotionMatrix(GetMotionMatrix(motionTime));
+            // An authoritative NetworkTransform is not interpolated locally. Moving
+            // it only in FixedUpdate therefore exposes the physics tick cadence on
+            // the host. The motion is analytic, so it is safe to evaluate the same
+            // trajectory once per rendered frame without adding a Rigidbody.
+            ApplyMotionMatrix(GetMotionMatrix(GetMotionTime(false)));
         }
 
         public Vector3 GetPointVelocity(Vector3 samplePoint)
@@ -105,7 +108,7 @@ namespace Koiusa.SteamMultiRuntime
                 return observedMovedPoint - samplePoint;
             }
 
-            var currentTime = GetMotionTime();
+            var currentTime = GetMotionTime(true);
             var previousMatrix = GetMotionMatrix(currentTime - deltaTime);
             var currentMatrix = GetMotionMatrix(currentTime);
             var localPoint = previousMatrix.inverse.MultiplyPoint3x4(samplePoint);
@@ -126,7 +129,7 @@ namespace Koiusa.SteamMultiRuntime
                 return currentObservedRotation * Quaternion.Inverse(previousObservedRotation);
             }
 
-            var currentTime = GetMotionTime();
+            var currentTime = GetMotionTime(true);
             var previousRotation = GetWorldRotation(currentTime - deltaTime);
             var currentRotation = GetWorldRotation(currentTime);
             return currentRotation * Quaternion.Inverse(previousRotation);
@@ -142,11 +145,11 @@ namespace Koiusa.SteamMultiRuntime
             return !IsSpawned || IsServer;
         }
 
-        private float GetMotionTime()
+        private float GetMotionTime(bool useFixedTime)
         {
             if (!IsSpawned || NetworkManager == null || motionStartServerTime.Value <= 0d)
             {
-                return Time.fixedTime;
+                return useFixedTime ? Time.fixedTime : Time.time;
             }
 
             return (float)(NetworkManager.ServerTime.Time - motionStartServerTime.Value);
