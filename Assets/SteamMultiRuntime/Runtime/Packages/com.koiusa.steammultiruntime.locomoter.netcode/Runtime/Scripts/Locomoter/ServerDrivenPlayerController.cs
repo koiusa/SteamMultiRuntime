@@ -107,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private ILadderTraversalFeature ladderTraversalFeature;
+        private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
@@ -174,6 +175,13 @@ namespace Koiusa.SteamMultiRuntime
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
             targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+            presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
+            if (presentationSmoother == null)
+            {
+                presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
+            }
+            presentationSmoother.Initialize(targetRigidbody, this);
 
             motor = GetComponent<PlayerCompositeMotor>();
             if (motor == null)
@@ -291,7 +299,19 @@ namespace Koiusa.SteamMultiRuntime
 
             if (IsServer)
             {
+                // NetworkRigidbody also configures the body during spawn. Depending
+                // on component callback order it can overwrite the value set in
+                // OnNetworkSpawn, exposing MovePosition's fixed-tick steps on a host.
+                // Keep interpolation enabled on the physics authority only; remote
+                // clients continue to use NetworkTransform interpolation.
+                if (targetRigidbody != null &&
+                    targetRigidbody.interpolation != RigidbodyInterpolation.Interpolate)
+                {
+                    targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+                }
+
                 TickServerPhysics();
+                presentationSmoother?.CapturePhysicsPose();
             }
         }
 

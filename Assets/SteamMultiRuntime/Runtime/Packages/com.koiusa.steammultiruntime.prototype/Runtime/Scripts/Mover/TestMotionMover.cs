@@ -23,6 +23,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private MotionType motionType = MotionType.CircleOrbit;
         [SerializeField] private bool useLocalSpace = false;
         [SerializeField] private bool serverAuthoritativeWhenNetworkSpawned = true;
+        [Tooltip("Optional renderer root smoothed between physics ticks on the authority.")]
+        [SerializeField] private Transform presentationTransform;
 
         [Header("Move")]
         [SerializeField] private float amplitude = 1f;
@@ -52,6 +54,8 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 currentObservedPosition;
         private Quaternion currentObservedRotation;
         private float lastObservedSampleTime = -1f;
+        private Matrix4x4 previousPhysicsMatrix;
+        private Matrix4x4 currentPhysicsMatrix;
 
         private void Awake()
         {
@@ -63,6 +67,8 @@ namespace Koiusa.SteamMultiRuntime
             previousObservedRotation = cachedTransform.rotation;
             currentObservedPosition = cachedTransform.position;
             currentObservedRotation = cachedTransform.rotation;
+            previousPhysicsMatrix = Matrix4x4.TRS(cachedTransform.position, cachedTransform.rotation, UnitScale);
+            currentPhysicsMatrix = previousPhysicsMatrix;
         }
 
         public override void OnNetworkSpawn()
@@ -73,18 +79,31 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             if (!ShouldApplyMotionLocally())
             {
                 return;
             }
 
-            // An authoritative NetworkTransform is not interpolated locally. Moving
-            // it only in FixedUpdate therefore exposes the physics tick cadence on
-            // the host. The motion is analytic, so it is safe to evaluate the same
-            // trajectory once per rendered frame without adding a Rigidbody.
-            ApplyMotionMatrix(GetMotionMatrix(GetMotionTime(false)));
+            previousPhysicsMatrix = currentPhysicsMatrix;
+            currentPhysicsMatrix = GetMotionMatrix(GetMotionTime());
+            ApplyMotionMatrix(currentPhysicsMatrix);
+        }
+
+        private void LateUpdate()
+        {
+            if (!ShouldApplyMotionLocally() || presentationTransform == null || Time.fixedDeltaTime <= 0f)
+            {
+                return;
+            }
+
+            // Match Rigidbody interpolation: render between the previous and latest
+            // physics poses while the collider remains entirely in FixedUpdate.
+            var alpha = Mathf.Clamp01((Time.time - Time.fixedTime) / Time.fixedDeltaTime);
+            presentationTransform.SetPositionAndRotation(
+                Vector3.Lerp(previousPhysicsMatrix.GetColumn(3), currentPhysicsMatrix.GetColumn(3), alpha),
+                Quaternion.Slerp(previousPhysicsMatrix.rotation, currentPhysicsMatrix.rotation, alpha));
         }
 
         public Vector3 GetPointVelocity(Vector3 samplePoint)
@@ -108,7 +127,7 @@ namespace Koiusa.SteamMultiRuntime
                 return observedMovedPoint - samplePoint;
             }
 
-            var currentTime = GetMotionTime(true);
+            var currentTime = GetMotionTime();
             var previousMatrix = GetMotionMatrix(currentTime - deltaTime);
             var currentMatrix = GetMotionMatrix(currentTime);
             var localPoint = previousMatrix.inverse.MultiplyPoint3x4(samplePoint);
@@ -129,7 +148,7 @@ namespace Koiusa.SteamMultiRuntime
                 return currentObservedRotation * Quaternion.Inverse(previousObservedRotation);
             }
 
-            var currentTime = GetMotionTime(true);
+            var currentTime = GetMotionTime();
             var previousRotation = GetWorldRotation(currentTime - deltaTime);
             var currentRotation = GetWorldRotation(currentTime);
             return currentRotation * Quaternion.Inverse(previousRotation);
@@ -145,11 +164,11 @@ namespace Koiusa.SteamMultiRuntime
             return !IsSpawned || IsServer;
         }
 
-        private float GetMotionTime(bool useFixedTime)
+        private float GetMotionTime()
         {
             if (!IsSpawned || NetworkManager == null || motionStartServerTime.Value <= 0d)
             {
-                return useFixedTime ? Time.fixedTime : Time.time;
+                return Time.fixedTime;
             }
 
             return (float)(NetworkManager.ServerTime.Time - motionStartServerTime.Value);

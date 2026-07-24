@@ -69,7 +69,9 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            prefabLoader.InstantiateLoaded(owner.transform.position, owner.transform.rotation, owner.transform);
+            var presentationParent = owner.transform.Find("Presentation");
+            var parent = presentationParent != null ? presentationParent : owner.transform;
+            prefabLoader.InstantiateLoaded(parent.position, parent.rotation, parent);
         }
     }
 }
