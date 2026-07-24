@@ -221,6 +221,14 @@ MonoBehaviour:
       NameHash: -91762220
       Synchronize: 1
       ParameterType: 1
+    - name: IsLadder
+      NameHash: 262395049
+      Synchronize: 1
+      ParameterType: 4
+    - name: LadderSpeed
+      NameHash: 1266663940
+      Synchronize: 1
+      ParameterType: 1
   AnimatorParametersExpanded: 0
 --- !u!114 &2404645661678682767
 MonoBehaviour:

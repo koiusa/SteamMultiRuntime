@@ -258,6 +258,11 @@ namespace Koiusa.SteamMultiRuntime
                 GUILayout.Label($"Jumping: {target.playerController.IsJumping}");
                 GUILayout.Label($"Freefall: {target.playerController.IsFreefall}");
                 GUILayout.Label($"FallingAfterJump: {target.playerController.IsFallingAfterJump}");
+                if (target.playerController is IPlayerLadderState ladderState)
+                {
+                    GUILayout.Label($"OnLadder: {ladderState.IsOnLadder}");
+                    GUILayout.Label($"LadderSpeed: {ladderState.LadderSpeed:F3}");
+                }
                 GUILayout.Label($"HorizontalVelocity: {target.playerController.HorizontalVelocity:F3}");
                 GUILayout.Label($"VerticalVelocity: {target.playerController.VerticalVelocity:F3}");
                 GUILayout.Label($"MaxMoveSpeed: {target.playerController.MaxMoveSpeed:F3}");

@@ -65,6 +65,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasAnimationFinishedParameter;
         private IPlayerController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
+        private IPlayerLadderState playerLadderState;
         private Vector3 previousPosition;
 
         private void Reset()
@@ -89,6 +90,7 @@ namespace Koiusa.SteamMultiRuntime
 
             playerController = GetComponentInParent<IPlayerController>();
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
+            playerLadderState = playerController as IPlayerLadderState;
 
             CacheParameterHashes();
             previousPosition = transform.position;
@@ -120,8 +122,12 @@ namespace Koiusa.SteamMultiRuntime
             var moveDirectionForward = Vector3.Dot(moveDirection, transform.forward);
             var moveDirectionRight = Vector3.Dot(moveDirection, transform.right);
             var isStrafeMode = playerController != null && playerController.IsStrafeMode;
-            var isLadder = ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
-            var ladderSpeed = ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
+            var isLadder = playerLadderState != null
+                ? playerLadderState.IsOnLadder
+                : ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
+            var ladderSpeed = playerLadderState != null
+                ? playerLadderState.LadderSpeed
+                : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
             var isAnimationFinished = IsCurrentStateFinished(animationFinishedLayerIndex);
 
             if (hasHorizontalSpeedParameter)

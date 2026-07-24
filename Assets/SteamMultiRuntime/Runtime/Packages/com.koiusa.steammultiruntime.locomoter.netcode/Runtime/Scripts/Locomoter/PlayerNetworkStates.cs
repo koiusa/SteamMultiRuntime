@@ -57,13 +57,17 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping;
         public bool IsFreefall;
         public bool IsFallingAfterJump;
+        public bool IsOnLadder;
+        public float LadderSpeed;
 
-        public PlayerMovementFlagsState(bool isGrounded, bool isJumping, bool isFreefall, bool isFallingAfterJump)
+        public PlayerMovementFlagsState(bool isGrounded, bool isJumping, bool isFreefall, bool isFallingAfterJump, bool isOnLadder, float ladderSpeed)
         {
             IsGrounded = isGrounded;
             IsJumping = isJumping;
             IsFreefall = isFreefall;
             IsFallingAfterJump = isFallingAfterJump;
+            IsOnLadder = isOnLadder;
+            LadderSpeed = ladderSpeed;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -72,6 +76,8 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref IsJumping);
             serializer.SerializeValue(ref IsFreefall);
             serializer.SerializeValue(ref IsFallingAfterJump);
+            serializer.SerializeValue(ref IsOnLadder);
+            serializer.SerializeValue(ref LadderSpeed);
         }
     }
 }
