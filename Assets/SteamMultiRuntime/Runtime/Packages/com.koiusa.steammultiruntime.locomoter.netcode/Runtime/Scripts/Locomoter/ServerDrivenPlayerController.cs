@@ -199,7 +199,12 @@ namespace Koiusa.SteamMultiRuntime
 
             if (targetRigidbody != null)
             {
-                targetRigidbody.isKinematic = false;
+                // Physics is server authoritative. Remote and owning clients are
+                // presentation-only; NetworkTransform applies the interpolated pose.
+                targetRigidbody.isKinematic = !IsServer;
+                targetRigidbody.interpolation = IsServer
+                    ? RigidbodyInterpolation.Interpolate
+                    : RigidbodyInterpolation.None;
             }
 
             // Sync motor settings from server on first spawn
@@ -229,10 +234,6 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 baseInputSource?.Enable();
-            }
-            else
-            {
-                SyncTransformFromNetwork();
             }
         }
 
@@ -277,16 +278,6 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void LateUpdate()
-        {
-            if (!IsSpawned || IsServer)
-            {
-                return;
-            }
-
-            SyncTransformFromNetwork();
-        }
-
         private void FixedUpdate()
         {
             if (!IsSpawned || motor == null)
@@ -297,10 +288,6 @@ namespace Koiusa.SteamMultiRuntime
             if (IsServer)
             {
                 TickServerPhysics();
-            }
-            else if (IsOwner)
-            {
-                TickClientPhysics();
             }
         }
 
@@ -371,39 +358,6 @@ namespace Koiusa.SteamMultiRuntime
                 motor.IsJumping,
                 motor.IsFreefall,
                 motor.IsFallingAfterJump);
-        }
-
-        private void SyncTransformFromNetwork()
-        {
-            if (targetRigidbody != null)
-            {
-                var kinematicState = netKinematicState.Value;
-                targetRigidbody.position = kinematicState.Position;
-                targetRigidbody.rotation = kinematicState.Rotation;
-            }
-        }
-
-        private void TickClientPhysics()
-        {
-            var moveDirection = netInputState.Value.MoveDirection;
-
-            var jumpThisFrame = jumpToken != lastConsumedJumpToken;
-            if (jumpThisFrame)
-            {
-                lastConsumedJumpToken = jumpToken;
-            }
-
-            if (motor != null)
-            {
-                var baseMotor = motor.GetComponent<IPlayerMotor>();
-                if (baseMotor != null)
-                {
-                    // Settings are applied via OnValueChanged callbacks, not every frame
-                    baseMotor.SetStrafeMode(isStrafeMode);
-                }
-            }
-
-            motor.Tick(moveDirection, jumpThisFrame);
         }
 
         private void OnCollisionEnter(Collision collision)
