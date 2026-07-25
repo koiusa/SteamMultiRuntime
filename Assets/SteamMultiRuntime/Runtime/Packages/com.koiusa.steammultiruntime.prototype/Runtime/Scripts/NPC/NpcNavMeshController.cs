@@ -22,7 +22,6 @@ namespace Koiusa.SteamMultiRuntime
         private float corneringInputMaxAngle => steering != null ? steering.CorneringInputMaxAngle : 90f;
         private float arrivalInputMinScale => steering != null ? steering.ArrivalInputMinScale : 0.3f;
         private float steeringUpdateInterval => avoidance != null ? avoidance.UpdateInterval : 0.08f;
-        private bool steeringHoldLastValueBetweenUpdates => avoidance == null || avoidance.HoldLastValueBetweenUpdates;
         private float navCornerDirectionWeight => steering != null ? steering.NavCornerDirectionWeight : 0.65f;
         private float navCornerMinDistance => steering != null ? steering.NavCornerMinDistance : 0.1f;
         private float boidSeparationRadius => avoidance.BoidSeparationRadius;
@@ -286,35 +285,34 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            var now = Time.time;
+            if (now < _nextSteeringUpdateTime)
+            {
+                _inputSource.SetMove(_moveInput);
+                return;
+            }
+
+            _nextSteeringUpdateTime = now + Mathf.Max(0.01f, steeringUpdateInterval);
+
+            // Path corner extraction and neighborhood queries are the expensive part of NPC AI.
+            // Run the complete steering plan at the configured rate instead of once per frame.
             var upAxis = PlayerMotor.GetUpAxis();
             var targetPlanarVelocity = BuildTargetPlanarVelocity(upAxis);
-
-            var now = Time.time;
-            if (now >= _nextSteeringUpdateTime)
+            var rawSteering = targetPlanarVelocity;
+            if (avoidance != null && avoidance.isActiveAndEnabled)
             {
-                _nextSteeringUpdateTime = now + steeringUpdateInterval;
-
-                var rawSteering = targetPlanarVelocity;
-                if (avoidance != null && avoidance.isActiveAndEnabled)
+                switch (avoidance.Mode)
                 {
-                    switch (avoidance.Mode)
-                    {
-                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
-                        rawSteering = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
-                        break;
-                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
-                        rawSteering = BuildRvoSteeringPlanar(upAxis, targetPlanarVelocity);
-                        break;
-                    }
+                case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
+                    rawSteering = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
+                    break;
+                case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
+                    rawSteering = BuildRvoSteeringPlanar(upAxis, targetPlanarVelocity);
+                    break;
                 }
-
-                _cachedRawSteeringPlanar = rawSteering;
-            }
-            else if (!steeringHoldLastValueBetweenUpdates)
-            {
-                _cachedRawSteeringPlanar = targetPlanarVelocity;
             }
 
+            _cachedRawSteeringPlanar = rawSteering;
             var steeringPlanar = ApplySteeringLowPass(upAxis, _cachedRawSteeringPlanar);
             steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
             steeringPlanar = ApplySteeringDeadband(steeringPlanar);
@@ -419,7 +417,7 @@ namespace Koiusa.SteamMultiRuntime
                 return target;
             }
 
-            var dt = Mathf.Max(Time.deltaTime, 0.0001f);
+            var dt = Mathf.Max(Mathf.Max(Time.deltaTime, steeringUpdateInterval), 0.0001f);
             var cutoff = Mathf.Max(0.1f, steeringLowPassCutoffHz);
             var alpha = 1f - Mathf.Exp(-2f * Mathf.PI * cutoff * dt);
             _filteredSteeringPlanar = Vector3.Lerp(_filteredSteeringPlanar, target, alpha);
@@ -433,7 +431,8 @@ namespace Koiusa.SteamMultiRuntime
             if (target.sqrMagnitude <= 0.000001f || current.sqrMagnitude <= 0.000001f)
                 return target;
 
-            var maxTurn = Mathf.Max(1f, steeringMaxTurnDegPerSec) * Time.deltaTime;
+            var maxTurn = Mathf.Max(1f, steeringMaxTurnDegPerSec)
+                * Mathf.Max(Time.deltaTime, steeringUpdateInterval);
             var limited = Vector3.RotateTowards(current.normalized, target.normalized, maxTurn * Mathf.Deg2Rad, 0f);
             return limited * target.magnitude;
         }
@@ -590,7 +589,10 @@ namespace Koiusa.SteamMultiRuntime
             _moveDirection = Vector3.zero;
             _filteredSteeringPlanar = Vector3.zero;
             _cachedRawSteeringPlanar = Vector3.zero;
-            _nextSteeringUpdateTime = 0f;
+            // Spread expensive steering/physics queries across frames. Without this phase,
+            // every NPC spawned in one batch performs its query on the same frame.
+            var phase = (GetInstanceID() & 0x7fffffff) % 997 / 997f;
+            _nextSteeringUpdateTime = Time.time + Mathf.Max(0.01f, steeringUpdateInterval) * phase;
             _avoidanceSideSign = 1f;
             _avoidanceSideLockUntilTime = 0f;
             _jumpToken = 0;
