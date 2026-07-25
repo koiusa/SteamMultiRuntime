@@ -25,18 +25,18 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionLease grappleLease;
         private InputActionLease reelLease;
 
-        public PlayerGameplayInputReader(PlayerInputActionsProfile profile)
+        public PlayerGameplayInputReader(InputActionAssetProfile profile)
         {
             if (profile == null)
             {
                 throw new System.ArgumentNullException(nameof(profile));
             }
 
-            moveAction = profile.MoveInputAction;
-            jumpAction = profile.JumpInputAction;
-            strafeToggleAction = profile.StrafeToggleInputAction;
-            grappleAction = profile.GrappleInputAction;
-            reelAction = profile.ReelInputAction;
+            moveAction = profile.FindAction("Player/Move");
+            jumpAction = profile.FindAction("Player/Jump");
+            strafeToggleAction = profile.FindAction("Player/StrafeToggle");
+            grappleAction = profile.FindAction("Player/Grapple");
+            reelAction = profile.FindAction("Player/Reel");
         }
 
         public void Enable()

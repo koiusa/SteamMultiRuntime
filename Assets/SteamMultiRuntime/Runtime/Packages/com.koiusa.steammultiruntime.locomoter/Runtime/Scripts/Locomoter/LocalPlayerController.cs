@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -9,7 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     public class LocalPlayerController : MonoBehaviour, IPlayerController
     {
         [Header("Input")]
-        [SerializeField] private PlayerInputActionsProfile inputActionsProfile;
+        [SerializeField] private InputActionAssetProfile inputActionsProfile;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -41,7 +42,7 @@ namespace Koiusa.SteamMultiRuntime
         public float VerticalVelocity => motor != null ? motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed => 5f;
 
-        public void SetInputProfile(PlayerInputActionsProfile profile)
+        public void SetInputProfile(InputActionAssetProfile profile)
         {
             if (profile == null)
             {
@@ -81,7 +82,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (inputActionsProfile == null)
             {
-                Debug.LogError("PlayerInputActionsProfile is not assigned.", this);
+                Debug.LogError("Gameplay InputActionAssetProfile is not assigned.", this);
                 enabled = false;
                 return;
             }

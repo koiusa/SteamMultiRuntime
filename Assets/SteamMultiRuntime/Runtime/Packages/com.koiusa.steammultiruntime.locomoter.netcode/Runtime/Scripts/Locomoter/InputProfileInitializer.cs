@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -8,30 +9,12 @@ namespace Koiusa.SteamMultiRuntime
     public static class InputProfileInitializer
     {
         /// <summary>
-        /// Resources フォルダからデフォルトプロファイルをロードして割り当てる
-        /// </summary>
-        public static void InitializeFromResources(
-            LocalPlayerController localController,
-            ServerDrivenPlayerController serverController,
-            string resourcePath = "InputProfiles/DefaultProfile")
-        {
-            var profile = Resources.Load<PlayerInputActionsProfile>(resourcePath);
-            if (profile == null)
-            {
-                Debug.LogError($"Failed to load InputProfile from Resources: {resourcePath}");
-                return;
-            }
-
-            AssignProfile(localController, serverController, profile);
-        }
-
-        /// <summary>
         /// 指定されたプロファイルを複数のプレイヤーコントローラーに割り当てる
         /// </summary>
         public static void AssignProfile(
             LocalPlayerController localController,
             ServerDrivenPlayerController serverController,
-            PlayerInputActionsProfile profile)
+            InputActionAssetProfile profile)
         {
             if (profile == null)
             {
@@ -55,7 +38,7 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public static void AssignProfileToLocalOnly(
             LocalPlayerController localController,
-            PlayerInputActionsProfile profile)
+            InputActionAssetProfile profile)
         {
             if (profile == null)
             {
@@ -74,7 +57,7 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public static void AssignProfileToServerDrivenOnly(
             ServerDrivenPlayerController serverController,
-            PlayerInputActionsProfile profile)
+            InputActionAssetProfile profile)
         {
             if (profile == null)
             {

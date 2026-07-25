@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -10,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
     public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
     {
         [Header("Input")]
-        [SerializeField] private PlayerInputActionsProfile inputActionsProfile;
+        [SerializeField] private InputActionAssetProfile inputActionsProfile;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -75,7 +76,7 @@ namespace Koiusa.SteamMultiRuntime
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
 
-        public void SetInputProfile(PlayerInputActionsProfile profile)
+        public void SetInputProfile(InputActionAssetProfile profile)
         {
             if (profile == null)
             {

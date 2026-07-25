@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d978fe875ed643fc83e268f55cd2c10c, type: 3}
   m_Name: TargetingInputActionsProfile
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingInputActionsProfile
+  purpose: TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。
   assetSource: {fileID: -1680190386980627800, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}

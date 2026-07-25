@@ -215,7 +215,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
-  inputActionsProfile: {fileID: 11400000, guid: 7eca54e9ff221ea498609aef2dbc614d, type: 2}
+  inputActionsProfile: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   cameraTransform: {fileID: 0}
   controlMode: 0
 --- !u!114 &324244260282127880
