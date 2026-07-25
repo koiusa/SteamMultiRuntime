@@ -14,8 +14,7 @@ namespace Koiusa.SteamMultiRuntime
                 "必要な機能だけを追加し、不要な機能はコンポーネントを削除してください。",
                 MessageType.Info);
 
-            var controller = (NpcNavMeshController)target;
-            var gameObject = controller.gameObject;
+            var gameObject = ((NpcNavMeshController)target).gameObject;
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Attached NPC Features", EditorStyles.boldLabel);
@@ -24,19 +23,6 @@ namespace Koiusa.SteamMultiRuntime
             DrawComponentRow<NpcNavMeshSteeringModule>(gameObject, "Steering");
             DrawComponentRow<NpcNavMeshAvoidanceModule>(gameObject, "Avoidance");
             DrawComponentRow<NpcNavMeshJumpModule>(gameObject, "Jump");
-
-            if (Application.isPlaying)
-            {
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Runtime State", EditorStyles.boldLabel);
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.Toggle("Has Path", controller.HasPath);
-                    EditorGUILayout.Toggle("Is Moving", controller.IsMoving);
-                    EditorGUILayout.Toggle("Is Grounded", controller.IsGrounded);
-                    EditorGUILayout.Vector2Field("Move Input", controller.MoveInput);
-                }
-            }
         }
 
         private static void DrawComponentRow<T>(GameObject gameObject, string label) where T : Component

@@ -79,27 +79,20 @@ namespace Koiusa.SteamMultiRuntime
                 EditorGUI.indentLevel++;
                 DrawField(ref currentY, position, property, "JumpForce", "Jump force");
                 DrawField(ref currentY, position, property, "FallMultiplier", "Gravity multiplier while falling");
-                DrawField(ref currentY, position, property, "JumpDetachDuration", "Time to detach from ground after jump");
                 EditorGUI.indentLevel--;
             }
 
-            var groundDetectionFoldout = GetFoldout(property, "GroundDetection", true);
-            groundDetectionFoldout = EditorGUI.Foldout(new Rect(position.x, currentY, position.width, lineHeight), groundDetectionFoldout, "Ground Detection", true);
-            SetFoldout(property, "GroundDetection", groundDetectionFoldout);
+            var groundFoldout = GetFoldout(property, "Ground", false);
+            groundFoldout = EditorGUI.Foldout(new Rect(position.x, currentY, position.width, lineHeight), groundFoldout, "Ground", true);
+            SetFoldout(property, "Ground", groundFoldout);
             currentY += lineHeight;
 
-            if (groundDetectionFoldout)
+            if (groundFoldout)
             {
                 EditorGUI.indentLevel++;
                 DrawField(ref currentY, position, property, "GroundLayer", "Layers considered as ground");
-                DrawField(ref currentY, position, property, "MinGroundNormalDot", "Minimum dot product for ground normal");
-                DrawField(ref currentY, position, property, "GroundedGraceTime", "Time window after contact loss where grounded state may still be retained");
-                DrawField(ref currentY, position, property, "NearbyGroundDistance", "Maximum distance treated as nearby ground for grounded retention");
                 DrawField(ref currentY, position, property, "EnableStepAssist", "Enable small step assist");
                 DrawField(ref currentY, position, property, "StepAssistMaxHeight", "Maximum step height to climb automatically");
-                DrawField(ref currentY, position, property, "StepAssistCheckDistance", "Forward distance used for step check");
-                DrawField(ref currentY, position, property, "StepAssistMinMoveSpeed", "Minimum horizontal speed to trigger step assist");
-                DrawField(ref currentY, position, property, "StepAssistObstacleUpDot", "Maximum obstacle up-dot considered step-like");
                 EditorGUI.indentLevel--;
             }
 
@@ -150,12 +143,12 @@ namespace Koiusa.SteamMultiRuntime
             var movementFoldout = GetFoldout(property, "Movement", true);
             var strafeFoldout = GetFoldout(property, "Strafe", false);
             var jumpFoldout = GetFoldout(property, "Jump", true);
-            var groundDetectionFoldout = GetFoldout(property, "GroundDetection", true);
+            var groundFoldout = GetFoldout(property, "Ground", false);
 
             if (movementFoldout) height += lineHeight * 4;
             if (strafeFoldout) height += lineHeight * 4;
-            if (jumpFoldout) height += lineHeight * 3;
-            if (groundDetectionFoldout) height += lineHeight * 9;
+            if (jumpFoldout) height += lineHeight * 2;
+            if (groundFoldout) height += lineHeight * 3;
 
             return height;
         }

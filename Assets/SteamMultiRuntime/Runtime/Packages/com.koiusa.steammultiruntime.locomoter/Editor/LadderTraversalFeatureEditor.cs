@@ -8,8 +8,6 @@ namespace Koiusa.SteamMultiRuntime
     {
         public override void OnInspectorGUI()
         {
-            var feature = (LadderTraversalFeature)target;
-
             EditorGUILayout.HelpBox(
                 "梯子昇降を処理するコンポーネントです。\n\n" +
                 "シーン上の LadderVolume（Trigger Collider）に侵入すると自動的に昇降モードに入ります。\n" +
@@ -20,15 +18,6 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.Space();
 
             DrawDefaultInspector();
-
-            if (Application.isPlaying)
-            {
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Runtime State", EditorStyles.boldLabel);
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.Toggle("IsOnLadder", feature.IsOnLadder);
-                EditorGUI.EndDisabledGroup();
-            }
         }
     }
 
