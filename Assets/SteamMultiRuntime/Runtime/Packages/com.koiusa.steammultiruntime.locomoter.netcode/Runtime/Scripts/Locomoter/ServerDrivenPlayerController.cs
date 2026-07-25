@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(PlayerCompositeMotor))]
-    public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState
+    public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
     {
         private sealed class InputActionPlayerInputSource : IPlayerInputSource
         {
@@ -107,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private ILadderTraversalFeature ladderTraversalFeature;
+        private IWallRunTraversalFeature wallRunTraversalFeature;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
@@ -125,7 +126,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NetworkVariable<PlayerKinematicState> netKinematicState = new NetworkVariable<PlayerKinematicState>(
             new PlayerKinematicState(Vector3.zero, Quaternion.identity, 0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<PlayerMovementFlagsState> netMovementFlagsState = new NetworkVariable<PlayerMovementFlagsState>(
-            new PlayerMovementFlagsState(true, false, false, false, false, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            new PlayerMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private bool UseLocalMotorState => IsSpawned && IsServer;
 
@@ -135,6 +136,8 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsFallingAfterJump => UseLocalMotorState && motor != null ? motor.IsFallingAfterJump : netMovementFlagsState.Value.IsFallingAfterJump;
         public bool IsOnLadder => UseLocalMotorState ? ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder : netMovementFlagsState.Value.IsOnLadder;
         public float LadderSpeed => UseLocalMotorState && ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : netMovementFlagsState.Value.LadderSpeed;
+        public bool IsWallRunning => UseLocalMotorState ? wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning : netMovementFlagsState.Value.IsWallRunning;
+        public Vector3 WallNormal => UseLocalMotorState && wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : netMovementFlagsState.Value.WallNormal;
         public bool IsStrafeMode => UseLocalMotorState ? isStrafeMode : netInputState.Value.IsStrafeMode;
         public Vector3 InheritedGroundVelocity => UseLocalMotorState && motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => netInputState.Value.MoveInput;
@@ -191,6 +194,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
             ladderTraversalFeature = GetComponent<ILadderTraversalFeature>();
+            wallRunTraversalFeature = GetComponent<IWallRunTraversalFeature>();
 
             if (inputActionsProfile == null)
             {
@@ -384,7 +388,9 @@ namespace Koiusa.SteamMultiRuntime
                 motor.IsFreefall,
                 motor.IsFallingAfterJump,
                 ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder,
-                ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f);
+                ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f,
+                wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning,
+                wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : Vector3.zero);
         }
 
         private void SyncMotorSettingsToNetwork()

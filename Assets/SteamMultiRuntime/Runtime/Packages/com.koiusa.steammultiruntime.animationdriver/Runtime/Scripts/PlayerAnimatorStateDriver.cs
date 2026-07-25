@@ -43,6 +43,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
+        private IPlayerWallRunState playerWallRunState;
         private IWallRunTraversalFeature wallRunTraversalFeature;
         private IPlayerTraversalCoordinator traversalCoordinator;
         private Vector3 previousPosition;
@@ -70,6 +71,7 @@ namespace Koiusa.SteamMultiRuntime
             playerController = GetComponentInParent<IPlayerController>();
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
             playerLadderState = playerController as IPlayerLadderState;
+            playerWallRunState = playerController as IPlayerWallRunState;
             wallRunTraversalFeature = GetComponentInParent<IWallRunTraversalFeature>();
             traversalCoordinator = GetComponentInParent<IPlayerTraversalCoordinator>();
 
@@ -97,18 +99,24 @@ namespace Koiusa.SteamMultiRuntime
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
             var hasTraversalCoordinator = traversalCoordinator != null;
-            var isLadder = hasTraversalCoordinator
-                ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.Ladder
-                : playerLadderState != null
-                    ? playerLadderState.IsOnLadder
+            var isLadder = playerLadderState != null
+                ? playerLadderState.IsOnLadder
+                : hasTraversalCoordinator
+                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.Ladder
                     : ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
             var ladderSpeed = playerLadderState != null
                 ? playerLadderState.LadderSpeed
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
-            var isWallRunning = hasTraversalCoordinator
-                ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
-                : wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
-            var wallNormal = isWallRunning ? wallRunTraversalFeature.WallNormal : Vector3.zero;
+            var isWallRunning = playerWallRunState != null
+                ? playerWallRunState.IsWallRunning
+                : hasTraversalCoordinator
+                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
+                    : wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
+            var wallNormal = isWallRunning
+                ? playerWallRunState != null
+                    ? playerWallRunState.WallNormal
+                    : wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : Vector3.zero
+                : Vector3.zero;
             var useWallRunAnimation = isWallRunning;
             var locomotionMode = isLadder
                 ? PlayerLocomotionAnimationMode.Ladder
