@@ -22,7 +22,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0.1f)] private float minimumRopeLength = 2f;
         [SerializeField, Min(0f)] private float ropeSlack = 0.15f;
         [SerializeField, Min(0f)] private float pullAcceleration = 55f;
-        [SerializeField, Min(0f)] private float swingAcceleration = 24f;
+        [SerializeField, Min(0f)] private float swingAcceleration = 16f;
+        [SerializeField, Min(0f)] private float maximumInputSwingSpeed = 8f;
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
         [SerializeField, Min(0f)] private float releaseBoost = 2.5f;
         [SerializeField, Range(0f, 1f)] private float radialVelocityDamping = 1f;
@@ -39,6 +40,7 @@ namespace Koiusa.SteamMultiRuntime
         private static Material sharedCustomPipelineMaterial;
 
         private Rigidbody rb;
+        private SlopeContactResolver slopeContactResolver;
         private Collider[] ownColliders;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
@@ -61,6 +63,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            slopeContactResolver = GetComponent<SlopeContactResolver>();
             ownColliders = GetComponentsInChildren<Collider>();
             EnsureLineRenderer();
         }
@@ -75,6 +78,7 @@ namespace Koiusa.SteamMultiRuntime
             maximumRange = Mathf.Max(1f, maximumRange);
             minimumRopeLength = Mathf.Max(0.1f, minimumRopeLength);
             ropeSlack = Mathf.Max(0f, ropeSlack);
+            maximumInputSwingSpeed = Mathf.Max(0f, maximumInputSwingSpeed);
             if (lineRenderer != null)
             {
                 ConfigureLineRenderer();
@@ -222,7 +226,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplySwingForce()
         {
-            if (swingAcceleration <= 0f)
+            if (swingAcceleration <= 0f
+                || maximumInputSwingSpeed <= 0f
+                || (slopeContactResolver != null && slopeContactResolver.IsGrounded))
             {
                 return;
             }
@@ -230,7 +236,21 @@ namespace Koiusa.SteamMultiRuntime
             var desired = motorMoveDirection;
             var ropeDirection = (AnchorPoint - rb.worldCenterOfMass).normalized;
             var tangent = Vector3.ProjectOnPlane(desired, ropeDirection);
-            rb.AddForce(tangent * swingAcceleration, ForceMode.Acceleration);
+            if (tangent.sqrMagnitude <= 0.0001f)
+            {
+                return;
+            }
+
+            var tangentialVelocity = Vector3.ProjectOnPlane(rb.linearVelocity, ropeDirection);
+            var targetSpeed = maximumInputSwingSpeed * Mathf.Clamp01(tangent.magnitude);
+            var remainingSpeedRatio = Mathf.Clamp01((targetSpeed - tangentialVelocity.magnitude) / targetSpeed);
+            if (remainingSpeedRatio <= 0f)
+            {
+                return;
+            }
+
+            var accelerationFactor = remainingSpeedRatio * remainingSpeedRatio;
+            rb.AddForce(tangent.normalized * (swingAcceleration * accelerationFactor), ForceMode.Acceleration);
         }
 
         private void ConstrainRope()

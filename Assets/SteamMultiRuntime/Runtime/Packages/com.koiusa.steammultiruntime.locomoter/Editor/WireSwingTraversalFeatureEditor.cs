@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private SerializedProperty ropeSlack;
         private SerializedProperty pullAcceleration;
         private SerializedProperty swingAcceleration;
+        private SerializedProperty maximumInputSwingSpeed;
         private SerializedProperty reelSpeed;
         private SerializedProperty releaseBoost;
         private SerializedProperty radialVelocityDamping;
@@ -36,6 +37,7 @@ namespace Koiusa.SteamMultiRuntime
             ropeSlack = serializedObject.FindProperty("ropeSlack");
             pullAcceleration = serializedObject.FindProperty("pullAcceleration");
             swingAcceleration = serializedObject.FindProperty("swingAcceleration");
+            maximumInputSwingSpeed = serializedObject.FindProperty("maximumInputSwingSpeed");
             reelSpeed = serializedObject.FindProperty("reelSpeed");
             releaseBoost = serializedObject.FindProperty("releaseBoost");
             radialVelocityDamping = serializedObject.FindProperty("radialVelocityDamping");
@@ -90,6 +92,9 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.PropertyField(ropeSlack);
             EditorGUILayout.PropertyField(pullAcceleration);
             EditorGUILayout.PropertyField(swingAcceleration);
+            EditorGUILayout.PropertyField(
+                maximumInputSwingSpeed,
+                new GUIContent("Maximum Input Swing Speed", "移動入力によるスイング加速を停止する接線方向の速度です。重力やワイヤー収縮による速度は制限しません。"));
             EditorGUILayout.PropertyField(reelSpeed);
             EditorGUILayout.PropertyField(releaseBoost);
             EditorGUILayout.PropertyField(radialVelocityDamping);
