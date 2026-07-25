@@ -396,8 +396,8 @@ MonoBehaviour:
     HeightHoldAcceleration: 12
     ArcInitialUpSpeed: 1.5
     ArcGravityMultiplier: 0.45
-    EnterMinimumAlongWallSpeed: 2
-    MaintainMinimumAlongWallSpeed: 1.5
+    EnterMinimumAlongWallSpeed: 4
+    MaintainMinimumAlongWallSpeed: 4
     EnterMinimumAlongWallRatio: 0.45
     MaintainMinimumAlongWallRatio: 0.25
     ExitAwayInputDot: 0.25
