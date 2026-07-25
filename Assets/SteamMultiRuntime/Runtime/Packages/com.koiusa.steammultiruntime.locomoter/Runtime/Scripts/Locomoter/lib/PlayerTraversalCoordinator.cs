@@ -172,7 +172,9 @@ namespace Koiusa.SteamMultiRuntime
                 groundMotionTracker?.ClearGroundContacts();
                 SetState(PlayerTraversalState.WallJump);
             }
-            else if (wallRunFeature != null && wallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
+            else if (CanProcessWallRun(CurrentState)
+                && wallRunFeature != null
+                && wallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
             {
                 velocity = wallVelocity;
                 wallRunApplied = true;
@@ -206,6 +208,14 @@ namespace Koiusa.SteamMultiRuntime
 
             CurrentState = nextState;
             stateEnteredAt = Time.time;
+        }
+
+        private static bool CanProcessWallRun(PlayerTraversalState state)
+        {
+            // WallSlide/Ladder/Cooldownからの直接遷移は禁止する。
+            // WallRunを開始できるのは通常空中状態、または既存WallRunの継続だけ。
+            return state == PlayerTraversalState.Airborne
+                || state == PlayerTraversalState.WallRun;
         }
 
         private static TraversalIntentFlags BuildIntentFlags(Vector2 moveInput, bool jumpRequested, bool isGrounded)
