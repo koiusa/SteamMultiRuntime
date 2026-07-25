@@ -16,7 +16,9 @@ namespace Koiusa.SteamMultiRuntime
     {
         public GameObject LoadedPrefab { get; private set; }
         public GameObject LastInstantiatedObject { get; private set; }
+        public GameObject InstantiatedCharacter => LastInstantiatedObject;
         public bool IsLoaded => LoadedPrefab != null;
+        public bool IsCharacterReady => LastInstantiatedObject != null && LastInstantiatedObject.activeInHierarchy;
 
         public event Action<GameObject> PrefabLoaded;
         public event Action<GameObject> PrefabInstantiated;

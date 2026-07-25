@@ -64,7 +64,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private int loadingScopeCount;
         private bool didUnloadDefaultSceneForLobby;
-        private int directLobbyTransitionScopeCount;
+        private int lobbyTransitionScopeCount;
         private string lobbySceneName;
 
         public event Action LoadingStarted;
@@ -330,22 +330,24 @@ namespace Koiusa.SteamMultiRuntime
                 ? sceneCatalog.stageSceneList.sceneNames
                 : Array.Empty<string>();
 
-        public bool IsDirectLobbyTransitionInProgress => directLobbyTransitionScopeCount > 0;
+        public bool IsLobbyTransitionInProgress => lobbyTransitionScopeCount > 0;
 
-        public void BeginDirectLobbyTransitionScope()
+        public void BeginLobbyTransitionScope()
         {
-            directLobbyTransitionScopeCount++;
+            lobbyTransitionScopeCount++;
+            BeginLoadingScope();
         }
 
-        public void EndDirectLobbyTransitionScope()
+        public void EndLobbyTransitionScope()
         {
-            if (directLobbyTransitionScopeCount <= 0)
+            if (lobbyTransitionScopeCount <= 0)
             {
-                directLobbyTransitionScopeCount = 0;
+                lobbyTransitionScopeCount = 0;
                 return;
             }
 
-            directLobbyTransitionScopeCount--;
+            lobbyTransitionScopeCount--;
+            EndLoadingScope();
         }
     }
 }

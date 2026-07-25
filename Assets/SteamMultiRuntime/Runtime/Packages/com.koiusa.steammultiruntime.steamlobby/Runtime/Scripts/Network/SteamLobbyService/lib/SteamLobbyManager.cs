@@ -140,11 +140,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public async Task<bool> CreateLobbyAsync(string lobbyName, string stageSceneName)
         {
-            var isDirectTransition = IsInLobby;
-            if (isDirectTransition)
-            {
-                transitionScope?.BeginDirectLobbyTransitionScope();
-            }
+            transitionScope?.BeginLobbyTransitionScope();
 
             try
             {
@@ -183,10 +179,7 @@ namespace Koiusa.SteamMultiRuntime
             }
             finally
             {
-                if (isDirectTransition)
-                {
-                    transitionScope?.EndDirectLobbyTransitionScope();
-                }
+                transitionScope?.EndLobbyTransitionScope();
             }
         }
 
@@ -229,11 +222,7 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            var isDirectTransition = IsInLobby;
-            if (isDirectTransition)
-            {
-                transitionScope?.BeginDirectLobbyTransitionScope();
-            }
+            transitionScope?.BeginLobbyTransitionScope();
 
             try
             {
@@ -277,10 +266,7 @@ namespace Koiusa.SteamMultiRuntime
             }
             finally
             {
-                if (isDirectTransition)
-                {
-                    transitionScope?.EndDirectLobbyTransitionScope();
-                }
+                transitionScope?.EndLobbyTransitionScope();
             }
         }
 

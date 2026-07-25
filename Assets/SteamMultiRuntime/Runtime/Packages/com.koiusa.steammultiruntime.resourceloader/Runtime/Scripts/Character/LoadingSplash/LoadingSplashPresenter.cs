@@ -64,18 +64,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var playerPrefab = networkManager.NetworkConfig.PlayerPrefab;
-            if (playerPrefab == null)
-            {
-                return;
-            }
-
-            var prefabCharacterLoader = playerPrefab.GetComponent<ICharacterPrefabLoader>();
-            if (prefabCharacterLoader == null)
-            {
-                return;
-            }
-
             while (owner != null && owner.isActiveAndEnabled && visibilityVersion == getVisibilityVersion())
             {
                 if (networkManager == null || !networkManager.IsListening)
@@ -96,7 +84,7 @@ namespace Koiusa.SteamMultiRuntime
                     return;
                 }
 
-                if (runtimeCharacterLoader.IsLoaded)
+                if (runtimeCharacterLoader.IsCharacterReady)
                 {
                     return;
                 }
@@ -147,7 +135,7 @@ namespace Koiusa.SteamMultiRuntime
                     return;
                 }
 
-                if (runtimeCharacterLoader.IsLoaded)
+                if (runtimeCharacterLoader.IsCharacterReady)
                 {
                     return;
                 }

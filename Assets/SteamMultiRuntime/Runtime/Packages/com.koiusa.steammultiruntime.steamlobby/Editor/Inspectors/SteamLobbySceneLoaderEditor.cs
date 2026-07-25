@@ -218,7 +218,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
 
             EditorGUILayout.LabelField("Runtime", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("Lobby Scene Name", string.IsNullOrWhiteSpace(loader.LobbySceneName) ? "(none)" : loader.LobbySceneName);
-            EditorGUILayout.LabelField("Direct Transition", loader.IsDirectLobbyTransitionInProgress ? "In Progress" : "Idle");
+            EditorGUILayout.LabelField("Lobby Transition", loader.IsLobbyTransitionInProgress ? "In Progress" : "Idle");
         }
 
         private static List<string> GetBuildSceneNameOptions()
