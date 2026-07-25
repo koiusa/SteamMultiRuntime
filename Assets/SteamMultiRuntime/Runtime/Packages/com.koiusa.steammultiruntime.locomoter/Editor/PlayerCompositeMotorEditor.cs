@@ -32,6 +32,22 @@ namespace Koiusa.SteamMultiRuntime
                 EditorGUILayout.ObjectField("PlayerMotor", playerMotor, typeof(PlayerMotor), allowSceneObjects: true);
             }
 
+            var traversalCoordinator = gameObject.GetComponent<PlayerTraversalCoordinator>();
+            EditorGUILayout.ObjectField(
+                "Traversal Coordinator",
+                traversalCoordinator,
+                typeof(PlayerTraversalCoordinator),
+                allowSceneObjects: true);
+
+            if (Application.isPlaying && traversalCoordinator != null)
+            {
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUILayout.EnumPopup("Current State", traversalCoordinator.CurrentState);
+                    EditorGUILayout.FloatField("State Time", traversalCoordinator.StateElapsedTime);
+                }
+            }
+
             DrawComponentRow<WallRunTraversalFeature>(gameObject, "WallRunTraversalFeature");
             DrawComponentRow<WallJumpTraversalFeature>(gameObject, "WallJumpTraversalFeature");
             DrawComponentRow<WallSlideTraversalFeature>(gameObject, "WallSlideTraversalFeature");
