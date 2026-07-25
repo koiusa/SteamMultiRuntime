@@ -25,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float swingAcceleration = 16f;
         [SerializeField, Min(0f)] private float maximumInputSwingSpeed = 8f;
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
+        [SerializeField, Min(0f)] private float jumpReelDistance = 1.5f;
         [SerializeField, Min(0f)] private float releaseBoost = 2.5f;
         [SerializeField, Range(0f, 1f)] private float radialVelocityDamping = 1f;
 
@@ -79,6 +80,7 @@ namespace Koiusa.SteamMultiRuntime
             minimumRopeLength = Mathf.Max(0.1f, minimumRopeLength);
             ropeSlack = Mathf.Max(0f, ropeSlack);
             maximumInputSwingSpeed = Mathf.Max(0f, maximumInputSwingSpeed);
+            jumpReelDistance = Mathf.Max(0f, jumpReelDistance);
             if (lineRenderer != null)
             {
                 ConfigureLineRenderer();
@@ -135,6 +137,16 @@ namespace Koiusa.SteamMultiRuntime
         public void SetReelInput(float reelInput)
         {
             externalReelInput = Mathf.Clamp(reelInput, -1f, 1f);
+        }
+
+        public void ReelByJump()
+        {
+            if (!IsAttached || jumpReelDistance <= 0f)
+            {
+                return;
+            }
+
+            ropeLength = Mathf.Clamp(ropeLength - jumpReelDistance, minimumRopeLength, maximumRange);
         }
 
         public void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float replicatedRopeLength)

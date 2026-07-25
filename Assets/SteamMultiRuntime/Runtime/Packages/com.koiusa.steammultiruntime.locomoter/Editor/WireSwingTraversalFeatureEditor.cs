@@ -19,6 +19,7 @@ namespace Koiusa.SteamMultiRuntime
         private SerializedProperty swingAcceleration;
         private SerializedProperty maximumInputSwingSpeed;
         private SerializedProperty reelSpeed;
+        private SerializedProperty jumpReelDistance;
         private SerializedProperty releaseBoost;
         private SerializedProperty radialVelocityDamping;
         private SerializedProperty lineRenderer;
@@ -39,6 +40,7 @@ namespace Koiusa.SteamMultiRuntime
             swingAcceleration = serializedObject.FindProperty("swingAcceleration");
             maximumInputSwingSpeed = serializedObject.FindProperty("maximumInputSwingSpeed");
             reelSpeed = serializedObject.FindProperty("reelSpeed");
+            jumpReelDistance = serializedObject.FindProperty("jumpReelDistance");
             releaseBoost = serializedObject.FindProperty("releaseBoost");
             radialVelocityDamping = serializedObject.FindProperty("radialVelocityDamping");
             lineRenderer = serializedObject.FindProperty("lineRenderer");
@@ -96,6 +98,9 @@ namespace Koiusa.SteamMultiRuntime
                 maximumInputSwingSpeed,
                 new GUIContent("Maximum Input Swing Speed", "移動入力によるスイング加速を停止する接線方向の速度です。重力やワイヤー収縮による速度は制限しません。"));
             EditorGUILayout.PropertyField(reelSpeed);
+            EditorGUILayout.PropertyField(
+                jumpReelDistance,
+                new GUIContent("Jump Reel Distance", "空中でワイヤー接続中にJumpを押したとき、1回につき短くする距離です。"));
             EditorGUILayout.PropertyField(releaseBoost);
             EditorGUILayout.PropertyField(radialVelocityDamping);
         }

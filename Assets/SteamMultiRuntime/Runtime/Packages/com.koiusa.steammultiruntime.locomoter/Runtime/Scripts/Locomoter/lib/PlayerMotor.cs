@@ -170,6 +170,20 @@ namespace Koiusa.SteamMultiRuntime
 
             var isWireSwinging = IsWireSwinging;
             wireSwingFeature?.SetMoveDirection(moveDirection);
+            if (isWireSwinging && jumpRequested)
+            {
+                if (slopeContactResolver.IsGrounded)
+                {
+                    wireSwingFeature.Detach(false);
+                    isWireSwinging = false;
+                }
+                else
+                {
+                    wireSwingFeature.ReelByJump();
+                    jumpRequested = false;
+                }
+            }
+
             var canUseGroundContacts = Time.time >= jumpDetachUntilTime;
             var hasGroundContact = !isWireSwinging && canUseGroundContacts && slopeContactResolver.IsGrounded;
             var isGrounded = !isWireSwinging && grounding != null && grounding.ResolveGroundedState(
@@ -251,16 +265,6 @@ namespace Koiusa.SteamMultiRuntime
                 settings,
                 forcedStrafeMode);
             rb.MoveRotation(nextRotation);
-
-            if (isWireSwinging && jumpRequested)
-            {
-                wireSwingFeature.Detach(true);
-                isWireSwinging = false;
-                jumpRequested = false;
-                jumpDetachUntilTime = Time.time + settings.JumpDetachDuration;
-                groundMotionTracker.ClearGroundContacts();
-                slopeContactResolver.Clear();
-            }
 
             var jumpResult = PlayerMotorJumpLogic.ApplyJumpIfRequested(
                 jumpRequested,
