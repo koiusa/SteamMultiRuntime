@@ -93,6 +93,7 @@ namespace Koiusa.SteamMultiRuntime
             "WallSlideGravityMultiplier",
             "WallSlideMaxFallSpeed",
             "WallSlideMinDownSpeed",
+            "AllowWallSlideLateralMovement",
         };
 
         protected override string[] VisibleProperties => Properties;

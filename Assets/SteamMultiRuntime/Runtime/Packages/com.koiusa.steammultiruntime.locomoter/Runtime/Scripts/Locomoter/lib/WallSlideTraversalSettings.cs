@@ -9,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime
         public float WallSlideMinDownSpeed;
         public int WallSlideStartContactFrames;
         public float WallSlideExitMoveOppositeNormalDot;
+        public bool AllowWallSlideLateralMovement;
         public float WallSlideAwayFromWallMinSpeed;
 
         public static WallSlideTraversalSettings CreateDefault()
@@ -21,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallSlideMinDownSpeed = 1.5f,
                 WallSlideStartContactFrames = 2,
                 WallSlideExitMoveOppositeNormalDot = 0.3f,
+                AllowWallSlideLateralMovement = false,
                 WallSlideAwayFromWallMinSpeed = 0.15f,
             };
         }

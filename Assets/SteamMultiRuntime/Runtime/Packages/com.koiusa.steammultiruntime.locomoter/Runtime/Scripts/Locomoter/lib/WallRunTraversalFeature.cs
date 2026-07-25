@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool wallRunGateClosed;
         private float wallRunInputReleaseUntilTime;
         private float wallRunEntryHorizontalSpeed;
+        private Vector3 wallRunDirection;
         private bool isInputReleaseGraceActive;
         private bool applyArcImpulse;
 
@@ -69,6 +70,7 @@ namespace Koiusa.SteamMultiRuntime
             wallRunGateClosed = false;
             wallRunInputReleaseUntilTime = 0f;
             wallRunEntryHorizontalSpeed = 0f;
+            wallRunDirection = Vector3.zero;
             isInputReleaseGraceActive = false;
             applyArcImpulse = false;
         }
@@ -81,6 +83,7 @@ namespace Koiusa.SteamMultiRuntime
             wallRunGateClosed = true;
             wallRunInputReleaseUntilTime = 0f;
             wallRunEntryHorizontalSpeed = 0f;
+            wallRunDirection = Vector3.zero;
             isInputReleaseGraceActive = false;
             applyArcImpulse = false;
         }
@@ -136,9 +139,10 @@ namespace Koiusa.SteamMultiRuntime
             if (!wasWallRunning)
             {
                 wallRunEntryHorizontalSpeed = Vector3.ProjectOnPlane(velocity, upAxis).magnitude;
+                wallRunDirection = ResolveEntryWallDirection(velocity, moveDirection, upAxis, wallNormal);
                 applyArcImpulse = true;
             }
-            nextVelocity = AccelerateOnWall(velocity, moveDirection, upAxis, wallNormal);
+            nextVelocity = AccelerateOnWall(velocity, upAxis, wallNormal);
             return true;
         }
 
@@ -199,7 +203,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            if (IsMoveInputAwayFromWall(moveDirection, upAxis, wallNormal))
+            if (!IsWallRunning && IsMoveInputAwayFromWall(moveDirection, upAxis, wallNormal))
             {
                 return false;
             }
@@ -299,19 +303,18 @@ namespace Koiusa.SteamMultiRuntime
             return slopeContactResolver.TryGetObstacleNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
         }
 
-        private Vector3 AccelerateOnWall(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
+        private Vector3 AccelerateOnWall(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
         {
             var verticalSpeed = Vector3.Dot(velocity, upAxis);
             var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
             var wallTangentVelocity = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal);
-            var horizontalWallDirection = Vector3.ProjectOnPlane(moveDirection, upAxis);
             var fallbackDirection = Vector3.Cross(upAxis, wallNormal).normalized;
             if (fallbackDirection.sqrMagnitude <= 0.0001f)
             {
                 fallbackDirection = Vector3.ProjectOnPlane(rb.rotation * Vector3.forward, upAxis).normalized;
             }
 
-            var alongWallDirection = Vector3.ProjectOnPlane(horizontalWallDirection, wallNormal);
+            var alongWallDirection = Vector3.ProjectOnPlane(wallRunDirection, wallNormal);
             if (alongWallDirection.sqrMagnitude <= 0.0001f)
             {
                 alongWallDirection = fallbackDirection;
@@ -328,6 +331,28 @@ namespace Koiusa.SteamMultiRuntime
             var nextWallVelocity = Vector3.MoveTowards(wallTangentVelocity, targetWallVelocity, settings.WallRunAcceleration * Time.fixedDeltaTime);
             nextWallVelocity = Vector3.ClampMagnitude(nextWallVelocity, targetSpeed);
             return nextWallVelocity + upAxis * verticalSpeed;
+        }
+
+        private Vector3 ResolveEntryWallDirection(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
+        {
+            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
+            var entryDirection = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal);
+            if (entryDirection.sqrMagnitude > 0.0001f)
+            {
+                return entryDirection.normalized;
+            }
+
+            var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
+            entryDirection = Vector3.ProjectOnPlane(horizontalInput, wallNormal);
+            if (entryDirection.sqrMagnitude > 0.0001f)
+            {
+                return entryDirection.normalized;
+            }
+
+            var fallback = Vector3.Cross(upAxis, wallNormal);
+            return fallback.sqrMagnitude > 0.0001f
+                ? fallback.normalized
+                : Vector3.ProjectOnPlane(rb.rotation * Vector3.forward, upAxis).normalized;
         }
 
         private static bool IsSettingsEmpty(WallRunTraversalSettings s)

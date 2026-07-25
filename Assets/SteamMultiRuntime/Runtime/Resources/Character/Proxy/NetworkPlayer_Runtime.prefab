@@ -368,6 +368,7 @@ MonoBehaviour:
     WallSlideMinDownSpeed: 1.5
     WallSlideStartContactFrames: 2
     WallSlideExitMoveOppositeNormalDot: 0.3
+    AllowWallSlideLateralMovement: 0
     WallSlideAwayFromWallMinSpeed: 0.15
 --- !u!114 &4686477341842054326
 MonoBehaviour:

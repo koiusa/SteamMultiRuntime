@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         public float WallSlideMinDownSpeed;
         public int WallSlideStartContactFrames;
         public float WallSlideExitMoveOppositeNormalDot;
+        public bool AllowWallSlideLateralMovement;
         public float WallSlideAwayFromWallMinSpeed;
 
         public static WallSlideTraversalSettingsNetData FromCore(WallSlideTraversalSettings s)
@@ -25,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallSlideMinDownSpeed = s.WallSlideMinDownSpeed,
                 WallSlideStartContactFrames = s.WallSlideStartContactFrames,
                 WallSlideExitMoveOppositeNormalDot = s.WallSlideExitMoveOppositeNormalDot,
+                AllowWallSlideLateralMovement = s.AllowWallSlideLateralMovement,
                 WallSlideAwayFromWallMinSpeed = s.WallSlideAwayFromWallMinSpeed,
             };
         }
@@ -39,6 +41,7 @@ namespace Koiusa.SteamMultiRuntime
                 WallSlideMinDownSpeed = WallSlideMinDownSpeed,
                 WallSlideStartContactFrames = WallSlideStartContactFrames,
                 WallSlideExitMoveOppositeNormalDot = WallSlideExitMoveOppositeNormalDot,
+                AllowWallSlideLateralMovement = AllowWallSlideLateralMovement,
                 WallSlideAwayFromWallMinSpeed = WallSlideAwayFromWallMinSpeed,
             };
         }
@@ -51,6 +54,7 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallSlideMinDownSpeed);
             serializer.SerializeValue(ref WallSlideStartContactFrames);
             serializer.SerializeValue(ref WallSlideExitMoveOppositeNormalDot);
+            serializer.SerializeValue(ref AllowWallSlideLateralMovement);
             serializer.SerializeValue(ref WallSlideAwayFromWallMinSpeed);
         }
     }

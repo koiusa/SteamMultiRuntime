@@ -105,7 +105,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var horizontalMoveDirection = Vector3.ProjectOnPlane(moveDirection, upAxis);
-            if (horizontalMoveDirection.sqrMagnitude > 0.0001f)
+            if (settings.AllowWallSlideLateralMovement && horizontalMoveDirection.sqrMagnitude > 0.0001f)
             {
                 var moveIntoWallDot = Vector3.Dot(horizontalMoveDirection.normalized, wallNormal);
                 if (moveIntoWallDot >= settings.WallSlideExitMoveOppositeNormalDot)
@@ -126,11 +126,10 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            // Sliding only controls the vertical component. The wall-tangent component
-            // remains steerable, but state promotion to WallRun requires leaving the wall
-            // and entering it again so camera rotation alone cannot change the state.
             var wallTangentVelocity = Vector3.ProjectOnPlane(velocity, wallNormal);
-            var horizontalWallVelocity = Vector3.ProjectOnPlane(wallTangentVelocity, upAxis);
+            var horizontalWallVelocity = settings.AllowWallSlideLateralMovement
+                ? Vector3.ProjectOnPlane(wallTangentVelocity, upAxis)
+                : Vector3.zero;
             nextVelocity = horizontalWallVelocity + upAxis * verticalSpeed;
             nextVelocity += Physics.gravity * settings.WallSlideGravityMultiplier * Time.fixedDeltaTime;
             verticalSpeed = Vector3.Dot(nextVelocity, upAxis);

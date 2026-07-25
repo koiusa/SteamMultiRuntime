@@ -214,7 +214,8 @@ namespace Koiusa.SteamMultiRuntime
                     settings,
                     forcedStrafeMode);
             }
-            else if (!isWireSwinging)
+            else if (!isWireSwinging
+                && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive))
             {
                 velocity = PlayerMotorMovementLogic.AccelerateInAir(
                     velocity,
@@ -226,14 +227,20 @@ namespace Koiusa.SteamMultiRuntime
                     forcedStrafeMode);
             }
 
-            var nextRotation = PlayerMotorMovementLogic.CalculateRotation(
-                rb.rotation,
-                moveDirection,
-                upAxis,
-                groundRotationDelta,
-                settings,
-                forcedStrafeMode);
-            rb.MoveRotation(nextRotation);
+            var preserveWallRunFacing = traversalCoordinator != null
+                && traversalCoordinator.IsEnabled
+                && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun;
+            if (!preserveWallRunFacing)
+            {
+                var nextRotation = PlayerMotorMovementLogic.CalculateRotation(
+                    rb.rotation,
+                    moveDirection,
+                    upAxis,
+                    groundRotationDelta,
+                    settings,
+                    forcedStrafeMode);
+                rb.MoveRotation(nextRotation);
+            }
 
             var jumpResult = PlayerMotorJumpLogic.ApplyJumpIfRequested(
                 jumpRequested,
