@@ -525,7 +525,8 @@ MonoBehaviour:
   refreshInterval: 1
   labelWidth: 88
   labelHeight: 24
-  billboardToCamera: 1
+  fadeStartDistance: 8
+  fadeEndDistance: 20
   labelTemplateAsset: {fileID: 9197481963319205126, guid: 4d95a541045261a44b18f3fc9c1582f7, type: 3}
   overlayStyleSheet: {fileID: 7433441132597879392, guid: 928de3804a42d3e4db9c03c72e72c92f, type: 3}
 --- !u!1 &6633480341467278721
