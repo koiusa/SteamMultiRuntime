@@ -21,7 +21,7 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 LocalOffset = Vector3.zero;
 
         [Tooltip("Minimum interval between footstep sounds from this collider (s)")]
-        public float MinInterval = 0.1f;
+        public float MinInterval = 0.2f;
 
         [Tooltip("Layer mask to treat as ground for footstep detection")]
         public LayerMask GroundLayers = ~0;
@@ -96,6 +96,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool _hasSpeedParam;
         private bool _hasLocomotionModeParam;
         private bool _hasFallSpeedParam;
+        private float _lastFootstepTime = -10f;
         private float _lastLandTime = -10f;
         private bool _hasGroundedState;
         private bool _prevGrounded;
@@ -290,10 +291,12 @@ namespace Koiusa.SteamMultiRuntime
             if (TargetAnimator == null) return;
             if (_hasSpeedParam && TargetAnimator.GetFloat(_animIDSpeed) < MinFootstepSpeed) return;
             if (RequireGroundedForFootstep && _hasLocomotionModeParam && !IsAnimatorGrounded()) return;
+            if (Time.time - _lastFootstepTime < MinInterval) return;
 
             var source = FootstepAudioSource;
             if (source == null) return;
 
+            _lastFootstepTime = Time.time;
             ConfigureAudioSource(source);
             source.volume = FootstepAudioVolume;
             source.maxDistance = Mathf.Max(source.minDistance + 0.01f, MaxDistance);

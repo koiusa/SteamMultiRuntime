@@ -4734,7 +4734,7 @@ MonoBehaviour:
   ControllerComponent: {fileID: 4422059915226684}
   ColliderRadius: 0.08
   LocalOffset: {x: 0, y: 0, z: 0}
-  MinInterval: 0.1
+  MinInterval: 0.2
   GroundLayers:
     serializedVersion: 2
     m_Bits: 4294967295
