@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 520936048
+  GlobalObjectIdHash: 4256716526
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -173,6 +173,10 @@ MonoBehaviour:
       NameHash: -823668238
       Synchronize: 1
       ParameterType: 1
+    - name: Elevation
+      NameHash: -1092892638
+      Synchronize: 1
+      ParameterType: 1
     - name: IsJumping
       NameHash: 1749078233
       Synchronize: 1
@@ -191,10 +195,6 @@ MonoBehaviour:
       ParameterType: 4
     - name: MotionSpeed
       NameHash: 1939466105
-      Synchronize: 1
-      ParameterType: 1
-    - name: Elevation
-      NameHash: -1092892638
       Synchronize: 1
       ParameterType: 1
     - name: IsAnimationFinished
