@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private int wallContactStreak;
         private bool wallRunGateClosed;
         private float wallRunInputReleaseUntilTime;
+        private float wallRunEntryHorizontalSpeed;
         private bool isInputReleaseGraceActive;
         private bool applyArcImpulse;
 
@@ -67,6 +68,7 @@ namespace Koiusa.SteamMultiRuntime
             wallContactStreak = 0;
             wallRunGateClosed = false;
             wallRunInputReleaseUntilTime = 0f;
+            wallRunEntryHorizontalSpeed = 0f;
             isInputReleaseGraceActive = false;
             applyArcImpulse = false;
         }
@@ -78,6 +80,7 @@ namespace Koiusa.SteamMultiRuntime
             wallContactStreak = 0;
             wallRunGateClosed = true;
             wallRunInputReleaseUntilTime = 0f;
+            wallRunEntryHorizontalSpeed = 0f;
             isInputReleaseGraceActive = false;
             applyArcImpulse = false;
         }
@@ -132,6 +135,7 @@ namespace Koiusa.SteamMultiRuntime
             WallNormal = wallNormal;
             if (!wasWallRunning)
             {
+                wallRunEntryHorizontalSpeed = Vector3.ProjectOnPlane(velocity, upAxis).magnitude;
                 applyArcImpulse = true;
             }
             nextVelocity = AccelerateOnWall(velocity, moveDirection, upAxis, wallNormal);
@@ -166,7 +170,10 @@ namespace Koiusa.SteamMultiRuntime
                         var initialUpSpeed = settings.ArcInitialUpSpeed > 0f
                             ? settings.ArcInitialUpSpeed
                             : WallRunTraversalSettings.CreateDefault().ArcInitialUpSpeed;
-                        verticalSpeed = Mathf.Max(verticalSpeed, initialUpSpeed);
+                        var configuredRunSpeed = Mathf.Max(0.001f, settings.WallRunSpeed);
+                        var entrySpeedRatio = Mathf.Clamp01(wallRunEntryHorizontalSpeed / configuredRunSpeed);
+                        var arcImpulseFactor = entrySpeedRatio * entrySpeedRatio;
+                        verticalSpeed = Mathf.Max(verticalSpeed, initialUpSpeed * arcImpulseFactor);
                         applyArcImpulse = false;
                     }
 
@@ -309,8 +316,12 @@ namespace Koiusa.SteamMultiRuntime
                 alongWallDirection = alongWallDirection.normalized;
             }
 
-            var targetWallVelocity = alongWallDirection * settings.WallRunSpeed;
+            var targetSpeed = Mathf.Min(
+                Mathf.Max(0f, settings.WallRunSpeed),
+                Mathf.Max(0f, wallRunEntryHorizontalSpeed));
+            var targetWallVelocity = alongWallDirection * targetSpeed;
             var nextWallVelocity = Vector3.MoveTowards(wallTangentVelocity, targetWallVelocity, settings.WallRunAcceleration * Time.fixedDeltaTime);
+            nextWallVelocity = Vector3.ClampMagnitude(nextWallVelocity, targetSpeed);
             return nextWallVelocity + upAxis * verticalSpeed;
         }
 
