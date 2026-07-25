@@ -135,7 +135,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
             }
-            presentationSmoother.Initialize(targetRigidbody, this);
+            presentationSmoother.Initialize(targetRigidbody);
 
             motor = GetComponent<PlayerCompositeMotor>();
             if (motor == null)

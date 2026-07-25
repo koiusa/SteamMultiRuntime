@@ -8,7 +8,6 @@ namespace Koiusa.SteamMultiRuntime
         private const string PresentationRootName = "Presentation";
 
         private Rigidbody targetRigidbody;
-        private ServerDrivenPlayerController controller;
         private Transform presentationRoot;
         private Vector3 previousPosition;
         private Vector3 currentPosition;
@@ -16,16 +15,15 @@ namespace Koiusa.SteamMultiRuntime
         private Quaternion currentRotation;
         private bool hasPhysicsSample;
 
-        public void Initialize(Rigidbody body, ServerDrivenPlayerController playerController)
+        public void Initialize(Rigidbody body)
         {
             targetRigidbody = body;
-            controller = playerController;
             EnsurePresentationRoot();
         }
 
         public void CapturePhysicsPose()
         {
-            if (targetRigidbody == null || controller == null || !controller.IsSpawned || !controller.IsServer)
+            if (targetRigidbody == null)
             {
                 return;
             }

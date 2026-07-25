@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody targetRigidbody;
         private PlayerGameplayInputReader inputSource;
         private PlayerCompositeMotor motor;
+        private PhysicsPresentationSmoother presentationSmoother;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private IWireSwingTraversalFeature wireSwingFeature;
         private Vector3 moveDirection;
@@ -70,6 +71,14 @@ namespace Koiusa.SteamMultiRuntime
         {
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
+            targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+            presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
+            if (presentationSmoother == null)
+            {
+                presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
+            }
+            presentationSmoother.Initialize(targetRigidbody);
 
             motor = GetComponent<PlayerCompositeMotor>();
             if (motor == null)
@@ -175,6 +184,7 @@ namespace Koiusa.SteamMultiRuntime
             moveInputReceiver?.SetMoveInput(moveInput);
             moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);
             motor.Tick(moveDirection, jumpThisFrame);
+            presentationSmoother?.CapturePhysicsPose();
             if (jumpThisFrame && grappleHeld)
             {
                 blockGrappleUntilRelease = true;
