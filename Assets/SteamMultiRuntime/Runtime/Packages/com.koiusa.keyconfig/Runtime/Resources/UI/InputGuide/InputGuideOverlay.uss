@@ -1,0 +1,55 @@
+.input-guide-screen {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    width: 330px;
+}
+
+.input-guide-panel {
+    padding: 14px;
+    background-color: rgba(9, 14, 23, 0.88);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(145, 175, 215, 0.22);
+    border-right-color: rgba(145, 175, 215, 0.22);
+    border-top-color: rgba(145, 175, 215, 0.22);
+    border-bottom-color: rgba(145, 175, 215, 0.22);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.input-guide-header { flex-direction: row; align-items: center; height: 34px; }
+.input-guide-accent { width: 3px; height: 28px; margin-right: 9px; background-color: rgb(77, 219, 164); border-top-left-radius: 2px; border-top-right-radius: 2px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+.input-guide-title { font-size: 13px; -unity-font-style: bold; letter-spacing: 2px; color: rgb(238, 245, 255); }
+.input-guide-map { margin-top: -2px; font-size: 9px; color: rgb(116, 141, 173); }
+.input-guide-spacer { flex-grow: 1; }
+.input-guide-device { padding-left: 7px; padding-right: 7px; padding-top: 4px; padding-bottom: 4px; font-size: 9px; -unity-font-style: bold; color: rgb(149, 174, 205); background-color: rgba(90, 120, 160, 0.16); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+.input-guide-divider { height: 1px; margin-top: 9px; margin-bottom: 7px; background-color: rgba(160, 190, 225, 0.13); }
+.input-guide-list { max-height: 390px; }
+
+.input-guide-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 36px;
+    margin-top: 2px;
+    padding-left: 7px;
+    padding-right: 7px;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.025);
+}
+
+.input-guide-row.active { background-color: rgba(48, 206, 145, 0.18); border-left-color: rgb(70, 235, 165); }
+.input-guide-icon { width: 24px; height: 24px; margin-right: 6px; flex-shrink: 0; }
+.input-guide-key { min-width: 65px; max-width: 82px; font-size: 11px; -unity-font-style: bold; color: rgb(205, 221, 243); overflow: hidden; }
+.input-guide-action { flex-grow: 1; font-size: 11px; color: rgb(161, 180, 205); overflow: hidden; }
+.input-guide-state { width: 34px; font-size: 8px; -unity-font-style: bold; -unity-text-align: middle-right; color: rgb(76, 238, 171); }
+.input-guide-footer { margin-top: 9px; font-size: 8px; letter-spacing: 1px; -unity-text-align: middle-right; color: rgb(76, 109, 143); }

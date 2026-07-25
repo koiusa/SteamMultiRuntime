@@ -351,9 +351,7 @@ namespace Koiusa.Keyconfig.Runtime
                         Entry = entry,
                         Row = row,
                         StateLabel = inputStateLabel,
-                        Control = string.IsNullOrWhiteSpace(entry.BindingPath)
-                            ? null
-                            : InputSystem.FindControl(entry.BindingPath)
+                        Control = InputControlActivity.Resolve(entry.BindingPath)
                     });
                 }
             }
@@ -366,7 +364,7 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 var item = inputStateRows[i];
                 var magnitude = item.Control?.EvaluateMagnitude() ?? 0f;
-                var isActive = magnitude >= 0.15f;
+                var isActive = InputControlActivity.IsActive(item.Control);
 
                 // Some controls do not expose a magnitude. Keep action-level input visible
                 // as a fallback for custom controls and processor-driven bindings.

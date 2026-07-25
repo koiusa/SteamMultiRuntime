@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 4256716526
+  GlobalObjectIdHash: 520936048
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -468,10 +468,14 @@ MonoBehaviour:
     DirectionalDetachReattachDelay: 0
     JumpDetachReattachDelay: 0.12
     WallTraversalBlockDuration: 0.3
-    ClimbAxisLockEnterThreshold: 0.2
     LateralDetachInputThreshold: 0.2
     GroundEnterDetachGraceTime: 0.2
     FacingRotationSpeed: 720
+    SideViewEnterFaceAlignment: 0
+    SideViewExitFaceAlignment: 0
+    LateralMoveSpeed: 0
+    LateralMoveAcceleration: 0
+    LateralEdgePadding: 0
 --- !u!114 &2911529315059979141
 MonoBehaviour:
   m_ObjectHideFlags: 0

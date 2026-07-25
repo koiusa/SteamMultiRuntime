@@ -7,10 +7,14 @@ namespace Koiusa.Keyconfig.Runtime
     public class InputActionAssetResolver : ScriptableObject
     {
         [SerializeField] private InputActionAsset inputActionAsset;
+        [Tooltip("Optional fallback. The owning InputActionAsset is resolved from this action.")]
+        [SerializeField] private InputActionReference inputActionReference;
 
         public InputActionAsset Resolve()
         {
-            return inputActionAsset;
+            return inputActionAsset != null
+                ? inputActionAsset
+                : inputActionReference?.action?.actionMap?.asset;
         }
     }
 }
