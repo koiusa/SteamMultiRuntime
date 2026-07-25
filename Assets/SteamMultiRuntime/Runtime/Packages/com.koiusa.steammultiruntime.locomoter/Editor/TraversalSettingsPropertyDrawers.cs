@@ -56,6 +56,10 @@ namespace Koiusa.SteamMultiRuntime
         {
             "WallRunSpeed",
             "WallRunAcceleration",
+            "EnterMinimumAlongWallSpeed",
+            "MaintainMinimumAlongWallSpeed",
+            "EnterMinimumAlongWallRatio",
+            "MaintainMinimumAlongWallRatio",
             "VerticalMotionMode",
             "WallRunGravityMultiplier",
             "WallRunMaxFallSpeed",

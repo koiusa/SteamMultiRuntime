@@ -19,8 +19,10 @@ namespace Koiusa.SteamMultiRuntime
         public float HeightHoldAcceleration;
         public float ArcInitialUpSpeed;
         public float ArcGravityMultiplier;
-        public float EnterAlongWallInput;
-        public float MaintainAlongWallInput;
+        public float EnterMinimumAlongWallSpeed;
+        public float MaintainMinimumAlongWallSpeed;
+        public float EnterMinimumAlongWallRatio;
+        public float MaintainMinimumAlongWallRatio;
         public float ExitAwayInputDot;
         public float MinimumMoveInputMagnitude;
 
@@ -40,8 +42,10 @@ namespace Koiusa.SteamMultiRuntime
                 HeightHoldAcceleration = s.HeightHoldAcceleration,
                 ArcInitialUpSpeed = s.ArcInitialUpSpeed,
                 ArcGravityMultiplier = s.ArcGravityMultiplier,
-                EnterAlongWallInput = s.EnterAlongWallInput,
-                MaintainAlongWallInput = s.MaintainAlongWallInput,
+                EnterMinimumAlongWallSpeed = s.EnterMinimumAlongWallSpeed,
+                MaintainMinimumAlongWallSpeed = s.MaintainMinimumAlongWallSpeed,
+                EnterMinimumAlongWallRatio = s.EnterMinimumAlongWallRatio,
+                MaintainMinimumAlongWallRatio = s.MaintainMinimumAlongWallRatio,
                 ExitAwayInputDot = s.ExitAwayInputDot,
                 MinimumMoveInputMagnitude = s.MinimumMoveInputMagnitude,
             };
@@ -63,8 +67,10 @@ namespace Koiusa.SteamMultiRuntime
                 HeightHoldAcceleration = HeightHoldAcceleration,
                 ArcInitialUpSpeed = ArcInitialUpSpeed,
                 ArcGravityMultiplier = ArcGravityMultiplier,
-                EnterAlongWallInput = EnterAlongWallInput,
-                MaintainAlongWallInput = MaintainAlongWallInput,
+                EnterMinimumAlongWallSpeed = EnterMinimumAlongWallSpeed,
+                MaintainMinimumAlongWallSpeed = MaintainMinimumAlongWallSpeed,
+                EnterMinimumAlongWallRatio = EnterMinimumAlongWallRatio,
+                MaintainMinimumAlongWallRatio = MaintainMinimumAlongWallRatio,
                 ExitAwayInputDot = ExitAwayInputDot,
                 MinimumMoveInputMagnitude = MinimumMoveInputMagnitude,
             };
@@ -84,8 +90,10 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref HeightHoldAcceleration);
             serializer.SerializeValue(ref ArcInitialUpSpeed);
             serializer.SerializeValue(ref ArcGravityMultiplier);
-            serializer.SerializeValue(ref EnterAlongWallInput);
-            serializer.SerializeValue(ref MaintainAlongWallInput);
+            serializer.SerializeValue(ref EnterMinimumAlongWallSpeed);
+            serializer.SerializeValue(ref MaintainMinimumAlongWallSpeed);
+            serializer.SerializeValue(ref EnterMinimumAlongWallRatio);
+            serializer.SerializeValue(ref MaintainMinimumAlongWallRatio);
             serializer.SerializeValue(ref ExitAwayInputDot);
             serializer.SerializeValue(ref MinimumMoveInputMagnitude);
         }

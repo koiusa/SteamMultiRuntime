@@ -207,10 +207,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private static bool CanProcessWallRun(PlayerTraversalState state)
         {
-            // WallSlide/Ladder/Cooldownからの直接遷移は禁止する。
-            // WallRunを開始できるのは通常空中状態、または既存WallRunの継続だけ。
+            // WallSlide中も壁沿い速度を維持するため、速度条件を満たしたらWallRunへ復帰できる。
+            // Ladder/Cooldownからの直接遷移は禁止する。
             return state == PlayerTraversalState.Airborne
-                || state == PlayerTraversalState.WallRun;
+                || state == PlayerTraversalState.WallRun
+                || state == PlayerTraversalState.WallSlide;
         }
 
         private static TraversalIntentFlags BuildIntentFlags(Vector2 moveInput, bool jumpRequested, bool isGrounded)

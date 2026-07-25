@@ -204,7 +204,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            if (!HasWallRunIntent(moveDirection, upAxis, wallNormal))
+            if (!MeetsWallRunMotionIntent(moveDirection, velocity, upAxis, wallNormal))
             {
                 if (!IsWallRunning)
                 {
@@ -243,7 +243,7 @@ namespace Koiusa.SteamMultiRuntime
             return awaySpeed > settings.WallRunAwayFromWallMinSpeed;
         }
 
-        private bool HasWallRunIntent(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
+        private bool MeetsWallRunMotionIntent(Vector3 moveDirection, Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
             var minimumInput = settings.MinimumMoveInputMagnitude > 0f
@@ -254,21 +254,19 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var alongWallInput = Vector3.ProjectOnPlane(horizontalInput.normalized, wallNormal).magnitude;
-            // Camera-relative movement picks up a small wall-tangent component whenever
-            // the view rotates. Require a deliberate angle to enter, then use a lower
-            // threshold while already running to avoid state flicker.
-            var defaults = WallRunTraversalSettings.CreateDefault();
-            var enterThreshold = settings.EnterAlongWallInput > 0f
-                ? settings.EnterAlongWallInput
-                : defaults.EnterAlongWallInput;
-            var maintainThreshold = settings.MaintainAlongWallInput > 0f
-                ? settings.MaintainAlongWallInput
-                : defaults.MaintainAlongWallInput;
-            var threshold = IsWallRunning
+            var enterThreshold = Mathf.Max(0f, settings.EnterMinimumAlongWallSpeed);
+            var maintainThreshold = Mathf.Max(0f, settings.MaintainMinimumAlongWallSpeed);
+            var speedThreshold = IsWallRunning
                 ? maintainThreshold
                 : enterThreshold;
-            return alongWallInput >= threshold;
+            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
+            var horizontalSpeed = horizontalVelocity.magnitude;
+            var alongWallSpeed = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
+            var alongWallRatio = horizontalSpeed > 0.0001f ? alongWallSpeed / horizontalSpeed : 0f;
+            var ratioThreshold = IsWallRunning
+                ? Mathf.Clamp01(settings.MaintainMinimumAlongWallRatio)
+                : Mathf.Clamp01(settings.EnterMinimumAlongWallRatio);
+            return alongWallSpeed >= speedThreshold && alongWallRatio >= ratioThreshold;
         }
 
         private bool IsMoveInputAwayFromWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)

@@ -28,10 +28,14 @@ namespace Koiusa.SteamMultiRuntime
         public float ArcInitialUpSpeed;
         [Min(0f), Tooltip("Arc中の重力倍率")]
         public float ArcGravityMultiplier;
-        [Range(0f, 1f), Tooltip("WallRun開始に必要な壁沿い入力成分")]
-        public float EnterAlongWallInput;
-        [Range(0f, 1f), Tooltip("WallRun継続に必要な壁沿い入力成分")]
-        public float MaintainAlongWallInput;
+        [Min(0f), Tooltip("WallRun開始に必要な実際の壁沿い水平速度")]
+        public float EnterMinimumAlongWallSpeed;
+        [Min(0f), Tooltip("WallRun継続に必要な実際の壁沿い水平速度")]
+        public float MaintainMinimumAlongWallSpeed;
+        [Range(0f, 1f), Tooltip("WallRun開始時に水平速度のうち壁沿い成分が占める必要割合")]
+        public float EnterMinimumAlongWallRatio;
+        [Range(0f, 1f), Tooltip("WallRun継続時に水平速度のうち壁沿い成分が占める必要割合")]
+        public float MaintainMinimumAlongWallRatio;
         [Range(0f, 1f), Tooltip("この値を超えて壁から離れる入力でWallRunを解除")]
         public float ExitAwayInputDot;
         [Range(0f, 1f), Tooltip("WallRun判定に必要な入力の最小強度")]
@@ -53,8 +57,10 @@ namespace Koiusa.SteamMultiRuntime
                 HeightHoldAcceleration = 12f,
                 ArcInitialUpSpeed = 1.5f,
                 ArcGravityMultiplier = 0.45f,
-                EnterAlongWallInput = 0.65f,
-                MaintainAlongWallInput = 0.35f,
+                EnterMinimumAlongWallSpeed = 2f,
+                MaintainMinimumAlongWallSpeed = 1f,
+                EnterMinimumAlongWallRatio = 0.45f,
+                MaintainMinimumAlongWallRatio = 0.25f,
                 ExitAwayInputDot = 0.25f,
                 MinimumMoveInputMagnitude = 0.25f,
             };
