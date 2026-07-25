@@ -124,6 +124,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool TryApplyLadderMovement(Vector3 velocity, float climbInput, Vector3 upAxis, out Vector3 nextVelocity)
         {
+            return TryApplyLadderMovement(velocity, climbInput, 0f, upAxis, out nextVelocity);
+        }
+
+        private bool TryApplyLadderMovement(Vector3 velocity, float climbInput, float lateralInput, Vector3 upAxis, out Vector3 nextVelocity)
+        {
             nextVelocity = velocity;
 
             if (currentLadder == null)
@@ -135,19 +140,27 @@ namespace Koiusa.SteamMultiRuntime
             rb.useGravity = false;
 
             var ladderUp = currentLadder.UpDirection;
+            var ladderRight = currentLadder.RightDirection.normalized;
 
             // 生の前後入力（moveInput.y）を梯子の上方向に直接マッピングする
             var targetClimbVelocity = ladderUp * (climbInput * settings.ClimbSpeed);
 
-            // 水平方向の速度はゼロに収束させる（梯子に吸い付く）
-            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, ladderUp);
-            var nextHorizontal = Vector3.MoveTowards(horizontalVelocity, Vector3.zero, settings.ClimbAcceleration * Time.fixedDeltaTime);
+            var defaults = LadderTraversalSettings.CreateDefault();
+            var lateralSpeed = settings.LateralMoveSpeed > 0f ? settings.LateralMoveSpeed : defaults.LateralMoveSpeed;
+            var lateralAcceleration = settings.LateralMoveAcceleration > 0f ? settings.LateralMoveAcceleration : defaults.LateralMoveAcceleration;
+            var currentLateralVelocity = Vector3.Project(velocity, ladderRight);
+            var targetLateralVelocity = ladderRight * (lateralInput * lateralSpeed);
+            var nextLateralVelocity = Vector3.MoveTowards(currentLateralVelocity, targetLateralVelocity, lateralAcceleration * Time.fixedDeltaTime);
+
+            // 梯子面に対する前後速度はゼロに収束させ、面に吸い付かせる。
+            var normalVelocity = velocity - Vector3.Project(velocity, ladderUp) - currentLateralVelocity;
+            var nextNormalVelocity = Vector3.MoveTowards(normalVelocity, Vector3.zero, settings.ClimbAcceleration * Time.fixedDeltaTime);
 
             // 上下速度を加速させる
             var currentClimbVelocity = Vector3.Project(velocity, ladderUp);
             var nextClimbVelocity = Vector3.MoveTowards(currentClimbVelocity, targetClimbVelocity, settings.ClimbAcceleration * Time.fixedDeltaTime);
 
-            nextVelocity = nextHorizontal + nextClimbVelocity;
+            nextVelocity = nextNormalVelocity + nextLateralVelocity + nextClimbVelocity;
 
             // 梯子昇降中は常に梯子の方を向く
             ApplyFacingRotation(upAxis);
@@ -181,9 +194,20 @@ namespace Koiusa.SteamMultiRuntime
                 : defaults.LateralDetachInputThreshold;
             var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= groundEnterGrace;
 
-            var wantsLateralDetach = Mathf.Abs(detachInput) > lateralDetachThreshold;
+            var lateralMode = currentLadder.LateralMovementMode;
+            var hasLateralInput = Mathf.Abs(detachInput) > lateralDetachThreshold;
+            var wantsLateralDetach = lateralMode == LadderLateralMovementMode.Detach && hasLateralInput;
+            var lateralMoveInput = lateralMode == LadderLateralMovementMode.MoveWithinBounds ? detachInput : 0f;
+            var edgePadding = settings.LateralEdgePadding > 0f
+                ? settings.LateralEdgePadding
+                : defaults.LateralEdgePadding;
+            var wantsEdgeDetach = lateralMode == LadderLateralMovementMode.MoveWithinBounds
+                && hasLateralInput
+                && currentLadder.IsAtLateralEdge(rb.position, lateralMoveInput, edgePadding);
             var wantsGroundDescendDetach = isGrounded && climbInput < -0.01f;
-            var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f && !isJustEnteredFromGround;
+            var wantsGroundIdleDetach = isGrounded
+                && moveInput.sqrMagnitude <= 0.0001f
+                && !isJustEnteredFromGround;
 
             if (wantsJumpDetach)
             {
@@ -192,7 +216,7 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (wantsLateralDetach)
+            if (wantsLateralDetach || wantsEdgeDetach)
             {
                 DetachFromLadder(directionalDetachDelay);
                 return true;
@@ -210,7 +234,7 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (TryApplyLadderMovement(velocity, climbInput, upAxis, out var ladderVelocity))
+            if (TryApplyLadderMovement(velocity, climbInput, lateralMoveInput, upAxis, out var ladderVelocity))
             {
                 nextVelocity = ladderVelocity;
                 return true;
@@ -256,7 +280,7 @@ namespace Koiusa.SteamMultiRuntime
                     sideViewClimbSign = Mathf.Sign(horizontalSign);
                 }
 
-                detachInput = moveInput.y;
+                detachInput = ResolveLateralInput(moveInput, screenRight, screenUp, new Vector2(0f, 1f));
                 return moveInput.x * sideViewClimbSign;
             }
 
@@ -276,9 +300,30 @@ namespace Koiusa.SteamMultiRuntime
                 climbAxis.Normalize();
             }
 
-            var detachAxis = new Vector2(climbAxis.y, -climbAxis.x);
-            detachInput = Vector2.Dot(moveInput, detachAxis);
+            var fallbackLateralAxis = new Vector2(climbAxis.y, -climbAxis.x);
+            detachInput = ResolveLateralInput(moveInput, screenRight, screenUp, fallbackLateralAxis);
             return Vector2.Dot(moveInput, climbAxis);
+        }
+
+        private float ResolveLateralInput(Vector2 moveInput, Vector3 screenRight, Vector3 screenUp, Vector2 fallbackAxis)
+        {
+            var ladderRight = currentLadder != null ? currentLadder.RightDirection.normalized : Vector3.right;
+            var lateralAxis = new Vector2(
+                Vector3.Dot(ladderRight, screenRight),
+                Vector3.Dot(ladderRight, screenUp));
+
+            // transform.right が画面の左に見える側から梯子を見ている場合も、
+            // 画面で押した方向とワールド上の移動を一致させる。
+            if (lateralAxis.sqrMagnitude <= 0.0001f)
+            {
+                lateralAxis = fallbackAxis;
+            }
+            else
+            {
+                lateralAxis.Normalize();
+            }
+
+            return Vector2.Dot(moveInput, lateralAxis);
         }
 
         private void UpdateFacingDirection(LadderVolume ladder)

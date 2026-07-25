@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public enum LadderLateralMovementMode
+    {
+        Locked = 0,
+        MoveWithinBounds = 1,
+        Detach = 2,
+    }
+
     /// <summary>
     /// 梯子を表す Trigger ボリューム。
     /// ILadderTraversalFeature を持つオブジェクトが侵入・離脱したときに通知する。
@@ -11,11 +18,49 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class LadderVolume : MonoBehaviour
     {
+        [SerializeField, Tooltip("梯子上での横入力の扱い。通常の細い梯子はLockedを推奨")]
+        private LadderLateralMovementMode lateralMovementMode = LadderLateralMovementMode.Locked;
+
         /// <summary>梯子の上方向（正規化済み）。デフォルトは World Up。</summary>
         public Vector3 UpDirection => transform.up;
 
         /// <summary>梯子面の法線方向（正規化済み）。プレイヤーが正対する向きのフォールバック基準に使う。</summary>
         public Vector3 PlaneNormal => transform.forward;
+
+        public Vector3 RightDirection => transform.right;
+        public LadderLateralMovementMode LateralMovementMode => lateralMovementMode;
+
+        public bool IsAtLateralEdge(Vector3 worldPosition, float input, float edgePadding)
+        {
+            if (Mathf.Abs(input) <= 0.0001f)
+            {
+                return false;
+            }
+
+            var col = GetComponent<Collider>();
+            var center = col.bounds.center;
+            float halfWidth;
+
+            if (col is BoxCollider box)
+            {
+                center = transform.TransformPoint(box.center);
+                halfWidth = Mathf.Abs(box.size.x * transform.lossyScale.x) * 0.5f;
+            }
+            else
+            {
+                var right = RightDirection.normalized;
+                var extents = col.bounds.extents;
+                halfWidth = Mathf.Abs(right.x) * extents.x
+                    + Mathf.Abs(right.y) * extents.y
+                    + Mathf.Abs(right.z) * extents.z;
+            }
+
+            var usableHalfWidth = Mathf.Max(0f, halfWidth - Mathf.Max(0f, edgePadding));
+            var signedDistance = Vector3.Dot(worldPosition - center, RightDirection.normalized);
+            return input > 0f
+                ? signedDistance >= usableHalfWidth
+                : signedDistance <= -usableHalfWidth;
+        }
 
         // Enter/Exit をコライダー単位で追跡し、feature 単位の参照カウントで管理する
         private readonly Dictionary<Collider, ILadderTraversalFeature> colliderOwners = new Dictionary<Collider, ILadderTraversalFeature>();

@@ -18,6 +18,9 @@ namespace Koiusa.SteamMultiRuntime
         public float FacingRotationSpeed;
         public float SideViewEnterFaceAlignment;
         public float SideViewExitFaceAlignment;
+        public float LateralMoveSpeed;
+        public float LateralMoveAcceleration;
+        public float LateralEdgePadding;
 
         public static LadderTraversalSettingsNetData FromCore(LadderTraversalSettings s)
         {
@@ -34,6 +37,9 @@ namespace Koiusa.SteamMultiRuntime
                 FacingRotationSpeed = s.FacingRotationSpeed,
                 SideViewEnterFaceAlignment = s.SideViewEnterFaceAlignment,
                 SideViewExitFaceAlignment = s.SideViewExitFaceAlignment,
+                LateralMoveSpeed = s.LateralMoveSpeed,
+                LateralMoveAcceleration = s.LateralMoveAcceleration,
+                LateralEdgePadding = s.LateralEdgePadding,
             };
         }
 
@@ -52,6 +58,9 @@ namespace Koiusa.SteamMultiRuntime
                 FacingRotationSpeed = FacingRotationSpeed,
                 SideViewEnterFaceAlignment = SideViewEnterFaceAlignment,
                 SideViewExitFaceAlignment = SideViewExitFaceAlignment,
+                LateralMoveSpeed = LateralMoveSpeed,
+                LateralMoveAcceleration = LateralMoveAcceleration,
+                LateralEdgePadding = LateralEdgePadding,
             };
         }
 
@@ -68,6 +77,9 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref FacingRotationSpeed);
             serializer.SerializeValue(ref SideViewEnterFaceAlignment);
             serializer.SerializeValue(ref SideViewExitFaceAlignment);
+            serializer.SerializeValue(ref LateralMoveSpeed);
+            serializer.SerializeValue(ref LateralMoveAcceleration);
+            serializer.SerializeValue(ref LateralEdgePadding);
         }
     }
 }

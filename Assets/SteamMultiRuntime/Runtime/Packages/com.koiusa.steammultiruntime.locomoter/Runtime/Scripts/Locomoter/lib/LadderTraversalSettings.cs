@@ -33,6 +33,12 @@ namespace Koiusa.SteamMultiRuntime
         public float SideViewEnterFaceAlignment;
         [Range(0f, 1f), Tooltip("左右昇降中、梯子面がこの値より正面向きになったら上下昇降に戻す")]
         public float SideViewExitFaceAlignment;
+        [Min(0f), Tooltip("幅広梯子上での横移動速度")]
+        public float LateralMoveSpeed;
+        [Min(0f), Tooltip("幅広梯子上での横移動加速度")]
+        public float LateralMoveAcceleration;
+        [Min(0f), Tooltip("梯子の横端で離脱する判定の内側マージン")]
+        public float LateralEdgePadding;
 
         public static LadderTraversalSettings CreateDefault()
         {
@@ -49,6 +55,9 @@ namespace Koiusa.SteamMultiRuntime
                 FacingRotationSpeed = 720f,
                 SideViewEnterFaceAlignment = 0.35f,
                 SideViewExitFaceAlignment = 0.55f,
+                LateralMoveSpeed = 2.5f,
+                LateralMoveAcceleration = 20f,
+                LateralEdgePadding = 0.15f,
             };
         }
     }
