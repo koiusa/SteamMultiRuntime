@@ -341,7 +341,7 @@ MonoBehaviour:
     NearbyGroundDistance: 0.3
     StrafeMoveSpeedMultiplier: 0.7
     StrafeAccelerationMultiplier: 1.5
-    StrafeRotationSpeed: 300
+    StrafeRotationSpeed: 0
     BackwardSpeedMultiplier: 0.5
     EnableStepAssist: 1
     StepAssistMaxHeight: 0.6

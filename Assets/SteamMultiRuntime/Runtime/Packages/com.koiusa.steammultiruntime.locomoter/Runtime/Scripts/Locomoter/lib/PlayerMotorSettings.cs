@@ -107,7 +107,7 @@ namespace Koiusa.SteamMultiRuntime
                 nearbyGroundDistance: 0.3f,
                 strafeMoveSpeedMultiplier: 0.7f,
                 strafeAccelerationMultiplier: 1.5f,
-                strafeRotationSpeed: 300f,
+                strafeRotationSpeed: 0f,
                 backwardSpeedMultiplier: 0.5f,
                 enableStepAssist: true,
                 stepAssistMaxHeight: 0.28f,

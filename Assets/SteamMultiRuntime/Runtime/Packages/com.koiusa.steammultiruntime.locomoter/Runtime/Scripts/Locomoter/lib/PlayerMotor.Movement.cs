@@ -109,9 +109,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var targetRotation = Quaternion.LookRotation(facingDirection, upAxis);
-            var rotationSpeed = strafeInfo.isStrafing && settings.StrafeRotationSpeed > 0f
+            var rotationSpeed = strafeInfo.isStrafing
                 ? settings.StrafeRotationSpeed
-                : (!strafeInfo.isStrafing ? settings.RotationSpeed : 0f);
+                : settings.RotationSpeed;
 
             if (rotationSpeed <= 0f)
             {
