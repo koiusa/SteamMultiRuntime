@@ -412,6 +412,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarkerNetSync
   ShowTopMostFoldoutHeaderGroup: 1
+  showDistance: 10
+  hideDistance: 12
+  visibilityUpdateInterval: 0.5
 --- !u!114 &910000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
