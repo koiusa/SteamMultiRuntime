@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
@@ -41,6 +42,7 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         private readonly List<Lobby> lobbyCache = new List<Lobby>();
+        private readonly SemaphoreSlim lobbyRefreshGate = new SemaphoreSlim(1, 1);
         private readonly LobbyState lobbyState = new LobbyState();
         private readonly SteamConnection steamConnection;
         private readonly ISteamLobbySceneLoader sceneLoader;
@@ -173,8 +175,9 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 ConfigureLobby(lobby.Value, lobbyName, stageSceneName);
+                BeginLobbyEntry(lobby.Value, SteamClient.SteamId);
                 onLobbyCreated?.Invoke(lobby.Value);
-                await CompleteLobbyEntryAsync(lobby.Value, SteamClient.SteamId);
+                await RefreshLobbiesAsync();
                 return true;
             }
             finally
@@ -209,8 +212,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ConfigureLobbyAsServer(lobby.Value, lobbyName, stageSceneName);
+            BeginLobbyEntry(lobby.Value, SteamClient.SteamId);
             onLobbyCreated?.Invoke(lobby.Value);
-            await CompleteLobbyEntryAsync(lobby.Value, SteamClient.SteamId);
+            await RefreshLobbiesAsync();
             return true;
         }
 
@@ -260,8 +264,9 @@ namespace Koiusa.SteamMultiRuntime
                     // Don't fail, scene loading errors shouldn't prevent join
                 }
 
+                BeginLobbyEntry(lobby.Value, hostSteamId);
                 onLobbyJoined?.Invoke(lobby.Value);
-                await CompleteLobbyEntryAsync(lobby.Value, hostSteamId);
+                await RefreshLobbiesAsync();
                 return true;
             }
             finally
@@ -277,26 +282,30 @@ namespace Koiusa.SteamMultiRuntime
 
         public async Task RefreshLobbiesAsync()
         {
-            lobbyCache.Clear();
-
-            if (onEnsureReady != null && onEnsureReady.Invoke())
+            await lobbyRefreshGate.WaitAsync();
+            try
             {
-                var lobbies = await SteamMatchmaking.LobbyList.RequestAsync();
-                if (lobbies != null)
+                var snapshot = new List<Lobby>();
+                if (onEnsureReady != null && onEnsureReady.Invoke())
                 {
-                    // Request lobby metadata for each lobby so GetData() is populated
-                    foreach (var lobby in lobbies)
+                    var lobbies = await SteamMatchmaking.LobbyList.RequestAsync();
+                    if (lobbies != null)
                     {
-                        lobby.Refresh();
+                        snapshot.AddRange(lobbies);
                     }
-                    // Wait for Steam to deliver lobby data callbacks
-                    await Task.Delay(500);
-                    lobbyCache.AddRange(lobbies);
                 }
-            }
 
-            NotifyStateChanged();
-            onLobbiesRefreshed?.Invoke(LobbyCache);
+                // A newly public lobby can take time to enter Steam's search index. The
+                // current lobby is authoritative local state, so never make its display
+                // depend on when the search backend happens to return it.
+                MergeCurrentLobby(snapshot);
+                ReplaceLobbyCache(snapshot);
+                PublishLobbyCache();
+            }
+            finally
+            {
+                lobbyRefreshGate.Release();
+            }
         }
 
         public string GetLobbyDisplayName(Lobby lobby)
@@ -323,6 +332,8 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            lobbyState.CurrentLobby = lobby;
+            UpsertLobbyCache(lobby);
             onLobbyDataChanged?.Invoke(lobby);
             NotifyStateChanged();
             ValidateCurrentLobbyState(lobby);
@@ -417,13 +428,51 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private async Task CompleteLobbyEntryAsync(Lobby lobby, ulong hostSteamId)
+        private void BeginLobbyEntry(Lobby lobby, ulong hostSteamId)
         {
             lobbyState.CurrentLobby = lobby;
             lobbyState.HostSteamId = hostSteamId;
 
+            // Publish the known lobby synchronously before asking Steam for a remote
+            // list. This gives the UI a deterministic state even during propagation.
+            UpsertLobbyCache(lobby);
+            PublishLobbyCache();
+        }
+
+        private void MergeCurrentLobby(List<Lobby> snapshot)
+        {
+            if (!lobbyState.CurrentLobby.HasValue)
+            {
+                return;
+            }
+
+            var current = lobbyState.CurrentLobby.Value;
+            snapshot.RemoveAll(lobby => lobby.Id == current.Id);
+            snapshot.Insert(0, current);
+        }
+
+        private void ReplaceLobbyCache(List<Lobby> snapshot)
+        {
+            lobbyCache.Clear();
+            lobbyCache.AddRange(snapshot);
+        }
+
+        private void UpsertLobbyCache(Lobby lobby)
+        {
+            var index = lobbyCache.FindIndex(cached => cached.Id == lobby.Id);
+            if (index >= 0)
+            {
+                lobbyCache[index] = lobby;
+                return;
+            }
+
+            lobbyCache.Insert(0, lobby);
+        }
+
+        private void PublishLobbyCache()
+        {
             NotifyStateChanged();
-            await RefreshLobbiesAsync();
+            onLobbiesRefreshed?.Invoke(LobbyCache);
         }
 
         private async Task<bool> TryLoadLobbySceneOnEnterAsync()
