@@ -2,6 +2,20 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public enum PlayerLocomotionAnimationMode
+    {
+        Grounded = 0,
+        Airborne = 1,
+        Ladder = 2
+    }
+
+    public enum PlayerAirAnimationState
+    {
+        None = 0,
+        Rising = 1,
+        Falling = 2
+    }
+
     [DisallowMultipleComponent]
     public class PlayerAnimatorStateDriver : MonoBehaviour, IPlayerAnimatorStateDriver
     {
@@ -14,20 +28,9 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Animator Parameters")]
         [SerializeField] private string horizontalSpeedParameter = "Speed";
         [SerializeField] private string verticalSpeedParameter = "VerticalVelocity";
-        [SerializeField] private string groundedParameter = "IsGrounded";
         [SerializeField] private string motionSpeedParameter = "MotionSpeed";
-        [SerializeField] private string jumpingParameter = "IsJumping";
-        [SerializeField] private string freefallParameter = "IsFreefall";
-        [SerializeField] private string fallingAfterJumpParameter = "IsFallingAfterJump";
-        [SerializeField] private string inputForwardParameter = "InputForward";
-        [SerializeField] private string inputRightParameter = "InputRight";
-        [SerializeField] private string moveDirectionForwardParameter = "MoveDirectionForward";
-        [SerializeField] private string moveDirectionRightParameter = "MoveDirectionRight";
-        [SerializeField] private string strafeModeParameter = "IsStrafeMode";
-        [SerializeField] private string ladderParameter = "IsLadder";
-        [SerializeField] private string ladderSpeedParameter = "LadderSpeed";
-        [SerializeField] private string animationFinishedParameter = "IsAnimationFinished";
-        [SerializeField, Min(0)] private int animationFinishedLayerIndex = 0;
+        [SerializeField] private string locomotionModeParameter = "LocomotionMode";
+        [SerializeField] private string airStateParameter = "AirState";
 
         [Header("Smoothing")]
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
@@ -87,36 +90,28 @@ namespace Koiusa.SteamMultiRuntime
             var isJumping = playerController != null && playerController.IsJumping;
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
-            var moveInput = playerController != null ? playerController.MoveInput : Vector2.zero;
-            var inputForward = moveInput.y;
-            var inputRight = moveInput.x;
-            var moveDirection = playerController != null ? playerController.MoveDirection : Vector3.zero;
-            var moveDirectionForward = Vector3.Dot(moveDirection, transform.forward);
-            var moveDirectionRight = Vector3.Dot(moveDirection, transform.right);
-            var isStrafeMode = playerController != null && playerController.IsStrafeMode;
             var isLadder = playerLadderState != null
                 ? playerLadderState.IsOnLadder
                 : ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
             var ladderSpeed = playerLadderState != null
                 ? playerLadderState.LadderSpeed
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
-            var isAnimationFinished = IsCurrentStateFinished(animationFinishedLayerIndex);
+            var locomotionMode = isLadder
+                ? PlayerLocomotionAnimationMode.Ladder
+                : isGrounded ? PlayerLocomotionAnimationMode.Grounded : PlayerLocomotionAnimationMode.Airborne;
+            var airState = locomotionMode != PlayerLocomotionAnimationMode.Airborne
+                ? PlayerAirAnimationState.None
+                : isJumping ? PlayerAirAnimationState.Rising
+                : isFreefall || isFallingAfterJump
+                    ? PlayerAirAnimationState.Falling
+                    : PlayerAirAnimationState.None;
+            var animationVerticalSpeed = isLadder ? ladderSpeed : verticalSpeed;
 
             SetFloat(horizontalSpeedParameter, horizontalSpeed, speedDampTime);
-            SetFloat(verticalSpeedParameter, verticalSpeed);
-            SetBool(groundedParameter, isGrounded);
+            SetFloat(verticalSpeedParameter, animationVerticalSpeed);
             SetFloat(motionSpeedParameter, motionSpeed);
-            SetBool(jumpingParameter, isJumping);
-            SetBool(freefallParameter, isFreefall);
-            SetBool(fallingAfterJumpParameter, isFallingAfterJump);
-            SetFloat(inputForwardParameter, inputForward, speedDampTime);
-            SetFloat(inputRightParameter, inputRight, speedDampTime);
-            SetFloat(moveDirectionForwardParameter, moveDirectionForward, speedDampTime);
-            SetFloat(moveDirectionRightParameter, moveDirectionRight, speedDampTime);
-            SetBool(strafeModeParameter, isStrafeMode);
-            SetBool(ladderParameter, isLadder);
-            SetFloat(ladderSpeedParameter, ladderSpeed);
-            SetBool(animationFinishedParameter, isAnimationFinished);
+            SetInt(locomotionModeParameter, (int)locomotionMode);
+            SetInt(airStateParameter, (int)airState);
         }
 
         private Vector3 GetEstimatedVelocity()
@@ -228,11 +223,11 @@ namespace Koiusa.SteamMultiRuntime
             targetAnimator.SetFloat(hash, value);
         }
 
-        private void SetBool(string parameterName, bool value)
+        private void SetInt(string parameterName, int value)
         {
             if (TryGetParameterHash(parameterName, out var hash))
             {
-                targetAnimator.SetBool(hash, value);
+                targetAnimator.SetInteger(hash, value);
             }
         }
 

@@ -173,62 +173,22 @@ MonoBehaviour:
       NameHash: -823668238
       Synchronize: 1
       ParameterType: 1
-    - name: Elevation
-      NameHash: -1092892638
+    - name: VerticalVelocity
+      NameHash: -1380605809
       Synchronize: 1
       ParameterType: 1
-    - name: IsJumping
-      NameHash: 1749078233
-      Synchronize: 1
-      ParameterType: 4
-    - name: IsGrounded
-      NameHash: 507951781
-      Synchronize: 1
-      ParameterType: 4
-    - name: IsFreefall
-      NameHash: 267507616
-      Synchronize: 1
-      ParameterType: 4
-    - name: IsFallingAfterJump
-      NameHash: 406235935
-      Synchronize: 1
-      ParameterType: 4
     - name: MotionSpeed
       NameHash: 1939466105
       Synchronize: 1
       ParameterType: 1
-    - name: IsAnimationFinished
-      NameHash: -150762512
+    - name: LocomotionMode
+      NameHash: 1467996341
       Synchronize: 1
-      ParameterType: 4
-    - name: InputForward
-      NameHash: 94020412
+      ParameterType: 3
+    - name: AirState
+      NameHash: 2090971652
       Synchronize: 1
-      ParameterType: 1
-    - name: InputRight
-      NameHash: 605983468
-      Synchronize: 1
-      ParameterType: 1
-    - name: IsStrafeMode
-      NameHash: 348398113
-      Synchronize: 1
-      ParameterType: 4
-    - name: MoveDirectionForward
-      NameHash: -36646540
-      Synchronize: 1
-      ParameterType: 1
-    - name: MoveDirectionRight
-      NameHash: -91762220
-      Synchronize: 1
-      ParameterType: 1
-    - name: IsLadder
-      NameHash: 262395049
-      Synchronize: 1
-      ParameterType: 4
-    - name: LadderSpeed
-      NameHash: 1266663940
-      Synchronize: 1
-      ParameterType: 1
+      ParameterType: 3
   AnimatorParametersExpanded: 0
 --- !u!114 &2404645661678682767
 MonoBehaviour:
