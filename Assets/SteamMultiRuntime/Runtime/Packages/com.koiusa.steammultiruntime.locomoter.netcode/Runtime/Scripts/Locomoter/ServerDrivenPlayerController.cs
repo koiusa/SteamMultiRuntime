@@ -115,6 +115,9 @@ namespace Koiusa.SteamMultiRuntime
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
         private bool hasInitializedSettings;
+        private PlayerInputSyncState localInputState;
+        private float nextInputSendTime;
+        private int lastSentJumpToken = -1;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
             new PlayerInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -140,10 +143,10 @@ namespace Koiusa.SteamMultiRuntime
         public float LadderSpeed => UseLocalMotorState && ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : netMovementFlagsState.Value.LadderSpeed;
         public bool IsWallRunning => UseLocalMotorState ? wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning : netMovementFlagsState.Value.IsWallRunning;
         public Vector3 WallNormal => UseLocalMotorState && wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : netMovementFlagsState.Value.WallNormal;
-        public bool IsStrafeMode => UseLocalMotorState ? isStrafeMode : netInputState.Value.IsStrafeMode;
+        public bool IsStrafeMode => IsOwner ? localInputState.IsStrafeMode : netInputState.Value.IsStrafeMode;
         public Vector3 InheritedGroundVelocity => UseLocalMotorState && motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
-        public Vector2 MoveInput => netInputState.Value.MoveInput;
-        public Vector3 MoveDirection => netInputState.Value.MoveDirection;
+        public Vector2 MoveInput => IsOwner ? localInputState.MoveInput : netInputState.Value.MoveInput;
+        public Vector3 MoveDirection => IsOwner ? localInputState.MoveDirection : netInputState.Value.MoveDirection;
         public float HorizontalVelocity => UseLocalMotorState && motor != null ? motor.HorizontalVelocity : netKinematicState.Value.HorizontalVelocity;
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
@@ -351,7 +354,7 @@ namespace Koiusa.SteamMultiRuntime
                 var emptyInputState = netInputState.Value;
                 emptyInputState.MoveDirection = Vector3.zero;
                 emptyInputState.MoveInput = Vector2.zero;
-                netInputState.Value = emptyInputState;
+                SubmitInput(emptyInputState);
                 return;
             }
 
@@ -370,7 +373,38 @@ namespace Koiusa.SteamMultiRuntime
 
             isStrafeMode = activeInputSource is InputActionPlayerInputSource playerInput
                 && playerInput.GetStrafeMode();
-            netInputState.Value = new PlayerInputSyncState(moveDirection, moveInput, referenceTransform.rotation, jumpToken, isStrafeMode);
+            SubmitInput(new PlayerInputSyncState(
+                moveDirection,
+                moveInput,
+                referenceTransform.rotation,
+                jumpToken,
+                isStrafeMode));
+        }
+
+        private void SubmitInput(PlayerInputSyncState inputState)
+        {
+            localInputState = inputState;
+
+            var jumpChanged = inputState.JumpToken != lastSentJumpToken;
+            if (!jumpChanged && Time.unscaledTime < nextInputSendTime)
+                return;
+
+            var tickRate = NetworkManager != null
+                ? Mathf.Max(1, NetworkManager.NetworkConfig.TickRate)
+                : 30;
+            nextInputSendTime = Time.unscaledTime + 1f / tickRate;
+            lastSentJumpToken = inputState.JumpToken;
+
+            if (IsServer)
+                netInputState.Value = inputState;
+            else
+                SubmitInputServerRpc(inputState);
+        }
+
+        [ServerRpc(Delivery = RpcDelivery.Unreliable)]
+        private void SubmitInputServerRpc(PlayerInputSyncState inputState)
+        {
+            netInputState.Value = inputState;
         }
 
         private void TickServerPhysics()
