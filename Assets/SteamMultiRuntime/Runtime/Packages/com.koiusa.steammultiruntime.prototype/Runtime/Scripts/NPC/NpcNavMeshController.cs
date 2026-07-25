@@ -63,6 +63,7 @@ namespace Koiusa.SteamMultiRuntime
         private float _avoidanceSideLockUntilTime;
         private int _jumpToken;
         private int _lastConsumedJumpToken;
+        private bool _clientSimulationDisabled;
 
         private readonly Collider[] _boidNeighborBuffer = new Collider[32];
         private readonly int[] _uniqueNeighborIds = new int[32];
@@ -178,9 +179,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
-            if (_networkPlayerController != null
-                && (!_networkPlayerController.IsSpawned || !_networkPlayerController.IsServer))
-                return;
+            if (_networkPlayerController != null)
+            {
+                if (!_networkPlayerController.IsSpawned)
+                    return;
+
+                if (!_networkPlayerController.IsServer)
+                {
+                    DisableClientSimulation();
+                    return;
+                }
+            }
 
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
@@ -195,6 +204,33 @@ namespace Koiusa.SteamMultiRuntime
                 _agent.nextPosition = _rigidbody.position;
             else
                 _agent.nextPosition = transform.position;
+        }
+
+        private void DisableClientSimulation()
+        {
+            if (_clientSimulationDisabled)
+                return;
+
+            _clientSimulationDisabled = true;
+
+            // Remote clients receive the authoritative pose through NetworkTransform.
+            // NavMesh and all AI planning are server-only and otherwise add one simulation
+            // agent per NPC to every client for no visual benefit.
+            if (movement != null)
+                movement.enabled = false;
+            if (speed != null)
+                speed.enabled = false;
+            if (jump != null)
+                jump.enabled = false;
+            if (steering != null)
+                steering.enabled = false;
+            if (avoidance != null)
+                avoidance.enabled = false;
+            if (_agent != null)
+                _agent.enabled = false;
+
+            _inputSource?.Disable();
+            enabled = false;
         }
 
         private void FixedUpdate()

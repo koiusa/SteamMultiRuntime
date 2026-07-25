@@ -46,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerWallRunState playerWallRunState;
         private IWallRunTraversalFeature wallRunTraversalFeature;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private Renderer[] targetRenderers;
         private Vector3 previousPosition;
 
         private void Reset()
@@ -74,6 +75,9 @@ namespace Koiusa.SteamMultiRuntime
             playerWallRunState = playerController as IPlayerWallRunState;
             wallRunTraversalFeature = GetComponentInParent<IWallRunTraversalFeature>();
             traversalCoordinator = GetComponentInParent<IPlayerTraversalCoordinator>();
+            targetRenderers = targetAnimator != null
+                ? targetAnimator.GetComponentsInChildren<Renderer>(true)
+                : System.Array.Empty<Renderer>();
 
             CacheParameterHashes();
             previousPosition = transform.position;
@@ -83,6 +87,15 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (targetAnimator == null)
             {
+                return;
+            }
+
+            // Animator culling stops pose evaluation, but this driver would still calculate and
+            // write every parameter for every off-screen NPC. Resume with a clean velocity sample
+            // when the renderer becomes visible again.
+            if (!IsAnyRendererVisible())
+            {
+                previousPosition = transform.position;
                 return;
             }
 
@@ -140,6 +153,23 @@ namespace Koiusa.SteamMultiRuntime
             SetInt(locomotionModeParameter, (int)locomotionMode);
             SetInt(airStateParameter, (int)airState);
             SetInt(wallRunSideParameter, wallRunSide);
+        }
+
+        private bool IsAnyRendererVisible()
+        {
+            // Keep updating when the model has no renderer so this optimization cannot
+            // accidentally suppress non-visual animator users.
+            if (targetRenderers == null || targetRenderers.Length == 0)
+                return true;
+
+            for (var i = 0; i < targetRenderers.Length; i++)
+            {
+                var targetRenderer = targetRenderers[i];
+                if (targetRenderer != null && targetRenderer.isVisible)
+                    return true;
+            }
+
+            return false;
         }
 
         private int GetWallRunSide(Vector3 wallNormal, Vector3 upAxis)
