@@ -10,7 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     public class LocalPlayerController : MonoBehaviour, IPlayerController
     {
         [Header("Input")]
-        [SerializeField] private InputActionAssetProfile inputActionsProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -43,15 +43,15 @@ namespace Koiusa.SteamMultiRuntime
         public float VerticalVelocity => motor != null ? motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed => 5f;
 
-        public void SetInputProfile(InputActionAssetProfile profile)
+        public void SetInputConfig(InputActionsConfig config)
         {
-            if (profile == null)
+            if (config == null)
             {
                 Debug.LogError("InputProfile cannot be null.", this);
                 return;
             }
 
-            inputActionsProfile = profile;
+            inputActionsConfig = config;
 
             // Reinitialize input source if already created
             if (inputSource != null)
@@ -59,7 +59,7 @@ namespace Koiusa.SteamMultiRuntime
                 inputSource.Disable();
             }
 
-            inputSource = new PlayerGameplayInputReader(profile);
+            inputSource = new PlayerGameplayInputReader(config);
 
             if (isActiveAndEnabled)
             {
@@ -89,14 +89,14 @@ namespace Koiusa.SteamMultiRuntime
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
             wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
-            if (inputActionsProfile == null)
+            if (inputActionsConfig == null)
             {
-                Debug.LogError("Gameplay InputActionAssetProfile is not assigned.", this);
+                Debug.LogError("Gameplay InputActionsConfig is not assigned.", this);
                 enabled = false;
                 return;
             }
 
-            inputSource = new PlayerGameplayInputReader(inputActionsProfile);
+            inputSource = new PlayerGameplayInputReader(inputActionsConfig);
 
             if (cameraTransform == null && Camera.main != null)
             {

@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.SteamLobby.Runtime::Koiusa.SteamMultiRuntime.StageSelectMenuToggle
   stageSelectUiDocument: {fileID: 2818232799923875586}
-  inputProfile: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
 --- !u!1 &5630808608054981398
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,7 +362,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectMenuToggle
   characterSelectUiDocument: {fileID: 4176095736983990773}
-  inputProfile: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
 --- !u!1 &9165860267327548677
 GameObject:
   m_ObjectHideFlags: 0

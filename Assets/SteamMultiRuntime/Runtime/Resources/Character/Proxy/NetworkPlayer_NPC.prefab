@@ -386,7 +386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
-  inputActionsProfile: {fileID: 0}
+  inputActionsConfig: {fileID: 0}
   cameraTransform: {fileID: 0}
   controlMode: 1
 --- !u!114 &1723194128134958813

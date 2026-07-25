@@ -13,7 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class TargetingCameraRigInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsProfile inputProfile;
+        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
 
         private TargetingCameraRig cameraRig;
         private bool isBound;
@@ -30,9 +30,9 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            noLockBinding = InputActionBinding.Bind(inputProfile?.ClearLockAction, OnNoLockPerformed);
-            soloLockBinding = InputActionBinding.Bind(inputProfile?.SoloLockAction, OnSoloLockPerformed);
-            multiLockBinding = InputActionBinding.Bind(inputProfile?.MultiLockAction, OnMultiLockPerformed);
+            noLockBinding = InputActionBinding.Bind(inputActionsConfig?.ClearLockAction, OnNoLockPerformed);
+            soloLockBinding = InputActionBinding.Bind(inputActionsConfig?.SoloLockAction, OnSoloLockPerformed);
+            multiLockBinding = InputActionBinding.Bind(inputActionsConfig?.MultiLockAction, OnMultiLockPerformed);
 
             isBound = true;
         }

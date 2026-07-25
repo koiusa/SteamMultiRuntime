@@ -3,8 +3,8 @@ using UnityEngine.InputSystem;
 
 namespace Koiusa.Keyconfig.Runtime
 {
-    [CreateAssetMenu(fileName = "InputActionAssetResolver", menuName = "Koiusa/Keyconfig/Input Action Asset Resolver", order = 101)]
-    public class InputActionAssetResolver : ScriptableObject
+    [CreateAssetMenu(fileName = "KeyConfigInputActionsConfig", menuName = "Koiusa/Keyconfig/Input Actions Config", order = 101)]
+    public class KeyConfigInputActionsConfig : ScriptableObject
     {
         [Header("Input Actions")]
         [Tooltip("The InputActionAsset used by key configuration and input guides.")]

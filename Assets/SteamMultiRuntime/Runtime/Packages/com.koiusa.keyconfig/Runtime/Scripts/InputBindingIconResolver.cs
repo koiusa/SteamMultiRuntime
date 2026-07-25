@@ -16,7 +16,7 @@ namespace Koiusa.Keyconfig.Runtime
             public Texture2D icon;
         }
 
-        [SerializeField] private InputActionAssetResolver inputActionAssetResolver;
+        [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
         [SerializeField] private List<CustomIconBinding> customBindings = new List<CustomIconBinding>();
 
         private const string KbmIconBasePath = "Icons/KeyboardAndMouse/Light/";
@@ -153,10 +153,10 @@ namespace Koiusa.Keyconfig.Runtime
 
         public IReadOnlyList<CustomIconBinding> CustomBindings => customBindings;
 
-        public InputActionAssetResolver InputActionAssetResolver
+        public KeyConfigInputActionsConfig InputActionsConfig
         {
-            get => inputActionAssetResolver;
-            set => inputActionAssetResolver = value;
+            get => inputActionsConfig;
+            set => inputActionsConfig = value;
         }
 
         public Texture2D Resolve(string bindingPath)
@@ -211,7 +211,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public InputActionAsset ResolveInputActionAsset()
         {
-            return inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
+            return inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
         }
 
         public Texture2D ResolveDisplayIcon(string deviceType, string controlName, string bindingPath)

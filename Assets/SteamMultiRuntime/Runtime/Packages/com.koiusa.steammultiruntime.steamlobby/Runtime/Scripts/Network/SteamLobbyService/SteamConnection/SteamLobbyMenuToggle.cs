@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private SteamLobbyUiDocument lobbyUiDocument;
 
         [Header("Input")]
-        [SerializeField] private InputActionAssetProfile inputProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private SteamLobbyService lobbyService;
         private bool hasLobbyMembershipState;
@@ -42,7 +42,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Interact"), OnTogglePerformed);
+            toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("Player/Interact"), OnTogglePerformed);
 
             if (lobbyService != null)
             {

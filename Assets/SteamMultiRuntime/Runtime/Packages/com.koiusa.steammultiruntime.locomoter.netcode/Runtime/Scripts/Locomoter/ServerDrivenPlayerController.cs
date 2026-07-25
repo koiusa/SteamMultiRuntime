@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
     public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
     {
         [Header("Input")]
-        [SerializeField] private InputActionAssetProfile inputActionsProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -76,20 +76,20 @@ namespace Koiusa.SteamMultiRuntime
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
 
-        public void SetInputProfile(InputActionAssetProfile profile)
+        public void SetInputConfig(InputActionsConfig config)
         {
-            if (profile == null)
+            if (config == null)
             {
                 Debug.LogError("InputProfile cannot be null.", this);
                 return;
             }
 
-            inputActionsProfile = profile;
+            inputActionsConfig = config;
 
             // Reinitialize input source if already created
             activeInputSource?.Disable();
 
-            baseInputSource = new PlayerGameplayInputReader(profile);
+            baseInputSource = new PlayerGameplayInputReader(config);
             activeInputSource = baseInputSource;
             injectedInputReferenceTransform = null;
 
@@ -148,12 +148,12 @@ namespace Koiusa.SteamMultiRuntime
             wallRunTraversalFeature = GetComponent<IWallRunTraversalFeature>();
             wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
-            if (inputActionsProfile == null)
+            if (inputActionsConfig == null)
             {
                 return;
             }
 
-            baseInputSource = new PlayerGameplayInputReader(inputActionsProfile);
+            baseInputSource = new PlayerGameplayInputReader(inputActionsConfig);
             activeInputSource = baseInputSource;
         }
 

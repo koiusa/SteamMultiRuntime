@@ -18,7 +18,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private TargetingCameraRig cameraRig;
 
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsProfile inputProfile;
+        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
 
         private bool isActive;
         private InputActionLease lookLease;
@@ -63,7 +63,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (active)
             {
-                lookLease ??= InputActionLease.Acquire(inputProfile?.LookAction);
+                lookLease ??= InputActionLease.Acquire(inputActionsConfig?.LookAction);
                 return;
             }
 

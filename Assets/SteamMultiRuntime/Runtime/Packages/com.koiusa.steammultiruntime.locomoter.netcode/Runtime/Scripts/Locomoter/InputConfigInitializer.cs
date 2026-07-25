@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     /// <summary>
     /// インプットプロファイルを複数のプレイヤーコントローラーに一括割り当てするヘルパークラス
     /// </summary>
-    public static class InputProfileInitializer
+    public static class InputConfigInitializer
     {
         /// <summary>
         /// 指定されたプロファイルを複数のプレイヤーコントローラーに割り当てる
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         public static void AssignProfile(
             LocalPlayerController localController,
             ServerDrivenPlayerController serverController,
-            InputActionAssetProfile profile)
+            InputActionsConfig profile)
         {
             if (profile == null)
             {
@@ -24,12 +24,12 @@ namespace Koiusa.SteamMultiRuntime
 
             if (localController != null)
             {
-                localController.SetInputProfile(profile);
+                localController.SetInputConfig(profile);
             }
 
             if (serverController != null)
             {
-                serverController.SetInputProfile(profile);
+                serverController.SetInputConfig(profile);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public static void AssignProfileToLocalOnly(
             LocalPlayerController localController,
-            InputActionAssetProfile profile)
+            InputActionsConfig profile)
         {
             if (profile == null)
             {
@@ -48,7 +48,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (localController != null)
             {
-                localController.SetInputProfile(profile);
+                localController.SetInputConfig(profile);
             }
         }
 
@@ -57,7 +57,7 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public static void AssignProfileToServerDrivenOnly(
             ServerDrivenPlayerController serverController,
-            InputActionAssetProfile profile)
+            InputActionsConfig profile)
         {
             if (profile == null)
             {
@@ -67,7 +67,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (serverController != null)
             {
-                serverController.SetInputProfile(profile);
+                serverController.SetInputConfig(profile);
             }
         }
     }

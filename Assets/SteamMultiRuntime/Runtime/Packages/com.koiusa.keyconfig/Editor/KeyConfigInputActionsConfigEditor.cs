@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Koiusa.Keyconfig.Editor
 {
-    [CustomEditor(typeof(InputActionAssetResolver))]
-    public sealed class InputActionAssetResolverEditor : UnityEditor.Editor
+    [CustomEditor(typeof(KeyConfigInputActionsConfig))]
+    public sealed class KeyConfigInputActionsConfigEditor : UnityEditor.Editor
     {
         private SerializedProperty inputActionAsset;
 
@@ -31,7 +31,7 @@ namespace Koiusa.Keyconfig.Editor
 
         private void DrawResolvedAsset()
         {
-            var resolver = (InputActionAssetResolver)target;
+            var resolver = (KeyConfigInputActionsConfig)target;
             var resolved = resolver.Resolve();
 
             EditorGUILayout.LabelField("Resolution Result", EditorStyles.boldLabel);

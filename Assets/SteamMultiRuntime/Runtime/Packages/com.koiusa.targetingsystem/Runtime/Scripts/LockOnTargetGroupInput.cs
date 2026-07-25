@@ -9,7 +9,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class LockOnTargetGroupInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsProfile inputProfile;
+        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
 
         [Header("References")]
         [SerializeField] private TargetIndicatorController indicatorController;
@@ -41,12 +41,12 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            lockBinding = InputActionBinding.Bind(inputProfile?.MultiLockAction, OnLockPerformed);
-            nextBinding = InputActionBinding.Bind(inputProfile?.NextTargetAction, OnNextTargetPerformed);
-            previousBinding = InputActionBinding.Bind(inputProfile?.PreviousTargetAction, OnPrevTargetPerformed);
-            clearBinding = InputActionBinding.Bind(inputProfile?.ClearLockAction, OnUnlockAllPerformed);
-            focusBinding = InputActionBinding.Bind(inputProfile?.FocusAction, OnFocusPerformed);
-            bulkBinding = InputActionBinding.Bind(inputProfile?.BulkLockAction, OnBulkLockPerformed);
+            lockBinding = InputActionBinding.Bind(inputActionsConfig?.MultiLockAction, OnLockPerformed);
+            nextBinding = InputActionBinding.Bind(inputActionsConfig?.NextTargetAction, OnNextTargetPerformed);
+            previousBinding = InputActionBinding.Bind(inputActionsConfig?.PreviousTargetAction, OnPrevTargetPerformed);
+            clearBinding = InputActionBinding.Bind(inputActionsConfig?.ClearLockAction, OnUnlockAllPerformed);
+            focusBinding = InputActionBinding.Bind(inputActionsConfig?.FocusAction, OnFocusPerformed);
+            bulkBinding = InputActionBinding.Bind(inputActionsConfig?.BulkLockAction, OnBulkLockPerformed);
 
             if (binder is ILockOn lockOn)
             {

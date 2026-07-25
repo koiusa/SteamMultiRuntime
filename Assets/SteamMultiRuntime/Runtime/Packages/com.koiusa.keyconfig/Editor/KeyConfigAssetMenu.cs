@@ -8,9 +8,9 @@ namespace Koiusa.Keyconfig.Editor
     public static class KeyConfigAssetMenu
     {
         [MenuItem("Tools/KeyConfig/Create Input Action Asset Resolver")]
-        private static void CreateInputActionAssetResolver()
+        private static void CreateInputActionsConfig()
         {
-            CreateAssetInSelectedFolder<InputActionAssetResolver>("InputActionAssetResolver.asset");
+            CreateAssetInSelectedFolder<KeyConfigInputActionsConfig>("KeyConfigInputActionsConfig.asset");
         }
 
         [MenuItem("Tools/KeyConfig/Create Input Binding Icon Resolver")]

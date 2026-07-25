@@ -7,7 +7,7 @@ namespace Koiusa.Common.System
 {
     public sealed class GameQuitter : MonoBehaviour
     {
-        [SerializeField] private InputActionAssetProfile inputProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputAction quitAction;
         private InputActionLease quitLease;
@@ -16,7 +16,7 @@ namespace Koiusa.Common.System
 
         private void OnEnable()
         {
-            quitAction = inputProfile?.FindAction("UI/Cancel");
+            quitAction = inputActionsConfig?.FindAction("UI/Cancel");
             if (quitAction == null)
             {
                 Debug.LogWarning("GameQuit Action is not assigned.", this);

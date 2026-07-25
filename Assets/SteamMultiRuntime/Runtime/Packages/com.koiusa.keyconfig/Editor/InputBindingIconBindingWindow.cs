@@ -69,7 +69,7 @@ namespace Koiusa.Keyconfig.Editor
             var inputActionAsset = iconResolver.ResolveInputActionAsset();
             if (inputActionAsset == null)
             {
-                EditorGUILayout.HelpBox("Resolver 側の InputActionAssetResolver と InputActionAsset を設定してください。", MessageType.Warning);
+                EditorGUILayout.HelpBox("KeyConfigInputActionsConfigとInputActionAssetを設定してください。", MessageType.Warning);
                 return;
             }
 

@@ -12,7 +12,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private GameObject cameraRigObject;
 
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsProfile inputProfile;
+        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
 
         private bool isBound;
 
@@ -23,7 +23,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            targetSwitchBinding = InputActionBinding.Bind(inputProfile?.SoloLockAction, OnTargetSwitchPerformed);
+            targetSwitchBinding = InputActionBinding.Bind(inputActionsConfig?.SoloLockAction, OnTargetSwitchPerformed);
             isBound = true;
         }
 

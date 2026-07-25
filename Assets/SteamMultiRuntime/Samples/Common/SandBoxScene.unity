@@ -506,7 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0da7059df1494e55ac007b56d344f21a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Keyconfig.Runtime::Koiusa.Keyconfig.Runtime.InputGuideOverlay
-  inputActionAssetResolver: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
   actionMapName: Player
   bindingGroup: Keyboard&Mouse
   layoutAsset: {fileID: 9197481963319205126, guid: c073356281ac46df8bac1a314ae739e3, type: 3}

@@ -10,7 +10,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class SoloLockTargetInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsProfile inputProfile;
+        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
 
         [Header("References")]
         [SerializeField] private TargetIndicatorController indicatorController;
@@ -31,8 +31,8 @@ namespace Koiusa.TargetingSystem.Runtime
         private void OnEnable()
         {
             if (isBound) return;
-            nextTargetBinding = InputActionBinding.Bind(inputProfile?.NextTargetAction, OnNextTargetPerformed);
-            prevTargetBinding = InputActionBinding.Bind(inputProfile?.PreviousTargetAction, OnPrevTargetPerformed);
+            nextTargetBinding = InputActionBinding.Bind(inputActionsConfig?.NextTargetAction, OnNextTargetPerformed);
+            prevTargetBinding = InputActionBinding.Bind(inputActionsConfig?.PreviousTargetAction, OnPrevTargetPerformed);
 
             if (binder is ILockOn lockOn)
             {

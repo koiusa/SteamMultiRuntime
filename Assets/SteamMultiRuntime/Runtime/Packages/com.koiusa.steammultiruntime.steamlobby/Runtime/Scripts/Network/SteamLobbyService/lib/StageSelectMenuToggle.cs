@@ -15,7 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private LocalStageSelectUIDocument stageSelectUiDocument;
 
         [Header("Input")]
-        [SerializeField] private InputActionAssetProfile inputProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputActionBinding toggleBinding;
 
@@ -34,7 +34,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Next"), OnTogglePerformed);
+            toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("Player/Next"), OnTogglePerformed);
         }
 
         private void OnDisable()

@@ -25,7 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionLease grappleLease;
         private InputActionLease reelLease;
 
-        public PlayerGameplayInputReader(InputActionAssetProfile profile)
+        public PlayerGameplayInputReader(InputActionsConfig profile)
         {
             if (profile == null)
             {

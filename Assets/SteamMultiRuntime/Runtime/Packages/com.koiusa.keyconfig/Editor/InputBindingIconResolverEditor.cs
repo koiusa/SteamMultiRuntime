@@ -21,13 +21,13 @@ namespace Koiusa.Keyconfig.Editor
             public string key;
         }
 
-        private SerializedProperty inputActionAssetResolverProperty;
+        private SerializedProperty inputActionsConfigProperty;
         private SerializedProperty customBindingsProperty;
         private int selectedMapTabIndex;
 
         private void OnEnable()
         {
-            inputActionAssetResolverProperty = serializedObject.FindProperty("inputActionAssetResolver");
+            inputActionsConfigProperty = serializedObject.FindProperty("inputActionsConfig");
             customBindingsProperty = serializedObject.FindProperty("customBindings");
         }
 
@@ -41,13 +41,13 @@ namespace Koiusa.Keyconfig.Editor
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.PropertyField(inputActionAssetResolverProperty);
+            EditorGUILayout.PropertyField(inputActionsConfigProperty);
 
             var resolver = (InputBindingIconResolver)target;
             var inputActionAsset = resolver.ResolveInputActionAsset();
             if (inputActionAsset == null)
             {
-                EditorGUILayout.HelpBox("InputActionAssetResolver またはその参照先 InputActionAsset を設定してください。", MessageType.Info);
+                EditorGUILayout.HelpBox("KeyConfigInputActionsConfig またはそのInputActionAssetを設定してください。", MessageType.Info);
                 EditorGUILayout.Space();
                 EditorGUILayout.PropertyField(customBindingsProperty, true);
                 serializedObject.ApplyModifiedProperties();

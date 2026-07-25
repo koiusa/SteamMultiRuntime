@@ -3,8 +3,8 @@ using UnityEngine.InputSystem;
 
 namespace Koiusa.TargetingSystem.Runtime
 {
-    [CreateAssetMenu(fileName = "TargetingInputActionsProfile", menuName = "Koiusa/Targeting/Input Actions Profile")]
-    public sealed class TargetingInputActionsProfile : ScriptableObject
+    [CreateAssetMenu(fileName = "TargetingInputActionsConfig", menuName = "Koiusa/Targeting/Input Actions Config")]
+    public sealed class TargetingInputActionsConfig : ScriptableObject
     {
         [Header("Package Sample Only")]
         [TextArea, SerializeField] private string purpose =

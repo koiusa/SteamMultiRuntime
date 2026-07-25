@@ -14,7 +14,7 @@ namespace Koiusa.Keyconfig.Runtime
         private const string DefaultLayoutPath = "UI/InputGuide/InputGuideOverlay";
 
         [Header("Input")]
-        [SerializeField] private InputActionAssetResolver inputActionAssetResolver;
+        [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
         [Tooltip("Empty displays the first action map.")]
         [SerializeField] private string actionMapName = string.Empty;
         [Tooltip("Empty displays bindings from every control scheme.")]
@@ -45,7 +45,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
-            inputActionAsset = inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
+            inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
         }
 
         private void OnEnable()
@@ -99,7 +99,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Refresh()
         {
-            inputActionAsset = inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
+            inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
             Build();
         }
 

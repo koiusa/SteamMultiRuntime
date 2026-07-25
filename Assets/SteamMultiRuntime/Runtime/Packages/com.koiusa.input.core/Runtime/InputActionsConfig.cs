@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 
 namespace Koiusa.Input
 {
-    [CreateAssetMenu(fileName = "InputActionAssetProfile", menuName = "Koiusa/Input/Input Action Asset Profile")]
-    public sealed class InputActionAssetProfile : ScriptableObject
+    [CreateAssetMenu(fileName = "InputActionsConfig", menuName = "Koiusa/Input/Input Actions Config")]
+    public sealed class InputActionsConfig : ScriptableObject
     {
         [Serializable]
         private struct ActionOverride

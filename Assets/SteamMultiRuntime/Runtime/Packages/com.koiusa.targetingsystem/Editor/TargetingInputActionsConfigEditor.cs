@@ -5,8 +5,8 @@ using UnityEngine.InputSystem;
 
 namespace Koiusa.TargetingSystem.Editor
 {
-    [CustomEditor(typeof(TargetingInputActionsProfile))]
-    public sealed class TargetingInputActionsProfileEditor : UnityEditor.Editor
+    [CustomEditor(typeof(TargetingInputActionsConfig))]
+    public sealed class TargetingInputActionsConfigEditor : UnityEditor.Editor
     {
         private SerializedProperty purpose;
         private SerializedProperty inputActionAsset;

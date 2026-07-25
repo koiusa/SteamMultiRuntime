@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Koiusa.Input.Editor
 {
-    [CustomEditor(typeof(InputActionAssetProfile))]
-    public sealed class InputActionAssetProfileEditor : UnityEditor.Editor
+    [CustomEditor(typeof(InputActionsConfig))]
+    public sealed class InputActionsConfigEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

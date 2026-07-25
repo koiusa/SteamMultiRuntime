@@ -14,7 +14,7 @@ namespace Koiusa.Keyconfig.Runtime
         [SerializeField] private StyleSheet styleSheet;
         
         [Header("Input")]
-        [SerializeField] private InputActionAssetResolver inputActionAssetResolver;
+        [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
         [SerializeField] private string userId = "LocalUser";
         [SerializeField] private string bindingGroup = string.Empty;
 
@@ -57,7 +57,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (bindingService == null)
             {
                 view.SetInteractive(false);
-                view.SetStatus("InputActionAssetResolver が未設定、または解決先が未設定です。");
+                view.SetStatus("KeyConfigInputActionsConfig が未設定、またはInputActionAssetが未設定です。");
                 view.SetBindingGroupChoices(null, bindingGroup);
                 view.RenderBindingEntries(currentEntries, null, null);
                 return;
@@ -262,7 +262,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private InputActionAsset ResolveInputActionAsset()
         {
-            return inputActionAssetResolver != null ? inputActionAssetResolver.Resolve() : null;
+            return inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
         }
 
         private string BuildReadyStatus()

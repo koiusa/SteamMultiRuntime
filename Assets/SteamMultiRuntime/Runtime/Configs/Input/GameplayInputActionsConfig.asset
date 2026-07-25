@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 283ce71b99c64ed394bcccf464303db9, type: 3}
-  m_Name: GameplayInputActionsProfile
-  m_EditorClassIdentifier: Koiusa.Input.Core.Runtime::Koiusa.Input.InputActionAssetProfile
+  m_Name: GameplayInputActionsConfig
+  m_EditorClassIdentifier: Koiusa.Input.Core.Runtime::Koiusa.Input.InputActionsConfig
   purpose: SteamMultiRuntime本番用。プレイヤー操作、メニュー、ゲーム終了を含む共通入力設定。
   inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   actionOverrides:

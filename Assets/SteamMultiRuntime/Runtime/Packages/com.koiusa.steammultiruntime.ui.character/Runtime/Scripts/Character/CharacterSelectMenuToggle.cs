@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private CharacterSelectUiDocument characterSelectUiDocument;
 
         [Header("Input")]
-        [SerializeField] private InputActionAssetProfile inputProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputActionBinding toggleBinding;
 
@@ -30,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Previous"), OnTogglePerformed);
+            toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("Player/Previous"), OnTogglePerformed);
         }
 
         private void OnDisable()

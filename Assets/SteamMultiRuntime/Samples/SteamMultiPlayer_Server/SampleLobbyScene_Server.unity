@@ -826,7 +826,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyMenuToggle
   lobbyUiDocument: {fileID: 3473073323446165401}
-  inputProfile: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
 --- !u!114 &7961894838766494948
 MonoBehaviour:
   m_ObjectHideFlags: 0
