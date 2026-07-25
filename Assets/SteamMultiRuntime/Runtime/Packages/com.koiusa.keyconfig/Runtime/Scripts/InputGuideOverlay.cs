@@ -36,6 +36,8 @@ namespace Koiusa.Keyconfig.Runtime
         {
             public VisualElement Element;
             public InputControl Control;
+            public float ReleaseDelay;
+            public float ActiveUntil;
         }
 
         public bool IsVisible => overlay != null && overlay.style.display != DisplayStyle.None;
@@ -62,7 +64,13 @@ namespace Koiusa.Keyconfig.Runtime
             for (var i = 0; i < rows.Count; i++)
             {
                 var row = rows[i];
-                var active = InputControlActivity.IsActive(row.Control);
+                var inputDetected = InputControlActivity.IsActive(row.Control);
+                if (inputDetected)
+                {
+                    row.ActiveUntil = Time.unscaledTime + row.ReleaseDelay;
+                }
+
+                var active = inputDetected || Time.unscaledTime < row.ActiveUntil;
                 row.Element.EnableInClassList("active", active);
                 if (active && row.Control?.device != null)
                 {
@@ -170,7 +178,12 @@ namespace Koiusa.Keyconfig.Runtime
             rows.Add(new GuideRow
             {
                 Element = controlElement,
-                Control = InputControlActivity.Resolve(path)
+                Control = InputControlActivity.Resolve(path),
+                // Pointer delta commonly returns to zero between input events. A short
+                // release delay makes motion read as continuous without delaying onset.
+                ReleaseDelay = string.Equals(controlName, "delta", StringComparison.Ordinal)
+                    ? 0.18f
+                    : 0f
             });
         }
 
