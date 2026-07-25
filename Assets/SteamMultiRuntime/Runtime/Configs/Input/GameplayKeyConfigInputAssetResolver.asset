@@ -13,4 +13,3 @@ MonoBehaviour:
   m_Name: GameplayKeyConfigInputAssetResolver
   m_EditorClassIdentifier: koiusa.Keyconfig.Runtime::Koiusa.Keyconfig.Runtime.InputActionAssetResolver
   inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
-  inputActionReference: {fileID: -1680190386980627800, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}

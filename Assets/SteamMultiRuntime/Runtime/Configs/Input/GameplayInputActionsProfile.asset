@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameplayInputActionsProfile
   m_EditorClassIdentifier: Koiusa.Input.Core.Runtime::Koiusa.Input.InputActionAssetProfile
   purpose: SteamMultiRuntime本番用。プレイヤー操作、メニュー、ゲーム終了を含む共通入力設定。
-  assetSource: {fileID: -1680190386980627800, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   actionOverrides:
   - actionPath: Player/StrafeToggle
     action: {fileID: -28682633437674282, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}

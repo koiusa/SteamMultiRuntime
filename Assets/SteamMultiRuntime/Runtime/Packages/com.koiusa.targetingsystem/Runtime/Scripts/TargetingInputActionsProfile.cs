@@ -1,4 +1,3 @@
-using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +10,8 @@ namespace Koiusa.TargetingSystem.Runtime
         [TextArea, SerializeField] private string purpose =
             "TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。";
 
+        public string Purpose => purpose;
+
         public InputAction LookAction => Resolve("Player/Look");
         public InputAction SoloLockAction => Resolve("Player/SingleLockOn");
         public InputAction MultiLockAction => Resolve("Player/MultiLockOn");
@@ -20,9 +21,9 @@ namespace Koiusa.TargetingSystem.Runtime
         public InputAction NextTargetAction => Resolve("Player/Next");
         public InputAction FocusAction => Resolve("Player/Focus");
 
-        [Tooltip("Reference any action from TargetingSystem_SampleActions.")]
-        [SerializeField] private InputActionReference assetSource;
+        [Tooltip("TargetingSystem sample's complete InputActionAsset. Configure its actions and bindings in that asset.")]
+        [SerializeField] private InputActionAsset inputActionAsset;
 
-        private InputAction Resolve(string path) => InputActionResolver.Resolve(assetSource, path);
+        private InputAction Resolve(string path) => inputActionAsset?.FindAction(path, throwIfNotFound: false);
     }
 }

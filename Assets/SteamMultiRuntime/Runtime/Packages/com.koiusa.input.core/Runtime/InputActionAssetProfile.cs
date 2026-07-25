@@ -21,17 +21,17 @@ namespace Koiusa.Input
         [TextArea, SerializeField] private string purpose;
 
         [Header("Input Actions")]
-        [Tooltip("Reference any action from the InputActionAsset used by this profile.")]
-        [SerializeField] private InputActionReference assetSource;
+        [Tooltip("The complete InputActionAsset used by this profile. Configure actions and bindings in this asset.")]
+        [SerializeField] private InputActionAsset inputActionAsset;
 
-        [Tooltip("Compatibility overrides for actions that do not exist at the requested path in the main asset.")]
+        [Tooltip("Optional exceptions only. Add an entry when a requested action path does not exist in the main asset.")]
         [SerializeField] private ActionOverride[] actionOverrides;
 
         public string Purpose => purpose;
 
         public InputAction FindAction(string actionPath)
         {
-            var resolved = InputActionResolver.Resolve(assetSource, actionPath);
+            var resolved = inputActionAsset?.FindAction(actionPath, throwIfNotFound: false);
             if (resolved != null)
             {
                 return resolved;

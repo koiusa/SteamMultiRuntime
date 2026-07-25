@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: TargetingInputActionsProfile
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingInputActionsProfile
   purpose: TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。
-  assetSource: {fileID: -1680190386980627800, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  inputActionAsset: {fileID: -944628639613478452, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
