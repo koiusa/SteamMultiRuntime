@@ -68,12 +68,28 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
+            // Network NPC marker lifetime is authoritative on the server and is
+            // applied by NpcDestinationDebugMarkerNetSync. Remote agents do not
+            // own a NavMesh path, so their local hasPath cannot determine arrival.
+            if (GetComponent<Unity.Netcode.NetworkObject>() != null)
+                return;
+
             if (!_hasDestination || _marker == null || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
 
-            var arrived = !_agent.pathPending && (!_agent.hasPath || _agent.remainingDistance <= _agent.stoppingDistance + arriveBuffer);
-            if (arrived)
+            if (HasArrived())
                 DestroyMarker();
+        }
+
+        public bool HasArrived()
+        {
+            if (!_hasDestination || _agent == null || !_agent.enabled || !_agent.isOnNavMesh)
+                return false;
+            if (_agent.pathPending)
+                return false;
+
+            return !_agent.hasPath
+                || _agent.remainingDistance <= _agent.stoppingDistance + arriveBuffer;
         }
 
         public void SetDestination(Vector3 destination)

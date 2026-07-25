@@ -14,6 +14,11 @@ namespace Koiusa.SteamMultiRuntime
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        private readonly NetworkVariable<bool> syncedVisible = new NetworkVariable<bool>(
+            false,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         private NpcNavMeshController controller;
         private NpcDestinationDebugMarker marker;
 
@@ -33,10 +38,20 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             syncedDestination.OnValueChanged += OnSyncedDestinationChanged;
-            if (marker != null)
-            {
+            syncedVisible.OnValueChanged += OnSyncedVisibleChanged;
+            if (marker != null && syncedVisible.Value)
                 marker.SetDestination(syncedDestination.Value);
-            }
+            else
+                marker?.ClearDestination();
+        }
+
+        private void Update()
+        {
+            if (!IsSpawned || !IsServer || !syncedVisible.Value || marker == null)
+                return;
+
+            if (marker.HasArrived())
+                syncedVisible.Value = false;
         }
 
         public override void OnNetworkDespawn()
@@ -47,6 +62,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             syncedDestination.OnValueChanged -= OnSyncedDestinationChanged;
+            syncedVisible.OnValueChanged -= OnSyncedVisibleChanged;
             if (marker != null)
             {
                 marker.ClearDestination();
@@ -63,14 +79,24 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             syncedDestination.Value = destination;
+            syncedVisible.Value = true;
         }
 
         private void OnSyncedDestinationChanged(Vector3 previousValue, Vector3 newValue)
         {
-            if (marker != null)
-            {
+            if (marker != null && syncedVisible.Value)
                 marker.SetDestination(newValue);
-            }
+        }
+
+        private void OnSyncedVisibleChanged(bool previousValue, bool newValue)
+        {
+            if (marker == null)
+                return;
+
+            if (newValue)
+                marker.SetDestination(syncedDestination.Value);
+            else
+                marker.ClearDestination();
         }
     }
 }
