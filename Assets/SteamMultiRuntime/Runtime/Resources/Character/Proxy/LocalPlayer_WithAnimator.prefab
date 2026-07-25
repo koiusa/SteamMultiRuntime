@@ -26,6 +26,8 @@ GameObject:
   - component: {fileID: 2504532941486712691}
   - component: {fileID: 937887151947646620}
   - component: {fileID: 6842739510264837102}
+  - component: {fileID: 810000000000000001}
+  - component: {fileID: 810000000000000002}
   - component: {fileID: -3038119161856350272}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
@@ -401,6 +403,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 443490f804254816902f9e95af5f1a5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerDisplayName
+--- !u!114 &810000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6bb8109e634dce9e88d9cc8a73df01, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGrappleTargetingFeature
+  aimTransform: {fileID: 0}
+  maximumRange: 45
+  grappleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  triggerInteraction: 1
+--- !u!114 &810000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ae9e3279ba4d07a61f2633528fe124, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireLineVisualFeature
+  wireOrigin: {fileID: 4729856950231397882}
+  lineRenderer: {fileID: 0}
+  wireMaterial: {fileID: 0}
+  wireWidth: 0.035
+  wireColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &-3038119161856350272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -411,19 +448,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingTraversalFeature
-  grappleAction: {fileID: 0}
-  moveAction: {fileID: 0}
-  reelAction: {fileID: 0}
-  jumpAction: {fileID: 0}
-  aimTransform: {fileID: 0}
-  wireOrigin: {fileID: 4729856950231397882}
-  maximumRange: 45
-  grappleLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  triggerInteraction: 1
+  targeting: {fileID: 810000000000000001}
+  visual: {fileID: 810000000000000002}
   minimumRopeLength: 2
   ropeSlack: 0.15
   pullAcceleration: 55
@@ -432,9 +460,6 @@ MonoBehaviour:
   reelSpeed: 12
   jumpReelDistance: 1.5
   radialVelocityDamping: 1
-  lineRenderer: {fileID: 0}
-  wireWidth: 0.035
-  wireColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

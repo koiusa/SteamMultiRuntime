@@ -16,7 +16,8 @@ namespace Koiusa.SteamMultiRuntime
                 "• WallJumpTraversalFeature - 壁ジャンプ（オプション）\n" +
                 "• WallSlideTraversalFeature - 壁滑り（オプション）\n" +
                 "• LadderTraversalFeature - 梯子昇降（オプション）\n" +
-                "• WireSwingTraversalFeature - ワイヤースイング（オプション）",
+                "• WireSwingTraversalFeature - ワイヤースイング物理（オプション）\n" +
+                "  └ WireGrappleTargetingFeature / WireLineVisualFeature - 接続判定 / 描画",
                 MessageType.Info);
 
             EditorGUILayout.Space();
@@ -54,6 +55,8 @@ namespace Koiusa.SteamMultiRuntime
             DrawComponentRow<WallSlideTraversalFeature>(gameObject, "WallSlideTraversalFeature");
             DrawComponentRow<LadderTraversalFeature>(gameObject, "LadderTraversalFeature");
             DrawComponentRow<WireSwingTraversalFeature>(gameObject, "WireSwingTraversalFeature");
+            DrawComponentRow<WireGrappleTargetingFeature>(gameObject, "  WireGrappleTargetingFeature");
+            DrawComponentRow<WireLineVisualFeature>(gameObject, "  WireLineVisualFeature");
 
             EditorGUI.indentLevel--;
 

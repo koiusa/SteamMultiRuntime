@@ -8,11 +8,8 @@ namespace Koiusa.SteamMultiRuntime
     [CanEditMultipleObjects]
     public sealed class WireSwingTraversalFeatureEditor : UnityEditor.Editor
     {
-        private SerializedProperty aimTransform;
-        private SerializedProperty wireOrigin;
-        private SerializedProperty maximumRange;
-        private SerializedProperty grappleLayers;
-        private SerializedProperty triggerInteraction;
+        private SerializedProperty targeting;
+        private SerializedProperty visual;
         private SerializedProperty minimumRopeLength;
         private SerializedProperty ropeSlack;
         private SerializedProperty pullAcceleration;
@@ -21,18 +18,11 @@ namespace Koiusa.SteamMultiRuntime
         private SerializedProperty reelSpeed;
         private SerializedProperty jumpReelDistance;
         private SerializedProperty radialVelocityDamping;
-        private SerializedProperty lineRenderer;
-        private SerializedProperty wireMaterial;
-        private SerializedProperty wireWidth;
-        private SerializedProperty wireColor;
 
         private void OnEnable()
         {
-            aimTransform = serializedObject.FindProperty("aimTransform");
-            wireOrigin = serializedObject.FindProperty("wireOrigin");
-            maximumRange = serializedObject.FindProperty("maximumRange");
-            grappleLayers = serializedObject.FindProperty("grappleLayers");
-            triggerInteraction = serializedObject.FindProperty("triggerInteraction");
+            targeting = serializedObject.FindProperty("targeting");
+            visual = serializedObject.FindProperty("visual");
             minimumRopeLength = serializedObject.FindProperty("minimumRopeLength");
             ropeSlack = serializedObject.FindProperty("ropeSlack");
             pullAcceleration = serializedObject.FindProperty("pullAcceleration");
@@ -41,125 +31,57 @@ namespace Koiusa.SteamMultiRuntime
             reelSpeed = serializedObject.FindProperty("reelSpeed");
             jumpReelDistance = serializedObject.FindProperty("jumpReelDistance");
             radialVelocityDamping = serializedObject.FindProperty("radialVelocityDamping");
-            lineRenderer = serializedObject.FindProperty("lineRenderer");
-            wireMaterial = serializedObject.FindProperty("wireMaterial");
-            wireWidth = serializedObject.FindProperty("wireWidth");
-            wireColor = serializedObject.FindProperty("wireColor");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-
             EditorGUILayout.HelpBox(
-                "PlayerMotorと連携するRigidbodyベースのワイヤースイングです。\n" +
-                "Grappleを押している間はマウスポインタ方向へ射出し、空中ではJump入力ごとにロープを短縮します。マウスがない場合はカメラ正面を使用します。",
+                "スイング物理を担当します。照準・接続判定は Wire Grapple Targeting、始点・描画は Wire Line Visual で設定します。",
                 MessageType.Info);
 
-            DrawAimSection();
-            DrawSwingSection();
-            DrawRenderingSection();
-            DrawValidation();
-            DrawRuntimeState();
+            EditorGUILayout.LabelField("Dependencies", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(targeting);
+            EditorGUILayout.PropertyField(visual);
 
-            serializedObject.ApplyModifiedProperties();
-        }
-
-        private void DrawAimSection()
-        {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Aiming", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(aimTransform);
-            EditorGUILayout.PropertyField(wireOrigin);
-            EditorGUILayout.PropertyField(maximumRange);
-            EditorGUILayout.PropertyField(grappleLayers);
-            EditorGUILayout.PropertyField(triggerInteraction);
-
-            if (!serializedObject.isEditingMultipleObjects
-                && aimTransform.objectReferenceValue == null
-                && Camera.main != null
-                && GUILayout.Button("Assign Main Camera As Aim Transform"))
-            {
-                aimTransform.objectReferenceValue = Camera.main.transform;
-            }
-        }
-
-        private void DrawSwingSection()
-        {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Swing Physics", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(minimumRopeLength);
             EditorGUILayout.PropertyField(ropeSlack);
             EditorGUILayout.PropertyField(pullAcceleration);
             EditorGUILayout.PropertyField(swingAcceleration);
-            EditorGUILayout.PropertyField(
-                maximumInputSwingSpeed,
-                new GUIContent("Maximum Input Swing Speed", "移動入力によるスイング加速を停止する接線方向の速度です。重力やワイヤー収縮による速度は制限しません。"));
+            EditorGUILayout.PropertyField(maximumInputSwingSpeed, new GUIContent("Maximum Input Swing Speed", "移動入力による加速を停止する接線方向速度です。"));
             EditorGUILayout.PropertyField(reelSpeed);
-            EditorGUILayout.PropertyField(
-                jumpReelDistance,
-                new GUIContent("Jump Reel Distance", "空中でワイヤー接続中にJumpを押したとき、1回につき短くする距離です。"));
+            EditorGUILayout.PropertyField(jumpReelDistance, new GUIContent("Jump Reel Distance", "接続中にJumpを押すたび短くする距離です。"));
             EditorGUILayout.PropertyField(radialVelocityDamping);
-        }
 
-        private void DrawRenderingSection()
-        {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Rendering", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(lineRenderer);
-            EditorGUILayout.PropertyField(wireMaterial, new GUIContent("Wire Material", "省略時はURP/HDRP/Built-inを判定して対応するUnlit Materialを共有生成します。"));
-            EditorGUILayout.PropertyField(wireWidth);
-            EditorGUILayout.PropertyField(wireColor);
-
-            if (!serializedObject.isEditingMultipleObjects && lineRenderer.objectReferenceValue == null)
-            {
-                var feature = (WireSwingTraversalFeature)target;
-                var existing = feature.GetComponent<LineRenderer>();
-                var label = existing != null ? "Use Attached LineRenderer" : "Add LineRenderer";
-                if (GUILayout.Button(label))
-                {
-                    var renderer = existing != null ? existing : Undo.AddComponent<LineRenderer>(feature.gameObject);
-                    lineRenderer.objectReferenceValue = renderer;
-                    EditorUtility.SetDirty(feature);
-                    MarkSceneDirty(feature.gameObject);
-                }
-            }
+            DrawValidation();
+            DrawRuntimeState();
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawValidation()
         {
-            EditorGUILayout.Space();
-            if (aimTransform.objectReferenceValue == null)
+            if (targeting.objectReferenceValue == null || visual.objectReferenceValue == null)
             {
-                EditorGUILayout.HelpBox("Aim Transform未設定時はMain Camera、見つからない場合はプレイヤー正面を使用します。", MessageType.Info);
+                EditorGUILayout.HelpBox("分割コンポーネントの参照が不足しています。下の修復ボタンで設定できます。", MessageType.Error);
+                if (!serializedObject.isEditingMultipleObjects && GUILayout.Button("Add / Assign Wire Components"))
+                {
+                    var feature = (WireSwingTraversalFeature)target;
+                    AssignComponents(feature.gameObject, feature, serializedObject);
+                }
             }
 
-            var feature = (WireSwingTraversalFeature)target;
-            if (feature.GetComponent<PlayerMotor>() == null)
+            var current = (WireSwingTraversalFeature)target;
+            if (current.GetComponent<PlayerMotor>() == null)
             {
-                EditorGUILayout.HelpBox("PlayerMotorが同じGameObjectにありません。単独動作は可能ですがMotor連携は無効です。", MessageType.Warning);
-            }
-
-            if (grappleLayers.intValue == 0)
-            {
-                EditorGUILayout.HelpBox("Grapple Layersが空のため、接続可能なオブジェクトがありません。", MessageType.Error);
-            }
-
-            if (wireMaterial.objectReferenceValue == null)
-            {
-                EditorGUILayout.HelpBox(
-                    "Wire Material未設定時は現在のRender Pipelineに対応するUnlit Shaderを自動選択します。ビルドでShader Strippingする場合はMaterialの明示指定を推奨します。",
-                    MessageType.Info);
+                EditorGUILayout.HelpBox("PlayerMotorが同じGameObjectにないためMotor連携は無効です。", MessageType.Warning);
             }
         }
 
         private void DrawRuntimeState()
         {
-            if (!Application.isPlaying || serializedObject.isEditingMultipleObjects)
-            {
-                return;
-            }
-
+            if (!Application.isPlaying || serializedObject.isEditingMultipleObjects) return;
             var feature = (WireSwingTraversalFeature)target;
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Runtime State", EditorStyles.boldLabel);
@@ -169,11 +91,7 @@ namespace Koiusa.SteamMultiRuntime
                 EditorGUILayout.Vector3Field("Anchor Point", feature.AnchorPoint);
                 EditorGUILayout.FloatField("Rope Length", feature.RopeLength);
             }
-
-            if (feature.IsAttached && GUILayout.Button("Detach"))
-            {
-                feature.Detach();
-            }
+            if (feature.IsAttached && GUILayout.Button("Detach")) feature.Detach();
         }
 
         private void OnSceneGUI()
@@ -182,17 +100,14 @@ namespace Koiusa.SteamMultiRuntime
             var aim = feature.AimTransform;
             var origin = aim != null ? aim.position : feature.transform.position;
             var forward = aim != null ? aim.forward : feature.transform.forward;
-
             Handles.color = new Color(0.2f, 0.75f, 1f, 0.65f);
             Handles.DrawWireDisc(origin, forward, feature.MaximumRange);
             Handles.DrawLine(origin, origin + forward * feature.MaximumRange, 2f);
-
             if (Application.isPlaying && feature.IsAttached)
             {
                 Handles.color = Color.cyan;
                 Handles.DrawAAPolyLine(4f, feature.transform.position, feature.AnchorPoint);
                 Handles.SphereHandleCap(0, feature.AnchorPoint, Quaternion.identity, 0.25f, EventType.Repaint);
-                Handles.Label(feature.AnchorPoint, $"Wire {feature.RopeLength:F1}m");
             }
         }
 
@@ -200,30 +115,53 @@ namespace Koiusa.SteamMultiRuntime
         private static void SetupSelectedPlayer()
         {
             var gameObject = Selection.activeGameObject;
-            var feature = gameObject.GetComponent<WireSwingTraversalFeature>();
-            if (feature == null)
-            {
-                feature = Undo.AddComponent<WireSwingTraversalFeature>(gameObject);
-            }
-
+            var feature = gameObject.GetComponent<WireSwingTraversalFeature>() ?? Undo.AddComponent<WireSwingTraversalFeature>(gameObject);
+            AssignComponents(gameObject, feature, new SerializedObject(feature));
             Selection.activeObject = feature;
             EditorGUIUtility.PingObject(feature);
             MarkSceneDirty(gameObject);
         }
 
         [MenuItem("Tools/SteamMultiRuntime/Setup Wire Swing On Selected Player", true)]
-        private static bool ValidateSetupSelectedPlayer()
+        private static bool ValidateSetupSelectedPlayer() => Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<PlayerMotor>() != null;
+
+        private static void AssignComponents(GameObject gameObject, WireSwingTraversalFeature feature, SerializedObject featureObject)
         {
-            return Selection.activeGameObject != null
-                && Selection.activeGameObject.GetComponent<PlayerMotor>() != null;
+            var targetingComponent = gameObject.GetComponent<WireGrappleTargetingFeature>() ?? Undo.AddComponent<WireGrappleTargetingFeature>(gameObject);
+            var visualComponent = gameObject.GetComponent<WireLineVisualFeature>() ?? Undo.AddComponent<WireLineVisualFeature>(gameObject);
+            featureObject.Update();
+            featureObject.FindProperty("targeting").objectReferenceValue = targetingComponent;
+            featureObject.FindProperty("visual").objectReferenceValue = visualComponent;
+            featureObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(feature);
+            MarkSceneDirty(gameObject);
         }
 
         private static void MarkSceneDirty(GameObject gameObject)
         {
-            if (!Application.isPlaying && gameObject.scene.IsValid())
-            {
-                EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
+            if (!Application.isPlaying && gameObject.scene.IsValid()) EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        }
+    }
+
+    [CustomEditor(typeof(WireGrappleTargetingFeature))]
+    public sealed class WireGrappleTargetingFeatureEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            EditorGUILayout.HelpBox("マウスポインタ等から渡されたRayに対し、接続先を検索します。", MessageType.Info);
+            DrawDefaultInspector();
+            var layers = serializedObject.FindProperty("grappleLayers");
+            if (layers != null && layers.intValue == 0) EditorGUILayout.HelpBox("Grapple Layersが空です。", MessageType.Error);
+        }
+    }
+
+    [CustomEditor(typeof(WireLineVisualFeature))]
+    public sealed class WireLineVisualFeatureEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            EditorGUILayout.HelpBox("ワイヤーの始点とLineRenderer表示だけを担当します。Wire Origin未設定時はRigidbodyの重心を使います。", MessageType.Info);
+            DrawDefaultInspector();
         }
     }
 }

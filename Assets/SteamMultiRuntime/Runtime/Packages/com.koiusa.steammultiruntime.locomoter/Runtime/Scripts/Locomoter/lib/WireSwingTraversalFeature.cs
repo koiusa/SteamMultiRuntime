@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -8,15 +7,14 @@ namespace Koiusa.SteamMultiRuntime
     /// same GameObject as the player Rigidbody and assign the input actions.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(WireGrappleTargetingFeature))]
+    [RequireComponent(typeof(WireLineVisualFeature))]
     [DisallowMultipleComponent]
     public sealed class WireSwingTraversalFeature : MonoBehaviour, IWireSwingTraversalFeature
     {
-        [Header("Aiming")]
-        [SerializeField] private Transform aimTransform;
-        [SerializeField] private Transform wireOrigin;
-        [SerializeField, Min(1f)] private float maximumRange = 45f;
-        [SerializeField] private LayerMask grappleLayers = ~0;
-        [SerializeField] private QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.Ignore;
+        [Header("Dependencies")]
+        [SerializeField] private WireGrappleTargetingFeature targeting;
+        [SerializeField] private WireLineVisualFeature visual;
 
         [Header("Swing")]
         [SerializeField, Min(0.1f)] private float minimumRopeLength = 2f;
@@ -28,20 +26,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float jumpReelDistance = 1.5f;
         [SerializeField, Range(0f, 1f)] private float radialVelocityDamping = 1f;
 
-        [Header("Rendering")]
-        [SerializeField] private LineRenderer lineRenderer;
-        [SerializeField] private Material wireMaterial;
-        [SerializeField, Min(0f)] private float wireWidth = 0.035f;
-        [SerializeField] private Color wireColor = Color.white;
-
-        private static Material sharedBuiltInMaterial;
-        private static Material sharedUniversalMaterial;
-        private static Material sharedHighDefinitionMaterial;
-        private static Material sharedCustomPipelineMaterial;
-
         private Rigidbody rb;
         private SlopeContactResolver slopeContactResolver;
-        private Collider[] ownColliders;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
         private Vector3 fixedAnchorPoint;
@@ -49,12 +35,11 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 motorMoveDirection;
         private float externalReelInput;
         private bool blockAttachUntilRelease;
-        private MaterialPropertyBlock materialPropertyBlock;
 
         public bool IsAttached { get; private set; }
         public bool IsEnabled => isActiveAndEnabled;
-        public Transform AimTransform => aimTransform;
-        public float MaximumRange => maximumRange;
+        public Transform AimTransform => targeting != null ? targeting.AimTransform : null;
+        public float MaximumRange => targeting != null ? targeting.MaximumRange : 0f;
         public Vector3 AnchorPoint => anchorTransform != null
             ? anchorTransform.TransformPoint(anchorLocalPoint)
             : fixedAnchorPoint;
@@ -64,8 +49,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             rb = GetComponent<Rigidbody>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
-            ownColliders = GetComponentsInChildren<Collider>();
-            EnsureLineRenderer();
+            if (targeting == null) targeting = GetComponent<WireGrappleTargetingFeature>();
+            if (visual == null) visual = GetComponent<WireLineVisualFeature>();
+            visual?.Initialize();
         }
 
         private void OnDisable()
@@ -76,20 +62,20 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnValidate()
         {
-            maximumRange = Mathf.Max(1f, maximumRange);
+            if (targeting == null) targeting = GetComponent<WireGrappleTargetingFeature>();
+            if (visual == null) visual = GetComponent<WireLineVisualFeature>();
             minimumRopeLength = Mathf.Max(0.1f, minimumRopeLength);
             ropeSlack = Mathf.Max(0f, ropeSlack);
             maximumInputSwingSpeed = Mathf.Max(0f, maximumInputSwingSpeed);
             jumpReelDistance = Mathf.Max(0f, jumpReelDistance);
-            if (lineRenderer != null)
-            {
-                ConfigureLineRenderer();
-            }
         }
 
         private void Update()
         {
-            UpdateWireVisual();
+            if (IsAttached)
+            {
+                visual?.UpdateEndpoints(AnchorPoint);
+            }
         }
 
         private void FixedUpdate()
@@ -142,7 +128,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            ropeLength = Mathf.Clamp(ropeLength - jumpReelDistance, minimumRopeLength, maximumRange);
+            ropeLength = Mathf.Clamp(ropeLength - jumpReelDistance, minimumRopeLength, MaximumRange);
         }
 
         public void DetachUntilInputRelease()
@@ -161,12 +147,9 @@ namespace Koiusa.SteamMultiRuntime
 
             anchorTransform = null;
             fixedAnchorPoint = anchorPoint;
-            ropeLength = Mathf.Clamp(replicatedRopeLength, minimumRopeLength, maximumRange);
+            ropeLength = Mathf.Clamp(replicatedRopeLength, minimumRopeLength, MaximumRange);
             IsAttached = true;
-            if (lineRenderer != null)
-            {
-                lineRenderer.enabled = true;
-            }
+            visual?.SetVisible(true);
         }
 
         /// <summary>Attaches to the first valid collider along a world-space ray.</summary>
@@ -177,16 +160,10 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var hits = Physics.RaycastAll(origin, direction.normalized, maximumRange, grappleLayers, triggerInteraction);
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-            foreach (var hit in hits)
+            if (targeting != null
+                && targeting.TryResolveAnchor(origin, direction, out var point, out var movingAnchor))
             {
-                if (IsOwnCollider(hit.collider))
-                {
-                    continue;
-                }
-
-                Attach(hit.point, hit.collider.transform);
+                Attach(point, movingAnchor);
                 return true;
             }
 
@@ -199,12 +176,9 @@ namespace Koiusa.SteamMultiRuntime
             anchorTransform = movingAnchor;
             fixedAnchorPoint = worldPoint;
             anchorLocalPoint = movingAnchor != null ? movingAnchor.InverseTransformPoint(worldPoint) : Vector3.zero;
-            ropeLength = Mathf.Clamp(Vector3.Distance(rb.worldCenterOfMass, worldPoint), minimumRopeLength, maximumRange);
+            ropeLength = Mathf.Clamp(Vector3.Distance(rb.worldCenterOfMass, worldPoint), minimumRopeLength, MaximumRange);
             IsAttached = true;
-            if (lineRenderer != null)
-            {
-                lineRenderer.enabled = true;
-            }
+            visual?.SetVisible(true);
         }
 
         public void Detach()
@@ -217,15 +191,12 @@ namespace Koiusa.SteamMultiRuntime
             IsAttached = false;
             anchorTransform = null;
             motorMoveDirection = Vector3.zero;
-            if (lineRenderer != null)
-            {
-                lineRenderer.enabled = false;
-            }
+            visual?.SetVisible(false);
         }
 
         private void ApplyReelInput()
         {
-            ropeLength = Mathf.Clamp(ropeLength - externalReelInput * reelSpeed * Time.fixedDeltaTime, minimumRopeLength, maximumRange);
+            ropeLength = Mathf.Clamp(ropeLength - externalReelInput * reelSpeed * Time.fixedDeltaTime, minimumRopeLength, MaximumRange);
         }
 
         private void ApplySwingForce()
@@ -277,165 +248,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 rb.linearVelocity += towardAnchor * (awaySpeed * radialVelocityDamping);
             }
-        }
-
-        private void EnsureLineRenderer()
-        {
-            if (lineRenderer == null)
-            {
-                lineRenderer = GetComponent<LineRenderer>();
-            }
-
-            if (lineRenderer == null)
-            {
-                lineRenderer = gameObject.AddComponent<LineRenderer>();
-            }
-
-            ConfigureLineRenderer();
-            EnsureCompatibleMaterial();
-            lineRenderer.enabled = false;
-        }
-
-        private void EnsureCompatibleMaterial()
-        {
-            if (lineRenderer == null)
-            {
-                return;
-            }
-
-            if (wireMaterial != null)
-            {
-                lineRenderer.sharedMaterial = wireMaterial;
-                return;
-            }
-
-            var material = GetSharedPipelineMaterial();
-            if (material != null)
-            {
-                lineRenderer.sharedMaterial = material;
-            }
-            else
-            {
-                Debug.LogWarning(
-                    "No compatible wire shader was found. Assign Wire Material explicitly or include an Unlit shader in the build.",
-                    this);
-            }
-        }
-
-        private static Material GetSharedPipelineMaterial()
-        {
-            var pipeline = GraphicsSettings.currentRenderPipeline;
-            if (pipeline == null)
-            {
-                return sharedBuiltInMaterial != null
-                    ? sharedBuiltInMaterial
-                    : sharedBuiltInMaterial = CreateSharedMaterial(
-                        "Particles/Standard Unlit",
-                        "Sprites/Default");
-            }
-
-            var pipelineTypeName = pipeline.GetType().FullName ?? string.Empty;
-            if (pipelineTypeName.Contains("UniversalRenderPipeline"))
-            {
-                return sharedUniversalMaterial != null
-                    ? sharedUniversalMaterial
-                    : sharedUniversalMaterial = CreateSharedMaterial(
-                        "Universal Render Pipeline/Particles/Unlit",
-                        "Universal Render Pipeline/Unlit");
-            }
-
-            if (pipelineTypeName.Contains("HDRenderPipeline"))
-            {
-                return sharedHighDefinitionMaterial != null
-                    ? sharedHighDefinitionMaterial
-                    : sharedHighDefinitionMaterial = CreateSharedMaterial(
-                        "HDRP/Unlit",
-                        "HDRenderPipeline/Unlit");
-            }
-
-            // Custom SRPs can still supply one of the common Unlit shaders. An
-            // explicitly assigned Wire Material remains the reliable override.
-            return sharedCustomPipelineMaterial != null
-                ? sharedCustomPipelineMaterial
-                : sharedCustomPipelineMaterial = CreateSharedMaterial(
-                    "Universal Render Pipeline/Particles/Unlit",
-                    "HDRP/Unlit",
-                    "Particles/Standard Unlit",
-                    "Sprites/Default");
-        }
-
-        private static Material CreateSharedMaterial(params string[] shaderNames)
-        {
-            for (var i = 0; i < shaderNames.Length; i++)
-            {
-                var shader = Shader.Find(shaderNames[i]);
-                if (shader == null || !shader.isSupported)
-                {
-                    continue;
-                }
-
-                return new Material(shader)
-                {
-                    name = $"Wire ({shaderNames[i]})",
-                    hideFlags = HideFlags.HideAndDontSave
-                };
-            }
-
-            return null;
-        }
-
-        private void ConfigureLineRenderer()
-        {
-            lineRenderer.useWorldSpace = true;
-            lineRenderer.positionCount = 2;
-            lineRenderer.startWidth = wireWidth;
-            lineRenderer.endWidth = wireWidth;
-            lineRenderer.startColor = wireColor;
-            lineRenderer.endColor = wireColor;
-            materialPropertyBlock ??= new MaterialPropertyBlock();
-            lineRenderer.GetPropertyBlock(materialPropertyBlock);
-            materialPropertyBlock.SetColor("_BaseColor", wireColor);
-            materialPropertyBlock.SetColor("_UnlitColor", wireColor);
-            materialPropertyBlock.SetColor("_Color", wireColor);
-            lineRenderer.SetPropertyBlock(materialPropertyBlock);
-            if (Application.isPlaying)
-            {
-                EnsureCompatibleMaterial();
-            }
-        }
-
-        private void UpdateWireVisual()
-        {
-            if (!IsAttached || lineRenderer == null)
-            {
-                return;
-            }
-
-            lineRenderer.SetPosition(0, wireOrigin != null ? wireOrigin.position : rb.worldCenterOfMass);
-            lineRenderer.SetPosition(1, AnchorPoint);
-        }
-
-        private Transform GetAimTransform()
-        {
-            if (aimTransform != null)
-            {
-                return aimTransform;
-            }
-
-            return Camera.main != null ? Camera.main.transform : transform;
-        }
-
-        private bool IsOwnCollider(Collider candidate)
-        {
-            foreach (var ownCollider in ownColliders)
-            {
-                if (candidate == ownCollider)
-                {
-                    return true;
-                }
-            }
-
-            return candidate.attachedRigidbody == rb;
         }
 
     }
