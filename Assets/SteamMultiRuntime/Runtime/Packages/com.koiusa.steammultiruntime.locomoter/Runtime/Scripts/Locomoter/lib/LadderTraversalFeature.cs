@@ -20,8 +20,6 @@ namespace Koiusa.SteamMultiRuntime
         private ITraversalIntentContext traversalIntentContext;
 
         private float ladderEnteredTime;
-        private bool useSideViewClimb;
-        private float sideViewClimbSign = 1f;
 
         private Vector3 facingDirection;
         private bool hasFacing;
@@ -69,8 +67,6 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = 0f;
-            useSideViewClimb = false;
-            sideViewClimbSign = 1f;
             hasFacing = false;
         }
 
@@ -80,8 +76,6 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
-            useSideViewClimb = false;
-            sideViewClimbSign = 1f;
             hasFacing = false;
         }
 
@@ -245,85 +239,14 @@ namespace Koiusa.SteamMultiRuntime
 
         private float ResolveClimbInput(Vector2 moveInput, Quaternion moveReferenceRotation, out float detachInput)
         {
-            var ladderUp = currentLadder != null ? currentLadder.UpDirection.normalized : GetUpAxis();
             var screenRight = moveReferenceRotation * Vector3.right;
-            var screenUp = moveReferenceRotation * Vector3.up;
-            var cameraForward = moveReferenceRotation * Vector3.forward;
-
-            var defaults = LadderTraversalSettings.CreateDefault();
-            var sideEnterAlignment = settings.SideViewEnterFaceAlignment > 0f
-                ? settings.SideViewEnterFaceAlignment
-                : defaults.SideViewEnterFaceAlignment;
-            var sideExitAlignment = settings.SideViewExitFaceAlignment > sideEnterAlignment
-                ? settings.SideViewExitFaceAlignment
-                : defaults.SideViewExitFaceAlignment;
-
-            // 梯子面を正面から見る場合は画面上下、横から見る場合は
-            // 梯子へ向かう画面左右を昇降とする。間に幅を持たせて視点回転中のバタつきを防ぐ。
-            var ladderNormal = currentLadder != null ? currentLadder.PlaneNormal.normalized : Vector3.forward;
-            var faceAlignment = Mathf.Abs(Vector3.Dot(ladderNormal, cameraForward.normalized));
-            if (useSideViewClimb)
-            {
-                useSideViewClimb = faceAlignment < sideExitAlignment;
-            }
-            else
-            {
-                useSideViewClimb = faceAlignment < sideEnterAlignment;
-            }
-
-            if (useSideViewClimb)
-            {
-                var towardLadder = hasFacing ? facingDirection : ladderNormal;
-                var horizontalSign = Vector3.Dot(screenRight, towardLadder);
-                if (Mathf.Abs(horizontalSign) > 0.05f)
-                {
-                    sideViewClimbSign = Mathf.Sign(horizontalSign);
-                }
-
-                detachInput = ResolveLateralInput(moveInput, screenRight, screenUp, new Vector2(0f, 1f));
-                return moveInput.x * sideViewClimbSign;
-            }
-
-            // 梯子の上方向を現在のカメラ画面へ投影する。
-            // 画面上で見える梯子の方向への入力だけを昇降とし、
-            // それと直交する入力を横離脱として扱う。
-            var climbAxis = new Vector2(
-                Vector3.Dot(ladderUp, screenRight),
-                Vector3.Dot(ladderUp, screenUp));
-
-            if (climbAxis.sqrMagnitude <= 0.0001f)
-            {
-                climbAxis = Vector2.up;
-            }
-            else
-            {
-                climbAxis.Normalize();
-            }
-
-            var fallbackLateralAxis = new Vector2(climbAxis.y, -climbAxis.x);
-            detachInput = ResolveLateralInput(moveInput, screenRight, screenUp, fallbackLateralAxis);
-            return Vector2.Dot(moveInput, climbAxis);
-        }
-
-        private float ResolveLateralInput(Vector2 moveInput, Vector3 screenRight, Vector3 screenUp, Vector2 fallbackAxis)
-        {
             var ladderRight = currentLadder != null ? currentLadder.RightDirection.normalized : Vector3.right;
-            var lateralAxis = new Vector2(
-                Vector3.Dot(ladderRight, screenRight),
-                Vector3.Dot(ladderRight, screenUp));
 
-            // transform.right が画面の左に見える側から梯子を見ている場合も、
-            // 画面で押した方向とワールド上の移動を一致させる。
-            if (lateralAxis.sqrMagnitude <= 0.0001f)
-            {
-                lateralAxis = fallbackAxis;
-            }
-            else
-            {
-                lateralAxis.Normalize();
-            }
-
-            return Vector2.Dot(moveInput, lateralAxis);
+            // Ladderモード中はカメラ角度や入力の離し直しに関係なく、上下入力を昇降専用にする。
+            var lateralSign = Vector3.Dot(ladderRight, screenRight);
+            lateralSign = Mathf.Abs(lateralSign) > 0.05f ? Mathf.Sign(lateralSign) : 1f;
+            detachInput = moveInput.x * lateralSign;
+            return moveInput.y;
         }
 
         private void UpdateFacingDirection(LadderVolume ladder)
