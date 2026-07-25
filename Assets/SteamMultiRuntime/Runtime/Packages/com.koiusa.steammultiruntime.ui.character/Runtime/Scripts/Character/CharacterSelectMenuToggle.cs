@@ -30,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Next"), OnTogglePerformed);
+            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Previous"), OnTogglePerformed);
         }
 
         private void OnDisable()
