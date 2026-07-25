@@ -2,7 +2,8 @@
 	"name": "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
 	"rootNamespace": "",
 	"references": [
-		"Unity.Netcode.Runtime"
+		"Unity.Netcode.Runtime",
+		"GUID:e0cd26848372d4e5c891c569017e11f1"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],

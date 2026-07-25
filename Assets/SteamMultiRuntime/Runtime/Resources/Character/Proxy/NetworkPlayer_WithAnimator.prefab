@@ -29,6 +29,7 @@ GameObject:
   - component: {fileID: 2911529315059979141}
   - component: {fileID: 2387919757285863628}
   - component: {fileID: 1497320286697587687}
+  - component: {fileID: 6842739510264837102}
   m_Layer: 0
   m_Name: NetworkPlayer_WithAnimator
   m_TagString: Untagged
@@ -36,6 +37,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &6842739510264837102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632cc389dbb945f8be3c91bd47dba841, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerDisplayName
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0

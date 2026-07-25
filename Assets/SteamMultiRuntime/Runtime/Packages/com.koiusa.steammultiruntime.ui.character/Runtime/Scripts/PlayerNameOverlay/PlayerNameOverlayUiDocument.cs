@@ -25,6 +25,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private StyleSheet overlayStyleSheet;
 
         private UIDocument sourceDocument;
+        private IPlayerDisplayNameSource displayNameSource;
+        private bool displayNameSourceResolved;
 
         internal float RefreshInterval => Mathf.Max(0.1f, refreshInterval);
         internal float LabelWidth => labelWidth;
@@ -72,6 +74,22 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            if (!displayNameSourceResolved)
+            {
+                displayNameSource = FindDisplayNameSource(source);
+                displayNameSourceResolved = true;
+            }
+
+            if (displayNameSource != null)
+            {
+                var displayName = displayNameSource.DisplayName;
+                if (!string.IsNullOrWhiteSpace(displayName))
+                {
+                    playerName = displayName;
+                    return true;
+                }
+            }
+
             var ownerClientId = TryGetOwnerClientId(source);
             playerName = ownerClientId.HasValue
                 ? $"Player{ownerClientId.Value}"
@@ -97,6 +115,18 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             return fallback;
+        }
+
+        private static IPlayerDisplayNameSource FindDisplayNameSource(MonoBehaviour source)
+        {
+            var candidates = source.GetComponentsInParent<MonoBehaviour>(true);
+            for (var i = 0; i < candidates.Length; i++)
+            {
+                if (candidates[i] is IPlayerDisplayNameSource nameSource)
+                    return nameSource;
+            }
+
+            return null;
         }
 
         private static ulong? TryGetOwnerClientId(MonoBehaviour source)

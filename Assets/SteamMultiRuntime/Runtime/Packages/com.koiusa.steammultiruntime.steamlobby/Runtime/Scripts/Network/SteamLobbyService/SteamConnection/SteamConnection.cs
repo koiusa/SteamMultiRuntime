@@ -11,6 +11,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsInitialized => SteamClient.IsValid;
 
+        private void Awake()
+        {
+            PlayerDisplayNameSettings.PlatformDisplayNameResolver = ResolveSteamDisplayName;
+        }
+
         private void Start()
         {
             if (loginOnStart)
@@ -21,10 +26,20 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            if (PlayerDisplayNameSettings.PlatformDisplayNameResolver == ResolveSteamDisplayName)
+            {
+                PlayerDisplayNameSettings.PlatformDisplayNameResolver = null;
+            }
+
             if (logoutOnDestroy)
             {
                 Shutdown();
             }
+        }
+
+        private static string ResolveSteamDisplayName()
+        {
+            return SteamClient.IsValid ? SteamClient.Name : string.Empty;
         }
 
         public bool Initialize()
