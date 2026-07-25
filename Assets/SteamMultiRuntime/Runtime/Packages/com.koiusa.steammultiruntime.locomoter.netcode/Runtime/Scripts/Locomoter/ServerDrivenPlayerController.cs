@@ -103,8 +103,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Transform cameraTransform;
 
         [Header("Network State")]
-        [SerializeField, Min(0.02f)] private float stateSyncInterval = 0.05f;
-        [SerializeField] private bool broadcastInputState = true;
+        [SerializeField] private NetworkControlMode controlMode = NetworkControlMode.Player;
 
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource baseInputSource;
@@ -139,6 +138,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NetworkVariable<PlayerMovementFlagsState> netMovementFlagsState = new NetworkVariable<PlayerMovementFlagsState>(
             new PlayerMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        private NetworkControlPolicy ControlPolicy => NetworkControlPolicies.Get(controlMode);
         private bool UseLocalMotorState => IsSpawned && IsServer;
 
         public bool IsGrounded => UseLocalMotorState && motor != null ? motor.IsGrounded : netMovementFlagsState.Value.IsGrounded;
@@ -416,7 +416,7 @@ namespace Koiusa.SteamMultiRuntime
         private void StoreServerInput(PlayerInputSyncState inputState)
         {
             serverInputState = inputState;
-            if (broadcastInputState)
+            if (ControlPolicy.BroadcastInputState)
                 netInputState.Value = inputState;
         }
 
@@ -449,7 +449,7 @@ namespace Koiusa.SteamMultiRuntime
             if (Time.unscaledTime < nextStateSyncTime)
                 return;
 
-            nextStateSyncTime = Time.unscaledTime + Mathf.Max(0.02f, stateSyncInterval);
+            nextStateSyncTime = Time.unscaledTime + ControlPolicy.StateSyncInterval;
 
             var kinematicState = netKinematicState.Value;
             kinematicState.HorizontalVelocity = motor.HorizontalVelocity;

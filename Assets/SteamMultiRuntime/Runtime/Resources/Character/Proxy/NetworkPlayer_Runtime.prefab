@@ -204,8 +204,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   inputActionsProfile: {fileID: 11400000, guid: 7eca54e9ff221ea498609aef2dbc614d, type: 2}
   cameraTransform: {fileID: 0}
-  stateSyncInterval: 0.05
-  broadcastInputState: 1
+  controlMode: 0
 --- !u!114 &324244260282127880
 MonoBehaviour:
   m_ObjectHideFlags: 0

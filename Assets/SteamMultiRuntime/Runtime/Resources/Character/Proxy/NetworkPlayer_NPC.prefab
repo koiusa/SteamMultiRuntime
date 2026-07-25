@@ -600,5 +600,4 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   inputActionsProfile: {fileID: 0}
   cameraTransform: {fileID: 0}
-  stateSyncInterval: 0.2
-  broadcastInputState: 0
+  controlMode: 1
