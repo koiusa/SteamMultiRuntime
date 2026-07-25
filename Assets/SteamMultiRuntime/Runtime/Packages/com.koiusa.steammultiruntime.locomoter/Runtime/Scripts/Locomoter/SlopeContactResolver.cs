@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsGrounded => groundedColliderIds.Count > 0;
         public bool IsOnSteepSlope => steepSlopeNormalsByColliderId.Count > 0;
+        public bool HasObstacleContact => obstacleNormalsByColliderId.Count > 0;
         public bool CanJumpOnSteepSlope => allowJumpOnSteepSlope;
 
         public void Clear()

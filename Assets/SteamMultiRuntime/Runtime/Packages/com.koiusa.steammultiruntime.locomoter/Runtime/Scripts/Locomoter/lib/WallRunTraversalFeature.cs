@@ -204,7 +204,14 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            if (!MeetsWallRunMotionIntent(moveDirection, velocity, upAxis, wallNormal))
+            if (!MeetsWallRunMotion(velocity, upAxis, wallNormal))
+            {
+                wallRunInputReleaseUntilTime = 0f;
+                isInputReleaseGraceActive = false;
+                return false;
+            }
+
+            if (!HasMinimumMoveInput(moveDirection, upAxis))
             {
                 if (!IsWallRunning)
                 {
@@ -243,17 +250,17 @@ namespace Koiusa.SteamMultiRuntime
             return awaySpeed > settings.WallRunAwayFromWallMinSpeed;
         }
 
-        private bool MeetsWallRunMotionIntent(Vector3 moveDirection, Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
+        private bool HasMinimumMoveInput(Vector3 moveDirection, Vector3 upAxis)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
             var minimumInput = settings.MinimumMoveInputMagnitude > 0f
                 ? settings.MinimumMoveInputMagnitude
                 : WallRunTraversalSettings.CreateDefault().MinimumMoveInputMagnitude;
-            if (horizontalInput.sqrMagnitude < minimumInput * minimumInput)
-            {
-                return false;
-            }
+            return horizontalInput.sqrMagnitude >= minimumInput * minimumInput;
+        }
 
+        private bool MeetsWallRunMotion(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
+        {
             var enterThreshold = Mathf.Max(0f, settings.EnterMinimumAlongWallSpeed);
             var maintainThreshold = Mathf.Max(0f, settings.MaintainMinimumAlongWallSpeed);
             var speedThreshold = IsWallRunning

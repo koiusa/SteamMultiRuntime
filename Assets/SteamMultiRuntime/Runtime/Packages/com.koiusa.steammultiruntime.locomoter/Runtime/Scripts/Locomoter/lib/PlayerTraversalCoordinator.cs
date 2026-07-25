@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private IWallSlideTraversalFeature wallSlideFeature;
         private ILadderTraversalFeature ladderFeature;
         private float wallTraversalBlockedUntilTime;
+        private bool wallRunBlockedUntilWallExit;
         private float stateEnteredAt;
 
         public TraversalIntentFlags CurrentIntentFlags { get; private set; }
@@ -46,6 +47,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             CurrentIntentFlags = TraversalIntentFlags.None;
             wallTraversalBlockedUntilTime = 0f;
+            wallRunBlockedUntilWallExit = false;
             SetState(PlayerTraversalState.Grounded);
             wallRunFeature?.ResetState();
             wallJumpFeature?.ResetState();
@@ -128,6 +130,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isGrounded)
             {
+                wallRunBlockedUntilWallExit = false;
                 activeWallRunFeature?.ResetState();
                 activeWallJumpFeature?.ResetState();
                 activeWallSlideFeature?.ResetState();
@@ -137,6 +140,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
+            if (wallRunBlockedUntilWallExit && !slopeContactResolver.HasObstacleContact)
+            {
+                wallRunBlockedUntilWallExit = false;
+            }
 
             if (Time.time < wallTraversalBlockedUntilTime)
             {
@@ -159,7 +166,8 @@ namespace Koiusa.SteamMultiRuntime
                 groundMotionTracker?.ClearGroundContacts();
                 SetState(PlayerTraversalState.WallJump);
             }
-            else if (CanProcessWallRun(CurrentState)
+            else if (!wallRunBlockedUntilWallExit
+                && CanProcessWallRun(CurrentState)
                 && activeWallRunFeature != null
                 && activeWallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
             {
@@ -176,6 +184,7 @@ namespace Koiusa.SteamMultiRuntime
             else if (!wallJumped && activeWallSlideFeature != null && activeWallSlideFeature.TryApplyWallSlide(velocity, moveDirection, upAxis, false, out var wallSlideVelocity))
             {
                 velocity = wallSlideVelocity;
+                wallRunBlockedUntilWallExit = true;
                 SetState(PlayerTraversalState.WallSlide);
             }
             else if (!wallJumped)
@@ -207,11 +216,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private static bool CanProcessWallRun(PlayerTraversalState state)
         {
-            // WallSlide中も壁沿い速度を維持するため、速度条件を満たしたらWallRunへ復帰できる。
-            // Ladder/Cooldownからの直接遷移は禁止する。
+            // WallSlideは壁との接触中にラッチする。カメラ相対入力の向きが変化しても
+            // WallRunへ自動昇格させず、壁を離れてAirborneへ戻ってから再判定する。
+            // Ladder/Cooldownからの直接遷移も禁止する。
             return state == PlayerTraversalState.Airborne
-                || state == PlayerTraversalState.WallRun
-                || state == PlayerTraversalState.WallSlide;
+                || state == PlayerTraversalState.WallRun;
         }
 
         private static TraversalIntentFlags BuildIntentFlags(Vector2 moveInput, bool jumpRequested, bool isGrounded)

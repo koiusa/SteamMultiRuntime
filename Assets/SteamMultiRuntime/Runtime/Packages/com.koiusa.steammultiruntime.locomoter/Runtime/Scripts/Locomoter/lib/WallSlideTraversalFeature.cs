@@ -126,8 +126,9 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            // Sliding only controls the vertical component. Keeping the wall-tangent
-            // component lets the player steer along the wall and transition back to a run.
+            // Sliding only controls the vertical component. The wall-tangent component
+            // remains steerable, but state promotion to WallRun requires leaving the wall
+            // and entering it again so camera rotation alone cannot change the state.
             var wallTangentVelocity = Vector3.ProjectOnPlane(velocity, wallNormal);
             var horizontalWallVelocity = Vector3.ProjectOnPlane(wallTangentVelocity, upAxis);
             nextVelocity = horizontalWallVelocity + upAxis * verticalSpeed;

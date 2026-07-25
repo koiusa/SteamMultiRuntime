@@ -58,7 +58,7 @@ namespace Koiusa.SteamMultiRuntime
                 ArcInitialUpSpeed = 1.5f,
                 ArcGravityMultiplier = 0.45f,
                 EnterMinimumAlongWallSpeed = 2f,
-                MaintainMinimumAlongWallSpeed = 1f,
+                MaintainMinimumAlongWallSpeed = 1.5f,
                 EnterMinimumAlongWallRatio = 0.45f,
                 MaintainMinimumAlongWallRatio = 0.25f,
                 ExitAwayInputDot = 0.25f,
