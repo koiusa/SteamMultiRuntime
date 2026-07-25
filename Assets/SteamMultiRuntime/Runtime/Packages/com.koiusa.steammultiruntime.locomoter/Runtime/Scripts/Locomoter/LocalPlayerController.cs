@@ -141,7 +141,8 @@ namespace Koiusa.SteamMultiRuntime
             grappleAimDirection = PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,
-                targetRigidbody.worldCenterOfMass);
+                targetRigidbody.worldCenterOfMass,
+                targetRigidbody);
 
             if (inputState.JumpPressed)
             {
