@@ -51,7 +51,7 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.HelpBox(
                 "PlayerMotorと連携するRigidbodyベースのワイヤースイングです。\n" +
-                "Grappleを押している間はカメラ正面へ射出し、Jumpで加速離脱します。",
+                "Grappleを押している間はマウスポインタ方向へ射出し、Jumpで加速離脱します。マウスがない場合はカメラ正面を使用します。",
                 MessageType.Info);
 
             DrawAimSection();

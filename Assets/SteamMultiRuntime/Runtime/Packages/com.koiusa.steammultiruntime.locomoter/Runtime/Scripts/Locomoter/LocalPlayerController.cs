@@ -138,7 +138,10 @@ namespace Koiusa.SteamMultiRuntime
             moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
             grappleHeld = inputState.GrappleHeld;
             reelInput = inputState.ReelInput;
-            grappleAimDirection = referenceTransform.forward;
+            grappleAimDirection = PlayerPointerAim.ResolveDirection(
+                cameraTransform,
+                referenceTransform,
+                targetRigidbody.worldCenterOfMass);
 
             if (inputState.JumpPressed)
             {
