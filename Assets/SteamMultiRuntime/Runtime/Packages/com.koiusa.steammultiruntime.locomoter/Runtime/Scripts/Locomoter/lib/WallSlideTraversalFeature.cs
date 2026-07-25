@@ -105,7 +105,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var horizontalMoveDirection = Vector3.ProjectOnPlane(moveDirection, upAxis);
-            if (settings.AllowWallSlideLateralMovement && horizontalMoveDirection.sqrMagnitude > 0.0001f)
+            if (horizontalMoveDirection.sqrMagnitude > 0.0001f)
             {
                 var moveIntoWallDot = Vector3.Dot(horizontalMoveDirection.normalized, wallNormal);
                 if (moveIntoWallDot >= settings.WallSlideExitMoveOppositeNormalDot)
