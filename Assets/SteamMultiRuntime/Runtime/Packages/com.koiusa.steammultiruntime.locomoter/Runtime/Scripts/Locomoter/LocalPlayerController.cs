@@ -29,7 +29,6 @@ namespace Koiusa.SteamMultiRuntime
         private bool grappleHeld;
         private float reelInput;
         private Vector3 grappleAimDirection;
-        private bool blockGrappleUntilRelease;
 
         public bool IsGrounded => motor != null && motor.IsGrounded;
         public bool IsJumping => motor != null && motor.IsJumping;
@@ -121,7 +120,6 @@ namespace Koiusa.SteamMultiRuntime
             grappleHeld = false;
             reelInput = 0f;
             grappleAimDirection = Vector3.zero;
-            blockGrappleUntilRelease = false;
         }
 
         private void Update()
@@ -165,34 +163,21 @@ namespace Koiusa.SteamMultiRuntime
                 lastConsumedJumpToken = jumpToken;
             }
 
-            var baseMotor = motor.GetComponent<IPlayerMotor>();
-            if (baseMotor != null)
-            {
-                baseMotor.SetStrafeMode(isStrafeMode);
-            }
+            motor.SetStrafeMode(isStrafeMode);
 
             if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
             {
                 wireSwingFeature.SetReelInput(reelInput);
-                if (!grappleHeld)
-                {
-                    blockGrappleUntilRelease = false;
-                    wireSwingFeature.SetGrappleInput(false, targetRigidbody.worldCenterOfMass, grappleAimDirection);
-                }
-                else if (!blockGrappleUntilRelease)
-                {
-                    wireSwingFeature.SetGrappleInput(true, targetRigidbody.worldCenterOfMass, grappleAimDirection);
-                }
+                wireSwingFeature.SetGrappleInput(
+                    grappleHeld,
+                    targetRigidbody.worldCenterOfMass,
+                    grappleAimDirection);
             }
 
             moveInputReceiver?.SetMoveInput(moveInput);
             moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);
             motor.Tick(moveDirection, jumpThisFrame);
             presentationSmoother?.CapturePhysicsPose();
-            if (jumpThisFrame && grappleHeld)
-            {
-                blockGrappleUntilRelease = true;
-            }
         }
 
     }

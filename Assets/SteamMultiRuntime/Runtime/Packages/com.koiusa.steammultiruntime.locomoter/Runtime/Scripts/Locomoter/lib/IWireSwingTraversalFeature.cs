@@ -18,9 +18,10 @@ namespace Koiusa.SteamMultiRuntime
         void SetGrappleInput(bool held, Vector3 origin, Vector3 aimDirection);
         void SetReelInput(float reelInput);
         void ReelByJump();
+        void DetachUntilInputRelease();
         void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
         bool TryAttach(Vector3 origin, Vector3 direction);
         void Attach(Vector3 worldPoint, Transform movingAnchor = null);
-        void Detach(bool applyBoost = false);
+        void Detach();
     }
 }

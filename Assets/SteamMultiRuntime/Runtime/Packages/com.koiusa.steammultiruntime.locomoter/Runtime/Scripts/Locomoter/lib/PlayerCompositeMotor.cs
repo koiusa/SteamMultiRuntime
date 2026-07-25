@@ -107,7 +107,6 @@ namespace Koiusa.SteamMultiRuntime
         {
             baseMotor?.ResetState();
             traversalCoordinator?.ResetState();
-            wireSwingFeature?.Detach();
         }
 
         public void SetMoveInput(Vector2 moveInput)
@@ -128,6 +127,11 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        public void SetStrafeMode(bool enabled)
+        {
+            baseMotor?.SetStrafeMode(enabled);
+        }
+
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (!isActiveAndEnabled || baseMotor == null || !baseMotor.IsEnabled)
@@ -135,20 +139,15 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (traversalCoordinator == null)
-            {
-                traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
-            }
-
-            if (wireSwingFeature == null)
-            {
-                wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
-            }
-
-            baseMotor.Tick(moveDirection, jumpRequested);
+            var motorResult = baseMotor.Tick(moveDirection, jumpRequested);
             if (traversalCoordinator != null && traversalCoordinator.IsEnabled)
             {
-                traversalCoordinator.ApplyTraversal(moveDirection, rawMoveInput, moveReferenceRotation, jumpRequested, baseMotor.IsGrounded);
+                traversalCoordinator.ApplyTraversal(
+                    moveDirection,
+                    rawMoveInput,
+                    moveReferenceRotation,
+                    jumpRequested && !motorResult.JumpConsumed,
+                    baseMotor.IsGrounded);
             }
         }
 

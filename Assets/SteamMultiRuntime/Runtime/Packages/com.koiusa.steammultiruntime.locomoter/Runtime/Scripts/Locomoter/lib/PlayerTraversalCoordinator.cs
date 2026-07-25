@@ -11,6 +11,10 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
+        private IWallRunTraversalFeature wallRunFeature;
+        private IWallJumpTraversalFeature wallJumpFeature;
+        private IWallSlideTraversalFeature wallSlideFeature;
+        private ILadderTraversalFeature ladderFeature;
         private float wallTraversalBlockedUntilTime;
         private float stateEnteredAt;
 
@@ -24,6 +28,7 @@ namespace Koiusa.SteamMultiRuntime
             rb = GetComponent<Rigidbody>();
             groundMotionTracker = GetComponent<GroundMotionTracker>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
+            CacheFeatures();
             stateEnteredAt = Time.time;
         }
 
@@ -42,10 +47,10 @@ namespace Koiusa.SteamMultiRuntime
             CurrentIntentFlags = TraversalIntentFlags.None;
             wallTraversalBlockedUntilTime = 0f;
             SetState(PlayerTraversalState.Grounded);
-            GetComponent<IWallRunTraversalFeature>()?.ResetState();
-            GetComponent<IWallJumpTraversalFeature>()?.ResetState();
-            GetComponent<IWallSlideTraversalFeature>()?.ResetState();
-            GetComponent<ILadderTraversalFeature>()?.ResetState();
+            wallRunFeature?.ResetState();
+            wallJumpFeature?.ResetState();
+            wallSlideFeature?.ResetState();
+            ladderFeature?.ResetState();
         }
 
         public bool HasIntent(TraversalIntentFlags flag)
@@ -60,32 +65,14 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var wallRunFeature = GetComponent<IWallRunTraversalFeature>();
-            var wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
-            var wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
-            var ladderFeature = GetComponent<ILadderTraversalFeature>();
-
-            if (wallRunFeature != null && !wallRunFeature.IsEnabled)
-            {
-                wallRunFeature = null;
-            }
-
-            if (wallJumpFeature != null && !wallJumpFeature.IsEnabled)
-            {
-                wallJumpFeature = null;
-            }
-
-            if (wallSlideFeature != null && !wallSlideFeature.IsEnabled)
-            {
-                wallSlideFeature = null;
-            }
-
-            if (ladderFeature != null && !ladderFeature.IsEnabled)
-            {
-                ladderFeature = null;
-            }
-
-            var hasFeatureTraversal = wallRunFeature != null || wallJumpFeature != null || wallSlideFeature != null || ladderFeature != null;
+            var activeWallRunFeature = wallRunFeature != null && wallRunFeature.IsEnabled ? wallRunFeature : null;
+            var activeWallJumpFeature = wallJumpFeature != null && wallJumpFeature.IsEnabled ? wallJumpFeature : null;
+            var activeWallSlideFeature = wallSlideFeature != null && wallSlideFeature.IsEnabled ? wallSlideFeature : null;
+            var activeLadderFeature = ladderFeature != null && ladderFeature.IsEnabled ? ladderFeature : null;
+            var hasFeatureTraversal = activeWallRunFeature != null
+                || activeWallJumpFeature != null
+                || activeWallSlideFeature != null
+                || activeLadderFeature != null;
             if (rb == null)
             {
                 return;
@@ -99,39 +86,39 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             // 梯子処理は feature 側に委譲する
-            if (ladderFeature != null)
+            if (activeLadderFeature != null)
             {
                 var upAxisForLadder = GetUpAxis();
-                if (ladderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
+                if (activeLadderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
                 {
                     if (detachedByJump)
                     {
                         // 梯子離脱直後の壁接触残りをクリアして、壁ズリ誤判定を抑える
-                        wallTraversalBlockedUntilTime = Time.time + ladderFeature.WallTraversalBlockDuration;
+                        wallTraversalBlockedUntilTime = Time.time + activeLadderFeature.WallTraversalBlockDuration;
                         slopeContactResolver?.Clear();
-                        wallRunFeature?.ResetState();
-                        wallJumpFeature?.ResetState();
-                        wallSlideFeature?.ResetState();
+                        activeWallRunFeature?.ResetState();
+                        activeWallJumpFeature?.ResetState();
+                        activeWallSlideFeature?.ResetState();
                         SetState(PlayerTraversalState.Cooldown);
                     }
-                    else if (ladderFeature.IsOnLadder)
+                    else if (activeLadderFeature.IsOnLadder)
                     {
                         wallTraversalBlockedUntilTime = 0f;
                         rb.linearVelocity = ladderVelocity;
-                        wallRunFeature?.ResetState();
-                        wallJumpFeature?.ResetState();
-                        wallSlideFeature?.ResetState();
+                        activeWallRunFeature?.ResetState();
+                        activeWallJumpFeature?.ResetState();
+                        activeWallSlideFeature?.ResetState();
                         SetState(PlayerTraversalState.Ladder);
                     }
                     else
                     {
                         // Directional/ground detach must not reinterpret the ladder surface
                         // as a runnable wall on the following physics frame.
-                        wallTraversalBlockedUntilTime = Time.time + ladderFeature.WallTraversalBlockDuration;
+                        wallTraversalBlockedUntilTime = Time.time + activeLadderFeature.WallTraversalBlockDuration;
                         slopeContactResolver?.Clear();
-                        wallRunFeature?.ResetState();
-                        wallJumpFeature?.ResetState();
-                        wallSlideFeature?.ResetState();
+                        activeWallRunFeature?.ResetState();
+                        activeWallJumpFeature?.ResetState();
+                        activeWallSlideFeature?.ResetState();
                         SetState(PlayerTraversalState.Cooldown);
                     }
 
@@ -141,9 +128,9 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isGrounded)
             {
-                wallRunFeature?.ResetState();
-                wallJumpFeature?.ResetState();
-                wallSlideFeature?.ResetState();
+                activeWallRunFeature?.ResetState();
+                activeWallJumpFeature?.ResetState();
+                activeWallSlideFeature?.ResetState();
                 SetState(PlayerTraversalState.Grounded);
                 return;
             }
@@ -153,8 +140,8 @@ namespace Koiusa.SteamMultiRuntime
 
             if (Time.time < wallTraversalBlockedUntilTime)
             {
-                wallRunFeature?.ResetState();
-                wallSlideFeature?.ResetState();
+                activeWallRunFeature?.ResetState();
+                activeWallSlideFeature?.ResetState();
                 rb.linearVelocity = velocity;
                 SetState(PlayerTraversalState.Cooldown);
                 return;
@@ -162,31 +149,31 @@ namespace Koiusa.SteamMultiRuntime
 
             var wallJumped = false;
             var wallRunApplied = false;
-            if (jumpRequested && wallJumpFeature != null && wallJumpFeature.TryWallJump(velocity, moveDirection, upAxis, out var wallJumpVelocity))
+            if (jumpRequested && activeWallJumpFeature != null && activeWallJumpFeature.TryWallJump(velocity, moveDirection, upAxis, out var wallJumpVelocity))
             {
                 velocity = wallJumpVelocity;
                 wallJumped = true;
-                wallRunFeature?.NotifyWallJump();
-                wallSlideFeature?.ResetState();
+                activeWallRunFeature?.NotifyWallJump();
+                activeWallSlideFeature?.ResetState();
                 slopeContactResolver?.Clear();
                 groundMotionTracker?.ClearGroundContacts();
                 SetState(PlayerTraversalState.WallJump);
             }
             else if (CanProcessWallRun(CurrentState)
-                && wallRunFeature != null
-                && wallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
+                && activeWallRunFeature != null
+                && activeWallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
             {
                 velocity = wallVelocity;
                 wallRunApplied = true;
-                wallSlideFeature?.ResetState();
+                activeWallSlideFeature?.ResetState();
                 SetState(PlayerTraversalState.WallRun);
             }
 
-            if (wallRunApplied && wallRunFeature != null)
+            if (wallRunApplied && activeWallRunFeature != null)
             {
-                velocity = wallRunFeature.ApplyVerticalMotion(velocity, upAxis);
+                velocity = activeWallRunFeature.ApplyVerticalMotion(velocity, upAxis);
             }
-            else if (!wallJumped && wallSlideFeature != null && wallSlideFeature.TryApplyWallSlide(velocity, moveDirection, upAxis, false, out var wallSlideVelocity))
+            else if (!wallJumped && activeWallSlideFeature != null && activeWallSlideFeature.TryApplyWallSlide(velocity, moveDirection, upAxis, false, out var wallSlideVelocity))
             {
                 velocity = wallSlideVelocity;
                 SetState(PlayerTraversalState.WallSlide);
@@ -197,6 +184,14 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             rb.linearVelocity = velocity;
+        }
+
+        private void CacheFeatures()
+        {
+            wallRunFeature = GetComponent<IWallRunTraversalFeature>();
+            wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
+            wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
+            ladderFeature = GetComponent<ILadderTraversalFeature>();
         }
 
         private void SetState(PlayerTraversalState nextState)

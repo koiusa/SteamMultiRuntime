@@ -26,7 +26,6 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float maximumInputSwingSpeed = 8f;
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
         [SerializeField, Min(0f)] private float jumpReelDistance = 1.5f;
-        [SerializeField, Min(0f)] private float releaseBoost = 2.5f;
         [SerializeField, Range(0f, 1f)] private float radialVelocityDamping = 1f;
 
         [Header("Rendering")]
@@ -48,8 +47,8 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 fixedAnchorPoint;
         private float ropeLength;
         private Vector3 motorMoveDirection;
-        private Vector3 grappleAimDirection;
         private float externalReelInput;
+        private bool blockAttachUntilRelease;
         private MaterialPropertyBlock materialPropertyBlock;
 
         public bool IsAttached { get; private set; }
@@ -71,7 +70,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
-            Detach(false);
+            blockAttachUntilRelease = false;
+            Detach();
         }
 
         private void OnValidate()
@@ -117,20 +117,16 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetGrappleInput(bool held, Vector3 origin, Vector3 aimDirection)
         {
-            grappleAimDirection = aimDirection.sqrMagnitude > 0.0001f
-                ? aimDirection.normalized
-                : Vector3.zero;
-
-            if (held)
+            if (!held)
             {
-                if (!IsAttached && grappleAimDirection.sqrMagnitude > 0f)
-                {
-                    TryAttach(origin, grappleAimDirection);
-                }
-            }
-            else if (IsAttached)
-            {
+                blockAttachUntilRelease = false;
                 Detach();
+                return;
+            }
+
+            if (!blockAttachUntilRelease && !IsAttached && aimDirection.sqrMagnitude > 0.0001f)
+            {
+                TryAttach(origin, aimDirection.normalized);
             }
         }
 
@@ -149,11 +145,17 @@ namespace Koiusa.SteamMultiRuntime
             ropeLength = Mathf.Clamp(ropeLength - jumpReelDistance, minimumRopeLength, maximumRange);
         }
 
+        public void DetachUntilInputRelease()
+        {
+            blockAttachUntilRelease = true;
+            Detach();
+        }
+
         public void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float replicatedRopeLength)
         {
             if (!isAttached)
             {
-                Detach(false);
+                Detach();
                 return;
             }
 
@@ -205,21 +207,11 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public void Detach(bool applyBoost = false)
+        public void Detach()
         {
             if (!IsAttached)
             {
                 return;
-            }
-
-            if (applyBoost && releaseBoost > 0f)
-            {
-                var up = Physics.gravity.sqrMagnitude > 0.001f ? -Physics.gravity.normalized : Vector3.up;
-                var forward = grappleAimDirection.sqrMagnitude > 0.0001f
-                    ? grappleAimDirection
-                    : GetAimTransform().forward;
-                var boostDirection = Vector3.ProjectOnPlane(forward, up).normalized + up * 0.45f;
-                rb.AddForce(boostDirection.normalized * releaseBoost, ForceMode.VelocityChange);
             }
 
             IsAttached = false;

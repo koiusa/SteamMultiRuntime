@@ -35,7 +35,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => !IsGrounded && isAirborneFromJump && VerticalVelocity > 0f;
         public bool IsFallingAfterJump => !IsGrounded && isAirborneFromJump && VerticalVelocity <= 0f;
         public bool IsFreefall => !IsGrounded && !isAirborneFromJump;
-        public bool IsWireSwinging => wireSwingFeature != null && wireSwingFeature.IsEnabled && wireSwingFeature.IsAttached;
+        private bool IsWireSwinging => wireSwingFeature != null && wireSwingFeature.IsEnabled && wireSwingFeature.IsAttached;
         public Vector3 InheritedGroundVelocity => inheritedGroundVelocity;
         public float HorizontalVelocity { get; private set; }
         public float VerticalVelocity { get; private set; }
@@ -110,46 +110,18 @@ namespace Koiusa.SteamMultiRuntime
             forcedStrafeMode = enabled;
         }
 
-        public void UpdateSettings(
-            float moveSpeed,
-            float groundAcceleration,
-            float airAcceleration,
-            float rotationSpeed,
-            float jumpForce,
-            float fallMultiplier,
-            float jumpDetachDuration,
-            float minGroundNormalDot,
-            float strafeMoveSpeedMultiplier,
-            float strafeAccelerationMultiplier,
-            float strafeRotationSpeed,
-            float backwardSpeedMultiplier)
-        {
-            settings.MoveSpeed = moveSpeed;
-            settings.GroundAcceleration = groundAcceleration;
-            settings.AirAcceleration = airAcceleration;
-            settings.RotationSpeed = rotationSpeed;
-            settings.JumpForce = jumpForce;
-            settings.FallMultiplier = fallMultiplier;
-            settings.JumpDetachDuration = jumpDetachDuration;
-            settings.MinGroundNormalDot = minGroundNormalDot;
-            settings.StrafeMoveSpeedMultiplier = strafeMoveSpeedMultiplier;
-            settings.StrafeAccelerationMultiplier = strafeAccelerationMultiplier;
-            settings.StrafeRotationSpeed = strafeRotationSpeed;
-            settings.BackwardSpeedMultiplier = backwardSpeedMultiplier;
-        }
-
         public PlayerMotorSettings GetSettings() => settings;
 
-        public void UpdateSettingsFromStruct(PlayerMotorSettings newSettings)
+        public void ApplySettings(PlayerMotorSettings newSettings)
         {
             settings = newSettings;
         }
 
-        public void Tick(Vector3 moveDirection, bool jumpRequested)
+        public PlayerMotorTickResult Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (!IsEnabled)
             {
-                return;
+                return new PlayerMotorTickResult(false);
             }
 
             if (rb == null || rb.isKinematic)
@@ -158,29 +130,26 @@ namespace Koiusa.SteamMultiRuntime
                 isAirborneFromJump = false;
                 HorizontalVelocity = 0f;
                 VerticalVelocity = 0f;
-                return;
+                return new PlayerMotorTickResult(false);
             }
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
-            if (wireSwingFeature == null)
-            {
-                wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
-            }
-
             var isWireSwinging = IsWireSwinging;
+            var jumpConsumed = false;
             wireSwingFeature?.SetMoveDirection(moveDirection);
             if (isWireSwinging && jumpRequested)
             {
                 if (slopeContactResolver.IsGrounded)
                 {
-                    wireSwingFeature.Detach(false);
+                    wireSwingFeature.DetachUntilInputRelease();
                     isWireSwinging = false;
                 }
                 else
                 {
                     wireSwingFeature.ReelByJump();
                     jumpRequested = false;
+                    jumpConsumed = true;
                 }
             }
 
@@ -279,6 +248,7 @@ namespace Koiusa.SteamMultiRuntime
                 jumpDetachUntilTime,
                 inheritedGroundVelocity,
                 isAirborneFromJump);
+            jumpConsumed |= jumpRequested && canJump;
 
             velocity = jumpResult.Velocity;
             jumpDetachUntilTime = jumpResult.JumpDetachUntilTime;
@@ -297,6 +267,7 @@ namespace Koiusa.SteamMultiRuntime
             rb.linearVelocity = velocity;
             HorizontalVelocity = Vector3.ProjectOnPlane(velocity - inheritedGroundVelocity, upAxis).magnitude;
             VerticalVelocity = Vector3.Dot(velocity, upAxis);
+            return new PlayerMotorTickResult(jumpConsumed);
         }
 
         public void OnCollisionEnter(Collision collision)

@@ -20,7 +20,6 @@ namespace Koiusa.SteamMultiRuntime
         private SerializedProperty maximumInputSwingSpeed;
         private SerializedProperty reelSpeed;
         private SerializedProperty jumpReelDistance;
-        private SerializedProperty releaseBoost;
         private SerializedProperty radialVelocityDamping;
         private SerializedProperty lineRenderer;
         private SerializedProperty wireMaterial;
@@ -41,7 +40,6 @@ namespace Koiusa.SteamMultiRuntime
             maximumInputSwingSpeed = serializedObject.FindProperty("maximumInputSwingSpeed");
             reelSpeed = serializedObject.FindProperty("reelSpeed");
             jumpReelDistance = serializedObject.FindProperty("jumpReelDistance");
-            releaseBoost = serializedObject.FindProperty("releaseBoost");
             radialVelocityDamping = serializedObject.FindProperty("radialVelocityDamping");
             lineRenderer = serializedObject.FindProperty("lineRenderer");
             wireMaterial = serializedObject.FindProperty("wireMaterial");
@@ -55,7 +53,7 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.HelpBox(
                 "PlayerMotorと連携するRigidbodyベースのワイヤースイングです。\n" +
-                "Grappleを押している間はマウスポインタ方向へ射出し、Jumpで加速離脱します。マウスがない場合はカメラ正面を使用します。",
+                "Grappleを押している間はマウスポインタ方向へ射出し、空中ではJump入力ごとにロープを短縮します。マウスがない場合はカメラ正面を使用します。",
                 MessageType.Info);
 
             DrawAimSection();
@@ -101,7 +99,6 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.PropertyField(
                 jumpReelDistance,
                 new GUIContent("Jump Reel Distance", "空中でワイヤー接続中にJumpを押したとき、1回につき短くする距離です。"));
-            EditorGUILayout.PropertyField(releaseBoost);
             EditorGUILayout.PropertyField(radialVelocityDamping);
         }
 

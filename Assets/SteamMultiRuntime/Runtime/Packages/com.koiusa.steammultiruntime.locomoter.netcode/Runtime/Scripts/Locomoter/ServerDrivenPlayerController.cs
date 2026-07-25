@@ -38,7 +38,6 @@ namespace Koiusa.SteamMultiRuntime
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
         private bool lastSentGrappleHeld;
-        private bool blockGrappleUntilRelease;
         private float nextStateSyncTime;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
@@ -365,35 +364,21 @@ namespace Koiusa.SteamMultiRuntime
             if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
             {
                 wireSwingFeature.SetReelInput(inputState.ReelInput);
-                if (!inputState.GrappleHeld)
-                {
-                    blockGrappleUntilRelease = false;
-                    wireSwingFeature.SetGrappleInput(false, targetRigidbody.worldCenterOfMass, inputState.GrappleAimDirection);
-                }
-                else if (!blockGrappleUntilRelease)
-                {
-                    wireSwingFeature.SetGrappleInput(true, targetRigidbody.worldCenterOfMass, inputState.GrappleAimDirection);
-                }
+                wireSwingFeature.SetGrappleInput(
+                    inputState.GrappleHeld,
+                    targetRigidbody.worldCenterOfMass,
+                    inputState.GrappleAimDirection);
             }
 
             if (motor != null)
             {
-                var baseMotor = motor.GetComponent<IPlayerMotor>();
-                if (baseMotor != null)
-                {
-                    // Server uses local motor settings, no need to apply from network
-                    baseMotor.SetStrafeMode(inputState.IsStrafeMode);
-                }
+                motor.SetStrafeMode(inputState.IsStrafeMode);
 
                 moveInputReceiver?.SetMoveInput(inputState.MoveInput);
                 moveInputReceiver?.SetMoveReferenceRotation(inputState.MoveReferenceRotation);
             }
 
             motor.Tick(moveDirection, jumpThisFrame);
-            if (jumpThisFrame && inputState.GrappleHeld)
-            {
-                blockGrappleUntilRelease = true;
-            }
 
             if (Time.unscaledTime < nextStateSyncTime)
                 return;
@@ -456,7 +441,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (baseMotor != null)
                 {
                     var currentSettings = baseMotor.GetSettings();
-                    baseMotor.UpdateSettingsFromStruct(newValue.ToCore(currentSettings.GroundLayer));
+                    baseMotor.ApplySettings(newValue.ToCore(currentSettings.GroundLayer));
                 }
             }
         }

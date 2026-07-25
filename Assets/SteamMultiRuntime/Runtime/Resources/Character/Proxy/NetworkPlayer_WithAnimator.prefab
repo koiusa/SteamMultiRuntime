@@ -568,7 +568,6 @@ MonoBehaviour:
   maximumInputSwingSpeed: 8
   reelSpeed: 12
   jumpReelDistance: 1.5
-  releaseBoost: 2.5
   radialVelocityDamping: 1
   lineRenderer: {fileID: 0}
   wireMaterial: {fileID: 0}

@@ -2,6 +2,16 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public readonly struct PlayerMotorTickResult
+    {
+        public PlayerMotorTickResult(bool jumpConsumed)
+        {
+            JumpConsumed = jumpConsumed;
+        }
+
+        public bool JumpConsumed { get; }
+    }
+
     public interface IPlayerMotor
     {
         bool IsEnabled { get; }
@@ -10,16 +20,15 @@ namespace Koiusa.SteamMultiRuntime
         bool IsJumping { get; }
         bool IsFallingAfterJump { get; }
         bool IsFreefall { get; }
-        bool IsWireSwinging { get; }
         Vector3 InheritedGroundVelocity { get; }
         float HorizontalVelocity { get; }
         float VerticalVelocity { get; }
 
         PlayerMotorSettings GetSettings();
-        void UpdateSettingsFromStruct(PlayerMotorSettings newSettings);
+        void ApplySettings(PlayerMotorSettings newSettings);
         void SetStrafeMode(bool enabled);
 
         void ResetState();
-        void Tick(Vector3 moveDirection, bool jumpRequested);
+        PlayerMotorTickResult Tick(Vector3 moveDirection, bool jumpRequested);
     }
 }
