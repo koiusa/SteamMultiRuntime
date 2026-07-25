@@ -19,20 +19,6 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.Space();
 
-            // 梯子ボリュームの有無をチェックしてヒントを表示
-            var ladderVolumes = FindObjectsByType<LadderVolume>(FindObjectsSortMode.None);
-            if (ladderVolumes.Length == 0)
-            {
-                EditorGUILayout.HelpBox(
-                    "シーンに LadderVolume が見つかりません。\n梯子として機能させたい GameObject に LadderVolume コンポーネントを追加してください。",
-                    MessageType.Warning);
-            }
-            else
-            {
-                EditorGUILayout.LabelField($"シーン内の LadderVolume: {ladderVolumes.Length} 個", EditorStyles.miniLabel);
-            }
-
-            EditorGUILayout.Space();
             DrawDefaultInspector();
 
             if (Application.isPlaying)
