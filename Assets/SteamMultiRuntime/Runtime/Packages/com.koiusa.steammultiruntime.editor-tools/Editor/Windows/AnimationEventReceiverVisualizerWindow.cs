@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private Vector2 scrollPosition = Vector2.zero;
         private List<ReceiverInfo> receivers = new List<ReceiverInfo>();
 
-        [MenuItem("Tools/SteamMultiRuntime/Animation Events/Receiver Visualizer")]
+        [MenuItem("Tools/SteamMultiRuntime/Read Only/Animation Events/Receiver Visualizer")]
         private static void Open()
         {
             var window = GetWindow<AnimationEventReceiverVisualizerWindow>("Animation Event Receivers");

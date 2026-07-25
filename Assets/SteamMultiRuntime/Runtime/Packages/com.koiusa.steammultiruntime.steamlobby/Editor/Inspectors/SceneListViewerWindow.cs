@@ -21,7 +21,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             public string[] sceneNames;
         }
 
-        [MenuItem("Tools/SteamMultiRuntime/Scene List Viewer")]
+        [MenuItem("Tools/SteamMultiRuntime/Read Only/Scene List Viewer")]
         public static void Open()
         {
             var window = GetWindow<SceneListViewerWindow>("Scene List");

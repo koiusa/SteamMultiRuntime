@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private string message = string.Empty;
         private MessageType messageType = MessageType.Info;
 
-        [MenuItem("Tools/SteamMultiRuntime/Facepunch/AppID Settings")]
+        [MenuItem("Tools/SteamMultiRuntime/Modify Project Files/Facepunch AppID")]
         private static void Open()
         {
             var window = GetWindow<FacepunchTransportAppIdSettingsWindow>("Facepunch AppID");

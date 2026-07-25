@@ -6,7 +6,7 @@ public static class LoadingSplashSettingsAssetUtility
 {
     private const string DefaultAssetPath = "Assets/SteamMultiRuntime/Runtime/Resources/UI/LoadingSplash/LoadingSplashSettings.asset";
 
-    [MenuItem("Tools/SteamMultiRuntime/Create Loading Splash Settings Asset")]
+    [MenuItem("Tools/SteamMultiRuntime/Create Assets/Loading Splash Settings")]
     public static void CreateOrSelectAsset()
     {
         var existing = AssetDatabase.LoadAssetAtPath<LoadingSplashSettings>(DefaultAssetPath);

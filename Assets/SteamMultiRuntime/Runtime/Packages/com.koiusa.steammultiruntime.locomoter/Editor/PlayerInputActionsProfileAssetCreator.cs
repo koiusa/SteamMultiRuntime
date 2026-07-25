@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     public static class PlayerInputActionsProfileAssetCreator
     {
-        [MenuItem("Tools/SteamMultiRuntime/Create Player Input Actions Profile Asset")]
+        [MenuItem("Tools/SteamMultiRuntime/Create Assets/Player Input Actions Profile")]
         private static void CreateProfileAsset()
         {
             const string folderPath = "Assets/SteamMultiRuntime/Runtime/Configs/Input";
