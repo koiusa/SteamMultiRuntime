@@ -8,8 +8,6 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext
     {
-        private const float WallTraversalBlockAfterLadderDetach = 0.3f;
-
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
@@ -103,7 +101,7 @@ namespace Koiusa.SteamMultiRuntime
                     if (detachedByJump)
                     {
                         // 梯子離脱直後の壁接触残りをクリアして、壁ズリ誤判定を抑える
-                        wallTraversalBlockedUntilTime = Time.time + WallTraversalBlockAfterLadderDetach;
+                        wallTraversalBlockedUntilTime = Time.time + ladderFeature.WallTraversalBlockDuration;
                         slopeContactResolver?.Clear();
                         wallRunFeature?.ResetState();
                         wallJumpFeature?.ResetState();
@@ -123,7 +121,7 @@ namespace Koiusa.SteamMultiRuntime
                     {
                         // Directional/ground detach must not reinterpret the ladder surface
                         // as a runnable wall on the following physics frame.
-                        wallTraversalBlockedUntilTime = Time.time + WallTraversalBlockAfterLadderDetach;
+                        wallTraversalBlockedUntilTime = Time.time + ladderFeature.WallTraversalBlockDuration;
                         slopeContactResolver?.Clear();
                         wallRunFeature?.ResetState();
                         wallJumpFeature?.ResetState();

@@ -12,6 +12,11 @@ namespace Koiusa.SteamMultiRuntime
         public float ExitTopBoostSpeed;
         public float DirectionalDetachReattachDelay;
         public float JumpDetachReattachDelay;
+        public float WallTraversalBlockDuration;
+        public float ClimbAxisLockEnterThreshold;
+        public float LateralDetachInputThreshold;
+        public float GroundEnterDetachGraceTime;
+        public float FacingRotationSpeed;
 
         public static LadderTraversalSettingsNetData FromCore(LadderTraversalSettings s)
         {
@@ -22,6 +27,11 @@ namespace Koiusa.SteamMultiRuntime
                 ExitTopBoostSpeed = s.ExitTopBoostSpeed,
                 DirectionalDetachReattachDelay = s.DirectionalDetachReattachDelay,
                 JumpDetachReattachDelay = s.JumpDetachReattachDelay,
+                WallTraversalBlockDuration = s.WallTraversalBlockDuration,
+                ClimbAxisLockEnterThreshold = s.ClimbAxisLockEnterThreshold,
+                LateralDetachInputThreshold = s.LateralDetachInputThreshold,
+                GroundEnterDetachGraceTime = s.GroundEnterDetachGraceTime,
+                FacingRotationSpeed = s.FacingRotationSpeed,
             };
         }
 
@@ -34,6 +44,11 @@ namespace Koiusa.SteamMultiRuntime
                 ExitTopBoostSpeed = ExitTopBoostSpeed,
                 DirectionalDetachReattachDelay = DirectionalDetachReattachDelay,
                 JumpDetachReattachDelay = JumpDetachReattachDelay,
+                WallTraversalBlockDuration = WallTraversalBlockDuration,
+                ClimbAxisLockEnterThreshold = ClimbAxisLockEnterThreshold,
+                LateralDetachInputThreshold = LateralDetachInputThreshold,
+                GroundEnterDetachGraceTime = GroundEnterDetachGraceTime,
+                FacingRotationSpeed = FacingRotationSpeed,
             };
         }
 
@@ -44,6 +59,11 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref ExitTopBoostSpeed);
             serializer.SerializeValue(ref DirectionalDetachReattachDelay);
             serializer.SerializeValue(ref JumpDetachReattachDelay);
+            serializer.SerializeValue(ref WallTraversalBlockDuration);
+            serializer.SerializeValue(ref ClimbAxisLockEnterThreshold);
+            serializer.SerializeValue(ref LateralDetachInputThreshold);
+            serializer.SerializeValue(ref GroundEnterDetachGraceTime);
+            serializer.SerializeValue(ref FacingRotationSpeed);
         }
     }
 }

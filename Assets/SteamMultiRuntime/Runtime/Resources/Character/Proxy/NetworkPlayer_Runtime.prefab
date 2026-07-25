@@ -330,6 +330,11 @@ MonoBehaviour:
     ExitTopBoostSpeed: 2
     DirectionalDetachReattachDelay: 0.15
     JumpDetachReattachDelay: 0.12
+    WallTraversalBlockDuration: 0.3
+    ClimbAxisLockEnterThreshold: 0.2
+    LateralDetachInputThreshold: 0.2
+    GroundEnterDetachGraceTime: 0.2
+    FacingRotationSpeed: 720
 --- !u!114 &5494012229538613394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -387,13 +392,18 @@ MonoBehaviour:
     WallRunAcceleration: 20
     WallRunGravityMultiplier: 0.35
     WallRunMaxFallSpeed: 2
-    WallRunMinInputDot: 0.15
-    WallRunMinAlongWallSpeed: 2
-    WallRunMaxUpwardStartSpeed: 0
     WallMaxUpDot: 0.2
     WallRunStartContactFrames: 2
     WallRunAwayFromWallMinSpeed: 0.15
     WallRunInputReleaseGraceTime: 0.2
+    VerticalMotionMode: 0
+    HeightHoldAcceleration: 12
+    ArcInitialUpSpeed: 1.5
+    ArcGravityMultiplier: 0.45
+    EnterAlongWallInput: 0.65
+    MaintainAlongWallInput: 0.35
+    ExitAwayInputDot: 0.25
+    MinimumMoveInputMagnitude: 0.25
 --- !u!114 &8206056860747446420
 MonoBehaviour:
   m_ObjectHideFlags: 0

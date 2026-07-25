@@ -27,15 +27,14 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 facingDirection;
         private bool hasFacing;
 
-        private const float ClimbAxisLockEnterThreshold = 0.2f;
-        private const float GroundEnterDetachGraceTime = 0.2f;
-        private const float FacingRotationSpeed = 720f;
-
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsOnLadder => isActiveAndEnabled && currentLadder != null;
         public float ClimbSpeed => IsOnLadder && rb != null
             ? Vector3.Dot(rb.linearVelocity, currentLadder.UpDirection)
             : 0f;
+        public float WallTraversalBlockDuration => settings.WallTraversalBlockDuration > 0f
+            ? settings.WallTraversalBlockDuration
+            : LadderTraversalSettings.CreateDefault().WallTraversalBlockDuration;
 
         private void Awake()
         {
@@ -174,10 +173,17 @@ namespace Koiusa.SteamMultiRuntime
                 : jumpRequested;
 
             var climbInput = ResolveClimbInput(moveInput, out var detachInput);
-            var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= GroundEnterDetachGraceTime;
+            var defaults = LadderTraversalSettings.CreateDefault();
+            var groundEnterGrace = settings.GroundEnterDetachGraceTime > 0f
+                ? settings.GroundEnterDetachGraceTime
+                : defaults.GroundEnterDetachGraceTime;
+            var lateralDetachThreshold = settings.LateralDetachInputThreshold > 0f
+                ? settings.LateralDetachInputThreshold
+                : defaults.LateralDetachInputThreshold;
+            var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= groundEnterGrace;
 
             // 軸ロック前は離脱判定を行わない（地面から侵入直後に取りこぼさないため）
-            var wantsLateralDetach = hasClimbAxisLock && Mathf.Abs(detachInput) > 0.2f;
+            var wantsLateralDetach = hasClimbAxisLock && Mathf.Abs(detachInput) > lateralDetachThreshold;
             var wantsGroundDescendDetach = isGrounded && climbInput < -0.01f;
             var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f && !isJustEnteredFromGround;
 
@@ -225,7 +231,10 @@ namespace Koiusa.SteamMultiRuntime
                 var absY = Mathf.Abs(moveInput.y);
                 var dominant = Mathf.Max(absX, absY);
 
-                if (dominant >= ClimbAxisLockEnterThreshold)
+                var axisLockThreshold = settings.ClimbAxisLockEnterThreshold > 0f
+                    ? settings.ClimbAxisLockEnterThreshold
+                    : LadderTraversalSettings.CreateDefault().ClimbAxisLockEnterThreshold;
+                if (dominant >= axisLockThreshold)
                 {
                     useXAxisAsClimb = absX > absY;
                     hasClimbAxisLock = true;
@@ -318,7 +327,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var targetRotation = Quaternion.LookRotation(facing.normalized, up);
-            var nextRotation = Quaternion.RotateTowards(rb.rotation, targetRotation, FacingRotationSpeed * Time.fixedDeltaTime);
+            var rotationSpeed = settings.FacingRotationSpeed > 0f
+                ? settings.FacingRotationSpeed
+                : LadderTraversalSettings.CreateDefault().FacingRotationSpeed;
+            var nextRotation = Quaternion.RotateTowards(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
             rb.MoveRotation(nextRotation);
         }
 

@@ -7,6 +7,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsEnabled { get; }
         bool IsOnLadder { get; }
         float ClimbSpeed { get; }
+        float WallTraversalBlockDuration { get; }
 
         void ResetState();
 

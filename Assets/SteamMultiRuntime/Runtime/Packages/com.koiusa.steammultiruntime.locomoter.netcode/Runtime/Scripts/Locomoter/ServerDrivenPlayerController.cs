@@ -119,7 +119,7 @@ namespace Koiusa.SteamMultiRuntime
         // Settings Sync (Server -> All Clients)
         private readonly NetworkVariable<PlayerMotorSettingsNetData> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        private readonly NetworkVariable<TraversalFeatureSettingsNetData> netTraversalMotorSettings = new NetworkVariable<TraversalFeatureSettingsNetData>(
+        private readonly NetworkVariable<TraversalFeatureSettingsNetData> netTraversalFeatureSettings = new NetworkVariable<TraversalFeatureSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private readonly NetworkVariable<PlayerKinematicState> netKinematicState = new NetworkVariable<PlayerKinematicState>(
@@ -235,7 +235,7 @@ namespace Koiusa.SteamMultiRuntime
             if (!IsServer)
             {
                 netPlayerMotorSettings.OnValueChanged += OnPlayerMotorSettingsChanged;
-                netTraversalMotorSettings.OnValueChanged += OnTraversalMotorSettingsChanged;
+                netTraversalFeatureSettings.OnValueChanged += OnTraversalFeatureSettingsChanged;
             }
 
             if (IsOwner)
@@ -255,7 +255,7 @@ namespace Koiusa.SteamMultiRuntime
             if (!IsServer)
             {
                 netPlayerMotorSettings.OnValueChanged -= OnPlayerMotorSettingsChanged;
-                netTraversalMotorSettings.OnValueChanged -= OnTraversalMotorSettingsChanged;
+                netTraversalFeatureSettings.OnValueChanged -= OnTraversalFeatureSettingsChanged;
             }
 
             baseInputSource?.Disable();
@@ -416,7 +416,7 @@ namespace Koiusa.SteamMultiRuntime
                 traversalSettingsSyncs[i].WriteSettings(ref traversalSettings);
             }
 
-            netTraversalMotorSettings.Value = TraversalFeatureSettingsNetData.FromCore(traversalSettings);
+            netTraversalFeatureSettings.Value = TraversalFeatureSettingsNetData.FromCore(traversalSettings);
         }
 
         private void OnPlayerMotorSettingsChanged(PlayerMotorSettingsNetData oldValue, PlayerMotorSettingsNetData newValue)
@@ -432,7 +432,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void OnTraversalMotorSettingsChanged(TraversalFeatureSettingsNetData oldValue, TraversalFeatureSettingsNetData newValue)
+        private void OnTraversalFeatureSettingsChanged(TraversalFeatureSettingsNetData oldValue, TraversalFeatureSettingsNetData newValue)
         {
             if (motor == null)
             {

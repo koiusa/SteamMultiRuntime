@@ -1,5 +1,11 @@
 namespace Koiusa.SteamMultiRuntime
 {
+    public enum WallJumpTrajectoryMode
+    {
+        Snappy = 0,
+        Arc = 1,
+    }
+
     [System.Serializable]
     public partial struct WallJumpTraversalSettings
     {

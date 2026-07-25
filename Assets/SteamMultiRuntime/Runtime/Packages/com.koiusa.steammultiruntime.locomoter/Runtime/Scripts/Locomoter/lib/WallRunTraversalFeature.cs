@@ -7,10 +7,6 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class WallRunTraversalFeature : MonoBehaviour, IWallRunTraversalFeature, ITraversalSettingsSync
     {
-        private const float ExitAwayInputDot = 0.25f;
-        private const float EnterAlongWallInput = 0.65f;
-        private const float MaintainAlongWallInput = 0.35f;
-
         [SerializeField] private WallRunTraversalSettings settings;
 
         private Rigidbody rb;
@@ -243,7 +239,10 @@ namespace Koiusa.SteamMultiRuntime
         private bool HasWallRunIntent(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
-            if (horizontalInput.sqrMagnitude < 0.0625f)
+            var minimumInput = settings.MinimumMoveInputMagnitude > 0f
+                ? settings.MinimumMoveInputMagnitude
+                : WallRunTraversalSettings.CreateDefault().MinimumMoveInputMagnitude;
+            if (horizontalInput.sqrMagnitude < minimumInput * minimumInput)
             {
                 return false;
             }
@@ -252,18 +251,27 @@ namespace Koiusa.SteamMultiRuntime
             // Camera-relative movement picks up a small wall-tangent component whenever
             // the view rotates. Require a deliberate angle to enter, then use a lower
             // threshold while already running to avoid state flicker.
-            var configuredThreshold = Mathf.Clamp01(settings.WallRunMinInputDot);
+            var defaults = WallRunTraversalSettings.CreateDefault();
+            var enterThreshold = settings.EnterAlongWallInput > 0f
+                ? settings.EnterAlongWallInput
+                : defaults.EnterAlongWallInput;
+            var maintainThreshold = settings.MaintainAlongWallInput > 0f
+                ? settings.MaintainAlongWallInput
+                : defaults.MaintainAlongWallInput;
             var threshold = IsWallRunning
-                ? Mathf.Max(configuredThreshold, MaintainAlongWallInput)
-                : Mathf.Max(configuredThreshold, EnterAlongWallInput);
+                ? maintainThreshold
+                : enterThreshold;
             return alongWallInput >= threshold;
         }
 
-        private static bool IsMoveInputAwayFromWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
+        private bool IsMoveInputAwayFromWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
+            var exitThreshold = settings.ExitAwayInputDot > 0f
+                ? settings.ExitAwayInputDot
+                : WallRunTraversalSettings.CreateDefault().ExitAwayInputDot;
             return horizontalInput.sqrMagnitude > 0.0001f
-                && Vector3.Dot(horizontalInput.normalized, wallNormal) > ExitAwayInputDot;
+                && Vector3.Dot(horizontalInput.normalized, wallNormal) > exitThreshold;
         }
 
         private float GetInputReleaseGraceTime()

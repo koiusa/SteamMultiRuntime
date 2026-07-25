@@ -11,7 +11,6 @@ namespace Koiusa.SteamMultiRuntime
         public float WallRunAcceleration;
         public float WallRunGravityMultiplier;
         public float WallRunMaxFallSpeed;
-        public float WallRunMinInputDot;
         public float WallMaxUpDot;
         public int WallRunStartContactFrames;
         public float WallRunAwayFromWallMinSpeed;
@@ -20,6 +19,10 @@ namespace Koiusa.SteamMultiRuntime
         public float HeightHoldAcceleration;
         public float ArcInitialUpSpeed;
         public float ArcGravityMultiplier;
+        public float EnterAlongWallInput;
+        public float MaintainAlongWallInput;
+        public float ExitAwayInputDot;
+        public float MinimumMoveInputMagnitude;
 
         public static WallRunTraversalSettingsNetData FromCore(WallRunTraversalSettings s)
         {
@@ -29,7 +32,6 @@ namespace Koiusa.SteamMultiRuntime
                 WallRunAcceleration = s.WallRunAcceleration,
                 WallRunGravityMultiplier = s.WallRunGravityMultiplier,
                 WallRunMaxFallSpeed = s.WallRunMaxFallSpeed,
-                WallRunMinInputDot = s.WallRunMinInputDot,
                 WallMaxUpDot = s.WallMaxUpDot,
                 WallRunStartContactFrames = s.WallRunStartContactFrames,
                 WallRunAwayFromWallMinSpeed = s.WallRunAwayFromWallMinSpeed,
@@ -38,6 +40,10 @@ namespace Koiusa.SteamMultiRuntime
                 HeightHoldAcceleration = s.HeightHoldAcceleration,
                 ArcInitialUpSpeed = s.ArcInitialUpSpeed,
                 ArcGravityMultiplier = s.ArcGravityMultiplier,
+                EnterAlongWallInput = s.EnterAlongWallInput,
+                MaintainAlongWallInput = s.MaintainAlongWallInput,
+                ExitAwayInputDot = s.ExitAwayInputDot,
+                MinimumMoveInputMagnitude = s.MinimumMoveInputMagnitude,
             };
         }
 
@@ -49,7 +55,6 @@ namespace Koiusa.SteamMultiRuntime
                 WallRunAcceleration = WallRunAcceleration,
                 WallRunGravityMultiplier = WallRunGravityMultiplier,
                 WallRunMaxFallSpeed = WallRunMaxFallSpeed,
-                WallRunMinInputDot = WallRunMinInputDot,
                 WallMaxUpDot = WallMaxUpDot,
                 WallRunStartContactFrames = WallRunStartContactFrames,
                 WallRunAwayFromWallMinSpeed = WallRunAwayFromWallMinSpeed,
@@ -58,6 +63,10 @@ namespace Koiusa.SteamMultiRuntime
                 HeightHoldAcceleration = HeightHoldAcceleration,
                 ArcInitialUpSpeed = ArcInitialUpSpeed,
                 ArcGravityMultiplier = ArcGravityMultiplier,
+                EnterAlongWallInput = EnterAlongWallInput,
+                MaintainAlongWallInput = MaintainAlongWallInput,
+                ExitAwayInputDot = ExitAwayInputDot,
+                MinimumMoveInputMagnitude = MinimumMoveInputMagnitude,
             };
         }
 
@@ -67,7 +76,6 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref WallRunAcceleration);
             serializer.SerializeValue(ref WallRunGravityMultiplier);
             serializer.SerializeValue(ref WallRunMaxFallSpeed);
-            serializer.SerializeValue(ref WallRunMinInputDot);
             serializer.SerializeValue(ref WallMaxUpDot);
             serializer.SerializeValue(ref WallRunStartContactFrames);
             serializer.SerializeValue(ref WallRunAwayFromWallMinSpeed);
@@ -76,6 +84,10 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref HeightHoldAcceleration);
             serializer.SerializeValue(ref ArcInitialUpSpeed);
             serializer.SerializeValue(ref ArcGravityMultiplier);
+            serializer.SerializeValue(ref EnterAlongWallInput);
+            serializer.SerializeValue(ref MaintainAlongWallInput);
+            serializer.SerializeValue(ref ExitAwayInputDot);
+            serializer.SerializeValue(ref MinimumMoveInputMagnitude);
         }
     }
 }
