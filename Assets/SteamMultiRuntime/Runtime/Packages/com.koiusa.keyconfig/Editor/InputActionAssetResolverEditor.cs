@@ -47,8 +47,24 @@ namespace Koiusa.Keyconfig.Editor
             if (resolved == null)
             {
                 EditorGUILayout.HelpBox(
-                    "InputActionAssetを解決できません。Direct Input Action AssetまたはAsset Source Actionを設定してください。",
+                    "Input Action Assetを設定してください。",
                     MessageType.Error);
+                return;
+            }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Actions in Asset", EditorStyles.boldLabel);
+            foreach (var map in resolved.actionMaps)
+            {
+                foreach (var action in map.actions)
+                {
+                    EditorGUILayout.LabelField($"{map.name}/{action.name}");
+                }
+            }
+
+            if (GUILayout.Button("Open Input Action Asset"))
+            {
+                AssetDatabase.OpenAsset(resolved);
             }
         }
     }

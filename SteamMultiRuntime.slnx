@@ -32,4 +32,5 @@
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.Runtime.csproj" />
   <Project Path="Koiusa.System.Core.Editor.csproj" />
   <Project Path="Koiusa.Input.Core.Editor.csproj" />
+  <Project Path="Koiusa.TargetingSystem.Editor.csproj" />
 </Solution>
