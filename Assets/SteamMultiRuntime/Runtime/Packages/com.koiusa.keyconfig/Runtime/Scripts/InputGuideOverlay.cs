@@ -35,7 +35,6 @@ namespace Koiusa.Keyconfig.Runtime
         private sealed class GuideRow
         {
             public VisualElement Element;
-            public Label State;
             public InputControl Control;
         }
 
@@ -65,7 +64,6 @@ namespace Koiusa.Keyconfig.Runtime
                 var row = rows[i];
                 var active = InputControlActivity.IsActive(row.Control);
                 row.Element.EnableInClassList("active", active);
-                row.State.text = active ? "INPUT" : string.Empty;
                 if (active && row.Control?.device != null)
                 {
                     lastActiveDevice = row.Control.device;
@@ -115,10 +113,10 @@ namespace Koiusa.Keyconfig.Runtime
             layout.CloneTree(root);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             deviceLabel = root.Q<Label>("device-label");
-            var list = root.Q<VisualElement>("guide-list");
+            var deviceLayout = root.Q<VisualElement>("device-layout");
             var mapLabel = root.Q<Label>("map-label");
 
-            if (inputActionAsset == null || list == null)
+            if (inputActionAsset == null || deviceLayout == null)
             {
                 mapLabel.text = "INPUT ASSET NOT SET";
                 return;
@@ -144,45 +142,43 @@ namespace Koiusa.Keyconfig.Runtime
                         continue;
                     }
 
-                    AddRow(list, action, bindingIndex, binding);
+                    BindControl(root, action, bindingIndex, binding);
                 }
             }
         }
 
-        private void AddRow(VisualElement list, InputAction action, int bindingIndex, InputBinding binding)
+        private void BindControl(VisualElement root, InputAction action, int bindingIndex, InputBinding binding)
         {
-            var row = new VisualElement();
-            row.AddToClassList("input-guide-row");
-
-            var icon = new Image();
-            icon.AddToClassList("input-guide-icon");
-            var path = string.IsNullOrWhiteSpace(binding.effectivePath) ? binding.path : binding.effectivePath;
-            icon.image = iconResolver != null ? iconResolver.Resolve(path) : null;
-            icon.style.display = icon.image != null ? DisplayStyle.Flex : DisplayStyle.None;
-            row.Add(icon);
-
-            var key = new Label(action.GetBindingDisplayString(bindingIndex));
-            key.AddToClassList("input-guide-key");
-            row.Add(key);
+            var path = string.IsNullOrWhiteSpace(binding.effectivePath)
+                ? binding.path
+                : binding.effectivePath;
+            var controlName = GetControlName(path);
+            var controlElement = root.Q<VisualElement>($"control-{controlName}");
+            if (controlElement == null)
+            {
+                return;
+            }
 
             var actionName = binding.isPartOfComposite
                 ? $"{Nicify(action.name)} · {Nicify(binding.name)}"
                 : Nicify(action.name);
             var actionLabel = new Label(actionName);
-            actionLabel.AddToClassList("input-guide-action");
-            row.Add(actionLabel);
-
-            var state = new Label();
-            state.AddToClassList("input-guide-state");
-            row.Add(state);
-            list.Add(row);
+            actionLabel.AddToClassList("input-device-action");
+            controlElement.Add(actionLabel);
+            controlElement.tooltip = $"{action.GetBindingDisplayString(bindingIndex)} — {actionName}";
 
             rows.Add(new GuideRow
             {
-                Element = row,
-                State = state,
+                Element = controlElement,
                 Control = InputControlActivity.Resolve(path)
             });
+        }
+
+        private static string GetControlName(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return string.Empty;
+            var slash = path.LastIndexOf('/');
+            return (slash >= 0 ? path.Substring(slash + 1) : path).ToLowerInvariant();
         }
 
         private bool IsInBindingGroup(string groups)

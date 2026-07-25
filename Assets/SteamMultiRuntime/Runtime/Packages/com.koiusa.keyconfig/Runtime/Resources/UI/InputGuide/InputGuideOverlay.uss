@@ -2,7 +2,7 @@
     position: absolute;
     left: 24px;
     bottom: 24px;
-    width: 330px;
+    width: 620px;
 }
 
 .input-guide-panel {
@@ -29,27 +29,110 @@
 .input-guide-spacer { flex-grow: 1; }
 .input-guide-device { padding-left: 7px; padding-right: 7px; padding-top: 4px; padding-bottom: 4px; font-size: 9px; -unity-font-style: bold; color: rgb(149, 174, 205); background-color: rgba(90, 120, 160, 0.16); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 .input-guide-divider { height: 1px; margin-top: 9px; margin-bottom: 7px; background-color: rgba(160, 190, 225, 0.13); }
-.input-guide-list { max-height: 390px; }
-
-.input-guide-row {
+.input-device-layout {
     flex-direction: row;
-    align-items: center;
-    min-height: 36px;
-    margin-top: 2px;
-    padding-left: 7px;
-    padding-right: 7px;
-    border-left-width: 2px;
-    border-left-color: rgba(0, 0, 0, 0);
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.025);
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 5px;
+    padding-bottom: 3px;
 }
 
-.input-guide-row.active { background-color: rgba(48, 206, 145, 0.18); border-left-color: rgb(70, 235, 165); }
-.input-guide-icon { width: 24px; height: 24px; margin-right: 6px; flex-shrink: 0; }
-.input-guide-key { min-width: 65px; max-width: 82px; font-size: 11px; -unity-font-style: bold; color: rgb(205, 221, 243); overflow: hidden; }
-.input-guide-action { flex-grow: 1; font-size: 11px; color: rgb(161, 180, 205); overflow: hidden; }
-.input-guide-state { width: 34px; font-size: 8px; -unity-font-style: bold; -unity-text-align: middle-right; color: rgb(76, 238, 171); }
+.input-keyboard {
+    width: 445px;
+    padding: 7px;
+    background-color: rgba(1, 5, 10, 0.65);
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.keyboard-row { flex-direction: row; height: 48px; }
+.keyboard-row-offset { padding-left: 47px; }
+.keyboard-gap { width: 94px; }
+.keyboard-gap-small { width: 47px; }
+
+.keycap {
+    width: 43px;
+    height: 43px;
+    margin-right: 4px;
+    padding-top: 3px;
+    align-items: center;
+    background-color: rgb(28, 36, 49);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 3px;
+    border-left-color: rgb(68, 82, 102);
+    border-right-color: rgb(68, 82, 102);
+    border-top-color: rgb(78, 94, 116);
+    border-bottom-color: rgb(10, 15, 22);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.keycap-wide { width: 72px; }
+.keycap-space { width: 116px; }
+.keycap-arrow { background-color: rgb(31, 41, 55); }
+.keycap-name { font-size: 12px; -unity-font-style: bold; color: rgb(213, 224, 240); }
+.keycap-name-small { font-size: 8px; }
+
+.input-device-action {
+    margin-top: 2px;
+    max-width: 100%;
+    font-size: 7px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(111, 137, 168);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.keycap.active {
+    translate: 0 2px;
+    background-color: rgb(35, 150, 112);
+    border-left-color: rgb(83, 245, 181);
+    border-right-color: rgb(83, 245, 181);
+    border-top-color: rgb(111, 255, 202);
+    border-bottom-color: rgb(18, 74, 57);
+}
+
+.keycap.active .keycap-name,
+.keycap.active .input-device-action { color: rgb(245, 255, 251); }
+
+.input-mouse {
+    width: 128px;
+    height: 185px;
+    margin-left: 14px;
+    padding: 5px;
+    background-color: rgba(1, 5, 10, 0.65);
+    border-top-left-radius: 56px;
+    border-top-right-radius: 56px;
+    border-bottom-left-radius: 45px;
+    border-bottom-right-radius: 45px;
+}
+
+.mouse-buttons { flex-direction: row; height: 72px; }
+.mouse-button {
+    height: 67px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(28, 36, 49);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(70, 84, 104);
+}
+.mouse-left { width: 48px; border-top-left-radius: 48px; }
+.mouse-middle { width: 22px; margin-left: 2px; margin-right: 2px; }
+.mouse-right { width: 48px; border-top-right-radius: 48px; }
+.mouse-label { font-size: 9px; -unity-font-style: bold; color: rgb(157, 176, 202); }
+.mouse-body { flex-grow: 1; align-items: center; justify-content: center; background-color: rgb(20, 27, 38); border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; }
+.mouse-move-label { font-size: 8px; letter-spacing: 1px; color: rgb(83, 107, 136); }
+.mouse-button.active,
+.mouse-body.active { background-color: rgb(35, 150, 112); }
+.mouse-button.active .mouse-label,
+.mouse-body.active .mouse-move-label,
+.mouse-button.active .input-device-action,
+.mouse-body.active .input-device-action { color: rgb(245, 255, 251); }
 .input-guide-footer { margin-top: 9px; font-size: 8px; letter-spacing: 1px; -unity-text-align: middle-right; color: rgb(76, 109, 143); }

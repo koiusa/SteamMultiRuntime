@@ -12,7 +12,43 @@
                 <ui:Label name="device-label" text="KEYBOARD" class="input-guide-device" />
             </ui:VisualElement>
             <ui:VisualElement class="input-guide-divider" />
-            <ui:ScrollView name="guide-list" mode="Vertical" class="input-guide-list" />
+            <ui:VisualElement name="device-layout" class="input-device-layout">
+                <ui:VisualElement class="input-keyboard">
+                    <ui:VisualElement class="keyboard-row">
+                        <ui:VisualElement name="control-1" class="keycap"><ui:Label text="1" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-2" class="keycap"><ui:Label text="2" class="keycap-name" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="keyboard-row keyboard-row-offset">
+                        <ui:VisualElement name="control-w" class="keycap"><ui:Label text="W" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-e" class="keycap"><ui:Label text="E" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement class="keyboard-gap" />
+                        <ui:VisualElement name="control-uparrow" class="keycap keycap-arrow"><ui:Label text="▲" class="keycap-name" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="keyboard-row">
+                        <ui:VisualElement name="control-a" class="keycap"><ui:Label text="A" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-s" class="keycap"><ui:Label text="S" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-d" class="keycap"><ui:Label text="D" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement class="keyboard-gap-small" />
+                        <ui:VisualElement name="control-leftarrow" class="keycap keycap-arrow"><ui:Label text="◀" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-downarrow" class="keycap keycap-arrow"><ui:Label text="▼" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-rightarrow" class="keycap keycap-arrow"><ui:Label text="▶" class="keycap-name" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="keyboard-row">
+                        <ui:VisualElement name="control-leftshift" class="keycap keycap-wide"><ui:Label text="SHIFT" class="keycap-name keycap-name-small" /></ui:VisualElement>
+                        <ui:VisualElement name="control-c" class="keycap"><ui:Label text="C" class="keycap-name" /></ui:VisualElement>
+                        <ui:VisualElement name="control-space" class="keycap keycap-space"><ui:Label text="SPACE" class="keycap-name keycap-name-small" /></ui:VisualElement>
+                        <ui:VisualElement name="control-enter" class="keycap keycap-wide"><ui:Label text="ENTER" class="keycap-name keycap-name-small" /></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="input-mouse">
+                    <ui:VisualElement class="mouse-buttons">
+                        <ui:VisualElement name="control-leftbutton" class="mouse-button mouse-left"><ui:Label text="L" class="mouse-label" /></ui:VisualElement>
+                        <ui:VisualElement name="control-middlebutton" class="mouse-button mouse-middle"><ui:Label text="●" class="mouse-label" /></ui:VisualElement>
+                        <ui:VisualElement name="control-rightbutton" class="mouse-button mouse-right"><ui:Label text="R" class="mouse-label" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="control-delta" class="mouse-body"><ui:Label text="MOVE" class="mouse-move-label" /></ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
             <ui:Label text="LIVE INPUT MONITOR" class="input-guide-footer" />
         </ui:VisualElement>
     </ui:VisualElement>
