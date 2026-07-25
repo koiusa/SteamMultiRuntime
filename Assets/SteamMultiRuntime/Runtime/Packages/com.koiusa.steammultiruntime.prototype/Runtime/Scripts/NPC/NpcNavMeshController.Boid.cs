@@ -15,7 +15,6 @@ namespace Koiusa.SteamMultiRuntime
             var neighborCount = 0;
             var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _boidNeighborBuffer.Length);
             var radiusSqr = radius * radius;
-            var uniqueNeighborIds = new int[32];
             var uniqueNeighborCount = 0;
 
             var referenceForward = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
@@ -43,7 +42,7 @@ namespace Koiusa.SteamMultiRuntime
                 var alreadyAdded = false;
                 for (var keyIndex = 0; keyIndex < uniqueNeighborCount; keyIndex++)
                 {
-                    if (uniqueNeighborIds[keyIndex] != neighborKey)
+                    if (_uniqueNeighborIds[keyIndex] != neighborKey)
                         continue;
                     alreadyAdded = true;
                     break;
@@ -52,7 +51,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (alreadyAdded)
                     continue;
 
-                uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
+                _uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
 
                 var neighborPosition = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
                 var delta = transform.position - neighborPosition;

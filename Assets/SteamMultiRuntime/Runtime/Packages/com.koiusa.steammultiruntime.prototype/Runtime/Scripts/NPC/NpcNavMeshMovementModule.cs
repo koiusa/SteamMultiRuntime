@@ -3,8 +3,9 @@ using UnityEngine.AI;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [System.Serializable]
-    public class NpcNavMeshMovementModule
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(NavMeshAgent))]
+    public sealed class NpcNavMeshMovementModule : MonoBehaviour
     {
         [SerializeField] private PathSettings path = new();
         [SerializeField] private StuckSettings stuck = new();
@@ -73,11 +74,16 @@ namespace Koiusa.SteamMultiRuntime
         public event System.Action OnRandomDestinationNeeded;
         public event System.Action OnCenterDestinationNeeded;
 
-        public void Initialize(NavMeshAgent agent, Transform transform)
+        private void Awake()
         {
-            _agent = agent;
+            _agent = GetComponent<NavMeshAgent>();
             _transform = transform;
-            _moveCenter = transform.position;
+            InitializeState();
+        }
+
+        private void InitializeState()
+        {
+            _moveCenter = _transform.position;
 
             var upAxis = PlayerMotor.GetUpAxis();
             SmoothedMoveDirection = GetRandomPlanarDirection(upAxis);
@@ -87,8 +93,12 @@ namespace Koiusa.SteamMultiRuntime
             ResetStuckTracking();
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
+            if (_agent == null)
+                _agent = GetComponent<NavMeshAgent>();
+            if (_transform == null)
+                _transform = transform;
             var upAxis = PlayerMotor.GetUpAxis();
             if (SmoothedMoveDirection.sqrMagnitude <= 0.0001f)
                 SmoothedMoveDirection = GetRandomPlanarDirection(upAxis);
@@ -140,6 +150,11 @@ namespace Koiusa.SteamMultiRuntime
                 stuck.noMovementTimeout = 0.1f;
             if (stuck.minDesiredSpeedForMovementCheck < 0f)
                 stuck.minDesiredSpeedForMovementCheck = 0f;
+        }
+
+        private void OnValidate()
+        {
+            NormalizeSettings();
         }
 
         public void RequestRandomDestination()

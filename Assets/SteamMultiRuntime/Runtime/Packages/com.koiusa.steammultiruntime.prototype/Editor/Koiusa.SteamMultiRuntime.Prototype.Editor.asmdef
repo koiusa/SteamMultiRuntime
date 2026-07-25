@@ -1,0 +1,8 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Prototype.Editor",
+  "references": [
+    "GUID:d6dc8a800c77ba341b0d8a1663b6a0bc"
+  ],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

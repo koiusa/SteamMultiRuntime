@@ -3,8 +3,9 @@ using UnityEngine.AI;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [System.Serializable]
-    public class NpcNavMeshSpeedModule
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(NavMeshAgent))]
+    public sealed class NpcNavMeshSpeedModule : MonoBehaviour
     {
         [SerializeField] private ScaleSettings scale = new();
         [SerializeField] private ReturnToCenterSpeedSettings returnToCenter = new();
@@ -23,21 +24,22 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         private NavMeshAgent _agent;
+        private IPlayerMotor _motor;
         private float _moveSpeedScale = 1f;
-        private float _baseAgentSpeed;
 
-        public void Initialize(NavMeshAgent agent)
+        private void Awake()
         {
-            _agent = agent;
-            if (agent != null)
-            {
-                _baseAgentSpeed = agent.speed;
-            }
+            _agent = GetComponent<NavMeshAgent>();
+            _motor = GetComponent<IPlayerMotor>();
             RandomizeForSegment();
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
+            if (_agent == null)
+                _agent = GetComponent<NavMeshAgent>();
+            if (_motor == null)
+                _motor = GetComponent<IPlayerMotor>();
             ApplyAgentSpeedScale();
         }
 
@@ -52,7 +54,7 @@ namespace Koiusa.SteamMultiRuntime
             if (_agent == null)
                 return;
 
-            var baseSpeed = _baseAgentSpeed > 0f ? _baseAgentSpeed : _agent.speed;
+            var baseSpeed = GetBaseMoveSpeed();
             _agent.speed = Mathf.Max(0.01f, baseSpeed * _moveSpeedScale);
         }
 
@@ -63,8 +65,20 @@ namespace Koiusa.SteamMultiRuntime
             if (!returnToCenter.useBoost)
                 return;
 
-            var baseSpeed = _baseAgentSpeed > 0f ? _baseAgentSpeed : _agent.speed;
+            var baseSpeed = GetBaseMoveSpeed();
             _agent.speed = Mathf.Max(0.01f, baseSpeed * returnToCenter.scale);
+        }
+
+        private float GetBaseMoveSpeed()
+        {
+            if (_motor != null)
+            {
+                var moveSpeed = _motor.GetSettings().MoveSpeed;
+                if (moveSpeed > 0f)
+                    return moveSpeed;
+            }
+
+            return _agent.speed;
         }
 
         public void NormalizeSettings()
@@ -75,6 +89,13 @@ namespace Koiusa.SteamMultiRuntime
 
             if (returnToCenter.scale < 1f)
                 returnToCenter.scale = 1f;
+        }
+
+        private void OnValidate()
+        {
+            NormalizeSettings();
+            if (Application.isPlaying)
+                ApplyAgentSpeedScale();
         }
     }
 }
