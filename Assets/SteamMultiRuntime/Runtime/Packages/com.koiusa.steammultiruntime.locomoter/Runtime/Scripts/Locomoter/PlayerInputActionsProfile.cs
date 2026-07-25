@@ -17,6 +17,9 @@ namespace Koiusa.SteamMultiRuntime
         public InputActionReference StrafeToggleAction => strafeToggleAction;
         public InputActionReference GrappleAction => grappleAction;
         public InputActionReference ReelAction => reelAction;
+        public InputAction MoveInputAction => ResolveAction(moveAction, "Player/Move");
+        public InputAction JumpInputAction => ResolveAction(jumpAction, "Player/Jump");
+        public InputAction StrafeToggleInputAction => ResolveAction(strafeToggleAction, "Player/StrafeToggle");
         public InputAction GrappleInputAction => ResolveAction(grappleAction, "Player/Grapple");
         public InputAction ReelInputAction => ResolveAction(reelAction, "Player/Reel");
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Unity.Netcode;
 
 namespace Koiusa.SteamMultiRuntime
@@ -10,104 +9,6 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(PlayerCompositeMotor))]
     public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
     {
-        private sealed class InputActionPlayerInputSource : IPlayerInputSource
-        {
-            private readonly InputActionReference moveAction;
-            private readonly InputActionReference jumpAction;
-            private readonly InputActionReference strafeToggleAction;
-            private readonly InputAction grappleAction;
-            private readonly InputAction reelAction;
-            private int jumpToken;
-            private bool isStrafeMode;
-            private bool isEnabled;
-
-            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction, InputAction grappleAction, InputAction reelAction)
-            {
-                this.moveAction = moveAction;
-                this.jumpAction = jumpAction;
-                this.strafeToggleAction = strafeToggleAction;
-                this.grappleAction = grappleAction;
-                this.reelAction = reelAction;
-            }
-
-            public void Enable()
-            {
-                if (isEnabled) return;
-                isEnabled = true;
-
-                if (moveAction != null)
-                {
-                    moveAction.action.Enable();
-                }
-
-                if (jumpAction != null)
-                {
-                    jumpAction.action.Enable();
-                    jumpAction.action.performed += OnJumpPerformed;
-                }
-
-                if (strafeToggleAction != null)
-                {
-                    strafeToggleAction.action.Enable();
-                    strafeToggleAction.action.performed += OnStrafeTogglePerformed;
-                }
-
-                grappleAction?.Enable();
-                reelAction?.Enable();
-            }
-
-            public void Disable()
-            {
-                if (!isEnabled) return;
-                isEnabled = false;
-
-                if (strafeToggleAction != null)
-                {
-                    strafeToggleAction.action.performed -= OnStrafeTogglePerformed;
-                    strafeToggleAction.action.Disable();
-                }
-
-                if (jumpAction != null)
-                {
-                    jumpAction.action.performed -= OnJumpPerformed;
-                    jumpAction.action.Disable();
-                }
-
-                if (moveAction != null)
-                {
-                    moveAction.action.Disable();
-                }
-
-                grappleAction?.Disable();
-                reelAction?.Disable();
-
-                jumpToken = 0;
-                isStrafeMode = false;
-            }
-
-            public PlayerInputState ReadState()
-            {
-                var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
-                var jumpPressed = jumpToken;
-                jumpToken = 0;
-                var grappleHeld = grappleAction != null && grappleAction.IsPressed();
-                var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
-                return new PlayerInputState(move, jumpPressed > 0, grappleHeld, reelInput);
-            }
-
-            public bool GetStrafeMode() => isStrafeMode;
-
-            private void OnJumpPerformed(InputAction.CallbackContext context)
-            {
-                jumpToken++;
-            }
-
-            private void OnStrafeTogglePerformed(InputAction.CallbackContext context)
-            {
-                isStrafeMode = !isStrafeMode;
-            }
-        }
-
         [Header("Input")]
         [SerializeField] private PlayerInputActionsProfile inputActionsProfile;
 
@@ -118,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private NetworkControlMode controlMode = NetworkControlMode.Player;
 
         private Rigidbody targetRigidbody;
-        private InputActionPlayerInputSource baseInputSource;
+        private PlayerGameplayInputReader baseInputSource;
         private IPlayerInputSource activeInputSource;
         private Transform injectedInputReferenceTransform;
         private PlayerCompositeMotor motor;
@@ -187,12 +88,7 @@ namespace Koiusa.SteamMultiRuntime
             // Reinitialize input source if already created
             activeInputSource?.Disable();
 
-            baseInputSource = new InputActionPlayerInputSource(
-                profile.MoveAction,
-                profile.JumpAction,
-                profile.StrafeToggleAction,
-                profile.GrappleInputAction,
-                profile.ReelInputAction);
+            baseInputSource = new PlayerGameplayInputReader(profile);
             activeInputSource = baseInputSource;
             injectedInputReferenceTransform = null;
 
@@ -256,12 +152,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            baseInputSource = new InputActionPlayerInputSource(
-                inputActionsProfile.MoveAction,
-                inputActionsProfile.JumpAction,
-                inputActionsProfile.StrafeToggleAction,
-                inputActionsProfile.GrappleInputAction,
-                inputActionsProfile.ReelInputAction);
+            baseInputSource = new PlayerGameplayInputReader(inputActionsProfile);
             activeInputSource = baseInputSource;
         }
 
@@ -405,8 +296,7 @@ namespace Koiusa.SteamMultiRuntime
                 jumpToken++;
             }
 
-            isStrafeMode = activeInputSource is InputActionPlayerInputSource playerInput
-                && playerInput.GetStrafeMode();
+            isStrafeMode = inputState.IsStrafeMode;
             SubmitInput(new PlayerInputSyncState(
                 moveDirection,
                 moveInput,

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -9,104 +8,6 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(PlayerCompositeMotor))]
     public class LocalPlayerController : MonoBehaviour, IPlayerController
     {
-        private sealed class InputActionPlayerInputSource : IPlayerInputSource
-        {
-            private readonly InputActionReference moveAction;
-            private readonly InputActionReference jumpAction;
-            private readonly InputActionReference strafeToggleAction;
-            private readonly InputAction grappleAction;
-            private readonly InputAction reelAction;
-            private int jumpToken;
-            private bool isStrafeMode;
-            private bool isEnabled;
-
-            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction, InputAction grappleAction, InputAction reelAction)
-            {
-                this.moveAction = moveAction;
-                this.jumpAction = jumpAction;
-                this.strafeToggleAction = strafeToggleAction;
-                this.grappleAction = grappleAction;
-                this.reelAction = reelAction;
-            }
-
-            public void Enable()
-            {
-                if (isEnabled) return;
-                isEnabled = true;
-
-                if (moveAction != null)
-                {
-                    moveAction.action.Enable();
-                }
-
-                if (jumpAction != null)
-                {
-                    jumpAction.action.Enable();
-                    jumpAction.action.performed += OnJumpPerformed;
-                }
-
-                if (strafeToggleAction != null)
-                {
-                    strafeToggleAction.action.Enable();
-                    strafeToggleAction.action.performed += OnStrafeTogglePerformed;
-                }
-
-                grappleAction?.Enable();
-                reelAction?.Enable();
-            }
-
-            public void Disable()
-            {
-                if (!isEnabled) return;
-                isEnabled = false;
-
-                if (strafeToggleAction != null)
-                {
-                    strafeToggleAction.action.performed -= OnStrafeTogglePerformed;
-                    strafeToggleAction.action.Disable();
-                }
-
-                if (jumpAction != null)
-                {
-                    jumpAction.action.performed -= OnJumpPerformed;
-                    jumpAction.action.Disable();
-                }
-
-                if (moveAction != null)
-                {
-                    moveAction.action.Disable();
-                }
-
-                grappleAction?.Disable();
-                reelAction?.Disable();
-
-                jumpToken = 0;
-                isStrafeMode = false;
-            }
-
-            public PlayerInputState ReadState()
-            {
-                var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
-                var jumpPressed = jumpToken;
-                jumpToken = 0;
-                var grappleHeld = grappleAction != null && grappleAction.IsPressed();
-                var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
-                return new PlayerInputState(move, jumpPressed > 0, grappleHeld, reelInput);
-            }
-
-            public bool GetStrafeMode() => isStrafeMode;
-
-            private void OnJumpPerformed(InputAction.CallbackContext context)
-            {
-                jumpToken++;
-            }
-
-            private void OnStrafeTogglePerformed(InputAction.CallbackContext context)
-            {
-                isStrafeMode = !isStrafeMode;
-            }
-        }
-
         [Header("Input")]
         [SerializeField] private PlayerInputActionsProfile inputActionsProfile;
 
@@ -114,7 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Transform cameraTransform;
 
         private Rigidbody targetRigidbody;
-        private InputActionPlayerInputSource inputSource;
+        private PlayerGameplayInputReader inputSource;
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private IWireSwingTraversalFeature wireSwingFeature;
@@ -156,12 +57,7 @@ namespace Koiusa.SteamMultiRuntime
                 inputSource.Disable();
             }
 
-            inputSource = new InputActionPlayerInputSource(
-                profile.MoveAction,
-                profile.JumpAction,
-                profile.StrafeToggleAction,
-                profile.GrappleInputAction,
-                profile.ReelInputAction);
+            inputSource = new PlayerGameplayInputReader(profile);
 
             if (isActiveAndEnabled)
             {
@@ -190,12 +86,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            inputSource = new InputActionPlayerInputSource(
-                inputActionsProfile.MoveAction,
-                inputActionsProfile.JumpAction,
-                inputActionsProfile.StrafeToggleAction,
-                inputActionsProfile.GrappleInputAction,
-                inputActionsProfile.ReelInputAction);
+            inputSource = new PlayerGameplayInputReader(inputActionsProfile);
 
             if (cameraTransform == null && Camera.main != null)
             {
@@ -244,7 +135,7 @@ namespace Koiusa.SteamMultiRuntime
                 jumpToken++;
             }
 
-            isStrafeMode = inputSource.GetStrafeMode();
+            isStrafeMode = inputState.IsStrafeMode;
         }
 
         private void FixedUpdate()

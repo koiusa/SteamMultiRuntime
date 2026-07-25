@@ -1287,7 +1287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
   m_SerializedVersion: 0
-  m_AgentTypeID: 1479372276
+  m_AgentTypeID: -1372625422
   m_CollectObjects: 2
   m_Size: {x: 10, y: 10, z: 10}
   m_Center: {x: 0, y: 2, z: 0}
@@ -1304,7 +1304,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.083333336
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 84c15169cc2a6f44d8c9ae8b867bb519, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 5902d8ee6ff90e84fbc6f925fe751db3, type: 2}
   m_BuildHeightMesh: 1
 --- !u!1001 &1542039663
 PrefabInstance:
