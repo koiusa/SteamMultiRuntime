@@ -64,6 +64,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private int loadingScopeCount;
         private bool didUnloadDefaultSceneForLobby;
+        private bool isApplicationQuitting;
         private int lobbyTransitionScopeCount;
         private string lobbySceneName;
 
@@ -221,6 +222,14 @@ namespace Koiusa.SteamMultiRuntime
 
         private async Task HandleLobbyLeftAsyncInternal(string sceneNameToUnload)
         {
+            // NetworkManager raises its disconnect callback while Unity is quitting.
+            // SceneManager cannot start a new asynchronous load at that point, so only
+            // let the lobby/network cleanup continue and skip presentation-scene work.
+            if (isApplicationQuitting)
+            {
+                return;
+            }
+
             await ExecuteWithLoadingScopeAsync(async () =>
             {
                 await UnloadLobbySceneOnLeftCoreAsync(sceneNameToUnload);
@@ -309,6 +318,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 instance = null;
             }
+        }
+
+        private void OnApplicationQuit()
+        {
+            isApplicationQuitting = true;
         }
 
         public string LobbySceneName => lobbySceneName;
