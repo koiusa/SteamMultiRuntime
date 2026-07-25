@@ -555,7 +555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingTraversalFeature
   aimTransform: {fileID: 0}
-  wireOrigin: {fileID: 0}
+  wireOrigin: {fileID: 4729856950231397882}
   maximumRange: 45
   grappleLayers:
     serializedVersion: 2

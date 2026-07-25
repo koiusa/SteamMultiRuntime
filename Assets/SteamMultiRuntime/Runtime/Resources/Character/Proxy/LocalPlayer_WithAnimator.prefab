@@ -415,7 +415,7 @@ MonoBehaviour:
   reelAction: {fileID: 0}
   jumpAction: {fileID: 0}
   aimTransform: {fileID: 0}
-  wireOrigin: {fileID: 0}
+  wireOrigin: {fileID: 4729856950231397882}
   maximumRange: 45
   grappleLayers:
     serializedVersion: 2
