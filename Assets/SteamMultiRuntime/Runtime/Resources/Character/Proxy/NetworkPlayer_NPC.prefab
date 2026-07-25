@@ -149,9 +149,9 @@ MonoBehaviour:
   RotationInterpolationType: 0
   ScaleInterpolationType: 0
   PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
+  PositionMaxInterpolationTime: 0.2
   RotationLerpSmoothing: 1
-  RotationMaxInterpolationTime: 0.1
+  RotationMaxInterpolationTime: 0.2
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
   AuthorityMode: 0
@@ -166,8 +166,8 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.02
-  RotAngleThreshold: 0.5
+  PositionThreshold: 0.4
+  RotAngleThreshold: 3
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
@@ -412,9 +412,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarkerNetSync
   ShowTopMostFoldoutHeaderGroup: 1
-  showDistance: 10
-  hideDistance: 12
-  visibilityUpdateInterval: 0.5
 --- !u!114 &910000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

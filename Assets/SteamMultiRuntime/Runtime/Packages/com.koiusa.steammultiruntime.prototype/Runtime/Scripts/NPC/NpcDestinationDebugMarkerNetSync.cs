@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,11 +9,6 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(NpcDestinationDebugMarker))]
     public class NpcDestinationDebugMarkerNetSync : NetworkBehaviour
     {
-        [Header("Client Visibility")]
-        [SerializeField, Min(1f)] private float showDistance = 10f;
-        [SerializeField, Min(1f)] private float hideDistance = 12f;
-        [SerializeField, Min(0.1f)] private float visibilityUpdateInterval = 0.5f;
-
         private readonly NetworkVariable<Vector3> syncedDestination = new NetworkVariable<Vector3>(
             Vector3.zero,
             NetworkVariableReadPermission.Everyone,
@@ -27,9 +21,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private NpcNavMeshController controller;
         private NpcDestinationDebugMarker marker;
-        private readonly HashSet<ulong> hiddenClients = new HashSet<ulong>();
-        private readonly List<ulong> disconnectedClients = new List<ulong>();
-        private float nextVisibilityUpdateTime;
 
         private void Awake()
         {
@@ -40,9 +31,6 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-
-            var interval = Mathf.Max(0.1f, visibilityUpdateInterval);
-            nextVisibilityUpdateTime = Time.unscaledTime + interval * (NetworkObjectId % 97 / 97f);
 
             if (controller != null)
             {
@@ -59,63 +47,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
-            if (!IsSpawned || !IsServer)
+            if (!IsSpawned || !IsServer || !syncedVisible.Value || marker == null)
                 return;
 
-            if (Time.unscaledTime >= nextVisibilityUpdateTime)
-            {
-                UpdateClientVisibility();
-                nextVisibilityUpdateTime = Time.unscaledTime + Mathf.Max(0.1f, visibilityUpdateInterval);
-            }
-
-            if (syncedVisible.Value && marker != null && marker.HasArrived())
+            if (marker.HasArrived())
                 syncedVisible.Value = false;
-        }
-
-        private void UpdateClientVisibility()
-        {
-            if (NetworkManager == null || NetworkObject == null)
-                return;
-
-            var showDistanceSqr = showDistance * showDistance;
-            var effectiveHideDistance = Mathf.Max(showDistance, hideDistance);
-            var hideDistanceSqr = effectiveHideDistance * effectiveHideDistance;
-
-            foreach (var pair in NetworkManager.ConnectedClients)
-            {
-                var clientId = pair.Key;
-                if (clientId == Unity.Netcode.NetworkManager.ServerClientId)
-                    continue;
-
-                var playerObject = pair.Value.PlayerObject;
-                if (playerObject == null)
-                    continue;
-
-                var distanceSqr = (playerObject.transform.position - transform.position).sqrMagnitude;
-                if (hiddenClients.Contains(clientId))
-                {
-                    if (distanceSqr <= showDistanceSqr)
-                    {
-                        NetworkObject.NetworkShow(clientId);
-                        hiddenClients.Remove(clientId);
-                    }
-                }
-                else if (distanceSqr >= hideDistanceSqr)
-                {
-                    NetworkObject.NetworkHide(clientId);
-                    hiddenClients.Add(clientId);
-                }
-            }
-
-            disconnectedClients.Clear();
-            foreach (var clientId in hiddenClients)
-            {
-                if (!NetworkManager.ConnectedClients.ContainsKey(clientId))
-                    disconnectedClients.Add(clientId);
-            }
-
-            for (var i = 0; i < disconnectedClients.Count; i++)
-                hiddenClients.Remove(disconnectedClients[i]);
         }
 
         public override void OnNetworkDespawn()
@@ -131,7 +67,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 marker.ClearDestination();
             }
-            hiddenClients.Clear();
 
             base.OnNetworkDespawn();
         }
