@@ -33,36 +33,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
         [SerializeField, Min(0.0001f)] private float motionSpeedMultiplier = 2f;
 
-        private int horizontalSpeedHash;
-        private int verticalSpeedHash;
-        private int groundedHash;
-        private int motionSpeedHash;
-        private int jumpingHash;
-        private int freefallHash;
-        private int fallingAfterJumpHash;
-        private int inputForwardHash;
-        private int inputRightHash;
-        private int moveDirectionForwardHash;
-        private int moveDirectionRightHash;
-        private int strafeModeHash;
-        private int ladderHash;
-        private int ladderSpeedHash;
-        private int animationFinishedHash;
-        private bool hasHorizontalSpeedParameter;
-        private bool hasVerticalSpeedParameter;
-        private bool hasGroundedParameter;
-        private bool hasMotionSpeedParameter;
-        private bool hasJumpingParameter;
-        private bool hasFreefallParameter;
-        private bool hasFallingAfterJumpParameter;
-        private bool hasInputForwardParameter;
-        private bool hasInputRightParameter;
-        private bool hasMoveDirectionForwardParameter;
-        private bool hasMoveDirectionRightParameter;
-        private bool hasStrafeModeParameter;
-        private bool hasLadderParameter;
-        private bool hasLadderSpeedParameter;
-        private bool hasAnimationFinishedParameter;
+        private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
+        private RuntimeAnimatorController cachedAnimatorController;
         private IPlayerController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
@@ -130,80 +102,21 @@ namespace Koiusa.SteamMultiRuntime
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
             var isAnimationFinished = IsCurrentStateFinished(animationFinishedLayerIndex);
 
-            if (hasHorizontalSpeedParameter)
-            {
-                targetAnimator.SetFloat(horizontalSpeedHash, horizontalSpeed, speedDampTime, Time.deltaTime);
-            }
-
-            if (hasVerticalSpeedParameter)
-            {
-                targetAnimator.SetFloat(verticalSpeedHash, verticalSpeed);
-            }
-
-            if (hasGroundedParameter)
-            {
-                targetAnimator.SetBool(groundedHash, isGrounded);
-            }
-
-            if (hasMotionSpeedParameter)
-            {
-                targetAnimator.SetFloat(motionSpeedHash, motionSpeed);
-            }
-
-            if (hasJumpingParameter)
-            {
-                targetAnimator.SetBool(jumpingHash, isJumping);
-            }
-
-            if (hasFreefallParameter)
-            {
-                targetAnimator.SetBool(freefallHash, isFreefall);
-            }
-
-            if (hasFallingAfterJumpParameter)
-            {
-                targetAnimator.SetBool(fallingAfterJumpHash, isFallingAfterJump);
-            }
-
-            if (hasInputForwardParameter)
-            {
-                targetAnimator.SetFloat(inputForwardHash, inputForward, speedDampTime, Time.deltaTime);
-            }
-
-            if (hasInputRightParameter)
-            {
-                targetAnimator.SetFloat(inputRightHash, inputRight, speedDampTime, Time.deltaTime);
-            }
-
-            if (hasMoveDirectionForwardParameter)
-            {
-                targetAnimator.SetFloat(moveDirectionForwardHash, moveDirectionForward, speedDampTime, Time.deltaTime);
-            }
-
-            if (hasMoveDirectionRightParameter)
-            {
-                targetAnimator.SetFloat(moveDirectionRightHash, moveDirectionRight, speedDampTime, Time.deltaTime);
-            }
-
-            if (hasStrafeModeParameter)
-            {
-                targetAnimator.SetBool(strafeModeHash, isStrafeMode);
-            }
-
-            if (hasLadderParameter)
-            {
-                targetAnimator.SetBool(ladderHash, isLadder);
-            }
-
-            if (hasLadderSpeedParameter)
-            {
-                targetAnimator.SetFloat(ladderSpeedHash, ladderSpeed);
-            }
-
-            if (hasAnimationFinishedParameter)
-            {
-                targetAnimator.SetBool(animationFinishedHash, isAnimationFinished);
-            }
+            SetFloat(horizontalSpeedParameter, horizontalSpeed, speedDampTime);
+            SetFloat(verticalSpeedParameter, verticalSpeed);
+            SetBool(groundedParameter, isGrounded);
+            SetFloat(motionSpeedParameter, motionSpeed);
+            SetBool(jumpingParameter, isJumping);
+            SetBool(freefallParameter, isFreefall);
+            SetBool(fallingAfterJumpParameter, isFallingAfterJump);
+            SetFloat(inputForwardParameter, inputForward, speedDampTime);
+            SetFloat(inputRightParameter, inputRight, speedDampTime);
+            SetFloat(moveDirectionForwardParameter, moveDirectionForward, speedDampTime);
+            SetFloat(moveDirectionRightParameter, moveDirectionRight, speedDampTime);
+            SetBool(strafeModeParameter, isStrafeMode);
+            SetBool(ladderParameter, isLadder);
+            SetFloat(ladderSpeedParameter, ladderSpeed);
+            SetBool(animationFinishedParameter, isAnimationFinished);
         }
 
         private Vector3 GetEstimatedVelocity()
@@ -229,6 +142,7 @@ namespace Koiusa.SteamMultiRuntime
         public void SetTargetAnimator(Animator animator)
         {
             targetAnimator = animator;
+            CacheParameterHashes();
         }
 
         public bool IsCurrentStateFinished(int layerIndex)
@@ -280,37 +194,57 @@ namespace Koiusa.SteamMultiRuntime
 
         private void CacheParameterHashes()
         {
-            hasHorizontalSpeedParameter = !string.IsNullOrWhiteSpace(horizontalSpeedParameter);
-            hasVerticalSpeedParameter = !string.IsNullOrWhiteSpace(verticalSpeedParameter);
-            hasGroundedParameter = !string.IsNullOrWhiteSpace(groundedParameter);
-            hasMotionSpeedParameter = !string.IsNullOrWhiteSpace(motionSpeedParameter);
-            hasJumpingParameter = !string.IsNullOrWhiteSpace(jumpingParameter);
-            hasFreefallParameter = !string.IsNullOrWhiteSpace(freefallParameter);
-            hasFallingAfterJumpParameter = !string.IsNullOrWhiteSpace(fallingAfterJumpParameter);
-            hasInputForwardParameter = !string.IsNullOrWhiteSpace(inputForwardParameter);
-            hasInputRightParameter = !string.IsNullOrWhiteSpace(inputRightParameter);
-            hasMoveDirectionForwardParameter = !string.IsNullOrWhiteSpace(moveDirectionForwardParameter);
-            hasMoveDirectionRightParameter = !string.IsNullOrWhiteSpace(moveDirectionRightParameter);
-            hasStrafeModeParameter = !string.IsNullOrWhiteSpace(strafeModeParameter);
-            hasLadderParameter = !string.IsNullOrWhiteSpace(ladderParameter);
-            hasLadderSpeedParameter = !string.IsNullOrWhiteSpace(ladderSpeedParameter);
-            hasAnimationFinishedParameter = !string.IsNullOrWhiteSpace(animationFinishedParameter);
+            animatorParameterHashes.Clear();
+            cachedAnimatorController = targetAnimator != null ? targetAnimator.runtimeAnimatorController : null;
+            if (targetAnimator == null)
+            {
+                return;
+            }
 
-            horizontalSpeedHash = hasHorizontalSpeedParameter ? Animator.StringToHash(horizontalSpeedParameter) : 0;
-            verticalSpeedHash = hasVerticalSpeedParameter ? Animator.StringToHash(verticalSpeedParameter) : 0;
-            groundedHash = hasGroundedParameter ? Animator.StringToHash(groundedParameter) : 0;
-            motionSpeedHash = hasMotionSpeedParameter ? Animator.StringToHash(motionSpeedParameter) : 0;
-            jumpingHash = hasJumpingParameter ? Animator.StringToHash(jumpingParameter) : 0;
-            freefallHash = hasFreefallParameter ? Animator.StringToHash(freefallParameter) : 0;
-            fallingAfterJumpHash = hasFallingAfterJumpParameter ? Animator.StringToHash(fallingAfterJumpParameter) : 0;
-            inputForwardHash = hasInputForwardParameter ? Animator.StringToHash(inputForwardParameter) : 0;
-            inputRightHash = hasInputRightParameter ? Animator.StringToHash(inputRightParameter) : 0;
-            moveDirectionForwardHash = hasMoveDirectionForwardParameter ? Animator.StringToHash(moveDirectionForwardParameter) : 0;
-            moveDirectionRightHash = hasMoveDirectionRightParameter ? Animator.StringToHash(moveDirectionRightParameter) : 0;
-            strafeModeHash = hasStrafeModeParameter ? Animator.StringToHash(strafeModeParameter) : 0;
-            ladderHash = hasLadderParameter ? Animator.StringToHash(ladderParameter) : 0;
-            ladderSpeedHash = hasLadderSpeedParameter ? Animator.StringToHash(ladderSpeedParameter) : 0;
-            animationFinishedHash = hasAnimationFinishedParameter ? Animator.StringToHash(animationFinishedParameter) : 0;
+            if (cachedAnimatorController != targetAnimator.runtimeAnimatorController)
+            {
+                CacheParameterHashes();
+            }
+
+            foreach (var parameter in targetAnimator.parameters)
+            {
+                animatorParameterHashes[parameter.name] = parameter.nameHash;
+            }
+        }
+
+        private void SetFloat(string parameterName, float value, float dampTime = 0f)
+        {
+            if (!TryGetParameterHash(parameterName, out var hash))
+            {
+                return;
+            }
+
+            if (dampTime > 0f)
+            {
+                targetAnimator.SetFloat(hash, value, dampTime, Time.deltaTime);
+                return;
+            }
+
+            targetAnimator.SetFloat(hash, value);
+        }
+
+        private void SetBool(string parameterName, bool value)
+        {
+            if (TryGetParameterHash(parameterName, out var hash))
+            {
+                targetAnimator.SetBool(hash, value);
+            }
+        }
+
+        private bool TryGetParameterHash(string parameterName, out int hash)
+        {
+            if (string.IsNullOrWhiteSpace(parameterName))
+            {
+                hash = 0;
+                return false;
+            }
+
+            return animatorParameterHashes.TryGetValue(parameterName, out hash);
         }
     }
 }
