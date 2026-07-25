@@ -102,6 +102,9 @@ namespace Koiusa.SteamMultiRuntime
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
 
+        [Header("Network State")]
+        [SerializeField, Min(0.02f)] private float stateSyncInterval = 0.05f;
+
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource baseInputSource;
         private IPlayerInputSource activeInputSource;
@@ -118,6 +121,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerInputSyncState localInputState;
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
+        private float nextStateSyncTime;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
             new PlayerInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -129,7 +133,7 @@ namespace Koiusa.SteamMultiRuntime
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private readonly NetworkVariable<PlayerKinematicState> netKinematicState = new NetworkVariable<PlayerKinematicState>(
-            new PlayerKinematicState(Vector3.zero, Quaternion.identity, 0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            new PlayerKinematicState(0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<PlayerMovementFlagsState> netMovementFlagsState = new NetworkVariable<PlayerMovementFlagsState>(
             new PlayerMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -433,13 +437,12 @@ namespace Koiusa.SteamMultiRuntime
 
             motor.Tick(moveDirection, jumpThisFrame);
 
-            var kinematicState = netKinematicState.Value;
-            if (targetRigidbody != null)
-            {
-                kinematicState.Position = targetRigidbody.position;
-                kinematicState.Rotation = targetRigidbody.rotation;
-            }
+            if (Time.unscaledTime < nextStateSyncTime)
+                return;
 
+            nextStateSyncTime = Time.unscaledTime + Mathf.Max(0.02f, stateSyncInterval);
+
+            var kinematicState = netKinematicState.Value;
             kinematicState.HorizontalVelocity = motor.HorizontalVelocity;
             kinematicState.VerticalVelocity = motor.VerticalVelocity;
             netKinematicState.Value = kinematicState;

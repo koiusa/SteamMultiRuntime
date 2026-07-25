@@ -32,23 +32,17 @@ namespace Koiusa.SteamMultiRuntime
 
     internal struct PlayerKinematicState : INetworkSerializable
     {
-        public Vector3 Position;
-        public Quaternion Rotation;
         public float HorizontalVelocity;
         public float VerticalVelocity;
 
-        public PlayerKinematicState(Vector3 position, Quaternion rotation, float horizontalVelocity, float verticalVelocity)
+        public PlayerKinematicState(float horizontalVelocity, float verticalVelocity)
         {
-            Position = position;
-            Rotation = rotation;
             HorizontalVelocity = horizontalVelocity;
             VerticalVelocity = verticalVelocity;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref Position);
-            serializer.SerializeValue(ref Rotation);
             serializer.SerializeValue(ref HorizontalVelocity);
             serializer.SerializeValue(ref VerticalVelocity);
         }
