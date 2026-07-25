@@ -218,8 +218,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f5200b2288c7544b9b96840cb7afefd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.SoloLockTargetInput
-  nextTargetAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  prevTargetAction: {fileID: 2411907206095950430, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  inputProfile: {fileID: 11400000, guid: a33d5581cfd644b689f74a19e3086e0a, type: 2}
   indicatorController: {fileID: 1621374485892493988}
 --- !u!114 &7953508243648865285
 MonoBehaviour:
@@ -551,12 +550,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d95a2e8082d4654ba055e7342791643, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Targetingsystem.Runtime::Koiusa.Targetingsystem.Runtime.LockOnTargetGroupInput
-  lockAction: {fileID: 1781555164194001046, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  nextTargetAction: {fileID: 7476244043514120974, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  prevTargetAction: {fileID: 2411907206095950430, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  unlockAllAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  focusAction: {fileID: -7471211009204490832, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  bulkLockAction: {fileID: -2099379676528639254, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  inputProfile: {fileID: 11400000, guid: a33d5581cfd644b689f74a19e3086e0a, type: 2}
   indicatorController: {fileID: 2183135012566770961}
 --- !u!114 &3757149331465346227
 MonoBehaviour:
@@ -922,9 +916,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fffa413fb0a1e84c984f2012a427520, type: 3}
   m_Name: 
   m_EditorClassIdentifier: koiusa.Targetingsystem.Runtime::koiusa.TargetingSystem.Runtime.TargetingCameraRigInput
-  noLockAction: {fileID: 7040659881675835329, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  soloLockAction: {fileID: 1120369429361536294, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
-  multiLockAction: {fileID: 1781555164194001046, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}
+  inputProfile: {fileID: 11400000, guid: a33d5581cfd644b689f74a19e3086e0a, type: 2}
 --- !u!114 &4353384104446628668
 MonoBehaviour:
   m_ObjectHideFlags: 0

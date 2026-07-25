@@ -16,6 +16,7 @@
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
   <Project Path="Koiusa.System.Core.Runtime.csproj" />
+  <Project Path="Koiusa.Input.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Editor.csproj" />

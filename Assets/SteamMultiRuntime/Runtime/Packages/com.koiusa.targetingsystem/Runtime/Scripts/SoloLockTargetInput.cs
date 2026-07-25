@@ -1,4 +1,5 @@
 using System;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,8 +10,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class SoloLockTargetInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private InputActionReference nextTargetAction;
-        [SerializeField] private InputActionReference prevTargetAction;
+        [SerializeField] private TargetingInputActionsProfile inputProfile;
 
         [Header("References")]
         [SerializeField] private TargetIndicatorController indicatorController;
@@ -31,8 +31,8 @@ namespace Koiusa.TargetingSystem.Runtime
         private void OnEnable()
         {
             if (isBound) return;
-            BindAction(nextTargetAction, OnNextTargetPerformed);
-            BindAction(prevTargetAction, OnPrevTargetPerformed);
+            nextTargetBinding = InputActionBinding.Bind(inputProfile?.NextTargetAction, OnNextTargetPerformed);
+            prevTargetBinding = InputActionBinding.Bind(inputProfile?.PreviousTargetAction, OnPrevTargetPerformed);
 
             if (binder is ILockOn lockOn)
             {
@@ -46,8 +46,10 @@ namespace Koiusa.TargetingSystem.Runtime
         private void OnDisable()
         {
             if (!isBound) return;
-            UnbindAction(nextTargetAction, OnNextTargetPerformed);
-            UnbindAction(prevTargetAction, OnPrevTargetPerformed);
+            nextTargetBinding?.Dispose();
+            prevTargetBinding?.Dispose();
+            nextTargetBinding = null;
+            prevTargetBinding = null;
 
             if (binder is ILockOn lockOn)
             {
@@ -102,19 +104,8 @@ namespace Koiusa.TargetingSystem.Runtime
             }
         }
 
-        private static void BindAction(InputActionReference actionRef, Action<InputAction.CallbackContext> callback)
-        {
-            if (actionRef == null || actionRef.action == null) return;
-            actionRef.action.Enable();
-            actionRef.action.performed += callback;
-        }
-
-        private static void UnbindAction(InputActionReference actionRef, Action<InputAction.CallbackContext> callback)
-        {
-            if (actionRef == null || actionRef.action == null) return;
-            actionRef.action.performed -= callback;
-            actionRef.action.Disable();
-        }
+        private InputActionBinding nextTargetBinding;
+        private InputActionBinding prevTargetBinding;
     }
 }
 

@@ -1,5 +1,5 @@
+using Koiusa.Input;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.TargetingSystem.Runtime
 {
@@ -17,10 +17,11 @@ namespace Koiusa.TargetingSystem.Runtime
         [Header("TargetingCameraRig")]
         [SerializeField] private TargetingCameraRig cameraRig;
 
-        [Header("Camera-specific Input")]
-        [SerializeField] private InputActionReference[] cameraActions;
+        [Header("Input")]
+        [SerializeField] private TargetingInputActionsProfile inputProfile;
 
         private bool isActive;
+        private InputActionLease lookLease;
 
         private void OnEnable()
         {
@@ -38,7 +39,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 cameraRig.OnModeChanged -= OnRigModeChanged;
             }
 
-            SetActionsActive(false);
+            SetLookActive(false);
         }
 
         private void OnRigModeChanged(TargetingCameraRig.CameraMode mode)
@@ -55,32 +56,19 @@ namespace Koiusa.TargetingSystem.Runtime
             }
 
             isActive = shouldBeActive;
-            SetActionsActive(isActive);
+            SetLookActive(isActive);
         }
 
-        private void SetActionsActive(bool active)
+        private void SetLookActive(bool active)
         {
-            if (cameraActions == null)
+            if (active)
             {
+                lookLease ??= InputActionLease.Acquire(inputProfile?.LookAction);
                 return;
             }
 
-            foreach (var actionRef in cameraActions)
-            {
-                if (actionRef == null || actionRef.action == null)
-                {
-                    continue;
-                }
-
-                if (active)
-                {
-                    actionRef.action.Enable();
-                }
-                else
-                {
-                    actionRef.action.Disable();
-                }
-            }
+            lookLease?.Dispose();
+            lookLease = null;
         }
     }
 }

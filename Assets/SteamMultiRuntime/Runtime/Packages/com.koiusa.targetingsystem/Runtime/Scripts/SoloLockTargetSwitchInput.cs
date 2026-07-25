@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,7 +12,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private GameObject cameraRigObject;
 
         [Header("Input")]
-        [SerializeField] private InputActionReference targetSwitchAction;
+        [SerializeField] private TargetingInputActionsProfile inputProfile;
 
         private bool isBound;
 
@@ -22,7 +23,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            BindAction(targetSwitchAction, OnTargetSwitchPerformed);
+            targetSwitchBinding = InputActionBinding.Bind(inputProfile?.SoloLockAction, OnTargetSwitchPerformed);
             isBound = true;
         }
 
@@ -33,7 +34,8 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            UnbindAction(targetSwitchAction, OnTargetSwitchPerformed);
+            targetSwitchBinding?.Dispose();
+            targetSwitchBinding = null;
             isBound = false;
         }
 
@@ -53,26 +55,6 @@ namespace Koiusa.TargetingSystem.Runtime
             binderObject.SendMessage("ToggleClosestVisibleTarget", SendMessageOptions.DontRequireReceiver);
         }
 
-        private static void BindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionReference == null || actionReference.action == null)
-            {
-                return;
-            }
-
-            actionReference.action.Enable();
-            actionReference.action.performed += callback;
-        }
-
-        private static void UnbindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionReference == null || actionReference.action == null)
-            {
-                return;
-            }
-
-            actionReference.action.performed -= callback;
-            actionReference.action.Disable();
-        }
+        private InputActionBinding targetSwitchBinding;
     }
 }

@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,9 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class TargetingCameraRigInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private InputActionReference noLockAction;
-        [SerializeField] private InputActionReference soloLockAction;
-        [SerializeField] private InputActionReference multiLockAction;
+        [SerializeField] private TargetingInputActionsProfile inputProfile;
 
         private TargetingCameraRig cameraRig;
         private bool isBound;
@@ -31,9 +30,9 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            BindAction(noLockAction, OnNoLockPerformed);
-            BindAction(soloLockAction, OnSoloLockPerformed);
-            BindAction(multiLockAction, OnMultiLockPerformed);
+            noLockBinding = InputActionBinding.Bind(inputProfile?.ClearLockAction, OnNoLockPerformed);
+            soloLockBinding = InputActionBinding.Bind(inputProfile?.SoloLockAction, OnSoloLockPerformed);
+            multiLockBinding = InputActionBinding.Bind(inputProfile?.MultiLockAction, OnMultiLockPerformed);
 
             isBound = true;
         }
@@ -45,9 +44,12 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            UnbindAction(multiLockAction, OnMultiLockPerformed);
-            UnbindAction(soloLockAction, OnSoloLockPerformed);
-            UnbindAction(noLockAction, OnNoLockPerformed);
+            multiLockBinding?.Dispose();
+            soloLockBinding?.Dispose();
+            noLockBinding?.Dispose();
+            multiLockBinding = null;
+            soloLockBinding = null;
+            noLockBinding = null;
 
             isBound = false;
         }
@@ -92,26 +94,8 @@ namespace Koiusa.TargetingSystem.Runtime
             cameraRig.SetMode(TargetingCameraRig.CameraMode.MultiLock);
         }
 
-        private static void BindAction(InputActionReference actionRef, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionRef == null || actionRef.action == null)
-            {
-                return;
-            }
-
-            actionRef.action.Enable();
-            actionRef.action.performed += callback;
-        }
-
-        private static void UnbindAction(InputActionReference actionRef, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionRef == null || actionRef.action == null)
-            {
-                return;
-            }
-
-            actionRef.action.performed -= callback;
-            actionRef.action.Disable();
-        }
+        private InputActionBinding noLockBinding;
+        private InputActionBinding soloLockBinding;
+        private InputActionBinding multiLockBinding;
     }
 }

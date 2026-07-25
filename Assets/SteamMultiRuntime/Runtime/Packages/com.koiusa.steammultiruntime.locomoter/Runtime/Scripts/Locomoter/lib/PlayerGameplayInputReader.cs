@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,6 +19,11 @@ namespace Koiusa.SteamMultiRuntime
         private int jumpToken;
         private bool isStrafeMode;
         private bool isEnabled;
+        private InputActionLease moveLease;
+        private InputActionLease jumpLease;
+        private InputActionLease strafeToggleLease;
+        private InputActionLease grappleLease;
+        private InputActionLease reelLease;
 
         public PlayerGameplayInputReader(PlayerInputActionsProfile profile)
         {
@@ -41,20 +47,20 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             isEnabled = true;
-            moveAction?.Enable();
-            grappleAction?.Enable();
-            reelAction?.Enable();
+            moveLease = InputActionLease.Acquire(moveAction);
+            grappleLease = InputActionLease.Acquire(grappleAction);
+            reelLease = InputActionLease.Acquire(reelAction);
 
             if (jumpAction != null)
             {
                 jumpAction.performed += OnJumpPerformed;
-                jumpAction.Enable();
+                jumpLease = InputActionLease.Acquire(jumpAction);
             }
 
             if (strafeToggleAction != null)
             {
                 strafeToggleAction.performed += OnStrafeTogglePerformed;
-                strafeToggleAction.Enable();
+                strafeToggleLease = InputActionLease.Acquire(strafeToggleAction);
             }
         }
 
@@ -69,18 +75,23 @@ namespace Koiusa.SteamMultiRuntime
             if (jumpAction != null)
             {
                 jumpAction.performed -= OnJumpPerformed;
-                jumpAction.Disable();
+                jumpLease?.Dispose();
+                jumpLease = null;
             }
 
             if (strafeToggleAction != null)
             {
                 strafeToggleAction.performed -= OnStrafeTogglePerformed;
-                strafeToggleAction.Disable();
+                strafeToggleLease?.Dispose();
+                strafeToggleLease = null;
             }
 
-            moveAction?.Disable();
-            grappleAction?.Disable();
-            reelAction?.Disable();
+            moveLease?.Dispose();
+            grappleLease?.Dispose();
+            reelLease?.Dispose();
+            moveLease = null;
+            grappleLease = null;
+            reelLease = null;
             jumpToken = 0;
             isStrafeMode = false;
         }

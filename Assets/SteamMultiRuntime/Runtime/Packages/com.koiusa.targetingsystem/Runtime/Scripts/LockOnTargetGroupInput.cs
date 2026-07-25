@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,12 +9,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class LockOnTargetGroupInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private InputActionReference lockAction;
-        [SerializeField] private InputActionReference nextTargetAction;
-        [SerializeField] private InputActionReference prevTargetAction;
-        [SerializeField] private InputActionReference unlockAllAction;
-        [SerializeField] private InputActionReference focusAction;
-        [SerializeField] private InputActionReference bulkLockAction;
+        [SerializeField] private TargetingInputActionsProfile inputProfile;
 
         [Header("References")]
         [SerializeField] private TargetIndicatorController indicatorController;
@@ -45,12 +41,12 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            BindAction(lockAction, OnLockPerformed);
-            BindAction(nextTargetAction, OnNextTargetPerformed);
-            BindAction(prevTargetAction, OnPrevTargetPerformed);
-            BindAction(unlockAllAction, OnUnlockAllPerformed);
-            BindAction(focusAction, OnFocusPerformed);
-            BindAction(bulkLockAction, OnBulkLockPerformed);
+            lockBinding = InputActionBinding.Bind(inputProfile?.MultiLockAction, OnLockPerformed);
+            nextBinding = InputActionBinding.Bind(inputProfile?.NextTargetAction, OnNextTargetPerformed);
+            previousBinding = InputActionBinding.Bind(inputProfile?.PreviousTargetAction, OnPrevTargetPerformed);
+            clearBinding = InputActionBinding.Bind(inputProfile?.ClearLockAction, OnUnlockAllPerformed);
+            focusBinding = InputActionBinding.Bind(inputProfile?.FocusAction, OnFocusPerformed);
+            bulkBinding = InputActionBinding.Bind(inputProfile?.BulkLockAction, OnBulkLockPerformed);
 
             if (binder is ILockOn lockOn)
             {
@@ -68,12 +64,18 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            UnbindAction(bulkLockAction, OnBulkLockPerformed);
-            UnbindAction(focusAction, OnFocusPerformed);
-            UnbindAction(unlockAllAction, OnUnlockAllPerformed);
-            UnbindAction(prevTargetAction, OnPrevTargetPerformed);
-            UnbindAction(nextTargetAction, OnNextTargetPerformed);
-            UnbindAction(lockAction, OnLockPerformed);
+            bulkBinding?.Dispose();
+            focusBinding?.Dispose();
+            clearBinding?.Dispose();
+            previousBinding?.Dispose();
+            nextBinding?.Dispose();
+            lockBinding?.Dispose();
+            bulkBinding = null;
+            focusBinding = null;
+            clearBinding = null;
+            previousBinding = null;
+            nextBinding = null;
+            lockBinding = null;
 
             if (binder is ILockOn lockOn)
             {
@@ -182,26 +184,11 @@ namespace Koiusa.TargetingSystem.Runtime
                 binder.IsFocusModeEnabled ? binder.CurrentFocusTarget : null);
         }
 
-        private static void BindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionReference == null || actionReference.action == null)
-            {
-                return;
-            }
-
-            actionReference.action.Enable();
-            actionReference.action.performed += callback;
-        }
-
-        private static void UnbindAction(InputActionReference actionReference, System.Action<InputAction.CallbackContext> callback)
-        {
-            if (actionReference == null || actionReference.action == null)
-            {
-                return;
-            }
-
-            actionReference.action.performed -= callback;
-            actionReference.action.Disable();
-        }
+        private InputActionBinding lockBinding;
+        private InputActionBinding nextBinding;
+        private InputActionBinding previousBinding;
+        private InputActionBinding clearBinding;
+        private InputActionBinding focusBinding;
+        private InputActionBinding bulkBinding;
     }
 }

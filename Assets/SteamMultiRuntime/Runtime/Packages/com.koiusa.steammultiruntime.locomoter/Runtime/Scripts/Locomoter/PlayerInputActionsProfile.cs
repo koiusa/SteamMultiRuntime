@@ -1,39 +1,28 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Koiusa.SteamMultiRuntime
 {
     [CreateAssetMenu(fileName = "PlayerInputActionsProfile", menuName = "SteamMultiRuntime/Input/Player Input Actions Profile")]
     public sealed class PlayerInputActionsProfile : ScriptableObject
     {
-        [SerializeField] private InputActionReference moveAction;
-        [SerializeField] private InputActionReference jumpAction;
-        [SerializeField] private InputActionReference strafeToggleAction;
-        [SerializeField] private InputActionReference grappleAction;
-        [SerializeField] private InputActionReference reelAction;
+        [FormerlySerializedAs("moveAction")]
+        [SerializeField] private InputActionReference assetSource;
 
-        public InputActionReference MoveAction => moveAction;
-        public InputActionReference JumpAction => jumpAction;
-        public InputActionReference StrafeToggleAction => strafeToggleAction;
-        public InputActionReference GrappleAction => grappleAction;
-        public InputActionReference ReelAction => reelAction;
-        public InputAction MoveInputAction => ResolveAction(moveAction, "Player/Move");
-        public InputAction JumpInputAction => ResolveAction(jumpAction, "Player/Jump");
-        public InputAction StrafeToggleInputAction => ResolveAction(strafeToggleAction, "Player/StrafeToggle");
-        public InputAction GrappleInputAction => ResolveAction(grappleAction, "Player/Grapple");
-        public InputAction ReelInputAction => ResolveAction(reelAction, "Player/Reel");
+        // Kept only as a migration fallback for assets created before input.core.
+        [HideInInspector, SerializeField] private InputActionReference jumpAction;
+        [HideInInspector, SerializeField] private InputActionReference strafeToggleAction;
+        [HideInInspector, SerializeField] private InputActionReference grappleAction;
+        [HideInInspector, SerializeField] private InputActionReference reelAction;
 
-        private InputAction ResolveAction(InputActionReference explicitReference, string actionPath)
-        {
-            if (explicitReference != null && explicitReference.action != null)
-            {
-                return explicitReference.action;
-            }
+        public InputAction MoveInputAction => Resolve("Player/Move");
+        public InputAction JumpInputAction => jumpAction?.action ?? Resolve("Player/Jump");
+        public InputAction StrafeToggleInputAction => strafeToggleAction?.action ?? Resolve("Player/StrafeToggle");
+        public InputAction GrappleInputAction => grappleAction?.action ?? Resolve("Player/Grapple");
+        public InputAction ReelInputAction => reelAction?.action ?? Resolve("Player/Reel");
 
-            var asset = moveAction != null && moveAction.action != null
-                ? moveAction.action.actionMap?.asset
-                : null;
-            return asset?.FindAction(actionPath, throwIfNotFound: false);
-        }
+        private InputAction Resolve(string path) => InputActionResolver.Resolve(assetSource, path);
     }
 }
