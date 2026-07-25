@@ -14,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Display")]
         [SerializeField] private float refreshInterval = 1f;
         [SerializeField] private float labelWidth = 88f;
+        [SerializeField] private float labelMaxWidth = 360f;
         [SerializeField] private float labelHeight = 24f;
 
         [Header("Distance Fade")]
@@ -30,6 +31,7 @@ namespace Koiusa.SteamMultiRuntime
 
         internal float RefreshInterval => Mathf.Max(0.1f, refreshInterval);
         internal float LabelWidth => labelWidth;
+        internal float LabelMaxWidth => Mathf.Max(labelWidth, labelMaxWidth);
         internal float LabelHeight => labelHeight;
         internal float FadeStartDistance => fadeStartDistance;
         internal float FadeEndDistance => fadeEndDistance;
@@ -239,7 +241,9 @@ namespace Koiusa.SteamMultiRuntime
             label.pickingMode = PickingMode.Ignore;
             label.AddToClassList("player-name-overlay__label");
             label.style.position = Position.Absolute;
-            label.style.width = owner.LabelWidth;
+            label.style.width = StyleKeyword.Auto;
+            label.style.minWidth = owner.LabelWidth;
+            label.style.maxWidth = owner.LabelMaxWidth;
             label.style.height = owner.LabelHeight;
             label.style.display = DisplayStyle.None;
             return label;
@@ -308,8 +312,11 @@ namespace Koiusa.SteamMultiRuntime
             var panelPosition = RuntimePanelUtils.ScreenToPanel(
                 overlayRoot.panel,
                 new Vector2(screenPosition.x, Screen.height - screenPosition.y));
+            var resolvedLabelWidth = entry.Label.resolvedStyle.width;
+            if (float.IsNaN(resolvedLabelWidth) || resolvedLabelWidth <= 0f)
+                resolvedLabelWidth = entry.Owner.LabelWidth;
             entry.Label.transform.position = new Vector3(
-                panelPosition.x - entry.Owner.LabelWidth * 0.5f,
+                panelPosition.x - resolvedLabelWidth * 0.5f,
                 panelPosition.y - entry.Owner.LabelHeight * 0.5f,
                 0f);
 
