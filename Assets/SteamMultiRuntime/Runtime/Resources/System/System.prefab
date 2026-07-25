@@ -44,4 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd792b3904e31b949bb9b0b0188293e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::GameQuitter
-  gameQuitAction: {fileID: 2439831681566174928, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  inputProfile: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}

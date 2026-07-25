@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     /// <summary>
     /// ステージ選択UIの表示・非表示を切り替えるコンポーネント。
-    /// InputActionReference によるキー入力、および UnityEvent / 外部コード呼び出しにも対応。
+    /// 共通Input Profileによるキー入力、およびUnityEvent / 外部コード呼び出しにも対応。
     /// </summary>
     [DisallowMultipleComponent]
     public class StageSelectMenuToggle : MonoBehaviour
@@ -14,7 +15,9 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private LocalStageSelectUIDocument stageSelectUiDocument;
 
         [Header("Input")]
-        [SerializeField] private InputActionReference toggleAction;
+        [SerializeField] private InputActionAssetProfile inputProfile;
+
+        private InputActionBinding toggleBinding;
 
         private void Awake()
         {
@@ -31,20 +34,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            if (toggleAction != null)
-            {
-                toggleAction.action.Enable();
-                toggleAction.action.performed += OnTogglePerformed;
-            }
+            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Next"), OnTogglePerformed);
         }
 
         private void OnDisable()
         {
-            if (toggleAction != null)
-            {
-                toggleAction.action.performed -= OnTogglePerformed;
-                toggleAction.action.Disable();
-            }
+            toggleBinding?.Dispose();
+            toggleBinding = null;
         }
 
         private void OnTogglePerformed(InputAction.CallbackContext context)

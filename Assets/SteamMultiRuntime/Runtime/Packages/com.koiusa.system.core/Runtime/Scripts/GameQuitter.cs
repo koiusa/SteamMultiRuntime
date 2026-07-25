@@ -1,4 +1,5 @@
 using System;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,24 +7,30 @@ namespace Koiusa.Common.System
 {
     public sealed class GameQuitter : MonoBehaviour
     {
-        [SerializeField] private InputActionReference gameQuitAction;
+        [SerializeField] private InputActionAssetProfile inputProfile;
+
+        private InputAction quitAction;
+        private InputActionLease quitLease;
 
         public static event Action QuitRequested;
 
         private void OnEnable()
         {
-            if (gameQuitAction == null || gameQuitAction.action == null)
+            quitAction = inputProfile?.FindAction("UI/Cancel");
+            if (quitAction == null)
             {
                 Debug.LogWarning("GameQuit Action is not assigned.", this);
                 return;
             }
 
-            gameQuitAction.action.Enable();
+            quitLease = InputActionLease.Acquire(quitAction);
         }
 
         private void OnDisable()
         {
-            gameQuitAction?.action?.Disable();
+            quitLease?.Dispose();
+            quitLease = null;
+            quitAction = null;
         }
 
         private void Update()
@@ -39,9 +46,7 @@ namespace Koiusa.Common.System
 
         private bool IsGameQuitPressed()
         {
-            return gameQuitAction != null
-                && gameQuitAction.action != null
-                && gameQuitAction.action.WasPressedThisFrame();
+            return quitAction != null && quitAction.WasPressedThisFrame();
         }
     }
 }

@@ -2,6 +2,7 @@
     "name": "Koiusa.SteamMultiRuntime.SteamLobby.Runtime",
     "rootNamespace": "",
     "references": [
+        "Koiusa.Input.Core.Runtime",
         "GUID:1491147abca9d7d4bb7105af628b223e",
         "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:4307f53044263cf4b835bd812fc161a4",

@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,7 +11,9 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private CharacterSelectUiDocument characterSelectUiDocument;
 
         [Header("Input")]
-        [SerializeField] private InputActionReference toggleAction;
+        [SerializeField] private InputActionAssetProfile inputProfile;
+
+        private InputActionBinding toggleBinding;
 
         private void Awake()
         {
@@ -27,20 +30,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            if (toggleAction != null)
-            {
-                toggleAction.action.Enable();
-                toggleAction.action.performed += OnTogglePerformed;
-            }
+            toggleBinding = InputActionBinding.Bind(inputProfile?.FindAction("Player/Next"), OnTogglePerformed);
         }
 
         private void OnDisable()
         {
-            if (toggleAction != null)
-            {
-                toggleAction.action.performed -= OnTogglePerformed;
-                toggleAction.action.Disable();
-            }
+            toggleBinding?.Dispose();
+            toggleBinding = null;
         }
 
         private void OnTogglePerformed(InputAction.CallbackContext context)
