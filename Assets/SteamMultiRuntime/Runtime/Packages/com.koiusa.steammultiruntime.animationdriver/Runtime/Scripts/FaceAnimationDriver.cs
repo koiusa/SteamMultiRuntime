@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
 using UnityEngine.Serialization;
 
 namespace Koiusa.SteamMultiRuntime.UnityChan {
@@ -12,7 +10,7 @@ public class FaceAnimationDriver : MonoBehaviour {
     
     void OnEnable() {
         if (m_hasStarted)
-            InitializeForCharacter();
+            EnsureAnimatorReference();
     }
 
     void Awake() {
@@ -21,44 +19,16 @@ public class FaceAnimationDriver : MonoBehaviour {
     }
 
     void Start() {
-        InitializeForCharacter();
         m_hasStarted = true;
         m_shouldResetFaceLayerWeight = true;
         m_curFaceLayerWeight = 1f;
-    }
-
-    void InitializeForCharacter() {
-        EnsureAnimatorReference();
-        RefreshFaceStateNames();
-        CacheFaceLayerMixer();
     }
 
     bool CanControlFaceLayer() {
         if (m_animator == null || m_animator.runtimeAnimatorController == null)
             return false;
 
-        var controller = m_animator.runtimeAnimatorController;
-        if (m_cachedController != controller) {
-            CacheFaceLayerMixer();
-        }
-
-        return m_hasCachedFaceLayerMixer && m_cachedFaceLayerMixer.IsValid();
-    }
-
-    void CacheFaceLayerMixer() {
-        m_hasCachedFaceLayerMixer = false;
-        m_cachedFaceLayerMixer = default;
-        m_cachedController = m_animator != null ? m_animator.runtimeAnimatorController : null;
-
-        if (m_animator == null || m_cachedController == null)
-            return;
-
-        if (!TryGetFaceLayerMixer(m_animator, m_faceLayerIndex, out var layerMixer))
-            return;
-
-        m_cachedFaceLayerMixer = layerMixer;
-        m_hasCachedFaceLayerMixer = true;
-        ApplyFaceLayerMask();
+        return m_faceLayerIndex < m_animator.layerCount;
     }
 
     void SetResolvedAnimator(Animator animator) {
@@ -66,7 +36,6 @@ public class FaceAnimationDriver : MonoBehaviour {
             return;
 
         m_animator = animator;
-        CacheFaceLayerMixer();
     }
 
     void RefreshFaceStateNames() {
@@ -96,10 +65,8 @@ public class FaceAnimationDriver : MonoBehaviour {
     }
 
     void Update() {
-        if (m_needsRecache) {
-            m_needsRecache = false;
-            CacheFaceLayerMixer();
-        }
+        if (!Application.isPlaying)
+            return;
 
         if (!CanControlFaceLayer())
             return;
@@ -112,64 +79,6 @@ public class FaceAnimationDriver : MonoBehaviour {
 
         m_animator.SetLayerWeight(m_faceLayerIndex, m_curFaceLayerWeight);
         UpdateReturnToDefaultTimer();
-    }
-
-    void ApplyFaceLayerMask() {
-        if (m_faceAvatarMask == null || !m_hasCachedFaceLayerMixer || !m_cachedFaceLayerMixer.IsValid())
-            return;
-
-        Playable currentMixer = m_cachedFaceLayerMixer;
-        if (m_maskAppliedAvatarMask == m_faceAvatarMask
-            && m_maskAppliedMixer.IsValid()
-            && m_maskAppliedMixer.Equals(currentMixer)) {
-            return;
-        }
-
-        m_cachedFaceLayerMixer.SetLayerMaskFromAvatarMask((uint)m_faceLayerIndex, m_faceAvatarMask);
-        m_maskAppliedMixer = currentMixer;
-        m_maskAppliedAvatarMask = m_faceAvatarMask;
-    }
-
-    static bool TryGetFaceLayerMixer(Animator animator, int layerIndex, out AnimationLayerMixerPlayable layerMixer) {
-        layerMixer = default;
-        if (animator == null)
-            return false;
-
-        var graph = animator.playableGraph;
-        if (!graph.IsValid())
-            return false;
-
-        int rootPlayableCount = graph.GetRootPlayableCount();
-        for (int i = 0; i < rootPlayableCount; i++) {
-            var rootPlayable = graph.GetRootPlayable(i);
-            if (TryFindFaceLayerMixer(rootPlayable, layerIndex, out layerMixer))
-                return true;
-        }
-
-        return false;
-    }
-
-    static bool TryFindFaceLayerMixer(Playable playable, int layerIndex, out AnimationLayerMixerPlayable layerMixer) {
-        layerMixer = default;
-
-        if (!playable.IsValid())
-            return false;
-
-        if (playable.GetPlayableType() == typeof(AnimationLayerMixerPlayable)) {
-            var candidate = (AnimationLayerMixerPlayable)playable;
-            if (candidate.IsValid() && candidate.GetInputCount() > layerIndex) {
-                layerMixer = candidate;
-                return true;
-            }
-        }
-
-        int inputCount = playable.GetInputCount();
-        for (int i = 0; i < inputCount; i++) {
-            if (TryFindFaceLayerMixer(playable.GetInput(i), layerIndex, out layerMixer))
-                return true;
-        }
-
-        return false;
     }
 
     void UpdateReturnToDefaultTimer() {
@@ -193,7 +102,6 @@ public class FaceAnimationDriver : MonoBehaviour {
 
         m_shouldResetFaceLayerWeight = true;
         m_animator.Play(defaultStateName, m_faceLayerIndex);
-        m_needsRecache = true;
     }
 
     void PlayFaceState(string stateName) {
@@ -206,7 +114,6 @@ public class FaceAnimationDriver : MonoBehaviour {
         }
 
         m_animator.Play(resolvedStateName, m_faceLayerIndex);
-        m_needsRecache = true;
 
         if (m_returnToDefaultDelay <= 0f) {
             m_isAutoReturnPending = false;
@@ -297,14 +204,12 @@ public class FaceAnimationDriver : MonoBehaviour {
         m_faceLayerIndex = Mathf.Max(0, m_faceLayerIndex);
         EnsureAnimatorReference();
         RefreshFaceStateNames();
-        CacheFaceLayerMixer();
     }
     
 
 //----------------------------------------------------------------------------------------------------------------------
     
     [SerializeField] private Animator m_animator;
-    [SerializeField] private AvatarMask m_faceAvatarMask;
     [SerializeField, Min(0)] private int m_faceLayerIndex = 1;
     [SerializeField] private string m_defaultFaceStateName = "default";
     [SerializeField] private bool m_lockFace = false;
@@ -318,15 +223,9 @@ public class FaceAnimationDriver : MonoBehaviour {
     float m_curFaceLayerWeight = 0;
     bool m_shouldResetFaceLayerWeight = false;
     bool m_hasStarted = false;
-    bool m_needsRecache = false;
 
     bool m_isAutoReturnPending = false;
     float m_autoReturnElapsed = 0f;
-    AnimationLayerMixerPlayable m_cachedFaceLayerMixer;
-    RuntimeAnimatorController m_cachedController;
-    bool m_hasCachedFaceLayerMixer;
-    Playable m_maskAppliedMixer;
-    AvatarMask m_maskAppliedAvatarMask;
 
     void EnsureAnimatorReference() {
         if (m_animator == null) {
