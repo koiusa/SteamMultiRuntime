@@ -104,6 +104,7 @@ namespace Koiusa.SteamMultiRuntime
 
         [Header("Network State")]
         [SerializeField, Min(0.02f)] private float stateSyncInterval = 0.05f;
+        [SerializeField] private bool broadcastInputState = true;
 
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource baseInputSource;
@@ -119,6 +120,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool isStrafeMode;
         private bool hasInitializedSettings;
         private PlayerInputSyncState localInputState;
+        private PlayerInputSyncState serverInputState;
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
         private float nextStateSyncTime;
@@ -400,7 +402,7 @@ namespace Koiusa.SteamMultiRuntime
             lastSentJumpToken = inputState.JumpToken;
 
             if (IsServer)
-                netInputState.Value = inputState;
+                StoreServerInput(inputState);
             else
                 SubmitInputServerRpc(inputState);
         }
@@ -408,12 +410,19 @@ namespace Koiusa.SteamMultiRuntime
         [ServerRpc(Delivery = RpcDelivery.Unreliable)]
         private void SubmitInputServerRpc(PlayerInputSyncState inputState)
         {
-            netInputState.Value = inputState;
+            StoreServerInput(inputState);
+        }
+
+        private void StoreServerInput(PlayerInputSyncState inputState)
+        {
+            serverInputState = inputState;
+            if (broadcastInputState)
+                netInputState.Value = inputState;
         }
 
         private void TickServerPhysics()
         {
-            var inputState = netInputState.Value;
+            var inputState = serverInputState;
             var moveDirection = inputState.MoveDirection;
 
             var jumpThisFrame = inputState.JumpToken != lastConsumedJumpToken;
