@@ -6,7 +6,8 @@
 		"Koiusa.SteamMultiRuntime.Locomoter.Runtime",
 		"Koiusa.SteamMultiRuntime.Integration.Runtime",
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
-		"Koiusa.SteamMultiRuntime.EditorTools.Runtime"
+		"Koiusa.SteamMultiRuntime.EditorTools.Runtime",
+		"Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],

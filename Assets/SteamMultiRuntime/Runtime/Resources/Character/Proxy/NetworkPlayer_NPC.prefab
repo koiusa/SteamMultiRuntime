@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 626167900066496392}
   - component: {fileID: 1926209149445560628}
   - component: {fileID: 1027209593580285803}
+  - component: {fileID: 910000000000000006}
   - component: {fileID: 1723194128134958813}
   - component: {fileID: 8884666047061710343}
   - component: {fileID: 7842634654398573961}
@@ -584,3 +585,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
   isLocalPlayer: 0
+--- !u!114 &910000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8352a4e8966d8334eb2dd58957290b57, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
+  ShowTopMostFoldoutHeaderGroup: 1
+  inputActionsProfile: {fileID: 0}
+  cameraTransform: {fileID: 0}

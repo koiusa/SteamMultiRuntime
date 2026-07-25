@@ -104,6 +104,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody targetRigidbody;
         private InputActionPlayerInputSource baseInputSource;
+        private IPlayerInputSource activeInputSource;
+        private Transform injectedInputReferenceTransform;
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private ILadderTraversalFeature ladderTraversalFeature;
@@ -157,20 +159,44 @@ namespace Koiusa.SteamMultiRuntime
             inputActionsProfile = profile;
 
             // Reinitialize input source if already created
-            if (baseInputSource != null)
-            {
-                baseInputSource.Disable();
-            }
+            activeInputSource?.Disable();
 
             baseInputSource = new InputActionPlayerInputSource(
                 profile.MoveAction,
                 profile.JumpAction,
                 profile.StrafeToggleAction);
+            activeInputSource = baseInputSource;
+            injectedInputReferenceTransform = null;
 
             if (IsSpawned && IsOwner)
             {
-                baseInputSource.Enable();
+                activeInputSource.Enable();
             }
+        }
+
+        public void SetInputSource(IPlayerInputSource source, Transform referenceTransform = null)
+        {
+            if (ReferenceEquals(activeInputSource, source)
+                && injectedInputReferenceTransform == referenceTransform)
+                return;
+
+            activeInputSource?.Disable();
+            activeInputSource = source;
+            injectedInputReferenceTransform = referenceTransform;
+            if (IsSpawned && IsOwner && isActiveAndEnabled)
+                activeInputSource?.Enable();
+        }
+
+        public void ClearInputSource(IPlayerInputSource source)
+        {
+            if (!ReferenceEquals(activeInputSource, source))
+                return;
+
+            activeInputSource?.Disable();
+            activeInputSource = baseInputSource;
+            injectedInputReferenceTransform = null;
+            if (IsSpawned && IsOwner && isActiveAndEnabled)
+                activeInputSource?.Enable();
         }
 
         private void Awake()
@@ -198,8 +224,6 @@ namespace Koiusa.SteamMultiRuntime
 
             if (inputActionsProfile == null)
             {
-                Debug.LogError("PlayerInputActionsProfile is not assigned.", this);
-                enabled = false;
                 return;
             }
 
@@ -207,6 +231,7 @@ namespace Koiusa.SteamMultiRuntime
                 inputActionsProfile.MoveAction,
                 inputActionsProfile.JumpAction,
                 inputActionsProfile.StrafeToggleAction);
+            activeInputSource = baseInputSource;
         }
 
         public override void OnNetworkSpawn()
@@ -249,7 +274,7 @@ namespace Koiusa.SteamMultiRuntime
                     cameraTransform = Camera.main.transform;
                 }
 
-                baseInputSource?.Enable();
+                activeInputSource?.Enable();
             }
         }
 
@@ -262,7 +287,7 @@ namespace Koiusa.SteamMultiRuntime
                 netTraversalFeatureSettings.OnValueChanged -= OnTraversalFeatureSettingsChanged;
             }
 
-            baseInputSource?.Disable();
+            activeInputSource?.Disable();
             motor?.ResetState();
             base.OnNetworkDespawn();
         }
@@ -271,13 +296,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (IsSpawned && IsOwner)
             {
-                baseInputSource?.Enable();
+                activeInputSource?.Enable();
             }
         }
 
         private void OnDisable()
         {
-            baseInputSource?.Disable();
+            activeInputSource?.Disable();
             motor?.ResetState();
         }
 
@@ -321,7 +346,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ReadAndSendInput()
         {
-            if (baseInputSource == null)
+            if (activeInputSource == null)
             {
                 var emptyInputState = netInputState.Value;
                 emptyInputState.MoveDirection = Vector3.zero;
@@ -330,10 +355,12 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var inputState = baseInputSource.ReadState();
+            var inputState = activeInputSource.ReadState();
             var moveInput = inputState.Move;
 
-            Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
+            var referenceTransform = injectedInputReferenceTransform != null
+                ? injectedInputReferenceTransform
+                : cameraTransform != null ? cameraTransform : transform;
             var moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, moveInput);
 
             if (inputState.JumpPressed)
@@ -341,7 +368,8 @@ namespace Koiusa.SteamMultiRuntime
                 jumpToken++;
             }
 
-            isStrafeMode = baseInputSource.GetStrafeMode();
+            isStrafeMode = activeInputSource is InputActionPlayerInputSource playerInput
+                && playerInput.GetStrafeMode();
             netInputState.Value = new PlayerInputSyncState(moveDirection, moveInput, referenceTransform.rotation, jumpToken, isStrafeMode);
         }
 

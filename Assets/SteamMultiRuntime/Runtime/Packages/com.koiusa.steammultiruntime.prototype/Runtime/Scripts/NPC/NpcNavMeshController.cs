@@ -53,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerMoveInputReceiver _moveInputReceiver;
         private IPlayerMotor _baseMotor;
         private AiPlayerInputSource _inputSource;
+        private ServerDrivenPlayerController _networkPlayerController;
 
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
@@ -75,17 +76,17 @@ namespace Koiusa.SteamMultiRuntime
         public event System.Action<Vector3> DestinationSet;
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
-        public bool IsMoving => _motor != null && _motor.HorizontalVelocity > 0.01f;
-        public bool IsGrounded => _motor != null && _motor.IsGrounded;
-        public bool IsJumping => _motor != null && _motor.IsJumping;
-        public bool IsFreefall => _motor != null && _motor.IsFreefall;
-        public bool IsFallingAfterJump => _motor != null && _motor.IsFallingAfterJump;
+        public bool IsMoving => HorizontalVelocity > 0.01f;
+        public bool IsGrounded => _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
+        public bool IsJumping => _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
+        public bool IsFreefall => _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
+        public bool IsFallingAfterJump => _networkPlayerController != null ? _networkPlayerController.IsFallingAfterJump : _motor != null && _motor.IsFallingAfterJump;
         public bool IsStrafeMode => false;
-        public Vector3 InheritedGroundVelocity => _motor != null ? _motor.InheritedGroundVelocity : Vector3.zero;
+        public Vector3 InheritedGroundVelocity => _networkPlayerController != null ? _networkPlayerController.InheritedGroundVelocity : _motor != null ? _motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => _moveInput;
         public Vector3 MoveDirection => _moveDirection;
-        public float HorizontalVelocity => _motor != null ? _motor.HorizontalVelocity : 0f;
-        public float VerticalVelocity => _motor != null ? _motor.VerticalVelocity : 0f;
+        public float HorizontalVelocity => _networkPlayerController != null ? _networkPlayerController.HorizontalVelocity : _motor != null ? _motor.HorizontalVelocity : 0f;
+        public float VerticalVelocity => _networkPlayerController != null ? _networkPlayerController.VerticalVelocity : _motor != null ? _motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed
         {
             get
@@ -96,6 +97,9 @@ namespace Koiusa.SteamMultiRuntime
                     if (settings.MoveSpeed > 0f)
                         return settings.MoveSpeed;
                 }
+
+                if (_networkPlayerController != null)
+                    return _networkPlayerController.MaxMoveSpeed;
 
                 return _agent != null ? Mathf.Max(_agent.speed, 0.01f) : 1f;
             }
@@ -109,6 +113,7 @@ namespace Koiusa.SteamMultiRuntime
             _moveInputReceiver = _motor as IPlayerMoveInputReceiver;
             _baseMotor = GetComponent<IPlayerMotor>();
             _inputSource = new AiPlayerInputSource();
+            _networkPlayerController = GetComponent<ServerDrivenPlayerController>();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -124,6 +129,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ResetInputState();
+            _networkPlayerController?.SetInputSource(_inputSource, transform);
         }
 
         private void OnEnable()
@@ -143,6 +149,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             _inputSource.Enable();
+            _networkPlayerController?.SetInputSource(_inputSource, transform);
             ResetInputState();
         }
 
@@ -157,6 +164,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             _inputSource.Disable();
+            _networkPlayerController?.ClearInputSource(_inputSource);
             _motor?.ResetState();
             ResetInputState();
             StopAgent();
@@ -171,11 +179,18 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
+            if (_networkPlayerController != null
+                && (!_networkPlayerController.IsSpawned || !_networkPlayerController.IsServer))
+                return;
+
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
 
             if (movement != null && movement.isActiveAndEnabled)
                 movement.ObserveState();
+
+            if (_networkPlayerController != null)
+                UpdateAiInputSignal();
 
             if (_rigidbody != null)
                 _agent.nextPosition = _rigidbody.position;
@@ -185,6 +200,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void FixedUpdate()
         {
+            if (_networkPlayerController != null)
+                return;
+
             if (_motor == null)
                 return;
 
@@ -307,6 +325,8 @@ namespace Koiusa.SteamMultiRuntime
             if (nextMoveInput.sqrMagnitude > 1f)
                 nextMoveInput = nextMoveInput.normalized;
 
+            _moveInput = nextMoveInput;
+            _moveDirection = PlayerMotor.GetMoveDirection(transform, nextMoveInput);
             _inputSource.SetMove(nextMoveInput);
 
             if (jump != null && jump.TryRequestJump(IsGrounded, targetPlanarVelocity.magnitude))
