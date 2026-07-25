@@ -19,10 +19,9 @@ namespace Koiusa.SteamMultiRuntime
         private float reattachBlockedUntilTime;
         private ITraversalIntentContext traversalIntentContext;
 
-        private bool hasClimbAxisLock;
-        private bool useXAxisAsClimb;
-        private float xAxisClimbSign = -1f;
         private float ladderEnteredTime;
+        private bool useSideViewClimb;
+        private float sideViewClimbSign = 1f;
 
         private Vector3 facingDirection;
         private bool hasFacing;
@@ -70,8 +69,8 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = 0f;
-            hasClimbAxisLock = false;
-            xAxisClimbSign = -1f;
+            useSideViewClimb = false;
+            sideViewClimbSign = 1f;
             hasFacing = false;
         }
 
@@ -81,8 +80,8 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
-            hasClimbAxisLock = false;
-            xAxisClimbSign = -1f;
+            useSideViewClimb = false;
+            sideViewClimbSign = 1f;
             hasFacing = false;
         }
 
@@ -155,7 +154,7 @@ namespace Koiusa.SteamMultiRuntime
             return true;
         }
 
-        public bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump)
+        public bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump)
         {
             nextVelocity = velocity;
             detachedByJump = false;
@@ -172,7 +171,7 @@ namespace Koiusa.SteamMultiRuntime
                 ? traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested)
                 : jumpRequested;
 
-            var climbInput = ResolveClimbInput(moveInput, out var detachInput);
+            var climbInput = ResolveClimbInput(moveInput, moveReferenceRotation, out var detachInput);
             var defaults = LadderTraversalSettings.CreateDefault();
             var groundEnterGrace = settings.GroundEnterDetachGraceTime > 0f
                 ? settings.GroundEnterDetachGraceTime
@@ -182,8 +181,7 @@ namespace Koiusa.SteamMultiRuntime
                 : defaults.LateralDetachInputThreshold;
             var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= groundEnterGrace;
 
-            // 軸ロック前は離脱判定を行わない（地面から侵入直後に取りこぼさないため）
-            var wantsLateralDetach = hasClimbAxisLock && Mathf.Abs(detachInput) > lateralDetachThreshold;
+            var wantsLateralDetach = Mathf.Abs(detachInput) > lateralDetachThreshold;
             var wantsGroundDescendDetach = isGrounded && climbInput < -0.01f;
             var wantsGroundIdleDetach = isGrounded && Mathf.Abs(climbInput) <= 0.01f && !isJustEnteredFromGround;
 
@@ -221,48 +219,66 @@ namespace Koiusa.SteamMultiRuntime
             return false;
         }
 
-        private float ResolveClimbInput(Vector2 moveInput, out float detachInput)
+        private float ResolveClimbInput(Vector2 moveInput, Quaternion moveReferenceRotation, out float detachInput)
         {
-            // 梯子侵入後に最初に強く入力された軸を昇降軸としてロックする。
-            // これにより、梯子が横向きに見える固定カメラでも左右入力で昇降できる。
-            if (!hasClimbAxisLock)
-            {
-                var absX = Mathf.Abs(moveInput.x);
-                var absY = Mathf.Abs(moveInput.y);
-                var dominant = Mathf.Max(absX, absY);
+            var ladderUp = currentLadder != null ? currentLadder.UpDirection.normalized : GetUpAxis();
+            var screenRight = moveReferenceRotation * Vector3.right;
+            var screenUp = moveReferenceRotation * Vector3.up;
+            var cameraForward = moveReferenceRotation * Vector3.forward;
 
-                var axisLockThreshold = settings.ClimbAxisLockEnterThreshold > 0f
-                    ? settings.ClimbAxisLockEnterThreshold
-                    : LadderTraversalSettings.CreateDefault().ClimbAxisLockEnterThreshold;
-                if (dominant >= axisLockThreshold)
+            var defaults = LadderTraversalSettings.CreateDefault();
+            var sideEnterAlignment = settings.SideViewEnterFaceAlignment > 0f
+                ? settings.SideViewEnterFaceAlignment
+                : defaults.SideViewEnterFaceAlignment;
+            var sideExitAlignment = settings.SideViewExitFaceAlignment > sideEnterAlignment
+                ? settings.SideViewExitFaceAlignment
+                : defaults.SideViewExitFaceAlignment;
+
+            // 梯子面を正面から見る場合は画面上下、横から見る場合は
+            // 梯子へ向かう画面左右を昇降とする。間に幅を持たせて視点回転中のバタつきを防ぐ。
+            var ladderNormal = currentLadder != null ? currentLadder.PlaneNormal.normalized : Vector3.forward;
+            var faceAlignment = Mathf.Abs(Vector3.Dot(ladderNormal, cameraForward.normalized));
+            if (useSideViewClimb)
+            {
+                useSideViewClimb = faceAlignment < sideExitAlignment;
+            }
+            else
+            {
+                useSideViewClimb = faceAlignment < sideEnterAlignment;
+            }
+
+            if (useSideViewClimb)
+            {
+                var towardLadder = hasFacing ? facingDirection : ladderNormal;
+                var horizontalSign = Vector3.Dot(screenRight, towardLadder);
+                if (Mathf.Abs(horizontalSign) > 0.05f)
                 {
-                    useXAxisAsClimb = absX > absY;
-                    hasClimbAxisLock = true;
-
-                    if (useXAxisAsClimb)
-                    {
-                        // 最初に強く押した左右方向を「上昇方向」としてロックする。
-                        // これにより左側/右側どちらの梯子でも直感どおりに登れる。
-                        xAxisClimbSign = moveInput.x >= 0f ? 1f : -1f;
-                    }
+                    sideViewClimbSign = Mathf.Sign(horizontalSign);
                 }
-            }
 
-            if (!hasClimbAxisLock)
-            {
-                // ロック未確定時は従来どおりYを昇降、Xを離脱として扱う
-                detachInput = moveInput.x;
-                return moveInput.y;
-            }
-
-            if (useXAxisAsClimb)
-            {
                 detachInput = moveInput.y;
-                return moveInput.x * xAxisClimbSign;
+                return moveInput.x * sideViewClimbSign;
             }
 
-            detachInput = moveInput.x;
-            return moveInput.y;
+            // 梯子の上方向を現在のカメラ画面へ投影する。
+            // 画面上で見える梯子の方向への入力だけを昇降とし、
+            // それと直交する入力を横離脱として扱う。
+            var climbAxis = new Vector2(
+                Vector3.Dot(ladderUp, screenRight),
+                Vector3.Dot(ladderUp, screenUp));
+
+            if (climbAxis.sqrMagnitude <= 0.0001f)
+            {
+                climbAxis = Vector2.up;
+            }
+            else
+            {
+                climbAxis.Normalize();
+            }
+
+            var detachAxis = new Vector2(climbAxis.y, -climbAxis.x);
+            detachInput = Vector2.Dot(moveInput, detachAxis);
+            return Vector2.Dot(moveInput, climbAxis);
         }
 
         private void UpdateFacingDirection(LadderVolume ladder)

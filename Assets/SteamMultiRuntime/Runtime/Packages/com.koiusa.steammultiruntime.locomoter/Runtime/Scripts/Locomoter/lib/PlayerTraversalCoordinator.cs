@@ -53,7 +53,7 @@ namespace Koiusa.SteamMultiRuntime
             return (CurrentIntentFlags & flag) == flag;
         }
 
-        public void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, bool jumpRequested, bool isGrounded)
+        public void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded)
         {
             if (!IsEnabled)
             {
@@ -102,7 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             if (ladderFeature != null)
             {
                 var upAxisForLadder = GetUpAxis();
-                if (ladderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
+                if (ladderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
                 {
                     if (detachedByJump)
                     {

@@ -23,14 +23,16 @@ namespace Koiusa.SteamMultiRuntime
         /// <summary>梯子離脱後にWallRun/WallSlideを禁止する秒数。</summary>
         [Min(0f), Tooltip("梯子離脱後にWallRun/WallSlideを禁止する秒数")]
         public float WallTraversalBlockDuration;
-        [Range(0f, 1f), Tooltip("昇降に使う入力軸を確定する最小入力")]
-        public float ClimbAxisLockEnterThreshold;
         [Range(0f, 1f), Tooltip("横方向入力で梯子を離脱する閾値")]
         public float LateralDetachInputThreshold;
         [Min(0f), Tooltip("地上から梯子へ入った直後の自動離脱防止時間")]
         public float GroundEnterDetachGraceTime;
         [Min(0f), Tooltip("梯子面へ正対する回転速度（度/秒）")]
         public float FacingRotationSpeed;
+        [Range(0f, 1f), Tooltip("梯子面がカメラに対してこの値より横向きになったら、左右入力で昇降する")]
+        public float SideViewEnterFaceAlignment;
+        [Range(0f, 1f), Tooltip("左右昇降中、梯子面がこの値より正面向きになったら上下昇降に戻す")]
+        public float SideViewExitFaceAlignment;
 
         public static LadderTraversalSettings CreateDefault()
         {
@@ -42,10 +44,11 @@ namespace Koiusa.SteamMultiRuntime
                 DirectionalDetachReattachDelay = 0.15f,
                 JumpDetachReattachDelay = 0.12f,
                 WallTraversalBlockDuration = 0.3f,
-                ClimbAxisLockEnterThreshold = 0.2f,
                 LateralDetachInputThreshold = 0.2f,
                 GroundEnterDetachGraceTime = 0.2f,
                 FacingRotationSpeed = 720f,
+                SideViewEnterFaceAlignment = 0.35f,
+                SideViewExitFaceAlignment = 0.55f,
             };
         }
     }

@@ -214,6 +214,7 @@ namespace Koiusa.SteamMultiRuntime
 
             _baseMotor?.SetStrafeMode(false);
             _moveInputReceiver?.SetMoveInput(_moveInput);
+            _moveInputReceiver?.SetMoveReferenceRotation(transform.rotation);
             _motor.Tick(_moveDirection, jumpThisFrame);
 
             if (_agent != null && _agent.isOnNavMesh && _rigidbody != null)

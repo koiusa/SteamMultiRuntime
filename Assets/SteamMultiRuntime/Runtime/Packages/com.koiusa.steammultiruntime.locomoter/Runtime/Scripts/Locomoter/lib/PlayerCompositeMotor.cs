@@ -11,6 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerMotor baseMotor;
         private IPlayerTraversalCoordinator traversalCoordinator;
         private Vector2 rawMoveInput;
+        private Quaternion moveReferenceRotation;
 
         private void Awake()
         {
@@ -18,6 +19,7 @@ namespace Koiusa.SteamMultiRuntime
             rb = GetComponent<Rigidbody>();
             baseMotor = GetComponent<IPlayerMotor>();
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            moveReferenceRotation = transform.rotation;
         }
 
         private void OnValidate()
@@ -113,6 +115,14 @@ namespace Koiusa.SteamMultiRuntime
             rawMoveInput = moveInput;
         }
 
+        public void SetMoveReferenceRotation(Quaternion referenceRotation)
+        {
+            if (isActiveAndEnabled)
+            {
+                moveReferenceRotation = referenceRotation;
+            }
+        }
+
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (!isActiveAndEnabled || baseMotor == null || !baseMotor.IsEnabled)
@@ -128,7 +138,7 @@ namespace Koiusa.SteamMultiRuntime
             baseMotor.Tick(moveDirection, jumpRequested);
             if (traversalCoordinator != null && traversalCoordinator.IsEnabled)
             {
-                traversalCoordinator.ApplyTraversal(moveDirection, rawMoveInput, jumpRequested, baseMotor.IsGrounded);
+                traversalCoordinator.ApplyTraversal(moveDirection, rawMoveInput, moveReferenceRotation, jumpRequested, baseMotor.IsGrounded);
             }
         }
 

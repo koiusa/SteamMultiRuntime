@@ -114,7 +114,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasInitializedSettings;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
-            new PlayerInputSyncState(Vector3.zero, Vector2.zero, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+            new PlayerInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
         // Settings Sync (Server -> All Clients)
         private readonly NetworkVariable<PlayerMotorSettingsNetData> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettingsNetData>(
@@ -338,7 +338,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             isStrafeMode = baseInputSource.GetStrafeMode();
-            netInputState.Value = new PlayerInputSyncState(moveDirection, moveInput, jumpToken, isStrafeMode);
+            netInputState.Value = new PlayerInputSyncState(moveDirection, moveInput, referenceTransform.rotation, jumpToken, isStrafeMode);
         }
 
         private void TickServerPhysics()
@@ -362,6 +362,7 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 moveInputReceiver?.SetMoveInput(inputState.MoveInput);
+                moveInputReceiver?.SetMoveReferenceRotation(inputState.MoveReferenceRotation);
             }
 
             motor.Tick(moveDirection, jumpThisFrame);

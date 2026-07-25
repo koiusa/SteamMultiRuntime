@@ -238,6 +238,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveInputReceiver?.SetMoveInput(moveInput);
+            moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);
             motor.Tick(moveDirection, jumpThisFrame);
         }
 

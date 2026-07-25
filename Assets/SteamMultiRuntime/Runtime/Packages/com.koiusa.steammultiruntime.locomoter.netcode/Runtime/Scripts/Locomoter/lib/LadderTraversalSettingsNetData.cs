@@ -13,10 +13,11 @@ namespace Koiusa.SteamMultiRuntime
         public float DirectionalDetachReattachDelay;
         public float JumpDetachReattachDelay;
         public float WallTraversalBlockDuration;
-        public float ClimbAxisLockEnterThreshold;
         public float LateralDetachInputThreshold;
         public float GroundEnterDetachGraceTime;
         public float FacingRotationSpeed;
+        public float SideViewEnterFaceAlignment;
+        public float SideViewExitFaceAlignment;
 
         public static LadderTraversalSettingsNetData FromCore(LadderTraversalSettings s)
         {
@@ -28,10 +29,11 @@ namespace Koiusa.SteamMultiRuntime
                 DirectionalDetachReattachDelay = s.DirectionalDetachReattachDelay,
                 JumpDetachReattachDelay = s.JumpDetachReattachDelay,
                 WallTraversalBlockDuration = s.WallTraversalBlockDuration,
-                ClimbAxisLockEnterThreshold = s.ClimbAxisLockEnterThreshold,
                 LateralDetachInputThreshold = s.LateralDetachInputThreshold,
                 GroundEnterDetachGraceTime = s.GroundEnterDetachGraceTime,
                 FacingRotationSpeed = s.FacingRotationSpeed,
+                SideViewEnterFaceAlignment = s.SideViewEnterFaceAlignment,
+                SideViewExitFaceAlignment = s.SideViewExitFaceAlignment,
             };
         }
 
@@ -45,10 +47,11 @@ namespace Koiusa.SteamMultiRuntime
                 DirectionalDetachReattachDelay = DirectionalDetachReattachDelay,
                 JumpDetachReattachDelay = JumpDetachReattachDelay,
                 WallTraversalBlockDuration = WallTraversalBlockDuration,
-                ClimbAxisLockEnterThreshold = ClimbAxisLockEnterThreshold,
                 LateralDetachInputThreshold = LateralDetachInputThreshold,
                 GroundEnterDetachGraceTime = GroundEnterDetachGraceTime,
                 FacingRotationSpeed = FacingRotationSpeed,
+                SideViewEnterFaceAlignment = SideViewEnterFaceAlignment,
+                SideViewExitFaceAlignment = SideViewExitFaceAlignment,
             };
         }
 
@@ -60,10 +63,11 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref DirectionalDetachReattachDelay);
             serializer.SerializeValue(ref JumpDetachReattachDelay);
             serializer.SerializeValue(ref WallTraversalBlockDuration);
-            serializer.SerializeValue(ref ClimbAxisLockEnterThreshold);
             serializer.SerializeValue(ref LateralDetachInputThreshold);
             serializer.SerializeValue(ref GroundEnterDetachGraceTime);
             serializer.SerializeValue(ref FacingRotationSpeed);
+            serializer.SerializeValue(ref SideViewEnterFaceAlignment);
+            serializer.SerializeValue(ref SideViewExitFaceAlignment);
         }
     }
 }

@@ -7,13 +7,15 @@ namespace Koiusa.SteamMultiRuntime
     {
         public Vector3 MoveDirection;
         public Vector2 MoveInput;
+        public Quaternion MoveReferenceRotation;
         public int JumpToken;
         public bool IsStrafeMode;
 
-        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, int jumpToken, bool isStrafeMode)
+        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode)
         {
             MoveDirection = moveDirection;
             MoveInput = moveInput;
+            MoveReferenceRotation = moveReferenceRotation;
             JumpToken = jumpToken;
             IsStrafeMode = isStrafeMode;
         }
@@ -22,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             serializer.SerializeValue(ref MoveDirection);
             serializer.SerializeValue(ref MoveInput);
+            serializer.SerializeValue(ref MoveReferenceRotation);
             serializer.SerializeValue(ref JumpToken);
             serializer.SerializeValue(ref IsStrafeMode);
         }

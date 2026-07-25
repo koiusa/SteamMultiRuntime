@@ -25,7 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         /// 梯子中の入力・接地状態を解釈して、離脱または昇降の適用を行う。
         /// </summary>
         /// <returns>梯子処理を消費した場合 true。</returns>
-        bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump);
+        bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump);
 
         /// <summary>
         /// 外部から梯子ゾーンへの侵入を通知する。
