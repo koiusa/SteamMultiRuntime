@@ -5,7 +5,7 @@ namespace Koiusa.SteamMultiRuntime
     /// <summary>Finds a valid grapple anchor along the requested aim ray.</summary>
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
-    public sealed class WireGrappleTargetingFeature : MonoBehaviour
+    public sealed class WireGrappleTargetingFeature : MonoBehaviour, IWireGrappleTargetingFeature
     {
         [SerializeField] private Transform aimTransform;
         [SerializeField, Min(1f)] private float maximumRange = 45f;
@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public Transform AimTransform => aimTransform;
         public float MaximumRange => maximumRange;
+        public bool IsEnabled => isActiveAndEnabled;
 
         private void Awake()
         {

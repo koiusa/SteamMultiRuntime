@@ -28,6 +28,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody rb;
         private SlopeContactResolver slopeContactResolver;
+        private IWireGrappleTargetingFeature targetingFeature;
+        private IWireLineVisualFeature visualFeature;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
         private Vector3 fixedAnchorPoint;
@@ -38,8 +40,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsAttached { get; private set; }
         public bool IsEnabled => isActiveAndEnabled;
-        public Transform AimTransform => targeting != null ? targeting.AimTransform : null;
-        public float MaximumRange => targeting != null ? targeting.MaximumRange : 0f;
+        public Transform AimTransform => targetingFeature != null ? targetingFeature.AimTransform : null;
+        public float MaximumRange => targetingFeature != null ? targetingFeature.MaximumRange : 0f;
         public Vector3 AnchorPoint => anchorTransform != null
             ? anchorTransform.TransformPoint(anchorLocalPoint)
             : fixedAnchorPoint;
@@ -51,7 +53,9 @@ namespace Koiusa.SteamMultiRuntime
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             if (targeting == null) targeting = GetComponent<WireGrappleTargetingFeature>();
             if (visual == null) visual = GetComponent<WireLineVisualFeature>();
-            visual?.Initialize();
+            targetingFeature = targeting != null ? targeting : GetComponent<IWireGrappleTargetingFeature>();
+            visualFeature = visual != null ? visual : GetComponent<IWireLineVisualFeature>();
+            visualFeature?.Initialize();
         }
 
         private void OnDisable()
@@ -74,7 +78,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (IsAttached)
             {
-                visual?.UpdateEndpoints(AnchorPoint);
+                visualFeature?.UpdateEndpoints(AnchorPoint);
             }
         }
 
@@ -149,7 +153,7 @@ namespace Koiusa.SteamMultiRuntime
             fixedAnchorPoint = anchorPoint;
             ropeLength = Mathf.Clamp(replicatedRopeLength, minimumRopeLength, MaximumRange);
             IsAttached = true;
-            visual?.SetVisible(true);
+            visualFeature?.SetVisible(true);
         }
 
         /// <summary>Attaches to the first valid collider along a world-space ray.</summary>
@@ -160,8 +164,9 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            if (targeting != null
-                && targeting.TryResolveAnchor(origin, direction, out var point, out var movingAnchor))
+            if (targetingFeature != null
+                && targetingFeature.IsEnabled
+                && targetingFeature.TryResolveAnchor(origin, direction, out var point, out var movingAnchor))
             {
                 Attach(point, movingAnchor);
                 return true;
@@ -178,7 +183,7 @@ namespace Koiusa.SteamMultiRuntime
             anchorLocalPoint = movingAnchor != null ? movingAnchor.InverseTransformPoint(worldPoint) : Vector3.zero;
             ropeLength = Mathf.Clamp(Vector3.Distance(rb.worldCenterOfMass, worldPoint), minimumRopeLength, MaximumRange);
             IsAttached = true;
-            visual?.SetVisible(true);
+            visualFeature?.SetVisible(true);
         }
 
         public void Detach()
@@ -191,7 +196,7 @@ namespace Koiusa.SteamMultiRuntime
             IsAttached = false;
             anchorTransform = null;
             motorMoveDirection = Vector3.zero;
-            visual?.SetVisible(false);
+            visualFeature?.SetVisible(false);
         }
 
         private void ApplyReelInput()

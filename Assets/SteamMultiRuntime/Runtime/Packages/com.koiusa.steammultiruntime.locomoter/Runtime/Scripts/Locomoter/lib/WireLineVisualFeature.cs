@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     /// <summary>Owns the wire origin and LineRenderer presentation.</summary>
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
-    public sealed class WireLineVisualFeature : MonoBehaviour
+    public sealed class WireLineVisualFeature : MonoBehaviour, IWireLineVisualFeature
     {
         private static Material sharedBuiltInMaterial;
         private static Material sharedUniversalMaterial;
@@ -24,10 +24,16 @@ namespace Koiusa.SteamMultiRuntime
         private bool initialized;
 
         public LineRenderer Renderer => lineRenderer;
+        public bool IsEnabled => isActiveAndEnabled;
 
         private void Awake()
         {
             Initialize();
+        }
+
+        private void OnDisable()
+        {
+            SetVisible(false);
         }
 
         private void OnValidate()
@@ -62,7 +68,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (lineRenderer != null)
             {
-                lineRenderer.enabled = visible;
+                lineRenderer.enabled = visible && IsEnabled;
             }
         }
 
