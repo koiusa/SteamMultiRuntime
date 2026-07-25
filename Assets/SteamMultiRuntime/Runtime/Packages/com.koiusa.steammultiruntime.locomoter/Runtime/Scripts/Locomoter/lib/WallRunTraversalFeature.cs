@@ -243,7 +243,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool HasWallRunIntent(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
-            if (horizontalInput.sqrMagnitude <= 0.0001f)
+            if (horizontalInput.sqrMagnitude < 0.0625f)
             {
                 return false;
             }

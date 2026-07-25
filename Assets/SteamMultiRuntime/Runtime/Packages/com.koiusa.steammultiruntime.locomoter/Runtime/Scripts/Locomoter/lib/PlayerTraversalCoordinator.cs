@@ -8,9 +8,12 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext
     {
+        private const float WallTraversalBlockAfterLadderDetach = 0.3f;
+
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
+        private float wallTraversalBlockedUntilTime;
 
         public TraversalIntentFlags CurrentIntentFlags { get; private set; }
 
@@ -37,6 +40,7 @@ namespace Koiusa.SteamMultiRuntime
         public void ResetState()
         {
             CurrentIntentFlags = TraversalIntentFlags.None;
+            wallTraversalBlockedUntilTime = 0f;
             GetComponent<IWallRunTraversalFeature>()?.ResetState();
             GetComponent<IWallJumpTraversalFeature>()?.ResetState();
             GetComponent<IWallSlideTraversalFeature>()?.ResetState();
@@ -92,11 +96,29 @@ namespace Koiusa.SteamMultiRuntime
                     if (detachedByJump)
                     {
                         // 梯子離脱直後の壁接触残りをクリアして、壁ズリ誤判定を抑える
+                        wallTraversalBlockedUntilTime = Time.time + WallTraversalBlockAfterLadderDetach;
                         slopeContactResolver?.Clear();
+                        wallRunFeature?.ResetState();
+                        wallJumpFeature?.ResetState();
+                        wallSlideFeature?.ResetState();
                     }
                     else if (ladderFeature.IsOnLadder)
                     {
+                        wallTraversalBlockedUntilTime = 0f;
                         rb.linearVelocity = ladderVelocity;
+                        wallRunFeature?.ResetState();
+                        wallJumpFeature?.ResetState();
+                        wallSlideFeature?.ResetState();
+                    }
+                    else
+                    {
+                        // Directional/ground detach must not reinterpret the ladder surface
+                        // as a runnable wall on the following physics frame.
+                        wallTraversalBlockedUntilTime = Time.time + WallTraversalBlockAfterLadderDetach;
+                        slopeContactResolver?.Clear();
+                        wallRunFeature?.ResetState();
+                        wallJumpFeature?.ResetState();
+                        wallSlideFeature?.ResetState();
                     }
 
                     return;
@@ -113,6 +135,14 @@ namespace Koiusa.SteamMultiRuntime
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
+
+            if (Time.time < wallTraversalBlockedUntilTime)
+            {
+                wallRunFeature?.ResetState();
+                wallSlideFeature?.ResetState();
+                rb.linearVelocity = velocity;
+                return;
+            }
 
             if (jumpRequested && wallJumpFeature != null && wallJumpFeature.TryWallJump(velocity, moveDirection, upAxis, out var wallJumpVelocity))
             {

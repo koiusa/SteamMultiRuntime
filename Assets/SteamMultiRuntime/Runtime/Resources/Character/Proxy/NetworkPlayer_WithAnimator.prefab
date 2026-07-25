@@ -189,6 +189,10 @@ MonoBehaviour:
       NameHash: 2090971652
       Synchronize: 1
       ParameterType: 3
+    - name: WallRunSide
+      NameHash: 1382291222
+      Synchronize: 1
+      ParameterType: 3
   AnimatorParametersExpanded: 0
 --- !u!114 &2404645661678682767
 MonoBehaviour:

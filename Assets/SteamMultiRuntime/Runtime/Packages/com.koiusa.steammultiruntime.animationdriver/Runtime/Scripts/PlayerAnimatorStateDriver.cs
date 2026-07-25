@@ -20,8 +20,6 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class PlayerAnimatorStateDriver : MonoBehaviour, IPlayerAnimatorStateDriver
     {
-        private const float MinimumMovingWallSlideAnimationSpeed = 2f;
-
         [Header("References")]
         [SerializeField] private Animator targetAnimator;
         [SerializeField] private Rigidbody targetRigidbody;
@@ -39,7 +37,6 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Smoothing")]
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
         [SerializeField, Min(0.0001f)] private float motionSpeedMultiplier = 2f;
-        [SerializeField, Min(0f)] private float movingWallSlideAnimationThreshold = 2f;
 
         private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
         private RuntimeAnimatorController cachedAnimatorController;
@@ -47,7 +44,6 @@ namespace Koiusa.SteamMultiRuntime
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
         private IWallRunTraversalFeature wallRunTraversalFeature;
-        private IWallSlideTraversalFeature wallSlideTraversalFeature;
         private Vector3 previousPosition;
 
         private void Reset()
@@ -74,7 +70,6 @@ namespace Koiusa.SteamMultiRuntime
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
             playerLadderState = playerController as IPlayerLadderState;
             wallRunTraversalFeature = GetComponentInParent<IWallRunTraversalFeature>();
-            wallSlideTraversalFeature = GetComponentInParent<IWallSlideTraversalFeature>();
 
             CacheParameterHashes();
             previousPosition = transform.position;
@@ -106,20 +101,16 @@ namespace Koiusa.SteamMultiRuntime
                 ? playerLadderState.LadderSpeed
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
             var isWallRunning = wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
-            var wallNormal = isWallRunning
-                ? wallRunTraversalFeature.WallNormal
-                : wallSlideTraversalFeature != null ? wallSlideTraversalFeature.WallNormal : Vector3.zero;
-            var isMovingWallSlide = wallSlideTraversalFeature != null
-                && wallSlideTraversalFeature.IsWallSliding
-                && GetAlongWallSpeed(velocity, wallNormal, upAxis)
-                    >= Mathf.Max(movingWallSlideAnimationThreshold, MinimumMovingWallSlideAnimationSpeed);
-            var useWallRunAnimation = isWallRunning || isMovingWallSlide;
-            var locomotionMode = useWallRunAnimation
-                ? PlayerLocomotionAnimationMode.WallRun
-                : isLadder
+            var wallNormal = isWallRunning ? wallRunTraversalFeature.WallNormal : Vector3.zero;
+            var useWallRunAnimation = isWallRunning;
+            var locomotionMode = isLadder
                 ? PlayerLocomotionAnimationMode.Ladder
+                : useWallRunAnimation
+                ? PlayerLocomotionAnimationMode.WallRun
                 : isGrounded ? PlayerLocomotionAnimationMode.Grounded : PlayerLocomotionAnimationMode.Airborne;
-            var wallRunSide = useWallRunAnimation ? GetWallRunSide(wallNormal, upAxis) : 0;
+            var wallRunSide = locomotionMode == PlayerLocomotionAnimationMode.WallRun
+                ? GetWallRunSide(wallNormal, upAxis)
+                : 0;
             var airState = locomotionMode != PlayerLocomotionAnimationMode.Airborne
                 ? PlayerAirAnimationState.None
                 : isJumping ? PlayerAirAnimationState.Rising
@@ -148,17 +139,6 @@ namespace Koiusa.SteamMultiRuntime
             // The contact normal points from the wall toward the character.
             // A negative dot therefore means that the wall is on the right.
             return Vector3.Dot(wallNormal, characterRight) < 0f ? 1 : -1;
-        }
-
-        private static float GetAlongWallSpeed(Vector3 velocity, Vector3 wallNormal, Vector3 upAxis)
-        {
-            if (wallNormal.sqrMagnitude <= 0.0001f)
-            {
-                return 0f;
-            }
-
-            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
-            return Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
         }
 
         private Vector3 GetEstimatedVelocity()
