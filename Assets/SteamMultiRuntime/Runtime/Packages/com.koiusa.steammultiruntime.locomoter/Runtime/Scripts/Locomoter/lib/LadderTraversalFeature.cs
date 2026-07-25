@@ -20,6 +20,10 @@ namespace Koiusa.SteamMultiRuntime
         private ITraversalIntentContext traversalIntentContext;
 
         private float ladderEnteredTime;
+        private bool hasResolvedGroundEntry;
+        private bool enteredLadderFromGround;
+        private bool groundEntryHadMoveInput;
+        private bool releasedGroundEntryInput;
 
         private Vector3 facingDirection;
         private bool hasFacing;
@@ -67,6 +71,10 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = 0f;
+            hasResolvedGroundEntry = false;
+            enteredLadderFromGround = false;
+            groundEntryHadMoveInput = false;
+            releasedGroundEntryInput = false;
             hasFacing = false;
         }
 
@@ -76,6 +84,10 @@ namespace Koiusa.SteamMultiRuntime
             activeLadders.Clear();
             if (rb != null) rb.useGravity = true;
             reattachBlockedUntilTime = Time.time + Mathf.Max(0f, reattachDelaySeconds);
+            hasResolvedGroundEntry = false;
+            enteredLadderFromGround = false;
+            groundEntryHadMoveInput = false;
+            releasedGroundEntryInput = false;
             hasFacing = false;
         }
 
@@ -84,6 +96,14 @@ namespace Koiusa.SteamMultiRuntime
             if (Time.time < reattachBlockedUntilTime)
             {
                 return;
+            }
+
+            if (currentLadder != ladder)
+            {
+                hasResolvedGroundEntry = false;
+                enteredLadderFromGround = false;
+                groundEntryHadMoveInput = false;
+                releasedGroundEntryInput = false;
             }
 
             activeLadders.Add(ladder);
@@ -112,6 +132,10 @@ namespace Koiusa.SteamMultiRuntime
                 {
                     currentLadder = remaining;
                 }
+                hasResolvedGroundEntry = false;
+                enteredLadderFromGround = false;
+                groundEntryHadMoveInput = false;
+                releasedGroundEntryInput = false;
                 UpdateFacingDirection(currentLadder);
             }
         }
@@ -186,12 +210,36 @@ namespace Koiusa.SteamMultiRuntime
             var lateralDetachThreshold = settings.LateralDetachInputThreshold > 0f
                 ? settings.LateralDetachInputThreshold
                 : defaults.LateralDetachInputThreshold;
-            var isJustEnteredFromGround = isGrounded && (Time.time - ladderEnteredTime) <= groundEnterGrace;
+            if (!hasResolvedGroundEntry)
+            {
+                enteredLadderFromGround = isGrounded;
+                hasResolvedGroundEntry = true;
+            }
+
+            var isJustEnteredFromGround = enteredLadderFromGround
+                && (Time.time - ladderEnteredTime) <= groundEnterGrace;
+
+            if (enteredLadderFromGround && !releasedGroundEntryInput)
+            {
+                if (moveInput.sqrMagnitude > 0.0001f)
+                {
+                    groundEntryHadMoveInput = true;
+                }
+                else if (groundEntryHadMoveInput)
+                {
+                    releasedGroundEntryInput = true;
+                }
+            }
+
+            var restrictLateralUntilInputRelease = enteredLadderFromGround && !releasedGroundEntryInput;
 
             var lateralMode = currentLadder.LateralMovementMode;
-            var hasLateralInput = Mathf.Abs(detachInput) > lateralDetachThreshold;
+            // 地上から幅広梯子へ入った際は、接近時の入力を一度離すまで横移動へ引き継がない。
+            var hasLateralInput = !restrictLateralUntilInputRelease && Mathf.Abs(detachInput) > lateralDetachThreshold;
             var wantsLateralDetach = lateralMode == LadderLateralMovementMode.Detach && hasLateralInput;
-            var lateralMoveInput = lateralMode == LadderLateralMovementMode.MoveWithinBounds ? detachInput : 0f;
+            var lateralMoveInput = lateralMode == LadderLateralMovementMode.MoveWithinBounds && !restrictLateralUntilInputRelease
+                ? detachInput
+                : 0f;
             var edgePadding = settings.LateralEdgePadding > 0f
                 ? settings.LateralEdgePadding
                 : defaults.LateralEdgePadding;
