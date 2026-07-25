@@ -6,7 +6,8 @@ namespace Koiusa.SteamMultiRuntime
     {
         Grounded = 0,
         Airborne = 1,
-        Ladder = 2
+        Ladder = 2,
+        WallRun = 3
     }
 
     public enum PlayerAirAnimationState
@@ -19,6 +20,8 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class PlayerAnimatorStateDriver : MonoBehaviour, IPlayerAnimatorStateDriver
     {
+        private const float MinimumMovingWallSlideAnimationSpeed = 2f;
+
         [Header("References")]
         [SerializeField] private Animator targetAnimator;
         [SerializeField] private Rigidbody targetRigidbody;
@@ -31,16 +34,20 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private string motionSpeedParameter = "MotionSpeed";
         [SerializeField] private string locomotionModeParameter = "LocomotionMode";
         [SerializeField] private string airStateParameter = "AirState";
+        [SerializeField] private string wallRunSideParameter = "WallRunSide";
 
         [Header("Smoothing")]
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
         [SerializeField, Min(0.0001f)] private float motionSpeedMultiplier = 2f;
+        [SerializeField, Min(0f)] private float movingWallSlideAnimationThreshold = 2f;
 
         private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
         private RuntimeAnimatorController cachedAnimatorController;
         private IPlayerController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
+        private IWallRunTraversalFeature wallRunTraversalFeature;
+        private IWallSlideTraversalFeature wallSlideTraversalFeature;
         private Vector3 previousPosition;
 
         private void Reset()
@@ -66,6 +73,8 @@ namespace Koiusa.SteamMultiRuntime
             playerController = GetComponentInParent<IPlayerController>();
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
             playerLadderState = playerController as IPlayerLadderState;
+            wallRunTraversalFeature = GetComponentInParent<IWallRunTraversalFeature>();
+            wallSlideTraversalFeature = GetComponentInParent<IWallSlideTraversalFeature>();
 
             CacheParameterHashes();
             previousPosition = transform.position;
@@ -96,9 +105,21 @@ namespace Koiusa.SteamMultiRuntime
             var ladderSpeed = playerLadderState != null
                 ? playerLadderState.LadderSpeed
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
-            var locomotionMode = isLadder
+            var isWallRunning = wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
+            var wallNormal = isWallRunning
+                ? wallRunTraversalFeature.WallNormal
+                : wallSlideTraversalFeature != null ? wallSlideTraversalFeature.WallNormal : Vector3.zero;
+            var isMovingWallSlide = wallSlideTraversalFeature != null
+                && wallSlideTraversalFeature.IsWallSliding
+                && GetAlongWallSpeed(velocity, wallNormal, upAxis)
+                    >= Mathf.Max(movingWallSlideAnimationThreshold, MinimumMovingWallSlideAnimationSpeed);
+            var useWallRunAnimation = isWallRunning || isMovingWallSlide;
+            var locomotionMode = useWallRunAnimation
+                ? PlayerLocomotionAnimationMode.WallRun
+                : isLadder
                 ? PlayerLocomotionAnimationMode.Ladder
                 : isGrounded ? PlayerLocomotionAnimationMode.Grounded : PlayerLocomotionAnimationMode.Airborne;
+            var wallRunSide = useWallRunAnimation ? GetWallRunSide(wallNormal, upAxis) : 0;
             var airState = locomotionMode != PlayerLocomotionAnimationMode.Airborne
                 ? PlayerAirAnimationState.None
                 : isJumping ? PlayerAirAnimationState.Rising
@@ -112,6 +133,32 @@ namespace Koiusa.SteamMultiRuntime
             SetFloat(motionSpeedParameter, motionSpeed);
             SetInt(locomotionModeParameter, (int)locomotionMode);
             SetInt(airStateParameter, (int)airState);
+            SetInt(wallRunSideParameter, wallRunSide);
+        }
+
+        private int GetWallRunSide(Vector3 wallNormal, Vector3 upAxis)
+        {
+            var characterTransform = targetRigidbody != null ? targetRigidbody.transform : transform;
+            var characterRight = Vector3.ProjectOnPlane(characterTransform.right, upAxis).normalized;
+            if (characterRight.sqrMagnitude <= 0.0001f || wallNormal.sqrMagnitude <= 0.0001f)
+            {
+                return 0;
+            }
+
+            // The contact normal points from the wall toward the character.
+            // A negative dot therefore means that the wall is on the right.
+            return Vector3.Dot(wallNormal, characterRight) < 0f ? 1 : -1;
+        }
+
+        private static float GetAlongWallSpeed(Vector3 velocity, Vector3 wallNormal, Vector3 upAxis)
+        {
+            if (wallNormal.sqrMagnitude <= 0.0001f)
+            {
+                return 0f;
+            }
+
+            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
+            return Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
         }
 
         private Vector3 GetEstimatedVelocity()

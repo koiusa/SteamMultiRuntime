@@ -7,6 +7,10 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class WallRunTraversalFeature : MonoBehaviour, IWallRunTraversalFeature, ITraversalSettingsSync
     {
+        private const float ExitAwayInputDot = 0.25f;
+        private const float EnterAlongWallInput = 0.65f;
+        private const float MaintainAlongWallInput = 0.35f;
+
         [SerializeField] private WallRunTraversalSettings settings;
 
         private Rigidbody rb;
@@ -17,9 +21,11 @@ namespace Koiusa.SteamMultiRuntime
         private bool wallRunGateClosed;
         private float wallRunInputReleaseUntilTime;
         private bool isInputReleaseGraceActive;
+        private bool applyArcImpulse;
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsWallRunning { get; private set; }
+        public Vector3 WallNormal { get; private set; }
 
         private void Awake()
         {
@@ -61,28 +67,34 @@ namespace Koiusa.SteamMultiRuntime
         public void ResetState()
         {
             IsWallRunning = false;
+            WallNormal = Vector3.zero;
             wallContactStreak = 0;
             wallRunGateClosed = false;
             wallRunInputReleaseUntilTime = 0f;
             isInputReleaseGraceActive = false;
+            applyArcImpulse = false;
         }
 
         public void NotifyWallJump()
         {
             IsWallRunning = false;
+            WallNormal = Vector3.zero;
             wallContactStreak = 0;
             wallRunGateClosed = true;
             wallRunInputReleaseUntilTime = 0f;
             isInputReleaseGraceActive = false;
+            applyArcImpulse = false;
         }
 
         public bool TryAccelerateOnWall(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, out Vector3 nextVelocity)
         {
             nextVelocity = velocity;
+            var wasWallRunning = IsWallRunning;
 
             if (traversalIntentContext != null && traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested))
             {
                 IsWallRunning = false;
+                WallNormal = Vector3.zero;
                 wallContactStreak = 0;
                 return false;
             }
@@ -90,6 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             if (!TryGetWallNormal(upAxis, out var wallNormal))
             {
                 IsWallRunning = false;
+                WallNormal = Vector3.zero;
                 wallContactStreak = 0;
                 wallRunGateClosed = false;
                 return false;
@@ -98,19 +111,15 @@ namespace Koiusa.SteamMultiRuntime
             if (wallRunGateClosed)
             {
                 IsWallRunning = false;
+                WallNormal = Vector3.zero;
                 return false;
             }
 
-            var wasWallRunning = IsWallRunning;
             if (!MeetsWallRunConditions(moveDirection, velocity, upAxis, wallNormal))
             {
                 IsWallRunning = false;
+                WallNormal = Vector3.zero;
                 wallContactStreak = 0;
-                if (wasWallRunning)
-                {
-                    wallRunGateClosed = true;
-                }
-
                 return false;
             }
 
@@ -124,20 +133,60 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             IsWallRunning = true;
+            WallNormal = wallNormal;
+            if (!wasWallRunning)
+            {
+                applyArcImpulse = true;
+            }
             nextVelocity = AccelerateOnWall(velocity, moveDirection, upAxis, wallNormal);
             return true;
         }
 
-        public Vector3 ApplyWallRunGravity(Vector3 velocity, Vector3 upAxis)
+        public Vector3 ApplyVerticalMotion(Vector3 velocity, Vector3 upAxis)
         {
-            velocity += Physics.gravity * settings.WallRunGravityMultiplier * Time.fixedDeltaTime;
             var verticalSpeed = Vector3.Dot(velocity, upAxis);
-            if (verticalSpeed < -settings.WallRunMaxFallSpeed)
+            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
+            var gravityDelta = Vector3.Dot(Physics.gravity, upAxis) * Time.fixedDeltaTime;
+            float targetVerticalSpeed;
+
+            switch (settings.VerticalMotionMode)
             {
-                velocity += upAxis * (-settings.WallRunMaxFallSpeed - verticalSpeed);
+                case WallRunVerticalMotionMode.MaintainHeight:
+                    applyArcImpulse = false;
+                    var holdAcceleration = settings.HeightHoldAcceleration > 0f
+                        ? settings.HeightHoldAcceleration
+                        : WallRunTraversalSettings.CreateDefault().HeightHoldAcceleration;
+                    targetVerticalSpeed = Mathf.MoveTowards(verticalSpeed, 0f, holdAcceleration * Time.fixedDeltaTime);
+                    break;
+
+                case WallRunVerticalMotionMode.Gravity:
+                    applyArcImpulse = false;
+                    targetVerticalSpeed = verticalSpeed + gravityDelta * Mathf.Max(0f, settings.WallRunGravityMultiplier);
+                    break;
+
+                default:
+                    if (applyArcImpulse)
+                    {
+                        var initialUpSpeed = settings.ArcInitialUpSpeed > 0f
+                            ? settings.ArcInitialUpSpeed
+                            : WallRunTraversalSettings.CreateDefault().ArcInitialUpSpeed;
+                        verticalSpeed = Mathf.Max(verticalSpeed, initialUpSpeed);
+                        applyArcImpulse = false;
+                    }
+
+                    var arcGravityMultiplier = settings.ArcGravityMultiplier > 0f
+                        ? settings.ArcGravityMultiplier
+                        : WallRunTraversalSettings.CreateDefault().ArcGravityMultiplier;
+                    targetVerticalSpeed = verticalSpeed + gravityDelta * arcGravityMultiplier;
+                    break;
             }
 
-            return velocity;
+            targetVerticalSpeed = Mathf.Max(targetVerticalSpeed, -settings.WallRunMaxFallSpeed);
+
+            // Rigidbody gravity is integrated after FixedUpdate. Offset the standard
+            // gravity step here so the selected mode describes the final velocity.
+            var prePhysicsVerticalSpeed = targetVerticalSpeed - gravityDelta;
+            return horizontalVelocity + upAxis * prePhysicsVerticalSpeed;
         }
 
         private bool MeetsWallRunConditions(Vector3 moveDirection, Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)
@@ -147,7 +196,12 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            if (!HasMoveInputTowardsWall(moveDirection, upAxis, wallNormal))
+            if (IsMoveInputAwayFromWall(moveDirection, upAxis, wallNormal))
+            {
+                return false;
+            }
+
+            if (!HasWallRunIntent(moveDirection, upAxis, wallNormal))
             {
                 if (!IsWallRunning)
                 {
@@ -172,13 +226,7 @@ namespace Koiusa.SteamMultiRuntime
                 isInputReleaseGraceActive = false;
             }
 
-            if (!HasEnoughAlongWallSpeed(velocity, upAxis, wallNormal, isInputReleaseGraceActive))
-            {
-                return false;
-            }
-
-            var upwardSpeed = Vector3.Dot(velocity, upAxis);
-            return upwardSpeed <= settings.WallRunMaxUpwardStartSpeed;
+            return true;
         }
 
         private bool IsMovingAwayFromWall(Vector3 velocity, Vector3 wallNormal)
@@ -192,7 +240,7 @@ namespace Koiusa.SteamMultiRuntime
             return awaySpeed > settings.WallRunAwayFromWallMinSpeed;
         }
 
-        private bool HasMoveInputTowardsWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
+        private bool HasWallRunIntent(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
             var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
             if (horizontalInput.sqrMagnitude <= 0.0001f)
@@ -200,23 +248,22 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var intoWallDot = Vector3.Dot(horizontalInput.normalized, -wallNormal);
-            return intoWallDot >= settings.WallRunMinInputDot;
+            var alongWallInput = Vector3.ProjectOnPlane(horizontalInput.normalized, wallNormal).magnitude;
+            // Camera-relative movement picks up a small wall-tangent component whenever
+            // the view rotates. Require a deliberate angle to enter, then use a lower
+            // threshold while already running to avoid state flicker.
+            var configuredThreshold = Mathf.Clamp01(settings.WallRunMinInputDot);
+            var threshold = IsWallRunning
+                ? Mathf.Max(configuredThreshold, MaintainAlongWallInput)
+                : Mathf.Max(configuredThreshold, EnterAlongWallInput);
+            return alongWallInput >= threshold;
         }
 
-        private bool HasEnoughAlongWallSpeed(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal, bool isInInputReleaseGrace)
+        private static bool IsMoveInputAwayFromWall(Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
-            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
-            var alongWallHorizontalSpeed = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal).magnitude;
-
-            var minSpeed = settings.WallRunMinAlongWallSpeed;
-            if (isInInputReleaseGrace)
-            {
-                // 入力リリース猶予中は必要速度閾値を緩和する
-                minSpeed *= 0.5f;
-            }
-
-            return alongWallHorizontalSpeed >= minSpeed;
+            var horizontalInput = Vector3.ProjectOnPlane(moveDirection, upAxis);
+            return horizontalInput.sqrMagnitude > 0.0001f
+                && Vector3.Dot(horizontalInput.normalized, wallNormal) > ExitAwayInputDot;
         }
 
         private float GetInputReleaseGraceTime()
@@ -234,7 +281,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private Vector3 AccelerateOnWall(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)
         {
-            var wallTangentVelocity = Vector3.ProjectOnPlane(velocity, wallNormal);
+            var verticalSpeed = Vector3.Dot(velocity, upAxis);
+            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
+            var wallTangentVelocity = Vector3.ProjectOnPlane(horizontalVelocity, wallNormal);
             var horizontalWallDirection = Vector3.ProjectOnPlane(moveDirection, upAxis);
             var fallbackDirection = Vector3.Cross(upAxis, wallNormal).normalized;
             if (fallbackDirection.sqrMagnitude <= 0.0001f)
@@ -254,8 +303,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var targetWallVelocity = alongWallDirection * settings.WallRunSpeed;
             var nextWallVelocity = Vector3.MoveTowards(wallTangentVelocity, targetWallVelocity, settings.WallRunAcceleration * Time.fixedDeltaTime);
-            var outwardComponent = Vector3.Project(velocity, wallNormal);
-            return nextWallVelocity + outwardComponent;
+            return nextWallVelocity + upAxis * verticalSpeed;
         }
 
         private static bool IsSettingsEmpty(WallRunTraversalSettings s)

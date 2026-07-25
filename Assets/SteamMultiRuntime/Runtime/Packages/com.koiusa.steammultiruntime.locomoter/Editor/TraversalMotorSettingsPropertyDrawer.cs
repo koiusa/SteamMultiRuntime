@@ -55,7 +55,6 @@ namespace Koiusa.SteamMultiRuntime
                 DrawField(ref currentY, position, property, "WallRunAcceleration", "Acceleration on wall");
                 DrawField(ref currentY, position, property, "WallRunGravityMultiplier", "Gravity multiplier on wall");
                 DrawField(ref currentY, position, property, "WallRunMaxFallSpeed", "Maximum fall speed on wall");
-                DrawField(ref currentY, position, property, "WallRunMaxUpwardStartSpeed", "Max upward speed to start wall run");
                 DrawField(ref currentY, position, property, "WallRunAwayFromWallMinSpeed", "Do not start wall run if moving away from wall faster than this");
                 DrawField(ref currentY, position, property, "WallRunInputReleaseGraceTime", "Grace time to keep wall run after releasing input");
                 EditorGUI.indentLevel--;
@@ -126,7 +125,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 EditorGUI.indentLevel++;
                 DrawField(ref currentY, position, property, "WallRunMinInputDot", "Minimum input direction dot to run");
-                DrawField(ref currentY, position, property, "WallRunMinAlongWallSpeed", "Minimum speed along wall");
                 DrawField(ref currentY, position, property, "WallMaxUpDot", "Maximum upward direction for wall detection");
                 EditorGUI.indentLevel--;
             }
@@ -158,8 +156,6 @@ namespace Koiusa.SteamMultiRuntime
             property.FindPropertyRelative("WallRunGravityMultiplier").floatValue = settings.WallRunGravityMultiplier;
             property.FindPropertyRelative("WallRunMaxFallSpeed").floatValue = settings.WallRunMaxFallSpeed;
             property.FindPropertyRelative("WallRunMinInputDot").floatValue = settings.WallRunMinInputDot;
-            property.FindPropertyRelative("WallRunMinAlongWallSpeed").floatValue = settings.WallRunMinAlongWallSpeed;
-            property.FindPropertyRelative("WallRunMaxUpwardStartSpeed").floatValue = settings.WallRunMaxUpwardStartSpeed;
             property.FindPropertyRelative("WallMaxUpDot").floatValue = settings.WallMaxUpDot;
             property.FindPropertyRelative("WallJumpUpForce").floatValue = settings.WallJumpUpForce;
             property.FindPropertyRelative("WallJumpAwayForce").floatValue = settings.WallJumpAwayForce;
@@ -204,11 +200,11 @@ namespace Koiusa.SteamMultiRuntime
             var inputFoldout = GetFoldout(property, "Input", false);
             var otherFoldout = GetFoldout(property, "Other", false);
 
-            if (wallRunFoldout) height += lineHeight * 7;
+            if (wallRunFoldout) height += lineHeight * 6;
             if (wallJumpFoldout) height += lineHeight * 4;
             if (wallSlideFoldout) height += lineHeight * 5;
             if (contactDetectionFoldout) height += lineHeight * 2;
-            if (inputFoldout) height += lineHeight * 3;
+            if (inputFoldout) height += lineHeight * 2;
             if (otherFoldout) height += lineHeight * 2;
 
             return height;

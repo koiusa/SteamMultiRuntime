@@ -116,5 +116,5 @@ namespace Koiusa.SteamMultiRuntime
                 stepAssistObstacleUpDot: 0.35f);
         }
 
-            }
-        }
+    }
+}

@@ -14,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsWallSliding { get; private set; }
+        public Vector3 WallNormal { get; private set; }
 
         private void Awake()
         {
@@ -54,6 +55,7 @@ namespace Koiusa.SteamMultiRuntime
         public void ResetState()
         {
             IsWallSliding = false;
+            WallNormal = Vector3.zero;
             wallSlideContactStreak = 0;
         }
 
@@ -63,6 +65,7 @@ namespace Koiusa.SteamMultiRuntime
             if (traversalIntentContext != null && traversalIntentContext.HasIntent(TraversalIntentFlags.JumpRequested))
             {
                 IsWallSliding = false;
+                WallNormal = Vector3.zero;
                 wallSlideContactStreak = 0;
                 return false;
             }
@@ -70,6 +73,7 @@ namespace Koiusa.SteamMultiRuntime
             if (isWallRunning)
             {
                 IsWallSliding = false;
+                WallNormal = Vector3.zero;
                 wallSlideContactStreak = 0;
                 return false;
             }
@@ -77,6 +81,7 @@ namespace Koiusa.SteamMultiRuntime
             if (!TryGetWallNormal(upAxis, out var wallNormal))
             {
                 IsWallSliding = false;
+                WallNormal = Vector3.zero;
                 wallSlideContactStreak = 0;
                 return false;
             }
@@ -85,6 +90,7 @@ namespace Koiusa.SteamMultiRuntime
             if (settings.WallSlideAwayFromWallMinSpeed > 0f && awaySpeed > settings.WallSlideAwayFromWallMinSpeed)
             {
                 IsWallSliding = false;
+                WallNormal = Vector3.zero;
                 wallSlideContactStreak = 0;
                 return false;
             }
@@ -93,6 +99,7 @@ namespace Koiusa.SteamMultiRuntime
             if (verticalSpeed >= -settings.WallSlideMinDownSpeed)
             {
                 IsWallSliding = false;
+                WallNormal = Vector3.zero;
                 wallSlideContactStreak = 0;
                 return false;
             }
@@ -104,6 +111,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (moveIntoWallDot >= settings.WallSlideExitMoveOppositeNormalDot)
                 {
                     IsWallSliding = false;
+                    WallNormal = Vector3.zero;
                     wallSlideContactStreak = 0;
                     return false;
                 }
@@ -118,15 +126,20 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            nextVelocity = upAxis * verticalSpeed;
+            // Sliding only controls the vertical component. Keeping the wall-tangent
+            // component lets the player steer along the wall and transition back to a run.
+            var wallTangentVelocity = Vector3.ProjectOnPlane(velocity, wallNormal);
+            var horizontalWallVelocity = Vector3.ProjectOnPlane(wallTangentVelocity, upAxis);
+            nextVelocity = horizontalWallVelocity + upAxis * verticalSpeed;
             nextVelocity += Physics.gravity * settings.WallSlideGravityMultiplier * Time.fixedDeltaTime;
             verticalSpeed = Vector3.Dot(nextVelocity, upAxis);
             if (verticalSpeed < -settings.WallSlideMaxFallSpeed)
             {
-                nextVelocity = upAxis * -settings.WallSlideMaxFallSpeed;
+                nextVelocity += upAxis * (-settings.WallSlideMaxFallSpeed - verticalSpeed);
             }
 
             IsWallSliding = true;
+            WallNormal = wallNormal;
             return true;
         }
 

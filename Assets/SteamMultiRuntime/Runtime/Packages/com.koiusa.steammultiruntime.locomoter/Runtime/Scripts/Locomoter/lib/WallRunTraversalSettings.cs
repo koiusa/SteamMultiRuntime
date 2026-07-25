@@ -1,5 +1,12 @@
 namespace Koiusa.SteamMultiRuntime
 {
+    public enum WallRunVerticalMotionMode
+    {
+        Arc = 0,
+        MaintainHeight = 1,
+        Gravity = 2,
+    }
+
     [System.Serializable]
     public partial struct WallRunTraversalSettings
     {
@@ -8,12 +15,14 @@ namespace Koiusa.SteamMultiRuntime
         public float WallRunGravityMultiplier;
         public float WallRunMaxFallSpeed;
         public float WallRunMinInputDot;
-        public float WallRunMinAlongWallSpeed;
-        public float WallRunMaxUpwardStartSpeed;
         public float WallMaxUpDot;
         public int WallRunStartContactFrames;
         public float WallRunAwayFromWallMinSpeed;
         public float WallRunInputReleaseGraceTime;
+        public WallRunVerticalMotionMode VerticalMotionMode;
+        public float HeightHoldAcceleration;
+        public float ArcInitialUpSpeed;
+        public float ArcGravityMultiplier;
 
         public static WallRunTraversalSettings CreateDefault()
         {
@@ -24,14 +33,15 @@ namespace Koiusa.SteamMultiRuntime
                 WallRunGravityMultiplier = 0.35f,
                 WallRunMaxFallSpeed = 2f,
                 WallRunMinInputDot = 0.15f,
-                WallRunMinAlongWallSpeed = 2f,
-                WallRunMaxUpwardStartSpeed = 0f,
                 WallMaxUpDot = 0.2f,
                 WallRunStartContactFrames = 2,
                 WallRunAwayFromWallMinSpeed = 0.15f,
                 WallRunInputReleaseGraceTime = 0.2f,
+                VerticalMotionMode = WallRunVerticalMotionMode.Arc,
+                HeightHoldAcceleration = 12f,
+                ArcInitialUpSpeed = 1.5f,
+                ArcGravityMultiplier = 0.45f,
             };
         }
-
-            }
-        }
+    }
+}

@@ -125,11 +125,12 @@ namespace Koiusa.SteamMultiRuntime
             else if (wallRunFeature != null && wallRunFeature.TryAccelerateOnWall(velocity, moveDirection, upAxis, out var wallVelocity))
             {
                 velocity = wallVelocity;
+                wallSlideFeature?.ResetState();
             }
 
-            if (wallRunFeature != null && wallRunFeature.IsWallRunning && Vector3.Dot(velocity, upAxis) < 0f)
+            if (wallRunFeature != null && wallRunFeature.IsWallRunning)
             {
-                velocity = wallRunFeature.ApplyWallRunGravity(velocity, upAxis);
+                velocity = wallRunFeature.ApplyVerticalMotion(velocity, upAxis);
             }
             else if (wallSlideFeature != null && wallSlideFeature.TryApplyWallSlide(velocity, moveDirection, upAxis, wallRunFeature != null && wallRunFeature.IsWallRunning, out var wallSlideVelocity))
             {

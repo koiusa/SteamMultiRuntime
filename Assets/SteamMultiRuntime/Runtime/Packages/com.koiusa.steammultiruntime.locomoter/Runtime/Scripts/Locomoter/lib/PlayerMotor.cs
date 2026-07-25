@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
         private PlayerMotorGrounding grounding;
+        private IPlayerTraversalCoordinator traversalCoordinator;
 
         private float jumpDetachUntilTime;
         private Vector3 inheritedGroundVelocity;
@@ -43,6 +44,7 @@ namespace Koiusa.SteamMultiRuntime
             groundMotionTracker = GetComponent<GroundMotionTracker>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             grounding = new PlayerMotorGrounding();
+            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
 
             if (IsSettingsEmpty(settings))
             {
@@ -253,7 +255,7 @@ namespace Koiusa.SteamMultiRuntime
             isAirborneFromJump = jumpResult.IsAirborneFromJump;
 
             velocity = PlayerMotorJumpLogic.ApplyExtraFallGravity(
-                !isGrounded,
+                !isGrounded && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive),
                 isOnSteepSlope,
                 upAxis,
                 settings.FallMultiplier,

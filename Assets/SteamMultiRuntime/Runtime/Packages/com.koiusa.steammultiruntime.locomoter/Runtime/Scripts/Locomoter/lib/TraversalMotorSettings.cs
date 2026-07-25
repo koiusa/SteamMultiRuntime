@@ -21,10 +21,6 @@ namespace Koiusa.SteamMultiRuntime
         public float WallRunMaxFallSpeed;
         [Unit("ドット積", "壁走行開始に必要な入力方向の最小値（-1.0-1.0）")]
         public float WallRunMinInputDot;
-        [Unit("m/s", "壁走行開始に必要な最小速度")]
-        public float WallRunMinAlongWallSpeed;
-        [Unit("m/s", "壁走行開始可能な最大上昇速度")]
-        public float WallRunMaxUpwardStartSpeed;
         [Unit("ドット積", "壁判定の最大上方向成分（0.0-1.0）")]
         public float WallMaxUpDot;
         [Unit("m/s", "壁ジャンプの上昇力")]
@@ -63,8 +59,6 @@ namespace Koiusa.SteamMultiRuntime
             float wallRunGravityMultiplier,
             float wallRunMaxFallSpeed,
             float wallRunMinInputDot,
-            float wallRunMinAlongWallSpeed,
-            float wallRunMaxUpwardStartSpeed,
             float wallMaxUpDot,
             float wallJumpUpForce,
             float wallJumpAwayForce,
@@ -87,8 +81,6 @@ namespace Koiusa.SteamMultiRuntime
             WallRunGravityMultiplier = wallRunGravityMultiplier;
             WallRunMaxFallSpeed = wallRunMaxFallSpeed;
             WallRunMinInputDot = wallRunMinInputDot;
-            WallRunMinAlongWallSpeed = wallRunMinAlongWallSpeed;
-            WallRunMaxUpwardStartSpeed = wallRunMaxUpwardStartSpeed;
             WallMaxUpDot = wallMaxUpDot;
             WallJumpUpForce = wallJumpUpForce;
             WallJumpAwayForce = wallJumpAwayForce;
@@ -115,8 +107,6 @@ namespace Koiusa.SteamMultiRuntime
                 wallRunGravityMultiplier: 0.35f,
                 wallRunMaxFallSpeed: 2f,
                 wallRunMinInputDot: 0.15f,
-                wallRunMinAlongWallSpeed: 2f,
-                wallRunMaxUpwardStartSpeed: 0f,
                 wallMaxUpDot: 0.2f,
                 wallJumpUpForce: 6.5f,
                 wallJumpAwayForce: 5f,
@@ -135,5 +125,5 @@ namespace Koiusa.SteamMultiRuntime
                 wallSlideAwayFromWallMinSpeed: 0.15f);
         }
 
-            }
-        }
+    }
+}

@@ -25,5 +25,5 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-            }
-        }
+    }
+}
