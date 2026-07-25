@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -13,6 +14,8 @@ namespace Koiusa.Keyconfig.Runtime
         private InputBindingIconResolver iconResolver;
 
         private Label statusLabel;
+        private Label inputMonitorDot;
+        private Label inputMonitorStatus;
         private DropdownField bindingGroupDropdown;
         private VisualElement mapTabBar;
         private ScrollView bindingListView;
@@ -31,6 +34,15 @@ namespace Koiusa.Keyconfig.Runtime
         private Action<int> cachedOnRebind;
         private Action<int> cachedOnReset;
         private string selectedMapName;
+        private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
+
+        private sealed class InputStateRow
+        {
+            public InputBindingService.BindingEntry Entry;
+            public VisualElement Row;
+            public Label StateLabel;
+            public InputControl Control;
+        }
 
         public KeyConfigView(UIDocument uiDocument, VisualTreeAsset layoutAsset, StyleSheet styleSheet)
         {
@@ -55,6 +67,8 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 layoutAsset.CloneTree(root);
                 statusLabel = root.Q<Label>("status-label");
+                inputMonitorDot = root.Q<Label>("input-monitor-dot");
+                inputMonitorStatus = root.Q<Label>("input-monitor-status");
                 bindingListView = root.Q<ScrollView>("binding-list-view");
 
                 var tableHeader = root.Q<VisualElement>("table-header");
@@ -184,6 +198,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             bindingListView.Clear();
             mapTabBar?.Clear();
+            inputStateRows.Clear();
 
             if (entries == null || entries.Count == 0)
             {
@@ -305,6 +320,11 @@ namespace Koiusa.Keyconfig.Runtime
                 var bindingLabel = new Label(entry.IsComposite ? string.Empty : entry.DisplayName);
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
+
+                var inputStateLabel = new Label("● 入力中");
+                inputStateLabel.AddToClassList("keyconfig-input-state");
+                inputStateLabel.style.display = DisplayStyle.None;
+                bindingCell.Add(inputStateLabel);
                 row.Add(bindingCell);
 
                 // ボタンセル
@@ -323,6 +343,57 @@ namespace Koiusa.Keyconfig.Runtime
 
                 row.Add(buttonCell);
                 bindingListView.Add(row);
+
+                if (!entry.IsComposite)
+                {
+                    inputStateRows.Add(new InputStateRow
+                    {
+                        Entry = entry,
+                        Row = row,
+                        StateLabel = inputStateLabel,
+                        Control = string.IsNullOrWhiteSpace(entry.BindingPath)
+                            ? null
+                            : InputSystem.FindControl(entry.BindingPath)
+                    });
+                }
+            }
+        }
+
+        public void UpdateInputStates(InputActionAsset inputActionAsset)
+        {
+            var activeCount = 0;
+            for (var i = 0; i < inputStateRows.Count; i++)
+            {
+                var item = inputStateRows[i];
+                var magnitude = item.Control?.EvaluateMagnitude() ?? 0f;
+                var isActive = magnitude >= 0.15f;
+
+                // Some controls do not expose a magnitude. Keep action-level input visible
+                // as a fallback for custom controls and processor-driven bindings.
+                if (!isActive && magnitude < 0f && inputActionAsset != null)
+                {
+                    var action = inputActionAsset.FindAction(item.Entry.ActionId.ToString());
+                    isActive = action != null && action.IsPressed();
+                }
+
+                item.Row.EnableInClassList("input-active", isActive);
+                item.StateLabel.style.display = isActive ? DisplayStyle.Flex : DisplayStyle.None;
+                if (isActive)
+                {
+                    activeCount++;
+                }
+            }
+
+            if (inputMonitorStatus != null)
+            {
+                inputMonitorStatus.text = activeCount > 0
+                    ? $"{activeCount} INPUT{(activeCount == 1 ? string.Empty : "S")} DETECTED"
+                    : "WAITING FOR INPUT";
+            }
+
+            if (inputMonitorDot != null)
+            {
+                inputMonitorDot.EnableInClassList("active", activeCount > 0);
             }
         }
 
@@ -347,6 +418,16 @@ namespace Koiusa.Keyconfig.Runtime
             statusLabel = new Label("Ready");
             statusLabel.style.marginBottom = 12;
             container.Add(statusLabel);
+
+            var monitor = new VisualElement();
+            monitor.AddToClassList("keyconfig-input-monitor");
+            inputMonitorDot = new Label("●");
+            inputMonitorDot.AddToClassList("keyconfig-input-monitor-dot");
+            inputMonitorStatus = new Label("WAITING FOR INPUT");
+            inputMonitorStatus.AddToClassList("keyconfig-input-monitor-status");
+            monitor.Add(inputMonitorDot);
+            monitor.Add(inputMonitorStatus);
+            container.Add(monitor);
 
             bindingGroupDropdown = new DropdownField("BindingGroup");
             bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");

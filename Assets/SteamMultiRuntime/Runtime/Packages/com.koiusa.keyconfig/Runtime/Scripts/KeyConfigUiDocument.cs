@@ -76,6 +76,14 @@ namespace Koiusa.Keyconfig.Runtime
             rebindController?.CancelRebind();
         }
 
+        private void Update()
+        {
+            if (bindingService != null && !rebindController.IsRebinding)
+            {
+                view.UpdateInputStates(bindingService.InputActionAsset);
+            }
+        }
+
         public void SetBindingGroup(string group)
         {
             bindingGroup = group?.Trim() ?? string.Empty;
