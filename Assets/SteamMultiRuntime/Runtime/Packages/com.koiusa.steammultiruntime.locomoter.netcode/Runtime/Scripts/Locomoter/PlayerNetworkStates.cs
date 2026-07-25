@@ -10,14 +10,20 @@ namespace Koiusa.SteamMultiRuntime
         public Quaternion MoveReferenceRotation;
         public int JumpToken;
         public bool IsStrafeMode;
+        public bool GrappleHeld;
+        public float ReelInput;
+        public Vector3 GrappleAimDirection;
 
-        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode)
+        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleAimDirection = default)
         {
             MoveDirection = moveDirection;
             MoveInput = moveInput;
             MoveReferenceRotation = moveReferenceRotation;
             JumpToken = jumpToken;
             IsStrafeMode = isStrafeMode;
+            GrappleHeld = grappleHeld;
+            ReelInput = reelInput;
+            GrappleAimDirection = grappleAimDirection;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -27,6 +33,37 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref MoveReferenceRotation);
             serializer.SerializeValue(ref JumpToken);
             serializer.SerializeValue(ref IsStrafeMode);
+            serializer.SerializeValue(ref GrappleHeld);
+            serializer.SerializeValue(ref ReelInput);
+            serializer.SerializeValue(ref GrappleAimDirection);
+        }
+    }
+
+    internal struct WireSwingNetworkState : INetworkSerializable, System.IEquatable<WireSwingNetworkState>
+    {
+        public bool IsAttached;
+        public Vector3 AnchorPoint;
+        public float RopeLength;
+
+        public WireSwingNetworkState(bool isAttached, Vector3 anchorPoint, float ropeLength)
+        {
+            IsAttached = isAttached;
+            AnchorPoint = anchorPoint;
+            RopeLength = ropeLength;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref IsAttached);
+            serializer.SerializeValue(ref AnchorPoint);
+            serializer.SerializeValue(ref RopeLength);
+        }
+
+        public bool Equals(WireSwingNetworkState other)
+        {
+            return IsAttached == other.IsAttached
+                && AnchorPoint == other.AnchorPoint
+                && RopeLength.Equals(other.RopeLength);
         }
     }
 

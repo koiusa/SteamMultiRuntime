@@ -15,15 +15,19 @@ namespace Koiusa.SteamMultiRuntime
             private readonly InputActionReference moveAction;
             private readonly InputActionReference jumpAction;
             private readonly InputActionReference strafeToggleAction;
+            private readonly InputAction grappleAction;
+            private readonly InputAction reelAction;
             private int jumpToken;
             private bool isStrafeMode;
             private bool isEnabled;
 
-            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction)
+            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction, InputAction grappleAction, InputAction reelAction)
             {
                 this.moveAction = moveAction;
                 this.jumpAction = jumpAction;
                 this.strafeToggleAction = strafeToggleAction;
+                this.grappleAction = grappleAction;
+                this.reelAction = reelAction;
             }
 
             public void Enable()
@@ -47,6 +51,9 @@ namespace Koiusa.SteamMultiRuntime
                     strafeToggleAction.action.Enable();
                     strafeToggleAction.action.performed += OnStrafeTogglePerformed;
                 }
+
+                grappleAction?.Enable();
+                reelAction?.Enable();
             }
 
             public void Disable()
@@ -71,6 +78,9 @@ namespace Koiusa.SteamMultiRuntime
                     moveAction.action.Disable();
                 }
 
+                grappleAction?.Disable();
+                reelAction?.Disable();
+
                 jumpToken = 0;
                 isStrafeMode = false;
             }
@@ -80,7 +90,9 @@ namespace Koiusa.SteamMultiRuntime
                 var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
                 var jumpPressed = jumpToken;
                 jumpToken = 0;
-                return new PlayerInputState(move, jumpPressed > 0);
+                var grappleHeld = grappleAction != null && grappleAction.IsPressed();
+                var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
+                return new PlayerInputState(move, jumpPressed > 0, grappleHeld, reelInput);
             }
 
             public bool GetStrafeMode() => isStrafeMode;
@@ -113,6 +125,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerMoveInputReceiver moveInputReceiver;
         private ILadderTraversalFeature ladderTraversalFeature;
         private IWallRunTraversalFeature wallRunTraversalFeature;
+        private IWireSwingTraversalFeature wireSwingFeature;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
@@ -122,6 +135,8 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerInputSyncState serverInputState;
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
+        private bool lastSentGrappleHeld;
+        private bool blockGrappleUntilRelease;
         private float nextStateSyncTime;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
@@ -137,6 +152,8 @@ namespace Koiusa.SteamMultiRuntime
             new PlayerKinematicState(0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<PlayerMovementFlagsState> netMovementFlagsState = new NetworkVariable<PlayerMovementFlagsState>(
             new PlayerMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<WireSwingNetworkState> netWireSwingState = new NetworkVariable<WireSwingNetworkState>(
+            new WireSwingNetworkState(false, Vector3.zero, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private NetworkControlPolicy ControlPolicy => NetworkControlPolicies.Get(controlMode);
         private bool UseLocalMotorState => IsSpawned && IsServer;
@@ -173,7 +190,9 @@ namespace Koiusa.SteamMultiRuntime
             baseInputSource = new InputActionPlayerInputSource(
                 profile.MoveAction,
                 profile.JumpAction,
-                profile.StrafeToggleAction);
+                profile.StrafeToggleAction,
+                profile.GrappleInputAction,
+                profile.ReelInputAction);
             activeInputSource = baseInputSource;
             injectedInputReferenceTransform = null;
 
@@ -230,6 +249,7 @@ namespace Koiusa.SteamMultiRuntime
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
             ladderTraversalFeature = GetComponent<ILadderTraversalFeature>();
             wallRunTraversalFeature = GetComponent<IWallRunTraversalFeature>();
+            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
             if (inputActionsProfile == null)
             {
@@ -239,7 +259,9 @@ namespace Koiusa.SteamMultiRuntime
             baseInputSource = new InputActionPlayerInputSource(
                 inputActionsProfile.MoveAction,
                 inputActionsProfile.JumpAction,
-                inputActionsProfile.StrafeToggleAction);
+                inputActionsProfile.StrafeToggleAction,
+                inputActionsProfile.GrappleInputAction,
+                inputActionsProfile.ReelInputAction);
             activeInputSource = baseInputSource;
         }
 
@@ -274,6 +296,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 netPlayerMotorSettings.OnValueChanged += OnPlayerMotorSettingsChanged;
                 netTraversalFeatureSettings.OnValueChanged += OnTraversalFeatureSettingsChanged;
+                netWireSwingState.OnValueChanged += OnWireSwingStateChanged;
+                ApplyWireSwingState(netWireSwingState.Value);
             }
 
             if (IsOwner)
@@ -294,6 +318,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 netPlayerMotorSettings.OnValueChanged -= OnPlayerMotorSettingsChanged;
                 netTraversalFeatureSettings.OnValueChanged -= OnTraversalFeatureSettingsChanged;
+                netWireSwingState.OnValueChanged -= OnWireSwingStateChanged;
             }
 
             activeInputSource?.Disable();
@@ -360,6 +385,9 @@ namespace Koiusa.SteamMultiRuntime
                 var emptyInputState = netInputState.Value;
                 emptyInputState.MoveDirection = Vector3.zero;
                 emptyInputState.MoveInput = Vector2.zero;
+                emptyInputState.GrappleHeld = false;
+                emptyInputState.ReelInput = 0f;
+                emptyInputState.GrappleAimDirection = Vector3.zero;
                 SubmitInput(emptyInputState);
                 return;
             }
@@ -384,7 +412,10 @@ namespace Koiusa.SteamMultiRuntime
                 moveInput,
                 referenceTransform.rotation,
                 jumpToken,
-                isStrafeMode));
+                isStrafeMode,
+                inputState.GrappleHeld,
+                inputState.ReelInput,
+                referenceTransform.forward));
         }
 
         private void SubmitInput(PlayerInputSyncState inputState)
@@ -392,7 +423,8 @@ namespace Koiusa.SteamMultiRuntime
             localInputState = inputState;
 
             var jumpChanged = inputState.JumpToken != lastSentJumpToken;
-            if (!jumpChanged && Time.unscaledTime < nextInputSendTime)
+            var grappleChanged = inputState.GrappleHeld != lastSentGrappleHeld;
+            if (!jumpChanged && !grappleChanged && Time.unscaledTime < nextInputSendTime)
                 return;
 
             var tickRate = NetworkManager != null
@@ -400,6 +432,7 @@ namespace Koiusa.SteamMultiRuntime
                 : 30;
             nextInputSendTime = Time.unscaledTime + 1f / tickRate;
             lastSentJumpToken = inputState.JumpToken;
+            lastSentGrappleHeld = inputState.GrappleHeld;
 
             if (IsServer)
                 StoreServerInput(inputState);
@@ -431,6 +464,20 @@ namespace Koiusa.SteamMultiRuntime
                 lastConsumedJumpToken = inputState.JumpToken;
             }
 
+            if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
+            {
+                wireSwingFeature.SetReelInput(inputState.ReelInput);
+                if (!inputState.GrappleHeld)
+                {
+                    blockGrappleUntilRelease = false;
+                    wireSwingFeature.SetGrappleInput(false, targetRigidbody.worldCenterOfMass, inputState.GrappleAimDirection);
+                }
+                else if (!blockGrappleUntilRelease)
+                {
+                    wireSwingFeature.SetGrappleInput(true, targetRigidbody.worldCenterOfMass, inputState.GrappleAimDirection);
+                }
+            }
+
             if (motor != null)
             {
                 var baseMotor = motor.GetComponent<IPlayerMotor>();
@@ -445,6 +492,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             motor.Tick(moveDirection, jumpThisFrame);
+            if (jumpThisFrame && inputState.GrappleHeld)
+            {
+                blockGrappleUntilRelease = true;
+            }
 
             if (Time.unscaledTime < nextStateSyncTime)
                 return;
@@ -465,6 +516,20 @@ namespace Koiusa.SteamMultiRuntime
                 ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f,
                 wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning,
                 wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : Vector3.zero);
+
+            netWireSwingState.Value = wireSwingFeature != null && wireSwingFeature.IsAttached
+                ? new WireSwingNetworkState(true, wireSwingFeature.AnchorPoint, wireSwingFeature.RopeLength)
+                : new WireSwingNetworkState(false, Vector3.zero, 0f);
+        }
+
+        private void OnWireSwingStateChanged(WireSwingNetworkState oldValue, WireSwingNetworkState newValue)
+        {
+            ApplyWireSwingState(newValue);
+        }
+
+        private void ApplyWireSwingState(WireSwingNetworkState state)
+        {
+            wireSwingFeature?.SetReplicatedState(state.IsAttached, state.AnchorPoint, state.RopeLength);
         }
 
         private void SyncMotorSettingsToNetwork()

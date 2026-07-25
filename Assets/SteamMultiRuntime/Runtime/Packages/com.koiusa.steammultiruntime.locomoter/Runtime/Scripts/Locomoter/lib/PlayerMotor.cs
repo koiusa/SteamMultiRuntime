@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private SlopeContactResolver slopeContactResolver;
         private PlayerMotorGrounding grounding;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private IWireSwingTraversalFeature wireSwingFeature;
 
         private float jumpDetachUntilTime;
         private Vector3 inheritedGroundVelocity;
@@ -34,6 +35,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => !IsGrounded && isAirborneFromJump && VerticalVelocity > 0f;
         public bool IsFallingAfterJump => !IsGrounded && isAirborneFromJump && VerticalVelocity <= 0f;
         public bool IsFreefall => !IsGrounded && !isAirborneFromJump;
+        public bool IsWireSwinging => wireSwingFeature != null && wireSwingFeature.IsEnabled && wireSwingFeature.IsAttached;
         public Vector3 InheritedGroundVelocity => inheritedGroundVelocity;
         public float HorizontalVelocity { get; private set; }
         public float VerticalVelocity { get; private set; }
@@ -46,6 +48,7 @@ namespace Koiusa.SteamMultiRuntime
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             grounding = new PlayerMotorGrounding();
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
             if (IsSettingsEmpty(settings))
             {
@@ -90,6 +93,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ResetState()
         {
+            wireSwingFeature?.Detach();
             slopeContactResolver.Clear();
             groundMotionTracker.ClearGroundContacts();
             grounding?.ResetState();
@@ -159,9 +163,16 @@ namespace Koiusa.SteamMultiRuntime
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
+            if (wireSwingFeature == null)
+            {
+                wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
+            }
+
+            var isWireSwinging = IsWireSwinging;
+            wireSwingFeature?.SetMoveDirection(moveDirection);
             var canUseGroundContacts = Time.time >= jumpDetachUntilTime;
-            var hasGroundContact = canUseGroundContacts && slopeContactResolver.IsGrounded;
-            var isGrounded = grounding != null && grounding.ResolveGroundedState(
+            var hasGroundContact = !isWireSwinging && canUseGroundContacts && slopeContactResolver.IsGrounded;
+            var isGrounded = !isWireSwinging && grounding != null && grounding.ResolveGroundedState(
                 canUseGroundContacts,
                 hasGroundContact,
                 isAirborneFromJump,
@@ -220,7 +231,7 @@ namespace Koiusa.SteamMultiRuntime
                     settings,
                     forcedStrafeMode);
             }
-            else
+            else if (!isWireSwinging)
             {
                 velocity = PlayerMotorMovementLogic.AccelerateInAir(
                     velocity,
@@ -240,6 +251,16 @@ namespace Koiusa.SteamMultiRuntime
                 settings,
                 forcedStrafeMode);
             rb.MoveRotation(nextRotation);
+
+            if (isWireSwinging && jumpRequested)
+            {
+                wireSwingFeature.Detach(true);
+                isWireSwinging = false;
+                jumpRequested = false;
+                jumpDetachUntilTime = Time.time + settings.JumpDetachDuration;
+                groundMotionTracker.ClearGroundContacts();
+                slopeContactResolver.Clear();
+            }
 
             var jumpResult = PlayerMotorJumpLogic.ApplyJumpIfRequested(
                 jumpRequested,
@@ -261,7 +282,9 @@ namespace Koiusa.SteamMultiRuntime
             isAirborneFromJump = jumpResult.IsAirborneFromJump;
 
             velocity = PlayerMotorJumpLogic.ApplyExtraFallGravity(
-                !isGrounded && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive),
+                !isGrounded
+                    && !isWireSwinging
+                    && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive),
                 isOnSteepSlope,
                 upAxis,
                 settings.FallMultiplier,

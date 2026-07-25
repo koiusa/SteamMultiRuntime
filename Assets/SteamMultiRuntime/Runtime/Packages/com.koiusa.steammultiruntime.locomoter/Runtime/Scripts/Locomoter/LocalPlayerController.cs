@@ -14,15 +14,19 @@ namespace Koiusa.SteamMultiRuntime
             private readonly InputActionReference moveAction;
             private readonly InputActionReference jumpAction;
             private readonly InputActionReference strafeToggleAction;
+            private readonly InputAction grappleAction;
+            private readonly InputAction reelAction;
             private int jumpToken;
             private bool isStrafeMode;
             private bool isEnabled;
 
-            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction)
+            public InputActionPlayerInputSource(InputActionReference moveAction, InputActionReference jumpAction, InputActionReference strafeToggleAction, InputAction grappleAction, InputAction reelAction)
             {
                 this.moveAction = moveAction;
                 this.jumpAction = jumpAction;
                 this.strafeToggleAction = strafeToggleAction;
+                this.grappleAction = grappleAction;
+                this.reelAction = reelAction;
             }
 
             public void Enable()
@@ -46,6 +50,9 @@ namespace Koiusa.SteamMultiRuntime
                     strafeToggleAction.action.Enable();
                     strafeToggleAction.action.performed += OnStrafeTogglePerformed;
                 }
+
+                grappleAction?.Enable();
+                reelAction?.Enable();
             }
 
             public void Disable()
@@ -70,6 +77,9 @@ namespace Koiusa.SteamMultiRuntime
                     moveAction.action.Disable();
                 }
 
+                grappleAction?.Disable();
+                reelAction?.Disable();
+
                 jumpToken = 0;
                 isStrafeMode = false;
             }
@@ -79,7 +89,9 @@ namespace Koiusa.SteamMultiRuntime
                 var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
                 var jumpPressed = jumpToken;
                 jumpToken = 0;
-                return new PlayerInputState(move, jumpPressed > 0);
+                var grappleHeld = grappleAction != null && grappleAction.IsPressed();
+                var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
+                return new PlayerInputState(move, jumpPressed > 0, grappleHeld, reelInput);
             }
 
             public bool GetStrafeMode() => isStrafeMode;
@@ -105,11 +117,16 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionPlayerInputSource inputSource;
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
+        private IWireSwingTraversalFeature wireSwingFeature;
         private Vector3 moveDirection;
         private Vector2 moveInput;
         private int jumpToken;
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
+        private bool grappleHeld;
+        private float reelInput;
+        private Vector3 grappleAimDirection;
+        private bool blockGrappleUntilRelease;
 
         public bool IsGrounded => motor != null && motor.IsGrounded;
         public bool IsJumping => motor != null && motor.IsJumping;
@@ -142,7 +159,9 @@ namespace Koiusa.SteamMultiRuntime
             inputSource = new InputActionPlayerInputSource(
                 profile.MoveAction,
                 profile.JumpAction,
-                profile.StrafeToggleAction);
+                profile.StrafeToggleAction,
+                profile.GrappleInputAction,
+                profile.ReelInputAction);
 
             if (isActiveAndEnabled)
             {
@@ -162,6 +181,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
+            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
             if (inputActionsProfile == null)
             {
@@ -173,7 +193,9 @@ namespace Koiusa.SteamMultiRuntime
             inputSource = new InputActionPlayerInputSource(
                 inputActionsProfile.MoveAction,
                 inputActionsProfile.JumpAction,
-                inputActionsProfile.StrafeToggleAction);
+                inputActionsProfile.StrafeToggleAction,
+                inputActionsProfile.GrappleInputAction,
+                inputActionsProfile.ReelInputAction);
 
             if (cameraTransform == null && Camera.main != null)
             {
@@ -195,6 +217,10 @@ namespace Koiusa.SteamMultiRuntime
             jumpToken = 0;
             lastConsumedJumpToken = 0;
             isStrafeMode = false;
+            grappleHeld = false;
+            reelInput = 0f;
+            grappleAimDirection = Vector3.zero;
+            blockGrappleUntilRelease = false;
         }
 
         private void Update()
@@ -209,6 +235,9 @@ namespace Koiusa.SteamMultiRuntime
             moveInput = inputState.Move;
             Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
             moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
+            grappleHeld = inputState.GrappleHeld;
+            reelInput = inputState.ReelInput;
+            grappleAimDirection = referenceTransform.forward;
 
             if (inputState.JumpPressed)
             {
@@ -237,9 +266,27 @@ namespace Koiusa.SteamMultiRuntime
                 baseMotor.SetStrafeMode(isStrafeMode);
             }
 
+            if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
+            {
+                wireSwingFeature.SetReelInput(reelInput);
+                if (!grappleHeld)
+                {
+                    blockGrappleUntilRelease = false;
+                    wireSwingFeature.SetGrappleInput(false, targetRigidbody.worldCenterOfMass, grappleAimDirection);
+                }
+                else if (!blockGrappleUntilRelease)
+                {
+                    wireSwingFeature.SetGrappleInput(true, targetRigidbody.worldCenterOfMass, grappleAimDirection);
+                }
+            }
+
             moveInputReceiver?.SetMoveInput(moveInput);
             moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);
             motor.Tick(moveDirection, jumpThisFrame);
+            if (jumpThisFrame && grappleHeld)
+            {
+                blockGrappleUntilRelease = true;
+            }
         }
 
     }

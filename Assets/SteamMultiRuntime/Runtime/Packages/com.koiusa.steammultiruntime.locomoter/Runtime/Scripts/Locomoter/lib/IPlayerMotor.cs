@@ -10,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsJumping { get; }
         bool IsFallingAfterJump { get; }
         bool IsFreefall { get; }
+        bool IsWireSwinging { get; }
         Vector3 InheritedGroundVelocity { get; }
         float HorizontalVelocity { get; }
         float VerticalVelocity { get; }

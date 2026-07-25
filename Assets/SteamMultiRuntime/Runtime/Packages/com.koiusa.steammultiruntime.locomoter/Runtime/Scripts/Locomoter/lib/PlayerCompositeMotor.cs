@@ -10,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody rb;
         private IPlayerMotor baseMotor;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private IWireSwingTraversalFeature wireSwingFeature;
         private Vector2 rawMoveInput;
         private Quaternion moveReferenceRotation;
 
@@ -19,6 +20,7 @@ namespace Koiusa.SteamMultiRuntime
             rb = GetComponent<Rigidbody>();
             baseMotor = GetComponent<IPlayerMotor>();
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
             moveReferenceRotation = transform.rotation;
         }
 
@@ -67,7 +69,9 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsGrounded => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsGrounded;
         public bool IsJumping => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsJumping;
         public bool IsFallingAfterJump => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFallingAfterJump;
-        public bool IsTraversalActive => traversalCoordinator != null && traversalCoordinator.IsEnabled && traversalCoordinator.IsTraversalActive;
+        public bool IsTraversalActive =>
+            (traversalCoordinator != null && traversalCoordinator.IsEnabled && traversalCoordinator.IsTraversalActive)
+            || (wireSwingFeature != null && wireSwingFeature.IsEnabled && wireSwingFeature.IsAttached);
         public bool IsFreefall => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFreefall && !IsTraversalActive;
         public Vector3 InheritedGroundVelocity => baseMotor != null && baseMotor.IsEnabled ? baseMotor.InheritedGroundVelocity : Vector3.zero;
 
@@ -103,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             baseMotor?.ResetState();
             traversalCoordinator?.ResetState();
+            wireSwingFeature?.Detach();
         }
 
         public void SetMoveInput(Vector2 moveInput)
@@ -133,6 +138,11 @@ namespace Koiusa.SteamMultiRuntime
             if (traversalCoordinator == null)
             {
                 traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            }
+
+            if (wireSwingFeature == null)
+            {
+                wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
             }
 
             baseMotor.Tick(moveDirection, jumpRequested);

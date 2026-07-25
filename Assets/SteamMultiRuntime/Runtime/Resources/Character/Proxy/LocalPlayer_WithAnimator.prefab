@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 2504532941486712691}
   - component: {fileID: 937887151947646620}
   - component: {fileID: 6842739510264837102}
+  - component: {fileID: -3038119161856350272}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
   m_TagString: Untagged
@@ -33,18 +34,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &6842739510264837102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 443490f804254816902f9e95af5f1a5b, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerDisplayName
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0
@@ -370,10 +359,14 @@ MonoBehaviour:
     DirectionalDetachReattachDelay: 0
     JumpDetachReattachDelay: 0.12
     WallTraversalBlockDuration: 0.3
-    ClimbAxisLockEnterThreshold: 0.2
     LateralDetachInputThreshold: 0.2
     GroundEnterDetachGraceTime: 0.2
     FacingRotationSpeed: 720
+    SideViewEnterFaceAlignment: 0
+    SideViewExitFaceAlignment: 0
+    LateralMoveSpeed: 0
+    LateralMoveAcceleration: 0
+    LateralEdgePadding: 0
 --- !u!114 &937887151947646620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -393,6 +386,51 @@ MonoBehaviour:
   onRecovered:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6842739510264837102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 443490f804254816902f9e95af5f1a5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerDisplayName
+--- !u!114 &-3038119161856350272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingTraversalFeature
+  grappleAction: {fileID: 0}
+  moveAction: {fileID: 0}
+  reelAction: {fileID: 0}
+  jumpAction: {fileID: 0}
+  aimTransform: {fileID: 0}
+  wireOrigin: {fileID: 0}
+  maximumRange: 45
+  grappleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  triggerInteraction: 1
+  minimumRopeLength: 2
+  ropeSlack: 0.15
+  pullAcceleration: 55
+  swingAcceleration: 24
+  reelSpeed: 12
+  releaseBoost: 2.5
+  radialVelocityDamping: 1
+  lineRenderer: {fileID: 0}
+  wireWidth: 0.035
+  wireColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,6 +501,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
   refreshInterval: 1
   labelWidth: 88
+  labelMaxWidth: 360
   labelHeight: 24
   fadeStartDistance: 8
   fadeEndDistance: 20
