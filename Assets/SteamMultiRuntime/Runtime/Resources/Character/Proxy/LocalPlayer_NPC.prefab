@@ -344,10 +344,14 @@ MonoBehaviour:
     DirectionalDetachReattachDelay: 0
     JumpDetachReattachDelay: 0.12
     WallTraversalBlockDuration: 0.3
-    ClimbAxisLockEnterThreshold: 0.2
     LateralDetachInputThreshold: 0.2
     GroundEnterDetachGraceTime: 0.2
     FacingRotationSpeed: 720
+    SideViewEnterFaceAlignment: 0
+    SideViewExitFaceAlignment: 0
+    LateralMoveSpeed: 0
+    LateralMoveAcceleration: 0
+    LateralEdgePadding: 0
 --- !u!114 &937887151947646620
 MonoBehaviour:
   m_ObjectHideFlags: 0
