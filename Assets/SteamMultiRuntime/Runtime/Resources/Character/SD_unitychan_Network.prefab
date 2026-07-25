@@ -5764,18 +5764,9 @@ MonoBehaviour:
   targetRigidbody: {fileID: 0}
   horizontalSpeedParameter: Speed
   verticalSpeedParameter: VerticalVelocity
-  groundedParameter: IsGrounded
   motionSpeedParameter: MotionSpeed
-  jumpingParameter: IsJumping
-  freefallParameter: IsFreefall
-  fallingAfterJumpParameter: IsFallingAfterJump
-  inputForwardParameter: InputForward
-  inputRightParameter: InputRight
-  moveDirectionForwardParameter: MoveDirectionForward
-  moveDirectionRightParameter: MoveDirectionRight
-  strafeModeParameter: IsStrafeMode
-  animationFinishedParameter: IsAnimationFinished
-  animationFinishedLayerIndex: 0
+  locomotionModeParameter: LocomotionMode
+  airStateParameter: AirState
   speedDampTime: 0.08
   motionSpeedMultiplier: 2
 --- !u!114 &4922140726917305977
@@ -5831,7 +5822,7 @@ MonoBehaviour:
   UseHumanBones: 1
   SpeedParamName: Speed
   MinFootstepSpeed: 0.1
-  GroundedParamName: IsGrounded
+  LocomotionModeParamName: LocomotionMode
   RequireGroundedForFootstep: 1
   RequireGroundedForLand: 1
   RequireGroundedTransitionForLand: 1

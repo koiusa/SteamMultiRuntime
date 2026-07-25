@@ -6,7 +6,5 @@ namespace Koiusa.SteamMultiRuntime
     {
         Animator TargetAnimator { get; }
         void SetTargetAnimator(Animator animator);
-        bool IsCurrentStateFinished(int layerIndex);
-        bool IsStateFinished(int stateShortNameHash, int layerIndex);
     }
 }

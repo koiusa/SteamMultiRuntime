@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Serialization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -29,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool UseHumanBones = true;
 
         private int _animIDSpeed;
-        private int _animIDGrounded;
+        private int _animIDLocomotionMode;
         private int _animIDFallSpeed;
 
         [Header("Animator Conditions")]
@@ -39,13 +40,14 @@ namespace Koiusa.SteamMultiRuntime
         [Tooltip("Minimum speed required to play footstep.")]
         public float MinFootstepSpeed = 0.1f;
 
-        [Tooltip("Animator bool parameter name used to check grounded state.")]
-        public string GroundedParamName = "IsGrounded";
+        [FormerlySerializedAs("GroundedParamName")]
+        [Tooltip("Animator int parameter used to check locomotion mode. Grounded must be 0.")]
+        public string LocomotionModeParamName = "LocomotionMode";
 
-        [Tooltip("If true, footsteps are played only when grounded parameter is true.")]
+        [Tooltip("If true, footsteps are played only when LocomotionMode is Grounded (0).")]
         public bool RequireGroundedForFootstep = true;
 
-        [Tooltip("If true, landing is played only when grounded parameter is true.")]
+        [Tooltip("If true, landing is played only when LocomotionMode is Grounded (0).")]
         public bool RequireGroundedForLand = true;
 
         [Tooltip("If true, landing is played only when grounded transitions from false to true.")]
@@ -92,7 +94,7 @@ namespace Koiusa.SteamMultiRuntime
         public float FootstepAudioVolume = 1f;
 
         private bool _hasSpeedParam;
-        private bool _hasGroundedParam;
+        private bool _hasLocomotionModeParam;
         private bool _hasFallSpeedParam;
         private float _lastLandTime = -10f;
         private bool _hasGroundedState;
@@ -175,15 +177,15 @@ namespace Koiusa.SteamMultiRuntime
             TargetAnimator = animator;
 
             _animIDSpeed = Animator.StringToHash(SpeedParamName);
-            _animIDGrounded = Animator.StringToHash(GroundedParamName);
+            _animIDLocomotionMode = Animator.StringToHash(LocomotionModeParamName);
             _animIDFallSpeed = Animator.StringToHash(FallSpeedParamName);
             _hasSpeedParam = HasAnimatorParam(TargetAnimator, _animIDSpeed, AnimatorControllerParameterType.Float);
-            _hasGroundedParam = HasAnimatorParam(TargetAnimator, _animIDGrounded, AnimatorControllerParameterType.Bool);
+            _hasLocomotionModeParam = HasAnimatorParam(TargetAnimator, _animIDLocomotionMode, AnimatorControllerParameterType.Int);
             _hasFallSpeedParam = HasAnimatorParam(TargetAnimator, _animIDFallSpeed, AnimatorControllerParameterType.Float);
 
-            if (_hasGroundedParam)
+            if (_hasLocomotionModeParam)
             {
-                _prevGrounded = TargetAnimator.GetBool(_animIDGrounded);
+                _prevGrounded = IsAnimatorGrounded();
                 _hasGroundedState = true;
                 _pendingLandFromTransition = false;
             }
@@ -287,7 +289,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (TargetAnimator == null) return;
             if (_hasSpeedParam && TargetAnimator.GetFloat(_animIDSpeed) < MinFootstepSpeed) return;
-            if (RequireGroundedForFootstep && _hasGroundedParam && !TargetAnimator.GetBool(_animIDGrounded)) return;
+            if (RequireGroundedForFootstep && _hasLocomotionModeParam && !IsAnimatorGrounded()) return;
 
             var source = FootstepAudioSource;
             if (source == null) return;
@@ -301,9 +303,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void UpdateGroundedTransitionState()
         {
-            if (TargetAnimator == null || !_hasGroundedParam) return;
+            if (TargetAnimator == null || !_hasLocomotionModeParam) return;
 
-            var grounded = TargetAnimator.GetBool(_animIDGrounded);
+            var grounded = IsAnimatorGrounded();
 
             if (_hasGroundedState)
             {
@@ -326,8 +328,8 @@ namespace Koiusa.SteamMultiRuntime
 
             UpdateGroundedTransitionState();
 
-            if (RequireGroundedForLand && _hasGroundedParam && !TargetAnimator.GetBool(_animIDGrounded)) return;
-            if (RequireGroundedTransitionForLand && _hasGroundedParam && !_pendingLandFromTransition) return;
+            if (RequireGroundedForLand && _hasLocomotionModeParam && !IsAnimatorGrounded()) return;
+            if (RequireGroundedTransitionForLand && _hasLocomotionModeParam && !_pendingLandFromTransition) return;
             if (RequireFallSpeedForLand && _hasFallSpeedParam && TargetAnimator.GetFloat(_animIDFallSpeed) < FallSpeedForLandThreshold) return;
             if (Time.time - _lastLandTime < MinLandInterval) return;
 
@@ -342,6 +344,11 @@ namespace Koiusa.SteamMultiRuntime
             source.maxDistance = Mathf.Max(source.minDistance + 0.01f, MaxDistance);
             source.transform.position = worldPosition;
             source.Play();
+        }
+
+        private bool IsAnimatorGrounded()
+        {
+            return TargetAnimator != null && TargetAnimator.GetInteger(_animIDLocomotionMode) == 0;
         }
 
         private void ConfigureAudioSource(AudioSource source)

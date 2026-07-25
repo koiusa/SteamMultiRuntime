@@ -140,48 +140,6 @@ namespace Koiusa.SteamMultiRuntime
             CacheParameterHashes();
         }
 
-        public bool IsCurrentStateFinished(int layerIndex)
-        {
-            if (targetAnimator == null || layerIndex < 0 || layerIndex >= targetAnimator.layerCount)
-            {
-                return false;
-            }
-
-            if (targetAnimator.IsInTransition(layerIndex))
-            {
-                return false;
-            }
-
-            var stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(layerIndex);
-            if (stateInfo.loop)
-            {
-                return false;
-            }
-
-            return stateInfo.normalizedTime >= 1f;
-        }
-
-        public bool IsStateFinished(int stateShortNameHash, int layerIndex)
-        {
-            if (targetAnimator == null || stateShortNameHash == 0 || layerIndex < 0 || layerIndex >= targetAnimator.layerCount)
-            {
-                return false;
-            }
-
-            if (targetAnimator.IsInTransition(layerIndex))
-            {
-                return false;
-            }
-
-            var stateInfo = targetAnimator.GetCurrentAnimatorStateInfo(layerIndex);
-            if (stateInfo.shortNameHash != stateShortNameHash || stateInfo.loop)
-            {
-                return false;
-            }
-
-            return stateInfo.normalizedTime >= 1f;
-        }
-
         private void OnValidate()
         {
             CacheParameterHashes();
