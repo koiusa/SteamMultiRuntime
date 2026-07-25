@@ -241,19 +241,5 @@ namespace Koiusa.SteamMultiRuntime
             motor.Tick(moveDirection, jumpThisFrame);
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            motor?.OnCollisionEnter(collision);
-        }
-
-        private void OnCollisionStay(Collision collision)
-        {
-            motor?.OnCollisionStay(collision);
-        }
-
-        private void OnCollisionExit(Collision collision)
-        {
-            motor?.OnCollisionExit(collision);
-        }
     }
 }

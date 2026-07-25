@@ -96,17 +96,17 @@ namespace Koiusa.SteamMultiRuntime
             var isJumping = playerController != null && playerController.IsJumping;
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
-            var hasTraversalState = traversalCoordinator != null;
-            var isLadder = hasTraversalState
-                ? traversalCoordinator.CurrentState == PlayerTraversalState.Ladder
+            var hasTraversalCoordinator = traversalCoordinator != null;
+            var isLadder = hasTraversalCoordinator
+                ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.Ladder
                 : playerLadderState != null
                     ? playerLadderState.IsOnLadder
                     : ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
             var ladderSpeed = playerLadderState != null
                 ? playerLadderState.LadderSpeed
                 : ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f;
-            var isWallRunning = hasTraversalState
-                ? traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
+            var isWallRunning = hasTraversalCoordinator
+                ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
                 : wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
             var wallNormal = isWallRunning ? wallRunTraversalFeature.WallNormal : Vector3.zero;
             var useWallRunAnimation = isWallRunning;

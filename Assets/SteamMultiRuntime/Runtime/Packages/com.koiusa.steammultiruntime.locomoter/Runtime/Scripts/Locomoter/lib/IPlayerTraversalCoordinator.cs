@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
 
     public interface IPlayerTraversalCoordinator
     {
+        bool IsEnabled { get; }
         PlayerTraversalState CurrentState { get; }
         float StateElapsedTime { get; }
         bool IsTraversalActive { get; }

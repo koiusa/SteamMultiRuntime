@@ -386,21 +386,6 @@ namespace Koiusa.SteamMultiRuntime
                 ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f);
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            motor?.OnCollisionEnter(collision);
-        }
-
-        private void OnCollisionStay(Collision collision)
-        {
-            motor?.OnCollisionStay(collision);
-        }
-
-        private void OnCollisionExit(Collision collision)
-        {
-            motor?.OnCollisionExit(collision);
-        }
-
         private void SyncMotorSettingsToNetwork()
         {
             var baseMotor = motor?.GetComponent<IPlayerMotor>();

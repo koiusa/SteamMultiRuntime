@@ -29,6 +29,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool wasInitialized;
 
         public bool IsGrounded { get; private set; }
+        public bool IsEnabled => isActiveAndEnabled;
         public bool IsAirborneFromJump => isAirborneFromJump;
         public bool IsJumping => !IsGrounded && isAirborneFromJump && VerticalVelocity > 0f;
         public bool IsFallingAfterJump => !IsGrounded && isAirborneFromJump && VerticalVelocity <= 0f;
@@ -142,6 +143,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             if (rb == null || rb.isKinematic)
             {
                 IsGrounded = true;

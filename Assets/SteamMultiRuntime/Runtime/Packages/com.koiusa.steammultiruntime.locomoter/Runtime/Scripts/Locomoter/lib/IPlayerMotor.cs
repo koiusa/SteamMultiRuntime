@@ -4,6 +4,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     public interface IPlayerMotor
     {
+        bool IsEnabled { get; }
         bool IsGrounded { get; }
         bool IsAirborneFromJump { get; }
         bool IsJumping { get; }
@@ -19,8 +20,5 @@ namespace Koiusa.SteamMultiRuntime
 
         void ResetState();
         void Tick(Vector3 moveDirection, bool jumpRequested);
-        void OnCollisionEnter(Collision collision);
-        void OnCollisionStay(Collision collision);
-        void OnCollisionExit(Collision collision);
     }
 }

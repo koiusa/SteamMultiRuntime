@@ -220,21 +220,6 @@ namespace Koiusa.SteamMultiRuntime
                 _agent.nextPosition = _rigidbody.position;
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            _motor?.OnCollisionEnter(collision);
-        }
-
-        private void OnCollisionStay(Collision collision)
-        {
-            _motor?.OnCollisionStay(collision);
-        }
-
-        private void OnCollisionExit(Collision collision)
-        {
-            _motor?.OnCollisionExit(collision);
-        }
-
         private void OnRandomDestinationNeeded()
         {
             speed.RandomizeForSegment();

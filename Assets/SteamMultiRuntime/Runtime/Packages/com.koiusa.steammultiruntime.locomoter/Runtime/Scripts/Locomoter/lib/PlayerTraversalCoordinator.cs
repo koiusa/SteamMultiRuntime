@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private float stateEnteredAt;
 
         public TraversalIntentFlags CurrentIntentFlags { get; private set; }
+        public bool IsEnabled => isActiveAndEnabled;
         public PlayerTraversalState CurrentState { get; private set; } = PlayerTraversalState.Grounded;
         public float StateElapsedTime => Mathf.Max(0f, Time.time - stateEnteredAt);
 
@@ -30,9 +31,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             get
             {
-                return CurrentState == PlayerTraversalState.WallRun
+                return IsEnabled && (CurrentState == PlayerTraversalState.WallRun
                     || CurrentState == PlayerTraversalState.WallSlide
-                    || CurrentState == PlayerTraversalState.Ladder;
+                    || CurrentState == PlayerTraversalState.Ladder);
             }
         }
 
@@ -54,6 +55,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, bool jumpRequested, bool isGrounded)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             var wallRunFeature = GetComponent<IWallRunTraversalFeature>();
             var wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
             var wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();

@@ -62,12 +62,12 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public bool IsGrounded => baseMotor != null && baseMotor.IsGrounded;
-        public bool IsJumping => baseMotor != null && baseMotor.IsJumping;
-        public bool IsFallingAfterJump => baseMotor != null && baseMotor.IsFallingAfterJump;
-        public bool IsTraversalActive => traversalCoordinator != null && traversalCoordinator.IsTraversalActive;
-        public bool IsFreefall => baseMotor != null && baseMotor.IsFreefall && !IsTraversalActive;
-        public Vector3 InheritedGroundVelocity => baseMotor != null ? baseMotor.InheritedGroundVelocity : Vector3.zero;
+        public bool IsGrounded => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsGrounded;
+        public bool IsJumping => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsJumping;
+        public bool IsFallingAfterJump => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFallingAfterJump;
+        public bool IsTraversalActive => traversalCoordinator != null && traversalCoordinator.IsEnabled && traversalCoordinator.IsTraversalActive;
+        public bool IsFreefall => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFreefall && !IsTraversalActive;
+        public Vector3 InheritedGroundVelocity => baseMotor != null && baseMotor.IsEnabled ? baseMotor.InheritedGroundVelocity : Vector3.zero;
 
         public float HorizontalVelocity
         {
@@ -105,12 +105,17 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetMoveInput(Vector2 moveInput)
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+
             rawMoveInput = moveInput;
         }
 
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
-            if (baseMotor == null)
+            if (!isActiveAndEnabled || baseMotor == null || !baseMotor.IsEnabled)
             {
                 return;
             }
@@ -121,22 +126,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             baseMotor.Tick(moveDirection, jumpRequested);
-            traversalCoordinator?.ApplyTraversal(moveDirection, rawMoveInput, jumpRequested, baseMotor.IsGrounded);
-        }
-
-        public void OnCollisionEnter(Collision collision)
-        {
-            baseMotor?.OnCollisionEnter(collision);
-        }
-
-        public void OnCollisionStay(Collision collision)
-        {
-            baseMotor?.OnCollisionStay(collision);
-        }
-
-        public void OnCollisionExit(Collision collision)
-        {
-            baseMotor?.OnCollisionExit(collision);
+            if (traversalCoordinator != null && traversalCoordinator.IsEnabled)
+            {
+                traversalCoordinator.ApplyTraversal(moveDirection, rawMoveInput, jumpRequested, baseMotor.IsGrounded);
+            }
         }
 
         private static Vector3 GetUpAxis()
