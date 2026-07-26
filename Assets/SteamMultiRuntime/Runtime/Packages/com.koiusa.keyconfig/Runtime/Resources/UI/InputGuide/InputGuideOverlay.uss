@@ -50,6 +50,7 @@
 .keyboard-row { flex-direction: row; height: 48px; }
 .keyboard-row-offset { padding-left: 47px; }
 .keyboard-gap { width: 94px; }
+.keyboard-gap-one-right { width: 141px; }
 .keyboard-gap-small { width: 47px; }
 
 .keycap {

@@ -21,7 +21,7 @@
                     <ui:VisualElement class="keyboard-row keyboard-row-offset">
                         <ui:VisualElement name="control-w" class="keycap"><ui:Label text="W" class="keycap-name" /></ui:VisualElement>
                         <ui:VisualElement name="control-e" class="keycap"><ui:Label text="E" class="keycap-name" /></ui:VisualElement>
-                        <ui:VisualElement class="keyboard-gap" />
+                        <ui:VisualElement class="keyboard-gap keyboard-gap-one-right" />
                         <ui:VisualElement name="control-uparrow" class="keycap keycap-arrow"><ui:Label text="▲" class="keycap-name" /></ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement class="keyboard-row">
