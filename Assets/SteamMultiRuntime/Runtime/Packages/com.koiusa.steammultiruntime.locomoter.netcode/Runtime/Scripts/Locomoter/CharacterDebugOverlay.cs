@@ -108,7 +108,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ResolveReferences()
         {
-            var root = targetRoot != null ? targetRoot : transform.parent;
+            var root = targetRoot != null ? targetRoot : FindPlayerRoot();
 
             playerController = root.GetComponent<IPlayerController>();
             targetNetworkBehaviour = root.GetComponent<NetworkBehaviour>();
@@ -127,6 +127,34 @@ namespace Koiusa.SteamMultiRuntime
             {
                 targetFaceAnimator = FindFaceAnimator(root);
             }
+        }
+
+        private Transform FindPlayerRoot()
+        {
+            var current = transform;
+            while (current != null)
+            {
+                if (current.GetComponent<IPlayerController>() != null)
+                {
+                    return current;
+                }
+
+                current = current.parent;
+            }
+
+            current = transform;
+            while (current != null)
+            {
+                if (current.GetComponent<Rigidbody>() != null ||
+                    current.GetComponent<NetworkBehaviour>() != null)
+                {
+                    return current;
+                }
+
+                current = current.parent;
+            }
+
+            return transform;
         }
 
         private bool CanRenderForThisInstance()
