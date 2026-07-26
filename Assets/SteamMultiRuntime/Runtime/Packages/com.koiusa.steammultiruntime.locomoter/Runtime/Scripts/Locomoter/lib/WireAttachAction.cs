@@ -10,11 +10,11 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsEnabled => isActiveAndEnabled;
         private void Awake() { connection = GetComponent<IWireConnection>(); targeting = GetComponent<IWireGrappleTargetingFeature>(); }
         private void OnDisable() { blockedUntilRelease = false; connection?.Detach(); }
-        public void SetInput(bool held, bool fireRequested, Vector3 origin, Vector3 aimDirection)
+        public void SetInput(bool held, bool fireRequested, WireAimResult aimResult)
         {
             if (!held) { blockedUntilRelease = false; connection?.Detach(); return; }
-            if (!fireRequested || blockedUntilRelease || connection == null || connection.IsAttached || targeting == null || !targeting.IsEnabled) return;
-            if (targeting.TryResolveAnchor(origin, aimDirection, out var point, out var anchor)) connection.Attach(point, anchor);
+            if (!fireRequested || !aimResult.CanAttach || blockedUntilRelease || connection == null || connection.IsAttached) return;
+            connection.Attach(aimResult.AttachPoint, aimResult.AnchorTransform);
         }
         public void DetachUntilInputRelease() { blockedUntilRelease = true; connection?.Detach(); }
     }

@@ -292,7 +292,7 @@ namespace Koiusa.SteamMultiRuntime
                 emptyInputState.MoveInput = Vector2.zero;
                 emptyInputState.GrappleHeld = false;
                 emptyInputState.ReelInput = 0f;
-                emptyInputState.GrappleAimDirection = Vector3.zero;
+                emptyInputState.GrappleTargetPoint = Vector3.zero;
                 SubmitInput(emptyInputState);
                 return;
             }
@@ -317,9 +317,9 @@ namespace Koiusa.SteamMultiRuntime
             var showAimCursor = inputState.GrappleHeld
                 || (baseInputSource != null && baseInputSource.IsAimCursorRecentlyMoved);
             var grappleTargetPoint = default(Vector3);
-            Collider grappleTargetCollider = null;
-            var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
-                ? PlayerPointerAim.ResolveDirection(
+            if (activeInputSource == baseInputSource && injectedInputReferenceTransform == null)
+            {
+                PlayerPointerAim.ResolveDirection(
                     cameraTransform,
                     referenceTransform,
                     targetRigidbody.worldCenterOfMass,
@@ -327,14 +327,17 @@ namespace Koiusa.SteamMultiRuntime
                     hasAimPoint,
                     aimPoint,
                     out grappleTargetPoint,
-                    out grappleTargetCollider)
-                : referenceTransform.forward;
+                    out _);
+            }
+            else
+            {
+                grappleTargetPoint = targetRigidbody.worldCenterOfMass + referenceTransform.forward * 1000f;
+            }
             traversalCoordinator?.SetWireAimCursor(
                 aimPoint,
                 hasAimPoint && showAimCursor,
                 targetRigidbody.worldCenterOfMass,
-                grappleTargetPoint,
-                grappleTargetCollider);
+                grappleTargetPoint);
             SubmitInput(new PlayerInputSyncState(
                 moveDirection,
                 moveInput,
@@ -343,7 +346,7 @@ namespace Koiusa.SteamMultiRuntime
                 isStrafeMode,
                 inputState.GrappleHeld,
                 inputState.ReelInput,
-                grappleAimDirection,
+                grappleTargetPoint,
                 grappleFireToken));
         }
 
@@ -403,7 +406,7 @@ namespace Koiusa.SteamMultiRuntime
                 inputState.GrappleFireToken != lastConsumedGrappleFireToken,
                 inputState.ReelInput,
                 targetRigidbody.worldCenterOfMass,
-                inputState.GrappleAimDirection);
+                inputState.GrappleTargetPoint);
             lastConsumedGrappleFireToken = inputState.GrappleFireToken;
 
             if (motor != null)

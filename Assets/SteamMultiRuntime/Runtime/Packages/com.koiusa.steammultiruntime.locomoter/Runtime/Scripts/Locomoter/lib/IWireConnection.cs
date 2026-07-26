@@ -37,7 +37,7 @@ namespace Koiusa.SteamMultiRuntime
     public interface IWireAttachAction
     {
         bool IsEnabled { get; }
-        void SetInput(bool held, bool fireRequested, Vector3 origin, Vector3 aimDirection);
+        void SetInput(bool held, bool fireRequested, WireAimResult aimResult);
         void DetachUntilInputRelease();
     }
 

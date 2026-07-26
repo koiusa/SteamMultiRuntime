@@ -30,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool grappleHeld;
         private bool grappleFireRequested;
         private float reelInput;
-        private Vector3 grappleAimDirection;
+        private Vector3 grappleTargetPoint;
 
         public bool IsGrounded => motor != null && motor.IsGrounded;
         public bool IsJumping => motor != null && motor.IsJumping;
@@ -123,7 +123,7 @@ namespace Koiusa.SteamMultiRuntime
             isStrafeMode = false;
             grappleHeld = false;
             reelInput = 0f;
-            grappleAimDirection = Vector3.zero;
+            grappleTargetPoint = Vector3.zero;
             traversalCoordinator?.SetWireAimCursor(default, false);
             Cursor.visible = true;
         }
@@ -145,21 +145,20 @@ namespace Koiusa.SteamMultiRuntime
             reelInput = inputState.ReelInput;
             var hasAimPoint = inputSource.TryReadAimPoint(out var aimPoint);
             var showAimCursor = grappleHeld || inputSource.IsAimCursorRecentlyMoved;
-            grappleAimDirection = PlayerPointerAim.ResolveDirection(
+            PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,
                 targetRigidbody.worldCenterOfMass,
                 targetRigidbody,
                 hasAimPoint,
                 aimPoint,
-                out var grappleTargetPoint,
-                out var grappleTargetCollider);
+                out grappleTargetPoint,
+                out _);
             traversalCoordinator?.SetWireAimCursor(
                 aimPoint,
                 hasAimPoint && showAimCursor,
                 targetRigidbody.worldCenterOfMass,
-                grappleTargetPoint,
-                grappleTargetCollider);
+                grappleTargetPoint);
 
             if (inputState.JumpPressed)
             {
@@ -189,7 +188,7 @@ namespace Koiusa.SteamMultiRuntime
                 grappleFireRequested,
                 reelInput,
                 targetRigidbody.worldCenterOfMass,
-                grappleAimDirection);
+                grappleTargetPoint);
             grappleFireRequested = false;
 
             moveInputReceiver?.SetMoveInput(moveInput);

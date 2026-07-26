@@ -26,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         private float wallTraversalBlockedUntilTime;
         private bool wallRunBlockedUntilWallExit;
         private float stateEnteredAt;
+        private WireAimResult currentWireAimResult;
 
         public TraversalIntentFlags CurrentIntentFlags { get; private set; }
         public bool IsEnabled => isActiveAndEnabled;
@@ -94,7 +95,7 @@ namespace Koiusa.SteamMultiRuntime
             screenAimCursor?.SetVisible(false);
         }
 
-        public void SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default, Collider targetCollider = null)
+        public WireAimResult SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default)
         {
             var canTarget = IsEnabled
                 && wireAttachAction != null
@@ -102,20 +103,18 @@ namespace Koiusa.SteamMultiRuntime
                 && wireConnection != null
                 && wireConnection.IsEnabled
                 && !wireConnection.IsAttached;
-            if (screenAimCursor == null)
+            currentWireAimResult = EvaluateWireAim(origin, targetPoint);
+            if (screenAimCursor != null)
             {
-                return;
+                screenAimCursor.SetPosition(screenPosition);
+                screenAimCursor.SetTargetState(currentWireAimResult.State);
+                screenAimCursor.SetVisible(hasScreenPosition && canTarget);
             }
 
-            screenAimCursor.SetPosition(screenPosition);
-            var targetState = wireTargeting != null && wireTargeting.IsEnabled
-                ? wireTargeting.EvaluateTarget(origin, targetPoint, targetCollider)
-                : ScreenAimTargetState.Invalid;
-            screenAimCursor.SetTargetState(targetState);
-            screenAimCursor.SetVisible(hasScreenPosition && canTarget);
+            return currentWireAimResult;
         }
 
-        public void SetWireInput(bool held, bool fireRequested, float reelInput, Vector3 origin, Vector3 aimDirection)
+        public void SetWireInput(bool held, bool fireRequested, float reelInput, Vector3 origin, Vector3 targetPoint)
         {
             if (!IsEnabled)
             {
@@ -123,7 +122,19 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             if (wireReelAction != null && wireReelAction.IsEnabled) wireReelAction.SetInput(reelInput);
-            if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, fireRequested, origin, aimDirection);
+            if ((currentWireAimResult.RequestedPoint - targetPoint).sqrMagnitude > 0.0001f)
+            {
+                currentWireAimResult = EvaluateWireAim(origin, targetPoint);
+            }
+
+            if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, fireRequested, currentWireAimResult);
+        }
+
+        private WireAimResult EvaluateWireAim(Vector3 origin, Vector3 targetPoint)
+        {
+            return wireTargeting != null && wireTargeting.IsEnabled
+                ? wireTargeting.EvaluateTarget(origin, targetPoint)
+                : WireAimResult.Invalid(targetPoint);
         }
 
         public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null)

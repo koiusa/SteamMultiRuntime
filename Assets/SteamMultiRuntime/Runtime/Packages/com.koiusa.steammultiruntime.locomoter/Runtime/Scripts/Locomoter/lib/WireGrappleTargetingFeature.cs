@@ -62,18 +62,13 @@ namespace Koiusa.SteamMultiRuntime
             return false;
         }
 
-        public ScreenAimTargetState EvaluateTarget(Vector3 origin, Vector3 targetPoint, Collider targetCollider)
+        public WireAimResult EvaluateTarget(Vector3 origin, Vector3 targetPoint)
         {
-            if (targetCollider == null || (grappleLayers.value & (1 << targetCollider.gameObject.layer)) == 0)
-            {
-                return ScreenAimTargetState.Invalid;
-            }
-
             var offset = targetPoint - origin;
             var distance = offset.magnitude;
             if (distance <= 0.001f || distance > maximumRange)
             {
-                return ScreenAimTargetState.Invalid;
+                return WireAimResult.Invalid(targetPoint);
             }
 
             CacheOwner();
@@ -82,12 +77,24 @@ namespace Koiusa.SteamMultiRuntime
             for (var i = 0; i < hits.Length; i++)
             {
                 if (IsOwnerCollider(hits[i].collider)) continue;
-                return hits[i].collider == targetCollider
-                    ? ScreenAimTargetState.Valid
-                    : ScreenAimTargetState.Obstructed;
+                if (hits[i].distance < distance - 0.02f)
+                {
+                    return new WireAimResult(ScreenAimTargetState.Obstructed, targetPoint);
+                }
+
+                if ((grappleLayers.value & (1 << hits[i].collider.gameObject.layer)) == 0)
+                {
+                    return WireAimResult.Invalid(targetPoint);
+                }
+
+                return new WireAimResult(
+                    ScreenAimTargetState.Valid,
+                    targetPoint,
+                    hits[i].point,
+                    hits[i].collider.transform);
             }
 
-            return ScreenAimTargetState.Invalid;
+            return WireAimResult.Invalid(targetPoint);
         }
 
         private void CacheOwner()

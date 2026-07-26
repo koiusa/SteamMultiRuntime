@@ -35,8 +35,8 @@ namespace Koiusa.SteamMultiRuntime
         Transform WireAnchorTransform { get; }
         float WireRopeLength { get; }
         void ResetState();
-        void SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default, Collider targetCollider = null);
-        void SetWireInput(bool held, bool fireRequested, float reelInput, Vector3 origin, Vector3 aimDirection);
+        WireAimResult SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default);
+        void SetWireInput(bool held, bool fireRequested, float reelInput, Vector3 origin, Vector3 targetPoint);
         void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null);
         bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded);
         void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded);

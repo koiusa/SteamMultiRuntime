@@ -9,6 +9,6 @@ namespace Koiusa.SteamMultiRuntime
         float MaximumRange { get; }
 
         bool TryResolveAnchor(Vector3 origin, Vector3 direction, out Vector3 point, out Transform anchorTransform);
-        ScreenAimTargetState EvaluateTarget(Vector3 origin, Vector3 targetPoint, Collider targetCollider);
+        WireAimResult EvaluateTarget(Vector3 origin, Vector3 targetPoint);
     }
 }
