@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(SlopeContactResolver))]
+    [RequireComponent(typeof(WallTraversalFeature))]
     [DisallowMultipleComponent]
-    public sealed class WallJumpTraversalFeature : MonoBehaviour, IWallJumpTraversalFeature, ITraversalSettingsSync
+    public sealed class WallJumpAction : MonoBehaviour, IWallJumpAction, ITraversalSettingsSync
     {
         [SerializeField] private WallJumpTraversalSettings settings;
 
-        private SlopeContactResolver slopeContactResolver;
+        private IWallTraversalFeature wallFeature;
         private ITraversalIntentContext traversalIntentContext;
         private Vector3 lastWallKickNormal;
         private float sameWallKickLockUntilTime;
@@ -16,12 +16,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
-            slopeContactResolver = GetComponent<SlopeContactResolver>();
+            wallFeature = GetComponent<IWallTraversalFeature>();
             traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
-            if (slopeContactResolver == null)
+            if (wallFeature == null)
             {
-                Debug.LogError("WallJumpTraversalFeature requires SlopeContactResolver component.", this);
+                Debug.LogError("WallJumpAction requires WallTraversalFeature component.", this);
                 enabled = false;
                 return;
             }
@@ -88,7 +88,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool TryGetWallNormal(Vector3 upAxis, out Vector3 wallNormal)
         {
-            return slopeContactResolver.TryGetObstacleNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
+            return wallFeature.TryGetWallNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
         }
 
         private Vector3 ApplyWallJump(Vector3 velocity, Vector3 moveDirection, Vector3 upAxis, Vector3 wallNormal)

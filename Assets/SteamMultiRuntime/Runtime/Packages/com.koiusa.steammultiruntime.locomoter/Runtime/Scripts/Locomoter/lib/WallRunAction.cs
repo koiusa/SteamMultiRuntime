@@ -3,14 +3,14 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(SlopeContactResolver))]
+    [RequireComponent(typeof(WallTraversalFeature))]
     [DisallowMultipleComponent]
-    public sealed class WallRunTraversalFeature : MonoBehaviour, IWallRunTraversalFeature, ITraversalSettingsSync
+    public sealed class WallRunAction : MonoBehaviour, IWallRunAction, ITraversalSettingsSync
     {
         [SerializeField] private WallRunTraversalSettings settings;
 
         private Rigidbody rb;
-        private SlopeContactResolver slopeContactResolver;
+        private IWallTraversalFeature wallFeature;
         private ITraversalIntentContext traversalIntentContext;
 
         private int wallContactStreak;
@@ -28,12 +28,12 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
-            slopeContactResolver = GetComponent<SlopeContactResolver>();
+            wallFeature = GetComponent<IWallTraversalFeature>();
             traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
-            if (rb == null || slopeContactResolver == null)
+            if (rb == null || wallFeature == null)
             {
-                Debug.LogError("WallRunTraversalFeature requires Rigidbody and SlopeContactResolver components.", this);
+                Debug.LogError("WallRunAction requires Rigidbody and WallTraversalFeature components.", this);
                 enabled = false;
                 return;
             }
@@ -300,7 +300,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool TryGetWallNormal(Vector3 upAxis, out Vector3 wallNormal)
         {
-            return slopeContactResolver.TryGetObstacleNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
+            return wallFeature.TryGetWallNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
         }
 
         private Vector3 AccelerateOnWall(Vector3 velocity, Vector3 upAxis, Vector3 wallNormal)

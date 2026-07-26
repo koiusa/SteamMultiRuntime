@@ -15,9 +15,7 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.HelpBox(
                 "Motorコンポーネントを追加してプレイヤーの移動機能を拡張できます。\n\n" +
                 "• PlayerMotor - 基本的な移動（自動でアタッチされます）\n" +
-                "• WallRunTraversalFeature - 壁走り（オプション）\n" +
-                "• WallJumpTraversalFeature - 壁ジャンプ（オプション）\n" +
-                "• WallSlideTraversalFeature - 壁滑り（オプション）\n" +
+                "• WallTraversalFeature + Wall Actions - 壁移動（オプション）\n" +
                 "• LadderTraversalFeature - 梯子昇降（オプション）\n" +
                 "• WireConnectionFeature + Wire Actions - ワイヤー接続と操作（オプション）",
                 MessageType.Info);
@@ -57,10 +55,13 @@ namespace Koiusa.SteamMultiRuntime
             if (traversalFeaturesExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawComponentRow<WallRunTraversalFeature>(gameObject, "Wall Run");
-                DrawComponentRow<WallJumpTraversalFeature>(gameObject, "Wall Jump");
-                DrawComponentRow<WallSlideTraversalFeature>(gameObject, "Wall Slide");
-                DrawComponentRow<LadderTraversalFeature>(gameObject, "Ladder");
+                DrawComponentRow<WallTraversalFeature>(gameObject, "Wall Feature");
+                DrawComponentRow<WallRunAction>(gameObject, "  Run Action");
+                DrawComponentRow<WallJumpAction>(gameObject, "  Jump Action");
+                DrawComponentRow<WallSlideAction>(gameObject, "  Slide Action");
+                DrawComponentRow<LadderTraversalFeature>(gameObject, "Ladder Feature");
+                DrawComponentRow<LadderClimbAction>(gameObject, "  Climb Action");
+                DrawComponentRow<LadderDetachAction>(gameObject, "  Detach Action");
                 EditorGUI.indentLevel--;
             }
 

@@ -37,6 +37,9 @@ GameObject:
   - component: {fileID: 810000000000000004}
   - component: {fileID: 810000000000000005}
   - component: {fileID: 810000000000000006}
+  - component: {fileID: 5263148204889952332}
+  - component: {fileID: 8614854242963659131}
+  - component: {fileID: 2331075215400263561}
   m_Layer: 0
   m_Name: NetworkPlayer_WithAnimator
   m_TagString: Untagged
@@ -145,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 520936048
+  GlobalObjectIdHash: 4256716526
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -664,6 +667,42 @@ MonoBehaviour:
   objectPullAcceleration: 55
   outwardVelocityDamping: 1
   facingRotationSpeed: 540
+--- !u!114 &5263148204889952332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6907f93f7aba43b798ed7a5427378da2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
+--- !u!114 &8614854242963659131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5bbcc5fbc3845d599340678b032cd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
+--- !u!114 &2331075215400263561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f9f7930211461ea57ae185dc840b1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

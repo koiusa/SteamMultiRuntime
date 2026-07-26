@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly HashSet<LadderVolume> activeLadders = new HashSet<LadderVolume>();
         private float reattachBlockedUntilTime;
         private ITraversalIntentContext traversalIntentContext;
+        private ILadderClimbAction climbAction;
 
         private float ladderEnteredTime;
         private bool hasResolvedGroundEntry;
@@ -41,6 +42,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             rb = GetComponent<Rigidbody>();
             traversalIntentContext = GetComponent<ITraversalIntentContext>();
+            climbAction = GetComponent<ILadderClimbAction>();
 
             if (rb == null)
             {
@@ -140,7 +142,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public bool TryApplyLadderMovement(Vector3 velocity, float climbInput, Vector3 upAxis, out Vector3 nextVelocity)
+        internal bool TryApplyLadderMovement(Vector3 velocity, float climbInput, Vector3 upAxis, out Vector3 nextVelocity)
         {
             return TryApplyLadderMovement(velocity, climbInput, 0f, upAxis, out nextVelocity);
         }
@@ -185,7 +187,7 @@ namespace Koiusa.SteamMultiRuntime
             return true;
         }
 
-        public bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump)
+        internal bool TryHandleTraversal(Vector3 velocity, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded, Vector3 upAxis, out Vector3 nextVelocity, out bool detachedByJump)
         {
             nextVelocity = velocity;
             detachedByJump = false;
@@ -276,9 +278,19 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (TryApplyLadderMovement(velocity, climbInput, lateralMoveInput, upAxis, out var ladderVelocity))
+            if (climbAction != null && climbAction.IsEnabled
+                && Mathf.Abs(lateralMoveInput) <= 0.0001f
+                && climbAction.TryApplyMovement(velocity, climbInput, upAxis, out var ladderVelocity))
             {
                 nextVelocity = ladderVelocity;
+                return true;
+            }
+
+            // Wide ladders also need lateral input, which remains an internal overload
+            // while the public climb contract stays independent of LadderVolume details.
+            if (TryApplyLadderMovement(velocity, climbInput, lateralMoveInput, upAxis, out var lateralLadderVelocity))
+            {
+                nextVelocity = lateralLadderVelocity;
                 return true;
             }
 

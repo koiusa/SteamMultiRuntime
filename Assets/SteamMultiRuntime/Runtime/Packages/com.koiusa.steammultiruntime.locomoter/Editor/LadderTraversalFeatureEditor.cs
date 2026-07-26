@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnInspectorGUI()
         {
             EditorGUILayout.HelpBox(
-                "梯子昇降を処理するコンポーネントです。\n\n" +
+                "梯子との接続状態と共有設定を管理するFeatureです。操作は各Ladder Actionが担当します。\n\n" +
                 "シーン上の LadderVolume（Trigger Collider）に侵入すると自動的に昇降モードに入ります。\n" +
                 "• 上下入力: 梯子を昇降\n" +
                 "• 梯子から離れると通常移動に戻ります",
@@ -18,6 +18,24 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.Space();
 
             DrawDefaultInspector();
+
+            var feature = (LadderTraversalFeature)target;
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.ObjectField("Climb", feature.GetComponent<LadderClimbAction>(), typeof(LadderClimbAction), true);
+            EditorGUILayout.ObjectField("Detach", feature.GetComponent<LadderDetachAction>(), typeof(LadderDetachAction), true);
+            EditorGUI.indentLevel--;
+            if (feature.GetComponent<LadderClimbAction>() == null || feature.GetComponent<LadderDetachAction>() == null)
+            {
+                EditorGUILayout.HelpBox("Ladder Actionが不足しています。", MessageType.Error);
+                if (GUILayout.Button("Repair Ladder Feature"))
+                {
+                    if (feature.GetComponent<LadderClimbAction>() == null) Undo.AddComponent<LadderClimbAction>(feature.gameObject);
+                    if (feature.GetComponent<LadderDetachAction>() == null) Undo.AddComponent<LadderDetachAction>(feature.gameObject);
+                    EditorUtility.SetDirty(feature.gameObject);
+                }
+            }
         }
     }
 

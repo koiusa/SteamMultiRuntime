@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public interface IWallSlideTraversalFeature
+    public interface IWallSlideAction
     {
         bool IsEnabled { get; }
         bool IsWallSliding { get; }

@@ -45,7 +45,7 @@ namespace Koiusa.SteamMultiRuntime
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
         private IPlayerWallRunState playerWallRunState;
-        private IWallRunTraversalFeature wallRunTraversalFeature;
+        private IWallRunAction wallRunAction;
         private IPlayerTraversalCoordinator traversalCoordinator;
         private Renderer[] targetRenderers;
         private Vector3 previousPosition;
@@ -74,7 +74,7 @@ namespace Koiusa.SteamMultiRuntime
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
             playerLadderState = playerController as IPlayerLadderState;
             playerWallRunState = playerController as IPlayerWallRunState;
-            wallRunTraversalFeature = GetComponentInParent<IWallRunTraversalFeature>();
+            wallRunAction = GetComponentInParent<IWallRunAction>();
             traversalCoordinator = GetComponentInParent<IPlayerTraversalCoordinator>();
             targetRenderers = targetAnimator != null
                 ? targetAnimator.GetComponentsInChildren<Renderer>(true)
@@ -129,11 +129,11 @@ namespace Koiusa.SteamMultiRuntime
                 ? playerWallRunState.IsWallRunning
                 : hasTraversalCoordinator
                     ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
-                    : wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning;
+                    : wallRunAction != null && wallRunAction.IsWallRunning;
             var wallNormal = isWallRunning
                 ? playerWallRunState != null
                     ? playerWallRunState.WallNormal
-                    : wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : Vector3.zero
+                    : wallRunAction != null ? wallRunAction.WallNormal : Vector3.zero
                 : Vector3.zero;
             var useWallRunAnimation = isWallRunning;
             var locomotionMode = isLadder

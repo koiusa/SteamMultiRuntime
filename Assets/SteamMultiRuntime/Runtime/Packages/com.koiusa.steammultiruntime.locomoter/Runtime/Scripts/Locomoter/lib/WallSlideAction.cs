@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(SlopeContactResolver))]
+    [RequireComponent(typeof(WallTraversalFeature))]
     [DisallowMultipleComponent]
-    public sealed class WallSlideTraversalFeature : MonoBehaviour, IWallSlideTraversalFeature, ITraversalSettingsSync
+    public sealed class WallSlideAction : MonoBehaviour, IWallSlideAction, ITraversalSettingsSync
     {
         [SerializeField] private WallSlideTraversalSettings settings;
 
-        private SlopeContactResolver slopeContactResolver;
+        private IWallTraversalFeature wallFeature;
         private ITraversalIntentContext traversalIntentContext;
         private int wallSlideContactStreak;
 
@@ -18,12 +18,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
-            slopeContactResolver = GetComponent<SlopeContactResolver>();
+            wallFeature = GetComponent<IWallTraversalFeature>();
             traversalIntentContext = GetComponent<ITraversalIntentContext>();
 
-            if (slopeContactResolver == null)
+            if (wallFeature == null)
             {
-                Debug.LogError("WallSlideTraversalFeature requires SlopeContactResolver component.", this);
+                Debug.LogError("WallSlideAction requires WallTraversalFeature component.", this);
                 enabled = false;
                 return;
             }
@@ -145,7 +145,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool TryGetWallNormal(Vector3 upAxis, out Vector3 wallNormal)
         {
-            return slopeContactResolver.TryGetObstacleNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
+            return wallFeature.TryGetWallNormal(upAxis, settings.WallMaxUpDot, out wallNormal);
         }
 
         private static bool IsSettingsEmpty(WallSlideTraversalSettings s)

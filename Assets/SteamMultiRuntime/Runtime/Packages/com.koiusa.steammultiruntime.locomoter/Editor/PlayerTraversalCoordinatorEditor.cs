@@ -27,10 +27,17 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Managed Traversal Features", EditorStyles.boldLabel);
-            DrawFeatureRow<WallRunTraversalFeature>(gameObject, "Wall Run");
-            DrawFeatureRow<WallJumpTraversalFeature>(gameObject, "Wall Jump");
-            DrawFeatureRow<WallSlideTraversalFeature>(gameObject, "Wall Slide");
-            DrawFeatureRow<LadderTraversalFeature>(gameObject, "Ladder");
+            DrawFeatureRow<WallTraversalFeature>(gameObject, "Wall Feature");
+            EditorGUI.indentLevel++;
+            DrawFeatureRow<WallRunAction>(gameObject, "Run Action", false);
+            DrawFeatureRow<WallJumpAction>(gameObject, "Jump Action", false);
+            DrawFeatureRow<WallSlideAction>(gameObject, "Slide Action", false);
+            EditorGUI.indentLevel--;
+            DrawFeatureRow<LadderTraversalFeature>(gameObject, "Ladder Feature");
+            EditorGUI.indentLevel++;
+            DrawFeatureRow<LadderClimbAction>(gameObject, "Climb Action", false);
+            DrawFeatureRow<LadderDetachAction>(gameObject, "Detach Action", false);
+            EditorGUI.indentLevel--;
             DrawFeatureRow<WireConnectionFeature>(gameObject, "Wire Connection Feature");
 
             var wire = gameObject.GetComponent<WireConnectionFeature>();

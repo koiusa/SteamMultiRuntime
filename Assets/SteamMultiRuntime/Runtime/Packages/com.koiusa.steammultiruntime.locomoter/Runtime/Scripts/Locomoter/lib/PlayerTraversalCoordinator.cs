@@ -11,10 +11,11 @@ namespace Koiusa.SteamMultiRuntime
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
-        private IWallRunTraversalFeature wallRunFeature;
-        private IWallJumpTraversalFeature wallJumpFeature;
-        private IWallSlideTraversalFeature wallSlideFeature;
+        private IWallRunAction wallRunAction;
+        private IWallJumpAction wallJumpAction;
+        private IWallSlideAction wallSlideAction;
         private ILadderTraversalFeature ladderFeature;
+        private ILadderDetachAction ladderDetachAction;
         private IWireConnection wireConnection;
         private IWireAttachAction wireAttachAction;
         private IWireSwingAction wireSwingAction;
@@ -30,8 +31,8 @@ namespace Koiusa.SteamMultiRuntime
         public float StateElapsedTime => Mathf.Max(0f, Time.time - stateEnteredAt);
         public bool IsOnLadder => ladderFeature != null && ladderFeature.IsEnabled && ladderFeature.IsOnLadder;
         public float LadderSpeed => IsOnLadder ? ladderFeature.ClimbSpeed : 0f;
-        public bool IsWallRunning => wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning;
-        public Vector3 WallNormal => IsWallRunning ? wallRunFeature.WallNormal : Vector3.zero;
+        public bool IsWallRunning => wallRunAction != null && wallRunAction.IsEnabled && wallRunAction.IsWallRunning;
+        public Vector3 WallNormal => IsWallRunning ? wallRunAction.WallNormal : Vector3.zero;
         public bool IsWireAttached => wireConnection != null && wireConnection.IsEnabled && wireConnection.IsAttached;
         public bool IsWireGroundActionActive => IsWireAttached && wireGroundAction != null && wireGroundAction.BlocksSwing;
         public bool UsesWireGroundStrafe => IsWireGroundActionActive && wireGroundAction.UsesStrafeMovement;
@@ -68,9 +69,9 @@ namespace Koiusa.SteamMultiRuntime
             wallTraversalBlockedUntilTime = 0f;
             wallRunBlockedUntilWallExit = false;
             SetState(PlayerTraversalState.Grounded);
-            wallRunFeature?.ResetState();
-            wallJumpFeature?.ResetState();
-            wallSlideFeature?.ResetState();
+            wallRunAction?.ResetState();
+            wallJumpAction?.ResetState();
+            wallSlideAction?.ResetState();
             ladderFeature?.ResetState();
             wireConnection?.Detach();
         }
@@ -131,10 +132,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var activeWallRunFeature = wallRunFeature != null && wallRunFeature.IsEnabled ? wallRunFeature : null;
-            var activeWallJumpFeature = wallJumpFeature != null && wallJumpFeature.IsEnabled ? wallJumpFeature : null;
-            var activeWallSlideFeature = wallSlideFeature != null && wallSlideFeature.IsEnabled ? wallSlideFeature : null;
+            var activeWallRunFeature = wallRunAction != null && wallRunAction.IsEnabled ? wallRunAction : null;
+            var activeWallJumpFeature = wallJumpAction != null && wallJumpAction.IsEnabled ? wallJumpAction : null;
+            var activeWallSlideFeature = wallSlideAction != null && wallSlideAction.IsEnabled ? wallSlideAction : null;
             var activeLadderFeature = ladderFeature != null && ladderFeature.IsEnabled ? ladderFeature : null;
+            var activeLadderDetachAction = ladderDetachAction != null && ladderDetachAction.IsEnabled ? ladderDetachAction : null;
             var hasFeatureTraversal = activeWallRunFeature != null
                 || activeWallJumpFeature != null
                 || activeWallSlideFeature != null
@@ -165,7 +167,7 @@ namespace Koiusa.SteamMultiRuntime
             if (activeLadderFeature != null)
             {
                 var upAxisForLadder = GetUpAxis();
-                if (activeLadderFeature.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
+                if (activeLadderDetachAction != null && activeLadderDetachAction.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
                 {
                     if (detachedByJump)
                     {
@@ -271,10 +273,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void CacheFeatures()
         {
-            wallRunFeature = GetComponent<IWallRunTraversalFeature>();
-            wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
-            wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
+            wallRunAction = GetComponent<IWallRunAction>();
+            wallJumpAction = GetComponent<IWallJumpAction>();
+            wallSlideAction = GetComponent<IWallSlideAction>();
             ladderFeature = GetComponent<ILadderTraversalFeature>();
+            ladderDetachAction = GetComponent<ILadderDetachAction>();
             wireConnection = GetComponent<IWireConnection>();
             wireAttachAction = GetComponent<IWireAttachAction>();
             wireSwingAction = GetComponent<IWireSwingAction>();
