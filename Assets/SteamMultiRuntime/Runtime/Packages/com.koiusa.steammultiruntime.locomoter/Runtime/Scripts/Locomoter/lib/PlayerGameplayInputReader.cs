@@ -37,6 +37,8 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasAimCursor;
         private bool wasGrappleHeld;
         private float lastPointerMoveTime = float.NegativeInfinity;
+        private Vector2 lastGamepadAimCursorPosition;
+        private bool hasLastGamepadAimCursorPosition;
 
         public bool IsAimCursorRecentlyMoved => Time.unscaledTime - lastPointerMoveTime <= 1f;
 
@@ -137,10 +139,24 @@ namespace Koiusa.SteamMultiRuntime
             var isGamepadAim = grappleHeld && grappleAction?.activeControl?.device is Gamepad;
             if (isGamepadAim && !wasGrappleHeld)
             {
-                CenterAimCursor();
+                if (gamepadAimCursorSettings.Mode == GamepadAimCursorMode.Relative
+                    && gamepadAimCursorSettings.RememberLastRelativePosition
+                    && hasLastGamepadAimCursorPosition)
+                {
+                    aimCursorPosition = lastGamepadAimCursorPosition;
+                }
+                else
+                {
+                    CenterAimCursor();
+                }
             }
 
             UpdateAimCursor(isGamepadAim);
+            if (isGamepadAim)
+            {
+                lastGamepadAimCursorPosition = aimCursorPosition;
+                hasLastGamepadAimCursorPosition = true;
+            }
             if (HasGamepadActivity())
             {
                 lastPointerMoveTime = float.NegativeInfinity;
