@@ -16,7 +16,7 @@ namespace Koiusa.Common.System
 
         private void OnEnable()
         {
-            quitAction = inputActionsConfig?.FindAction("UI/Cancel");
+            quitAction = inputActionsConfig?.FindAction("System/GameQuit");
             if (quitAction == null)
             {
                 Debug.LogWarning("GameQuit Action is not assigned.", this);
