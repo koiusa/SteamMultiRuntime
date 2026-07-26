@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -7,6 +8,28 @@ namespace Koiusa.Keyconfig.Runtime
     public static class InputControlActivity
     {
         public const float DefaultActuationThreshold = 0.15f;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void InitializeDeviceDiagnostics()
+        {
+            InputSystem.onDeviceChange -= OnDeviceChange;
+            InputSystem.onDeviceChange += OnDeviceChange;
+        }
+
+        private static void OnDeviceChange(InputDevice device, InputDeviceChange change)
+        {
+            if (device is not Gamepad && device is not Joystick)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log(
+                $"[InputDevice] change={change}, name={device.displayName}, layout={device.layout}, " +
+                $"id={device.deviceId}, added={device.added}, enabled={device.enabled}");
+#endif
+
+        }
 
         public static InputControl Resolve(string bindingPath)
         {
