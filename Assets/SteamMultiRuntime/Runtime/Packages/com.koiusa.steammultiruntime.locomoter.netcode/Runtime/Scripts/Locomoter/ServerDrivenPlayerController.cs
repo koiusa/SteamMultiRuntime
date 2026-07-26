@@ -295,12 +295,16 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             isStrafeMode = inputState.IsStrafeMode;
+            var aimPoint = default(Vector2);
+            var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
             var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
                 ? PlayerPointerAim.ResolveDirection(
                     cameraTransform,
                     referenceTransform,
                     targetRigidbody.worldCenterOfMass,
-                    targetRigidbody)
+                    targetRigidbody,
+                    hasAimPoint,
+                    aimPoint)
                 : referenceTransform.forward;
             SubmitInput(new PlayerInputSyncState(
                 moveDirection,

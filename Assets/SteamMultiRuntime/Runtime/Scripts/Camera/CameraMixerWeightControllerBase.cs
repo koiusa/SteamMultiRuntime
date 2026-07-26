@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using Koiusa.Input;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -7,6 +10,9 @@ namespace Koiusa.SteamMultiRuntime
     {
         [Header("References")]
         [SerializeField] private CinemachineMixingCamera mixingCamera;
+
+        [Header("Input")]
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         [Header("Weight Index")]
         [SerializeField, Min(0)] private int defaultCameraIndex = 0;
@@ -18,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime
         private float targetDefaultWeight;
         private float targetFollowWeight;
         private IFocusMarkerContext context;
+        private readonly List<InputActionReference> runtimeActionReferences = new();
 
         protected abstract IFocusMarkerContext ResolveContext();
 
@@ -28,7 +35,22 @@ namespace Koiusa.SteamMultiRuntime
                 mixingCamera = GetComponent<CinemachineMixingCamera>();
             }
 
+            ConfigureCameraInputActions();
+
             context = ResolveContext();
+        }
+
+        protected virtual void OnDestroy()
+        {
+            foreach (var actionReference in runtimeActionReferences)
+            {
+                if (actionReference != null)
+                {
+                    Destroy(actionReference);
+                }
+            }
+
+            runtimeActionReferences.Clear();
         }
 
         protected virtual void OnEnable()
@@ -87,6 +109,38 @@ namespace Koiusa.SteamMultiRuntime
 
             mixingCamera.SetWeight(defaultCameraIndex, targetDefaultWeight);
             mixingCamera.SetWeight(followCameraIndex, targetFollowWeight);
+        }
+
+        private void ConfigureCameraInputActions()
+        {
+            var controller = GetComponentInChildren<CinemachineInputAxisController>(true);
+            if (controller == null || inputActionsConfig == null)
+            {
+                return;
+            }
+
+            var lookAction = inputActionsConfig.FindAction("Player/Look");
+            var zoomAction = inputActionsConfig.FindAction("Player/CameraZoom");
+
+            foreach (var axisController in controller.Controllers)
+            {
+                var action = axisController.Name switch
+                {
+                    "Look Orbit X" => lookAction,
+                    "Look Orbit Y" => lookAction,
+                    "Orbit Scale" => zoomAction,
+                    _ => null
+                };
+
+                if (action == null)
+                {
+                    continue;
+                }
+
+                var actionReference = InputActionReference.Create(action);
+                runtimeActionReferences.Add(actionReference);
+                axisController.Input.InputAction = actionReference;
+            }
         }
     }
 }

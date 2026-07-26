@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -9,7 +8,9 @@ namespace Koiusa.SteamMultiRuntime
             Transform cameraTransform,
             Transform fallbackTransform,
             Vector3 aimOrigin,
-            Rigidbody aimOwner)
+            Rigidbody aimOwner,
+            bool hasPointerPosition,
+            Vector2 pointerPosition)
         {
             var camera = cameraTransform != null ? cameraTransform.GetComponent<Camera>() : null;
             if (camera == null)
@@ -17,9 +18,8 @@ namespace Koiusa.SteamMultiRuntime
                 camera = Camera.main;
             }
 
-            if (camera != null && Mouse.current != null)
+            if (camera != null && hasPointerPosition)
             {
-                var pointerPosition = Mouse.current.position.ReadValue();
                 var pointerRay = camera.ScreenPointToRay(pointerPosition);
                 var targetPoint = ResolvePointerTarget(pointerRay, camera.farClipPlane, aimOwner);
                 return (targetPoint - aimOrigin).normalized;

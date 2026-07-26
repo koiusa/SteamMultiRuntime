@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly InputAction strafeToggleAction;
         private readonly InputAction grappleAction;
         private readonly InputAction reelAction;
+        private readonly InputAction aimPointAction;
 
         private int jumpToken;
         private bool isStrafeMode;
@@ -24,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionLease strafeToggleLease;
         private InputActionLease grappleLease;
         private InputActionLease reelLease;
+        private InputActionLease aimPointLease;
 
         public PlayerGameplayInputReader(InputActionsConfig profile)
         {
@@ -37,6 +39,7 @@ namespace Koiusa.SteamMultiRuntime
             strafeToggleAction = profile.FindAction("Player/StrafeToggle");
             grappleAction = profile.FindAction("Player/Grapple");
             reelAction = profile.FindAction("Player/Reel");
+            aimPointAction = profile.FindAction("Player/AimPoint");
         }
 
         public void Enable()
@@ -50,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
             moveLease = InputActionLease.Acquire(moveAction);
             grappleLease = InputActionLease.Acquire(grappleAction);
             reelLease = InputActionLease.Acquire(reelAction);
+            aimPointLease = InputActionLease.Acquire(aimPointAction);
 
             if (jumpAction != null)
             {
@@ -89,9 +93,11 @@ namespace Koiusa.SteamMultiRuntime
             moveLease?.Dispose();
             grappleLease?.Dispose();
             reelLease?.Dispose();
+            aimPointLease?.Dispose();
             moveLease = null;
             grappleLease = null;
             reelLease = null;
+            aimPointLease = null;
             jumpToken = 0;
             isStrafeMode = false;
         }
@@ -104,6 +110,18 @@ namespace Koiusa.SteamMultiRuntime
             var grappleHeld = grappleAction != null && grappleAction.IsPressed();
             var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
             return new PlayerInputState(move, jumpPressed, grappleHeld, reelInput, isStrafeMode);
+        }
+
+        public bool TryReadAimPoint(out Vector2 screenPosition)
+        {
+            if (aimPointAction?.activeControl == null)
+            {
+                screenPosition = default;
+                return false;
+            }
+
+            screenPosition = aimPointAction.ReadValue<Vector2>();
+            return true;
         }
 
         private void OnJumpPerformed(InputAction.CallbackContext context)
