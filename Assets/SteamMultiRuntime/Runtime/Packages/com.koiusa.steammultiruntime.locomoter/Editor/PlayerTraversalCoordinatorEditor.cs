@@ -78,7 +78,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (coordinator.IsWireAttached)
                 {
                     EditorGUILayout.Vector3Field("Wire Anchor", coordinator.WireAnchorPoint);
-                    EditorGUILayout.FloatField("Rope Length", coordinator.WireRopeLength);
+                    EditorGUILayout.FloatField("Target Rope Length", coordinator.WireRopeLength);
                 }
             }
         }

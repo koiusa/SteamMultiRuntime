@@ -600,6 +600,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireConnection
   visual: {fileID: 810000000000000002}
   constraintMode: 0
+  elasticStretchLimit: 1.5
   minimumRopeLength: 2
   ropeSlack: 0.15
   pullAcceleration: 55

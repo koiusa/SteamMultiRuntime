@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float facingRotationSpeed = 540f;
 
         private IWireConnection connection;
+        private IWireReelAction reelAction;
         private SlopeContactResolver ground;
         private Vector3 moveDirection;
 
@@ -28,15 +29,12 @@ namespace Koiusa.SteamMultiRuntime
         public bool BlocksSwing => HandlesConnectionPhysics || (HasConnection && IsPlayerGrounded);
         public bool HandlesConnectionPhysics => HasDynamicAnchor;
         public bool UsesStrafeMovement => HasConnection && IsPlayerGrounded && !HasDynamicAnchor;
-        public bool UsesMaximumRangeConstraint => IsEnabled
-            && connection != null
-            && connection.IsAttached
-            && !HasDynamicAnchor;
         public float FacingRotationSpeed => facingRotationSpeed;
 
         private void Awake()
         {
             connection = GetComponent<IWireConnection>();
+            reelAction = GetComponent<IWireReelAction>();
             ground = GetComponent<SlopeContactResolver>();
         }
 
@@ -67,18 +65,27 @@ namespace Koiusa.SteamMultiRuntime
             if (distance > connection.RopeLength)
             {
                 var stretch = distance - connection.RopeLength;
-                if (connection.ConstraintMode == WireConstraintMode.Rope)
+                var useRopeConstraint = connection.ConstraintMode == WireConstraintMode.Rope
+                    || (reelAction != null && reelAction.IsReelingIn);
+                if (useRopeConstraint)
                 {
                     targetBody.MovePosition(targetBody.position + towardPivot * stretch);
                 }
                 else
                 {
                     targetBody.AddForce(towardPivot * (stretch * objectPullAcceleration), ForceMode.Acceleration);
+                    var hardLimit = connection.RopeLength + connection.ElasticStretchLimit;
+                    if (distance > hardLimit)
+                    {
+                        targetBody.MovePosition(targetBody.position + towardPivot * (distance - hardLimit));
+                    }
                 }
                 var outwardSpeed = Vector3.Dot(targetBody.linearVelocity, -towardPivot);
                 if (outwardSpeed > 0f)
                 {
-                    var damping = connection.ConstraintMode == WireConstraintMode.Rope ? 1f : outwardVelocityDamping;
+                    var reachedHardLimit = !useRopeConstraint
+                        && distance >= connection.RopeLength + connection.ElasticStretchLimit;
+                    var damping = useRopeConstraint || reachedHardLimit ? 1f : outwardVelocityDamping;
                     targetBody.linearVelocity += towardPivot * (outwardSpeed * damping);
                 }
             }

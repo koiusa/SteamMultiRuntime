@@ -24,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime
         Rigidbody Body { get; }
         Rigidbody AnchorBody { get; }
         WireConstraintMode ConstraintMode { get; }
+        float ElasticStretchLimit { get; }
 
         void SetRopeLength(float value);
         void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
@@ -47,6 +48,7 @@ namespace Koiusa.SteamMultiRuntime
     public interface IWireReelAction
     {
         bool IsEnabled { get; }
+        bool IsReelingIn { get; }
         void SetInput(float reelInput);
         void ReelStep();
     }
@@ -57,7 +59,6 @@ namespace Koiusa.SteamMultiRuntime
         bool BlocksSwing { get; }
         bool HandlesConnectionPhysics { get; }
         bool UsesStrafeMovement { get; }
-        bool UsesMaximumRangeConstraint { get; }
         float FacingRotationSpeed { get; }
         void SetMoveDirection(Vector3 moveDirection);
     }

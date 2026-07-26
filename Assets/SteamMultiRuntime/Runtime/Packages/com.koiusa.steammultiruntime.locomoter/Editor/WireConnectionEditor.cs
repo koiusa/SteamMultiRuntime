@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
             var connection = (WireConnection)target;
             if (Application.isPlaying)
             {
-                using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.Toggle("Attached", connection.IsAttached); EditorGUILayout.Vector3Field("Anchor", connection.AnchorPoint); EditorGUILayout.FloatField("Rope Length", connection.RopeLength); }
+                using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.Toggle("Attached", connection.IsAttached); EditorGUILayout.Vector3Field("Anchor", connection.AnchorPoint); EditorGUILayout.FloatField("Target Rope Length", connection.RopeLength); EditorGUILayout.FloatField("Actual Length", connection.ActualLength); }
             }
             if (GUILayout.Button("Ensure All Wire Actions")) EnsureStack(connection.gameObject);
         }
@@ -43,6 +43,15 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnInspectorGUI()
         {
             EditorGUILayout.HelpBox("接地中、Dynamic Rigidbodyは振り回し、環境接続ではMaximum Range内をストライフ移動できます。Jumpでは解除しません。", MessageType.Info);
+            DrawDefaultInspector();
+        }
+    }
+    [CustomEditor(typeof(WireReelAction))]
+    public sealed class WireReelActionEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            EditorGUILayout.HelpBox("Reel Axisはnegativeで巻き取り、positiveで繰り出します。既定操作はQで巻き取り、Eで繰り出しです。", MessageType.Info);
             DrawDefaultInspector();
         }
     }
