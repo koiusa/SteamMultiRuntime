@@ -1,0 +1,19 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.Player.Netcode.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "Koiusa.Input.Core.Runtime",
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Koiusa.SteamMultiRuntime.Player.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

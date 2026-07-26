@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 8561542026746721558}
   - component: {fileID: 412575791509691708}
   - component: {fileID: 7230373683702354775}
+  - component: {fileID: 880000000000000002}
   m_Layer: 0
   m_Name: NetworkPlayer_Runtime
   m_TagString: Untagged
@@ -49,6 +50,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &880000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8931c22a2d64645a6e23b12e05d3732, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerSkillController
+  ShowTopMostFoldoutHeaderGroup: 1
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  attackActionPath: Player/Attack
+  dashActionPath: Player/Dash
+  guardActionPath: Player/Guard
+  healActionPath: Player/Heal
+  attackSkill: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
+  dashSkill: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
+  guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
+  healSkill: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
+  directionReference: {fileID: 4035978081068949003}
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0

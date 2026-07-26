@@ -1,0 +1,19 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.Player.Netcode.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Koiusa.SteamMultiRuntime.Player.Netcode.Runtime",
+        "Koiusa.SteamMultiRuntime.Player.Runtime",
+        "Koiusa.Input.Core.Runtime",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

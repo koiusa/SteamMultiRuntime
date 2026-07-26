@@ -96,11 +96,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private static void DrawSkillInput(GameObject owner)
         {
-            var component = owner.GetComponent<PlayerSkillInputController>();
-            var supportsLocalInput = owner.GetComponent<LocalPlayerController>() != null;
-            if (component == null && !supportsLocalInput)
+            var localInput = owner.GetComponent<PlayerSkillInputController>();
+            var usesLocalInput = owner.GetComponent<LocalPlayerController>() != null;
+            if (!usesLocalInput)
             {
-                EditorGUILayout.LabelField("Skill Input Controller", "Not used for this player");
+                EditorGUILayout.LabelField("Skill Input Controller", "Provided by an optional integration package");
                 return;
             }
 
@@ -108,11 +108,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 EditorGUILayout.LabelField(
                     "Skill Input Controller",
-                    component != null ? "Configured on this GameObject" : "Not added");
+                    localInput != null ? localInput.GetType().Name : "Not added");
 
-                var buttonLabel = component == null ? "Add" : "Configure";
+                var buttonLabel = localInput == null ? "Add" : "Configure";
                 if (!GUILayout.Button(buttonLabel, GUILayout.Width(72f))) return;
-                if (component == null) Undo.AddComponent<PlayerSkillInputController>(owner);
+                if (localInput == null) Undo.AddComponent<PlayerSkillInputController>(owner);
                 PlayerCharacterPrefabSetup.ConfigureSkillInput(owner);
                 MarkDirty(owner);
             }

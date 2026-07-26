@@ -5,7 +5,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal static class PlayerCharacterPrefabSetup
     {
-        private const string UpgradeKey = "Koiusa.SteamMultiRuntime.PlayerGameplayPrefabUpgradeV3";
+        private const string UpgradeKey = "Koiusa.SteamMultiRuntime.PlayerGameplayPrefabUpgradeV4";
         private const string GameplayInputConfigPath =
             "Assets/SteamMultiRuntime/Runtime/Configs/Input/GameplayInputActionsConfig.asset";
         private const string SkillDefinitionRoot =

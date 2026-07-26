@@ -2,6 +2,22 @@
 
 Playerの移動、スキル、戦闘は、以下の論理階層で管理します。すべて同じPlayer GameObjectへ配置し、Transformの子には分けません。
 
+## パッケージ分離
+
+Player GameplayはNetcodeの有無でパッケージを分離します。
+
+```text
+com.koiusa.steammultiruntime.player
+├─ Runtime: Coordinator、Skill／Combat Feature、Local Skill入力
+└─ Editor: 共通Inspector、共通／Local Prefab設定
+
+com.koiusa.steammultiruntime.player.netcode
+├─ Runtime: NetworkPlayerSkillController
+└─ Editor: Network Player Prefab設定
+```
+
+依存方向は`Player.Netcode → Player`の一方向です。基本Playerパッケージは`Unity.Netcode`およびPlayer.Netcode型を参照しません。これにより、Local専用構成ではNetcode依存なしでPlayer Gameplayを利用できます。
+
 ## 現在の実装状況
 
 `PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤実装と、標準Character Prefabへの適用は完了しています。Local Playerでは`Player/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`から各Skillを発動できます。一方で、Networkとの接続はまだ行われていません。
@@ -29,10 +45,8 @@ characterCoordinator.ResetState();
 
 ### 未実装・未接続
 
-- `ServerDrivenPlayerController`へのSkill入力統合
-- Owner入力を表す`PlayerSkillInputState`
-- Skill状態を同期する`PlayerSkillRuntimeState`
-- Server AuthorityによるSkill発動可否、Hit判定、Damage、Healの確定
+- Cooldown StateのNetwork同期
+- Network Skill Stateを利用したRemote側Animation／Effect再生
 - Sword AttackのLight／Heavy／Combo Action
 - Guard Counter Action
 - Cooldown、Active Duration、Skill固有値の設定アセットへの分離
@@ -104,17 +118,17 @@ Local Player
 
 Network Player
 ├─ Owner
-│  └─ PlayerSkillInputState                              [予定]
+│  └─ NetworkPlayerSkillController                       [実装済]
 └─ Server
-   ├─ ServerDrivenPlayerControllerへのSkill入力統合      [予定]
+   ├─ Skill発動／Guard解除ServerRpc                      [実装済]
    ├─ PlayerSkillCoordinator.TryActivate(...)            [実装済]
-   └─ PlayerSkillRuntimeState                             [予定]
-      ├─ ActiveSkillId
-      ├─ ActivationSequence
-      └─ Cooldown State
+   └─ Network Skill State                                [一部実装済]
+      ├─ ActiveSkillIndex                                [実装済]
+      ├─ ActivationSequence                              [実装済]
+      └─ Cooldown State                                  [予定]
 ```
 
-Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。Networkでは発動可否、Hit判定、Damage、HealをServer Authorityで確定する予定です。
+Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
 
 ### 設定クラスの予定
 
