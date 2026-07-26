@@ -27,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         float ElasticStretchLimit { get; }
 
         void SetRopeLength(float value);
+        void CaptureCurrentLength();
         void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
         void Attach(Vector3 worldPoint, Transform movingAnchor = null);
         void Detach();

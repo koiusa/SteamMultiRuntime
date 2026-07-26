@@ -107,6 +107,10 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isGrounded)
             {
+                // Ground traversal intentionally keeps spare wire available. Freeze the
+                // current distance at takeoff so airborne reeling starts immediately and
+                // does not have to consume that invisible ground slack first.
+                wireConnection.CaptureCurrentLength();
                 return false;
             }
 

@@ -602,6 +602,8 @@ MonoBehaviour:
   constraintMode: 0
   elasticStretchLimit: 1.5
   minimumRopeLength: 2
+  maximumRopeLength: 20
+  excessReelSpeed: 12
   ropeSlack: 0.15
   pullAcceleration: 55
   radialVelocityDamping: 1

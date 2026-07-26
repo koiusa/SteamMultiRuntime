@@ -25,6 +25,19 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
         public void ReelStep() { if (connection != null && connection.IsAttached) connection.SetRopeLength(connection.RopeLength - stepDistance); }
-        private void FixedUpdate() { if (connection != null && connection.IsAttached) connection.SetRopeLength(connection.RopeLength + input * reelSpeed * Time.fixedDeltaTime); }
+        private void FixedUpdate()
+        {
+            if (connection == null || !connection.IsAttached) return;
+
+            if (IsReelingIn)
+            {
+                // Keep the wire taut even when reel input was already held before attach,
+                // or when player movement has created slack since the previous tick.
+                var actualLength = Vector3.Distance(connection.Body.worldCenterOfMass, connection.AnchorPoint);
+                connection.SetRopeLength(Mathf.Min(connection.RopeLength, actualLength));
+            }
+
+            connection.SetRopeLength(connection.RopeLength + input * reelSpeed * Time.fixedDeltaTime);
+        }
     }
 }

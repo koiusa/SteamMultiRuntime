@@ -36,6 +36,7 @@ namespace Koiusa.SteamMultiRuntime
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
         private bool lastSentGrappleHeld;
+        private float lastSentReelInput = float.NaN;
         private float nextStateSyncTime;
 
         private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
@@ -317,7 +318,9 @@ namespace Koiusa.SteamMultiRuntime
 
             var jumpChanged = inputState.JumpToken != lastSentJumpToken;
             var grappleChanged = inputState.GrappleHeld != lastSentGrappleHeld;
-            if (!jumpChanged && !grappleChanged && Time.unscaledTime < nextInputSendTime)
+            var reelChanged = float.IsNaN(lastSentReelInput)
+                || !Mathf.Approximately(inputState.ReelInput, lastSentReelInput);
+            if (!jumpChanged && !grappleChanged && !reelChanged && Time.unscaledTime < nextInputSendTime)
                 return;
 
             var tickRate = NetworkManager != null
@@ -326,6 +329,7 @@ namespace Koiusa.SteamMultiRuntime
             nextInputSendTime = Time.unscaledTime + 1f / tickRate;
             lastSentJumpToken = inputState.JumpToken;
             lastSentGrappleHeld = inputState.GrappleHeld;
+            lastSentReelInput = inputState.ReelInput;
 
             if (IsServer)
                 StoreServerInput(inputState);
