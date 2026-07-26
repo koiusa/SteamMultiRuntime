@@ -17,17 +17,17 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 moveDirection;
 
         public bool IsEnabled => isActiveAndEnabled;
-        private bool HasGroundConnection => IsEnabled
-            && ground != null
-            && ground.IsGrounded
+        private bool HasConnection => IsEnabled
             && connection != null
             && connection.IsAttached;
-        private bool HasDynamicAnchor => connection.AnchorBody != null
+        private bool IsPlayerGrounded => ground != null && ground.IsGrounded;
+        private bool HasDynamicAnchor => HasConnection
+            && connection.AnchorBody != null
             && !connection.AnchorBody.isKinematic
             && connection.AnchorBody != connection.Body;
-        public bool BlocksSwing => HasGroundConnection;
-        public bool HandlesConnectionPhysics => HasGroundConnection && HasDynamicAnchor;
-        public bool UsesStrafeMovement => HasGroundConnection && !HasDynamicAnchor;
+        public bool BlocksSwing => HandlesConnectionPhysics || (HasConnection && IsPlayerGrounded);
+        public bool HandlesConnectionPhysics => HasDynamicAnchor;
+        public bool UsesStrafeMovement => HasConnection && IsPlayerGrounded && !HasDynamicAnchor;
         public bool UsesMaximumRangeConstraint => IsEnabled
             && connection != null
             && connection.IsAttached
