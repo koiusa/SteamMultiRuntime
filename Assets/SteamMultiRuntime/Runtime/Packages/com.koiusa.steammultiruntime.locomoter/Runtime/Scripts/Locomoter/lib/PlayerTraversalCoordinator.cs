@@ -15,7 +15,11 @@ namespace Koiusa.SteamMultiRuntime
         private IWallJumpTraversalFeature wallJumpFeature;
         private IWallSlideTraversalFeature wallSlideFeature;
         private ILadderTraversalFeature ladderFeature;
-        private IWireSwingTraversalFeature wireFeature;
+        private IWireConnection wireConnection;
+        private IWireAttachAction wireAttachAction;
+        private IWireSwingAction wireSwingAction;
+        private IWireReelAction wireReelAction;
+        private IWireGroundAction wireGroundAction;
         private float wallTraversalBlockedUntilTime;
         private bool wallRunBlockedUntilWallExit;
         private float stateEnteredAt;
@@ -28,9 +32,9 @@ namespace Koiusa.SteamMultiRuntime
         public float LadderSpeed => IsOnLadder ? ladderFeature.ClimbSpeed : 0f;
         public bool IsWallRunning => wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning;
         public Vector3 WallNormal => IsWallRunning ? wallRunFeature.WallNormal : Vector3.zero;
-        public bool IsWireAttached => wireFeature != null && wireFeature.IsEnabled && wireFeature.IsAttached;
-        public Vector3 WireAnchorPoint => IsWireAttached ? wireFeature.AnchorPoint : Vector3.zero;
-        public float WireRopeLength => IsWireAttached ? wireFeature.RopeLength : 0f;
+        public bool IsWireAttached => wireConnection != null && wireConnection.IsEnabled && wireConnection.IsAttached;
+        public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
+        public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
 
         private void Awake()
         {
@@ -62,45 +66,45 @@ namespace Koiusa.SteamMultiRuntime
             wallJumpFeature?.ResetState();
             wallSlideFeature?.ResetState();
             ladderFeature?.ResetState();
-            wireFeature?.Detach();
+            wireConnection?.Detach();
         }
 
         public void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection)
         {
-            if (!IsEnabled || wireFeature == null || !wireFeature.IsEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
 
-            wireFeature.SetReelInput(reelInput);
-            wireFeature.SetGrappleInput(held, origin, aimDirection);
+            if (wireReelAction != null && wireReelAction.IsEnabled) wireReelAction.SetInput(reelInput);
+            if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, origin, aimDirection);
         }
 
         public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength)
         {
-            wireFeature?.SetReplicatedState(isAttached, anchorPoint, ropeLength);
+            wireConnection?.SetReplicatedState(isAttached, anchorPoint, ropeLength);
         }
 
         public bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded)
         {
-            if (!IsEnabled || wireFeature == null || !wireFeature.IsEnabled)
+            if (!IsEnabled || wireConnection == null || !wireConnection.IsEnabled)
             {
                 return false;
             }
 
-            wireFeature.SetMoveDirection(moveDirection);
-            if (!wireFeature.IsAttached || !jumpRequested)
+            if (wireSwingAction != null && wireSwingAction.IsEnabled) wireSwingAction.SetMoveDirection(moveDirection);
+            if (!wireConnection.IsAttached || !jumpRequested)
             {
                 return false;
             }
 
-            if (isGrounded)
+            if (wireGroundAction != null && wireGroundAction.IsEnabled && wireGroundAction.HandleJump(true, isGrounded))
             {
-                wireFeature.DetachUntilInputRelease();
                 return false;
             }
 
-            wireFeature.ReelByJump();
+            if (wireReelAction == null || !wireReelAction.IsEnabled) return false;
+            wireReelAction.ReelStep();
             return true;
         }
 
@@ -260,7 +264,11 @@ namespace Koiusa.SteamMultiRuntime
             wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
             wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
             ladderFeature = GetComponent<ILadderTraversalFeature>();
-            wireFeature = GetComponent<IWireSwingTraversalFeature>();
+            wireConnection = GetComponent<IWireConnection>();
+            wireAttachAction = GetComponent<IWireAttachAction>();
+            wireSwingAction = GetComponent<IWireSwingAction>();
+            wireReelAction = GetComponent<IWireReelAction>();
+            wireGroundAction = GetComponent<IWireGroundAction>();
         }
 
         private void SetState(PlayerTraversalState nextState)

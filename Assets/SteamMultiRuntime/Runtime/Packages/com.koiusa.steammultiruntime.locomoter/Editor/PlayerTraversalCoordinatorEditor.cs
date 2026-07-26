@@ -31,25 +31,31 @@ namespace Koiusa.SteamMultiRuntime
             DrawFeatureRow<WallJumpTraversalFeature>(gameObject, "Wall Jump");
             DrawFeatureRow<WallSlideTraversalFeature>(gameObject, "Wall Slide");
             DrawFeatureRow<LadderTraversalFeature>(gameObject, "Ladder");
-            DrawFeatureRow<WireSwingTraversalFeature>(gameObject, "Wire Swing");
+            DrawFeatureRow<WireConnection>(gameObject, "Wire Connection");
 
-            var wire = gameObject.GetComponent<WireSwingTraversalFeature>();
+            var wire = gameObject.GetComponent<WireConnection>();
             if (wire != null)
             {
                 EditorGUI.indentLevel++;
                 DrawFeatureRow<WireGrappleTargetingFeature>(gameObject, "Grapple Targeting", false);
                 DrawFeatureRow<WireLineVisualFeature>(gameObject, "Line Visual", false);
+                DrawFeatureRow<WireAttachAction>(gameObject, "Attach Action", false);
+                DrawFeatureRow<WireSwingAction>(gameObject, "Swing Action", false);
+                DrawFeatureRow<WireReelAction>(gameObject, "Reel Action", false);
+                DrawFeatureRow<WireGroundAction>(gameObject, "Ground Action", false);
                 EditorGUI.indentLevel--;
 
                 if (gameObject.GetComponent<WireGrappleTargetingFeature>() == null
-                    || gameObject.GetComponent<WireLineVisualFeature>() == null)
+                    || gameObject.GetComponent<WireLineVisualFeature>() == null
+                    || gameObject.GetComponent<WireAttachAction>() == null
+                    || gameObject.GetComponent<WireSwingAction>() == null
+                    || gameObject.GetComponent<WireReelAction>() == null
+                    || gameObject.GetComponent<WireGroundAction>() == null)
                 {
                     EditorGUILayout.HelpBox("Wireの内部Featureが不足しています。", MessageType.Error);
                     if (GUILayout.Button("Repair Wire Feature Stack"))
                     {
-                        EnsureComponent<WireGrappleTargetingFeature>(gameObject);
-                        EnsureComponent<WireLineVisualFeature>(gameObject);
-                        MarkDirty(gameObject);
+                        WireConnectionEditor.EnsureStack(gameObject);
                     }
                 }
             }
