@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -24,13 +25,19 @@ namespace Koiusa.Keyconfig.Runtime
         [SerializeField] private VisualTreeAsset layoutAsset;
         [SerializeField] private InputBindingIconResolver iconResolver;
         [SerializeField] private bool startVisible = true;
+        [SerializeField] private bool autoSwitchDeviceLayout = true;
 
         private readonly List<GuideRow> rows = new List<GuideRow>();
         private UIDocument uiDocument;
         private VisualElement overlay;
         private Label deviceLabel;
+        private VisualElement keyboardLayout;
+        private VisualElement mouseLayout;
+        private VisualElement gamepadLayout;
         private InputActionAsset inputActionAsset;
         private InputDevice lastActiveDevice;
+        private InputDevice pendingEventDevice;
+        private bool isGamepadLayoutVisible;
 
         private sealed class GuideRow
         {
@@ -50,8 +57,14 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
+            InputSystem.onEvent += OnInputEvent;
             Build();
             SetVisible(startVisible);
+        }
+
+        private void OnDisable()
+        {
+            InputSystem.onEvent -= OnInputEvent;
         }
 
         private void Update()
@@ -60,6 +73,9 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 return;
             }
+
+            ApplyPendingEventDevice();
+            DetectActiveDevice();
 
             for (var i = 0; i < rows.Count; i++)
             {
@@ -84,6 +100,96 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
+        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+        {
+            if (device is Gamepad || device is Joystick || device is Keyboard || device is Mouse)
+            {
+                pendingEventDevice = device;
+            }
+        }
+
+        private void ApplyPendingEventDevice()
+        {
+            if (pendingEventDevice == null)
+            {
+                return;
+            }
+
+            var device = pendingEventDevice;
+            pendingEventDevice = null;
+            lastActiveDevice = device;
+            if (autoSwitchDeviceLayout)
+            {
+                SetGamepadLayout(IsGamepadLike(device));
+            }
+        }
+
+        private void DetectActiveDevice()
+        {
+            InputDevice activeDevice = null;
+
+            if (Keyboard.current != null && Keyboard.current.anyKey.isPressed)
+            {
+                activeDevice = Keyboard.current;
+            }
+
+            var mouse = Mouse.current;
+            var pointerThresholdSquared = InputControlActivity.DefaultActuationThreshold *
+                                          InputControlActivity.DefaultActuationThreshold;
+            if (mouse != null &&
+                (mouse.delta.ReadValue().sqrMagnitude > pointerThresholdSquared ||
+                 mouse.scroll.ReadValue().sqrMagnitude > pointerThresholdSquared ||
+                 mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed))
+            {
+                activeDevice = mouse;
+            }
+
+            // Check every connected pad instead of relying on controls that happened to
+            // receive a visual binding. Steam virtual pads and remapped controls are then
+            // detected as well.
+            foreach (var gamepad in Gamepad.all)
+            {
+                if (IsGamepadActive(gamepad))
+                {
+                    activeDevice = gamepad;
+                    break;
+                }
+            }
+
+            if (activeDevice == null || activeDevice == lastActiveDevice)
+            {
+                return;
+            }
+
+            lastActiveDevice = activeDevice;
+            if (autoSwitchDeviceLayout)
+            {
+                SetGamepadLayout(IsGamepadLike(activeDevice));
+            }
+        }
+
+        private static bool IsGamepadActive(Gamepad gamepad)
+        {
+            if (gamepad == null)
+            {
+                return false;
+            }
+
+            return gamepad.leftStick.ReadValue().sqrMagnitude >=
+                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
+                   gamepad.rightStick.ReadValue().sqrMagnitude >=
+                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
+                   gamepad.dpad.ReadValue().sqrMagnitude >=
+                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
+                   gamepad.leftTrigger.ReadValue() >= InputControlActivity.DefaultActuationThreshold ||
+                   gamepad.rightTrigger.ReadValue() >= InputControlActivity.DefaultActuationThreshold ||
+                   gamepad.buttonSouth.isPressed || gamepad.buttonNorth.isPressed ||
+                   gamepad.buttonEast.isPressed || gamepad.buttonWest.isPressed ||
+                   gamepad.leftShoulder.isPressed || gamepad.rightShoulder.isPressed ||
+                   gamepad.leftStickButton.isPressed || gamepad.rightStickButton.isPressed ||
+                   gamepad.startButton.isPressed || gamepad.selectButton.isPressed;
+        }
+
         public void SetVisible(bool visible)
         {
             if (overlay != null)
@@ -95,6 +201,26 @@ namespace Koiusa.Keyconfig.Runtime
         public void ToggleVisible()
         {
             SetVisible(!IsVisible);
+        }
+
+        public void ShowKeyboardLayout()
+        {
+            autoSwitchDeviceLayout = false;
+            SetGamepadLayout(false);
+        }
+
+        public void ShowGamepadLayout()
+        {
+            autoSwitchDeviceLayout = false;
+            SetGamepadLayout(true);
+        }
+
+        public void ToggleDeviceLayout()
+        {
+            // A manual selection must not immediately be undone by the mouse event
+            // generated by this click.
+            autoSwitchDeviceLayout = false;
+            SetGamepadLayout(!isGamepadLayoutVisible);
         }
 
         public void Refresh()
@@ -121,6 +247,14 @@ namespace Koiusa.Keyconfig.Runtime
             layout.CloneTree(root);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             deviceLabel = root.Q<Label>("device-label");
+            if (deviceLabel != null)
+            {
+                deviceLabel.tooltip = "Click to switch keyboard / gamepad layout";
+                deviceLabel.AddManipulator(new Clickable(ToggleDeviceLayout));
+            }
+            keyboardLayout = root.Q<VisualElement>("keyboard-layout");
+            mouseLayout = root.Q<VisualElement>(className: "input-mouse");
+            gamepadLayout = root.Q<VisualElement>("gamepad-layout");
             var deviceLayout = root.Q<VisualElement>("device-layout");
             var mapLabel = root.Q<Label>("map-label");
 
@@ -140,6 +274,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             mapLabel.text = Nicify(map.name);
+            SetGamepadLayout(IsGamepadLike(lastActiveDevice));
             foreach (var action in map.actions)
             {
                 for (var bindingIndex = 0; bindingIndex < action.bindings.Count; bindingIndex++)
@@ -153,6 +288,19 @@ namespace Koiusa.Keyconfig.Runtime
                     BindControl(root, action, bindingIndex, binding);
                 }
             }
+        }
+
+        private void SetGamepadLayout(bool showGamepad)
+        {
+            isGamepadLayoutVisible = showGamepad;
+            if (keyboardLayout != null) keyboardLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
+            if (mouseLayout != null) mouseLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
+            if (gamepadLayout != null) gamepadLayout.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private static bool IsGamepadLike(InputDevice device)
+        {
+            return device is Gamepad || device is Joystick;
         }
 
         private void BindControl(VisualElement root, InputAction action, int bindingIndex, InputBinding binding)
@@ -191,7 +339,20 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (string.IsNullOrWhiteSpace(path)) return string.Empty;
             var slash = path.LastIndexOf('/');
-            return (slash >= 0 ? path.Substring(slash + 1) : path).ToLowerInvariant();
+            var controlName = slash >= 0 ? path.Substring(slash + 1) : path;
+
+            // Axis children such as rightStick/y share the visual for their parent stick.
+            if (path.StartsWith("<Gamepad>/", StringComparison.OrdinalIgnoreCase))
+            {
+                var relativePath = path.Substring("<Gamepad>/".Length);
+                var childSlash = relativePath.IndexOf('/');
+                if (childSlash >= 0 && !relativePath.StartsWith("dpad/", StringComparison.OrdinalIgnoreCase))
+                {
+                    controlName = relativePath.Substring(0, childSlash);
+                }
+            }
+
+            return controlName.ToLowerInvariant();
         }
 
         private bool IsInBindingGroup(string groups)

@@ -29,6 +29,8 @@
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.UI.Runtime.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.Editor.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.Runtime.csproj" />
   <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.Runtime.csproj" />

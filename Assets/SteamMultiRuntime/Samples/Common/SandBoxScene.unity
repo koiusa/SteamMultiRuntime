@@ -508,10 +508,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: koiusa.Keyconfig.Runtime::Koiusa.Keyconfig.Runtime.InputGuideOverlay
   inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
   actionMapName: Player
-  bindingGroup: Keyboard&Mouse
+  bindingGroup: 
   layoutAsset: {fileID: 9197481963319205126, guid: c073356281ac46df8bac1a314ae739e3, type: 3}
   iconResolver: {fileID: 11400000, guid: 6415dd300497c674ba7731d62b0fb24a, type: 2}
   startVisible: 1
+  autoSwitchDeviceLayout: 1
 --- !u!114 &1435344811
 MonoBehaviour:
   m_ObjectHideFlags: 0
