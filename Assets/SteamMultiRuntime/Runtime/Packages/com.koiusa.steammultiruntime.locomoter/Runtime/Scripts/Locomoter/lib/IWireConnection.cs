@@ -60,6 +60,7 @@ namespace Koiusa.SteamMultiRuntime
         bool BlocksSwing { get; }
         bool HandlesConnectionPhysics { get; }
         bool UsesStrafeMovement { get; }
+        float StrafeBlend { get; }
         float FacingRotationSpeed { get; }
         void SetMoveDirection(Vector3 moveDirection);
     }

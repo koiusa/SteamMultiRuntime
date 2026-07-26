@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Prototype.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Packages.csproj" />
   <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
@@ -19,7 +20,6 @@
   <Project Path="Koiusa.Input.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Editor.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Editor.csproj" />

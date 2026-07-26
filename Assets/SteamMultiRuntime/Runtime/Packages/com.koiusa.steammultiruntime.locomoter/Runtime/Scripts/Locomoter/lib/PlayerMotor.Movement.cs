@@ -14,14 +14,14 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 upAxis,
             SlopeContactResolver slopeContactResolver,
             PlayerMotorSettings settings,
-            bool forcedStrafeMode)
+            float strafeBlend)
         {
             var groundNormal = slopeContactResolver.GetGroundNormal(upAxis);
             var currentSurfaceVelocity = Vector3.ProjectOnPlane(velocity, groundNormal);
 
-            var strafeInfo = DetectStrafeMovement(moveDirection, forcedStrafeMode);
-            var targetSpeed = strafeInfo.isStrafing ? settings.MoveSpeed * settings.StrafeMoveSpeedMultiplier : settings.MoveSpeed;
-            var acceleration = strafeInfo.isStrafing ? settings.GroundAcceleration * settings.StrafeAccelerationMultiplier : settings.GroundAcceleration;
+            var strafeInfo = DetectStrafeMovement(moveDirection, strafeBlend);
+            var targetSpeed = settings.MoveSpeed * Mathf.Lerp(1f, settings.StrafeMoveSpeedMultiplier, strafeInfo.blend);
+            var acceleration = settings.GroundAcceleration * Mathf.Lerp(1f, settings.StrafeAccelerationMultiplier, strafeInfo.blend);
 
             var targetSurfaceVelocity = Vector3.ProjectOnPlane(moveDirection * targetSpeed, groundNormal);
             targetSurfaceVelocity = slopeContactResolver.ConstrainHorizontalVelocity(targetSurfaceVelocity, upAxis, settings.MinGroundNormalDot);
@@ -37,12 +37,12 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 upAxis,
             SlopeContactResolver slopeContactResolver,
             PlayerMotorSettings settings,
-            bool forcedStrafeMode)
+            float strafeBlend)
         {
             var slopeNormal = slopeContactResolver.GetSteepSlopeNormal(upAxis);
             var currentSlopeVelocity = Vector3.ProjectOnPlane(velocity, slopeNormal);
-            var strafeInfo = DetectStrafeMovement(moveDirection, forcedStrafeMode);
-            var targetSpeed = strafeInfo.isStrafing ? settings.MoveSpeed * settings.StrafeMoveSpeedMultiplier : settings.MoveSpeed;
+            var strafeInfo = DetectStrafeMovement(moveDirection, strafeBlend);
+            var targetSpeed = settings.MoveSpeed * Mathf.Lerp(1f, settings.StrafeMoveSpeedMultiplier, strafeInfo.blend);
             var targetSlopeVelocity = Vector3.ProjectOnPlane(moveDirection * targetSpeed, slopeNormal);
             targetSlopeVelocity = slopeContactResolver.ConstrainHorizontalVelocity(targetSlopeVelocity, upAxis, settings.MinGroundNormalDot);
             var slideAcceleration = Vector3.ProjectOnPlane(Physics.gravity, slopeNormal);
@@ -70,12 +70,12 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 inheritedGroundVelocity,
             SlopeContactResolver slopeContactResolver,
             PlayerMotorSettings settings,
-            bool forcedStrafeMode)
+            float strafeBlend)
         {
             var currentRelativeHorizontalVelocity = Vector3.ProjectOnPlane(velocity - inheritedGroundVelocity, upAxis);
             currentRelativeHorizontalVelocity = slopeContactResolver.ConstrainHorizontalVelocity(currentRelativeHorizontalVelocity, upAxis, settings.MinGroundNormalDot);
-            var strafeInfo = DetectStrafeMovement(moveDirection, forcedStrafeMode);
-            var targetSpeed = strafeInfo.isStrafing ? settings.MoveSpeed * settings.StrafeMoveSpeedMultiplier : settings.MoveSpeed;
+            var strafeInfo = DetectStrafeMovement(moveDirection, strafeBlend);
+            var targetSpeed = settings.MoveSpeed * Mathf.Lerp(1f, settings.StrafeMoveSpeedMultiplier, strafeInfo.blend);
             var targetHorizontalVelocity = slopeContactResolver.ConstrainHorizontalVelocity(moveDirection * targetSpeed, upAxis, settings.MinGroundNormalDot);
             var nextRelativeHorizontalVelocity = Vector3.MoveTowards(currentRelativeHorizontalVelocity, targetHorizontalVelocity, settings.AirAcceleration * Time.fixedDeltaTime);
             nextRelativeHorizontalVelocity = slopeContactResolver.ConstrainHorizontalVelocity(nextRelativeHorizontalVelocity, upAxis, settings.MinGroundNormalDot);
@@ -88,7 +88,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 upAxis,
             Quaternion groundRotationDelta,
             PlayerMotorSettings settings,
-            bool forcedStrafeMode)
+            float strafeBlend)
         {
             var rotatedForward = groundRotationDelta * (currentRotation * Vector3.forward);
             var flattenedForward = Vector3.ProjectOnPlane(rotatedForward, upAxis);
@@ -101,7 +101,7 @@ namespace Koiusa.SteamMultiRuntime
                 ? Quaternion.LookRotation(flattenedForward.normalized, upAxis)
                 : currentRotation;
 
-            var strafeInfo = DetectStrafeMovement(moveDirection, forcedStrafeMode);
+            var strafeInfo = DetectStrafeMovement(moveDirection, strafeBlend);
             var facingDirection = GetFacingDirection(moveDirection, upAxis);
             if (facingDirection.sqrMagnitude <= 0.0001f)
             {
@@ -109,9 +109,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var targetRotation = Quaternion.LookRotation(facingDirection, upAxis);
-            var rotationSpeed = strafeInfo.isStrafing
-                ? settings.StrafeRotationSpeed
-                : settings.RotationSpeed;
+            var rotationSpeed = Mathf.Lerp(settings.RotationSpeed, settings.StrafeRotationSpeed, strafeInfo.blend);
 
             if (rotationSpeed <= 0f)
             {
@@ -204,18 +202,18 @@ namespace Koiusa.SteamMultiRuntime
 
         private struct StrafeInfo
         {
-            public bool isStrafing;
+            public float blend;
             public bool isBackward;
         }
 
-        private static StrafeInfo DetectStrafeMovement(Vector3 moveDirection, bool forcedStrafeMode)
+        private static StrafeInfo DetectStrafeMovement(Vector3 moveDirection, float strafeBlend)
         {
             if (moveDirection.sqrMagnitude < 0.0001f)
             {
-                return new StrafeInfo { isStrafing = false, isBackward = false };
+                return new StrafeInfo { blend = 0f, isBackward = false };
             }
 
-            return new StrafeInfo { isStrafing = forcedStrafeMode, isBackward = false };
+            return new StrafeInfo { blend = Mathf.Clamp01(strafeBlend), isBackward = false };
         }
 
         private static Vector3 GetFacingDirection(Vector3 moveDirection, Vector3 upAxis)

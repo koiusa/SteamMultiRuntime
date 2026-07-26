@@ -135,8 +135,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
-            var effectiveStrafeMode = forcedStrafeMode
-                || (traversalCoordinator != null && traversalCoordinator.UsesWireGroundStrafe);
+            var wireGroundStrafeBlend = traversalCoordinator != null
+                ? traversalCoordinator.WireGroundStrafeBlend
+                : 0f;
+            var effectiveStrafeBlend = forcedStrafeMode ? 1f : wireGroundStrafeBlend;
             var isWireSwinging = IsWireSwinging;
             var jumpConsumed = traversalCoordinator != null
                 && traversalCoordinator.ProcessMotorInput(moveDirection, jumpRequested, slopeContactResolver.IsGrounded);
@@ -181,7 +183,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     slopeContactResolver,
                     settings,
-                    effectiveStrafeMode);
+                    effectiveStrafeBlend);
                 velocity = PlayerMotorMovementLogic.ApplyGroundStepAssist(
                     velocity,
                     moveDirection,
@@ -205,7 +207,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     slopeContactResolver,
                     settings,
-                    effectiveStrafeMode);
+                    effectiveStrafeBlend);
             }
             else if (!isWireSwinging
                 && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive))
@@ -217,7 +219,7 @@ namespace Koiusa.SteamMultiRuntime
                     inheritedGroundVelocity,
                     slopeContactResolver,
                     settings,
-                    effectiveStrafeMode);
+                    effectiveStrafeBlend);
             }
 
             var preserveWallRunFacing = traversalCoordinator != null
@@ -232,10 +234,18 @@ namespace Koiusa.SteamMultiRuntime
                 if (facingDirection.sqrMagnitude > 0.0001f)
                 {
                     var targetRotation = Quaternion.LookRotation(facingDirection.normalized, upAxis);
-                    var nextRotation = Quaternion.RotateTowards(
+                    var wireRotation = Quaternion.RotateTowards(
                         rb.rotation,
                         targetRotation,
                         traversalCoordinator.WireGroundFacingRotationSpeed * Time.fixedDeltaTime);
+                    var normalRotation = PlayerMotorMovementLogic.CalculateRotation(
+                        rb.rotation,
+                        moveDirection,
+                        upAxis,
+                        groundRotationDelta,
+                        settings,
+                        forcedStrafeMode ? 1f : 0f);
+                    var nextRotation = Quaternion.Slerp(normalRotation, wireRotation, wireGroundStrafeBlend);
                     rb.MoveRotation(nextRotation);
                 }
             }
@@ -247,7 +257,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     groundRotationDelta,
                     settings,
-                    effectiveStrafeMode);
+                    effectiveStrafeBlend);
                 rb.MoveRotation(nextRotation);
             }
 

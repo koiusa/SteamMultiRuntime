@@ -27,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsWireAttached { get; }
         bool IsWireGroundActionActive { get; }
         bool UsesWireGroundStrafe { get; }
+        float WireGroundStrafeBlend { get; }
         Vector3 WireGroundFacingDirection { get; }
         float WireGroundFacingRotationSpeed { get; }
         Vector3 WireAnchorPoint { get; }

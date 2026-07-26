@@ -667,6 +667,7 @@ MonoBehaviour:
   objectPullAcceleration: 55
   outwardVelocityDamping: 1
   facingRotationSpeed: 540
+  strafeBlendDamping: 0.3
 --- !u!114 &5263148204889952332
 MonoBehaviour:
   m_ObjectHideFlags: 0

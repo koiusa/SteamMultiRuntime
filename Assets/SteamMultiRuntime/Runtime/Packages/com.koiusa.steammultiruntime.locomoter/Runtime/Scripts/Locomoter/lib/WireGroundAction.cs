@@ -11,11 +11,16 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float objectPullAcceleration = 55f;
         [SerializeField, Range(0f, 1f)] private float outwardVelocityDamping = 1f;
         [SerializeField, Min(0f)] private float facingRotationSpeed = 540f;
+        [SerializeField, Min(0.01f), Tooltip("環境へ接続した際、通常移動からWire Strafeへ移行する減衰時間です。")]
+        private float strafeBlendDamping = 0.3f;
 
         private IWireConnection connection;
         private IWireReelAction reelAction;
         private SlopeContactResolver ground;
         private Vector3 moveDirection;
+        private float strafeBlend;
+        private float strafeBlendVelocity;
+        private bool wasUsingStrafeMovement;
 
         public bool IsEnabled => isActiveAndEnabled;
         private bool HasConnection => IsEnabled
@@ -29,6 +34,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool BlocksSwing => HandlesConnectionPhysics || (HasConnection && IsPlayerGrounded);
         public bool HandlesConnectionPhysics => HasDynamicAnchor;
         public bool UsesStrafeMovement => HasConnection && IsPlayerGrounded && !HasDynamicAnchor;
+        public float StrafeBlend => UsesStrafeMovement ? strafeBlend : 0f;
         public float FacingRotationSpeed => facingRotationSpeed;
 
         private void Awake()
@@ -44,6 +50,7 @@ namespace Koiusa.SteamMultiRuntime
             maximumObjectSwingSpeed = Mathf.Max(0f, maximumObjectSwingSpeed);
             objectPullAcceleration = Mathf.Max(0f, objectPullAcceleration);
             facingRotationSpeed = Mathf.Max(0f, facingRotationSpeed);
+            strafeBlendDamping = Mathf.Max(0.01f, strafeBlendDamping);
         }
 
         public void SetMoveDirection(Vector3 value)
@@ -53,6 +60,21 @@ namespace Koiusa.SteamMultiRuntime
 
         private void FixedUpdate()
         {
+            var usesStrafeMovement = UsesStrafeMovement;
+            if (usesStrafeMovement && !wasUsingStrafeMovement)
+            {
+                strafeBlend = 0f;
+                strafeBlendVelocity = 0f;
+            }
+            strafeBlend = Mathf.SmoothDamp(
+                strafeBlend,
+                usesStrafeMovement ? 1f : 0f,
+                ref strafeBlendVelocity,
+                strafeBlendDamping,
+                Mathf.Infinity,
+                Time.fixedDeltaTime);
+            wasUsingStrafeMovement = usesStrafeMovement;
+
             if (!HandlesConnectionPhysics) return;
 
             var targetBody = connection.AnchorBody;

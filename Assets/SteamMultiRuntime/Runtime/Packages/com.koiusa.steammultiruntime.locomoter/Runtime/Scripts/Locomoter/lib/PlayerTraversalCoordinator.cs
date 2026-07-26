@@ -36,6 +36,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsWireAttached => wireConnection != null && wireConnection.IsEnabled && wireConnection.IsAttached;
         public bool IsWireGroundActionActive => IsWireAttached && wireGroundAction != null && wireGroundAction.BlocksSwing;
         public bool UsesWireGroundStrafe => IsWireGroundActionActive && wireGroundAction.UsesStrafeMovement;
+        public float WireGroundStrafeBlend => UsesWireGroundStrafe ? Mathf.Clamp01(wireGroundAction.StrafeBlend) : 0f;
         public Vector3 WireGroundFacingDirection => UsesWireGroundStrafe && rb != null
             ? WireAnchorPoint - rb.worldCenterOfMass
             : Vector3.zero;

@@ -79,6 +79,7 @@ namespace Koiusa.SteamMultiRuntime
                 EditorGUILayout.Toggle("Wire Attached", coordinator.IsWireAttached);
                 EditorGUILayout.Toggle("Ground Wire Action", coordinator.IsWireGroundActionActive);
                 EditorGUILayout.Toggle("Ground Environment Strafe", coordinator.UsesWireGroundStrafe);
+                EditorGUILayout.Slider("Wire Strafe Blend", coordinator.WireGroundStrafeBlend, 0f, 1f);
                 if (coordinator.IsWireAttached)
                 {
                     EditorGUILayout.Vector3Field("Wire Anchor", coordinator.WireAnchorPoint);
