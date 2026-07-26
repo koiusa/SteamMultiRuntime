@@ -1,7 +1,7 @@
 using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(WireConnectionFeature)), RequireComponent(typeof(WireGrappleTargetingFeature)), DisallowMultipleComponent]
+    [RequireComponent(typeof(WireTraversalFeature)), RequireComponent(typeof(WireGrappleTargetingFeature)), DisallowMultipleComponent]
     public sealed class WireAttachAction : MonoBehaviour, IWireAttachAction
     {
         private IWireConnection connection;

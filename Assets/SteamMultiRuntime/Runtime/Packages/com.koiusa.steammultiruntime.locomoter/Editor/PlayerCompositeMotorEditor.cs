@@ -17,7 +17,7 @@ namespace Koiusa.SteamMultiRuntime
                 "• PlayerMotor - 基本的な移動（自動でアタッチされます）\n" +
                 "• WallTraversalFeature + Wall Actions - 壁移動（オプション）\n" +
                 "• LadderTraversalFeature - 梯子昇降（オプション）\n" +
-                "• WireConnectionFeature + Wire Actions - ワイヤー接続と操作（オプション）",
+                "• WireTraversalFeature + Wire Actions - ワイヤー接続と操作（オプション）",
                 MessageType.Info);
 
             EditorGUILayout.Space();
@@ -68,14 +68,14 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.Space(2f);
             wireFeatureExpanded = EditorGUILayout.Foldout(
                 wireFeatureExpanded,
-                "Wire Connection Feature",
+                "Wire Traversal Feature",
                 true,
                 EditorStyles.foldoutHeader);
             if (wireFeatureExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawComponentRow<WireConnectionFeature>(gameObject, "Feature");
-                if (gameObject.GetComponent<WireConnectionFeature>() != null)
+                DrawComponentRow<WireTraversalFeature>(gameObject, "Feature");
+                if (gameObject.GetComponent<WireTraversalFeature>() != null)
                 {
                     EditorGUILayout.LabelField("Actions", EditorStyles.miniBoldLabel);
                     EditorGUI.indentLevel++;
@@ -91,11 +91,11 @@ namespace Koiusa.SteamMultiRuntime
                     DrawReadOnlyComponentRow<WireLineVisualFeature>(gameObject, "Line Visual");
                     EditorGUI.indentLevel--;
 
-                    if (!WireConnectionFeatureEditor.HasCompleteStack(gameObject))
+                    if (!WireTraversalFeatureEditor.HasCompleteStack(gameObject))
                     {
-                        EditorGUILayout.HelpBox("Wire Connection Featureの構成が不足しています。", MessageType.Error);
-                        if (GUILayout.Button("Repair Wire Connection Feature"))
-                            WireConnectionFeatureEditor.EnsureStack(gameObject);
+                        EditorGUILayout.HelpBox("Wire Traversal Featureの構成が不足しています。", MessageType.Error);
+                        if (GUILayout.Button("Repair Wire Traversal Feature"))
+                            WireTraversalFeatureEditor.EnsureStack(gameObject);
                     }
                 }
                 EditorGUI.indentLevel--;

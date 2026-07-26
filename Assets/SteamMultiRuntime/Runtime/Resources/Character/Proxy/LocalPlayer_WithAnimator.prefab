@@ -456,7 +456,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireConnectionFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireTraversalFeature
   visual: {fileID: 810000000000000002}
   constraintMode: 0
   elasticStretchLimit: 1.5

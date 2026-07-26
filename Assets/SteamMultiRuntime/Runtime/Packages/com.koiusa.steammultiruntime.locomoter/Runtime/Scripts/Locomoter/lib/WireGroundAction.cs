@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     /// <summary>Uses a grounded player as the pivot for swinging an attached dynamic Rigidbody.</summary>
-    [RequireComponent(typeof(WireConnectionFeature)), RequireComponent(typeof(SlopeContactResolver)), DisallowMultipleComponent]
+    [RequireComponent(typeof(WireTraversalFeature)), RequireComponent(typeof(SlopeContactResolver)), DisallowMultipleComponent]
     public sealed class WireGroundAction : MonoBehaviour, IWireGroundAction
     {
         [SerializeField, Min(0f)] private float objectSwingAcceleration = 12f;

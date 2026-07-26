@@ -38,9 +38,9 @@ namespace Koiusa.SteamMultiRuntime
             DrawFeatureRow<LadderClimbAction>(gameObject, "Climb Action", false);
             DrawFeatureRow<LadderDetachAction>(gameObject, "Detach Action", false);
             EditorGUI.indentLevel--;
-            DrawFeatureRow<WireConnectionFeature>(gameObject, "Wire Connection Feature");
+            DrawFeatureRow<WireTraversalFeature>(gameObject, "Wire Traversal Feature");
 
-            var wire = gameObject.GetComponent<WireConnectionFeature>();
+            var wire = gameObject.GetComponent<WireTraversalFeature>();
             if (wire != null)
             {
                 EditorGUI.indentLevel++;
@@ -54,12 +54,12 @@ namespace Koiusa.SteamMultiRuntime
                 DrawFeatureRow<WireLineVisualFeature>(gameObject, "Line Visual", false);
                 EditorGUI.indentLevel--;
 
-                if (!WireConnectionFeatureEditor.HasCompleteStack(gameObject))
+                if (!WireTraversalFeatureEditor.HasCompleteStack(gameObject))
                 {
-                    EditorGUILayout.HelpBox("Wire Connection Featureの構成が不足しています。", MessageType.Error);
-                    if (GUILayout.Button("Repair Wire Connection Feature"))
+                    EditorGUILayout.HelpBox("Wire Traversal Featureの構成が不足しています。", MessageType.Error);
+                    if (GUILayout.Button("Repair Wire Traversal Feature"))
                     {
-                        WireConnectionFeatureEditor.EnsureStack(gameObject);
+                        WireTraversalFeatureEditor.EnsureStack(gameObject);
                     }
                 }
             }
