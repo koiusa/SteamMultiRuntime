@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private IWallJumpTraversalFeature wallJumpFeature;
         private IWallSlideTraversalFeature wallSlideFeature;
         private ILadderTraversalFeature ladderFeature;
+        private IWireSwingTraversalFeature wireFeature;
         private float wallTraversalBlockedUntilTime;
         private bool wallRunBlockedUntilWallExit;
         private float stateEnteredAt;
@@ -23,6 +24,13 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsEnabled => isActiveAndEnabled;
         public PlayerTraversalState CurrentState { get; private set; } = PlayerTraversalState.Grounded;
         public float StateElapsedTime => Mathf.Max(0f, Time.time - stateEnteredAt);
+        public bool IsOnLadder => ladderFeature != null && ladderFeature.IsEnabled && ladderFeature.IsOnLadder;
+        public float LadderSpeed => IsOnLadder ? ladderFeature.ClimbSpeed : 0f;
+        public bool IsWallRunning => wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning;
+        public Vector3 WallNormal => IsWallRunning ? wallRunFeature.WallNormal : Vector3.zero;
+        public bool IsWireAttached => wireFeature != null && wireFeature.IsEnabled && wireFeature.IsAttached;
+        public Vector3 WireAnchorPoint => IsWireAttached ? wireFeature.AnchorPoint : Vector3.zero;
+        public float WireRopeLength => IsWireAttached ? wireFeature.RopeLength : 0f;
 
         private void Awake()
         {
@@ -39,7 +47,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 return IsEnabled && (CurrentState == PlayerTraversalState.WallRun
                     || CurrentState == PlayerTraversalState.WallSlide
-                    || CurrentState == PlayerTraversalState.Ladder);
+                    || CurrentState == PlayerTraversalState.Ladder
+                    || IsWireAttached);
             }
         }
 
@@ -53,6 +62,46 @@ namespace Koiusa.SteamMultiRuntime
             wallJumpFeature?.ResetState();
             wallSlideFeature?.ResetState();
             ladderFeature?.ResetState();
+            wireFeature?.Detach();
+        }
+
+        public void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection)
+        {
+            if (!IsEnabled || wireFeature == null || !wireFeature.IsEnabled)
+            {
+                return;
+            }
+
+            wireFeature.SetReelInput(reelInput);
+            wireFeature.SetGrappleInput(held, origin, aimDirection);
+        }
+
+        public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength)
+        {
+            wireFeature?.SetReplicatedState(isAttached, anchorPoint, ropeLength);
+        }
+
+        public bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded)
+        {
+            if (!IsEnabled || wireFeature == null || !wireFeature.IsEnabled)
+            {
+                return false;
+            }
+
+            wireFeature.SetMoveDirection(moveDirection);
+            if (!wireFeature.IsAttached || !jumpRequested)
+            {
+                return false;
+            }
+
+            if (isGrounded)
+            {
+                wireFeature.DetachUntilInputRelease();
+                return false;
+            }
+
+            wireFeature.ReelByJump();
+            return true;
         }
 
         public bool HasIntent(TraversalIntentFlags flag)
@@ -81,6 +130,16 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             CurrentIntentFlags = BuildIntentFlags(moveInput, jumpRequested, isGrounded);
+            if (IsWireAttached)
+            {
+                activeLadderFeature?.ResetState();
+                activeWallRunFeature?.ResetState();
+                activeWallJumpFeature?.ResetState();
+                activeWallSlideFeature?.ResetState();
+                SetState(PlayerTraversalState.WireSwing);
+                return;
+            }
+
             if (!hasFeatureTraversal)
             {
                 SetState(isGrounded ? PlayerTraversalState.Grounded : PlayerTraversalState.Airborne);
@@ -201,6 +260,7 @@ namespace Koiusa.SteamMultiRuntime
             wallJumpFeature = GetComponent<IWallJumpTraversalFeature>();
             wallSlideFeature = GetComponent<IWallSlideTraversalFeature>();
             ladderFeature = GetComponent<ILadderTraversalFeature>();
+            wireFeature = GetComponent<IWireSwingTraversalFeature>();
         }
 
         private void SetState(PlayerTraversalState nextState)

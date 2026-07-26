@@ -10,7 +10,8 @@ namespace Koiusa.SteamMultiRuntime
         WallSlide = 3,
         Ladder = 4,
         WallJump = 5,
-        Cooldown = 6,
+        WireSwing = 6,
+        Cooldown = 7,
     }
 
     public interface IPlayerTraversalCoordinator
@@ -19,7 +20,17 @@ namespace Koiusa.SteamMultiRuntime
         PlayerTraversalState CurrentState { get; }
         float StateElapsedTime { get; }
         bool IsTraversalActive { get; }
+        bool IsOnLadder { get; }
+        float LadderSpeed { get; }
+        bool IsWallRunning { get; }
+        Vector3 WallNormal { get; }
+        bool IsWireAttached { get; }
+        Vector3 WireAnchorPoint { get; }
+        float WireRopeLength { get; }
         void ResetState();
+        void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection);
+        void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength);
+        bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded);
         void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded);
     }
 }

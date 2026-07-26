@@ -17,7 +17,6 @@ namespace Koiusa.SteamMultiRuntime
         private SlopeContactResolver slopeContactResolver;
         private PlayerMotorGrounding grounding;
         private IPlayerTraversalCoordinator traversalCoordinator;
-        private IWireSwingTraversalFeature wireSwingFeature;
 
         private float jumpDetachUntilTime;
         private Vector3 inheritedGroundVelocity;
@@ -35,7 +34,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => !IsGrounded && isAirborneFromJump && VerticalVelocity > 0f;
         public bool IsFallingAfterJump => !IsGrounded && isAirborneFromJump && VerticalVelocity <= 0f;
         public bool IsFreefall => !IsGrounded && !isAirborneFromJump;
-        private bool IsWireSwinging => wireSwingFeature != null && wireSwingFeature.IsEnabled && wireSwingFeature.IsAttached;
+        private bool IsWireSwinging => traversalCoordinator != null && traversalCoordinator.IsEnabled && traversalCoordinator.IsWireAttached;
         public Vector3 InheritedGroundVelocity => inheritedGroundVelocity;
         public float HorizontalVelocity { get; private set; }
         public float VerticalVelocity { get; private set; }
@@ -48,7 +47,6 @@ namespace Koiusa.SteamMultiRuntime
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             grounding = new PlayerMotorGrounding();
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
-            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
 
             if (IsSettingsEmpty(settings))
             {
@@ -93,7 +91,6 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ResetState()
         {
-            wireSwingFeature?.Detach();
             slopeContactResolver.Clear();
             groundMotionTracker.ClearGroundContacts();
             grounding?.ResetState();
@@ -136,22 +133,13 @@ namespace Koiusa.SteamMultiRuntime
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
             var isWireSwinging = IsWireSwinging;
-            var jumpConsumed = false;
-            wireSwingFeature?.SetMoveDirection(moveDirection);
-            if (isWireSwinging && jumpRequested)
+            var jumpConsumed = traversalCoordinator != null
+                && traversalCoordinator.ProcessMotorInput(moveDirection, jumpRequested, slopeContactResolver.IsGrounded);
+            if (jumpConsumed)
             {
-                if (slopeContactResolver.IsGrounded)
-                {
-                    wireSwingFeature.DetachUntilInputRelease();
-                    isWireSwinging = false;
-                }
-                else
-                {
-                    wireSwingFeature.ReelByJump();
-                    jumpRequested = false;
-                    jumpConsumed = true;
-                }
+                jumpRequested = false;
             }
+            isWireSwinging = IsWireSwinging;
 
             var canUseGroundContacts = Time.time >= jumpDetachUntilTime;
             var hasGroundContact = !isWireSwinging && canUseGroundContacts && slopeContactResolver.IsGrounded;

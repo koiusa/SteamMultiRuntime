@@ -20,7 +20,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerCompositeMotor motor;
         private PhysicsPresentationSmoother presentationSmoother;
         private IPlayerMoveInputReceiver moveInputReceiver;
-        private IWireSwingTraversalFeature wireSwingFeature;
+        private IPlayerTraversalCoordinator traversalCoordinator;
         private Vector3 moveDirection;
         private Vector2 moveInput;
         private int jumpToken;
@@ -86,7 +86,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
-            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
+            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
 
             if (inputActionsConfig == null)
             {
@@ -165,14 +165,11 @@ namespace Koiusa.SteamMultiRuntime
 
             motor.SetStrafeMode(isStrafeMode);
 
-            if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
-            {
-                wireSwingFeature.SetReelInput(reelInput);
-                wireSwingFeature.SetGrappleInput(
-                    grappleHeld,
-                    targetRigidbody.worldCenterOfMass,
-                    grappleAimDirection);
-            }
+            traversalCoordinator?.SetWireInput(
+                grappleHeld,
+                reelInput,
+                targetRigidbody.worldCenterOfMass,
+                grappleAimDirection);
 
             moveInputReceiver?.SetMoveInput(moveInput);
             moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);

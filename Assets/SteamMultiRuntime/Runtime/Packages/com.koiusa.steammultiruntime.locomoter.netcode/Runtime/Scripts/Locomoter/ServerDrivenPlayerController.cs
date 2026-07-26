@@ -25,9 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private Transform injectedInputReferenceTransform;
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
-        private ILadderTraversalFeature ladderTraversalFeature;
-        private IWallRunTraversalFeature wallRunTraversalFeature;
-        private IWireSwingTraversalFeature wireSwingFeature;
+        private IPlayerTraversalCoordinator traversalCoordinator;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
@@ -63,10 +61,10 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => UseLocalMotorState && motor != null ? motor.IsJumping : netMovementFlagsState.Value.IsJumping;
         public bool IsFreefall => UseLocalMotorState && motor != null ? motor.IsFreefall : netMovementFlagsState.Value.IsFreefall;
         public bool IsFallingAfterJump => UseLocalMotorState && motor != null ? motor.IsFallingAfterJump : netMovementFlagsState.Value.IsFallingAfterJump;
-        public bool IsOnLadder => UseLocalMotorState ? ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder : netMovementFlagsState.Value.IsOnLadder;
-        public float LadderSpeed => UseLocalMotorState && ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : netMovementFlagsState.Value.LadderSpeed;
-        public bool IsWallRunning => UseLocalMotorState ? wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning : netMovementFlagsState.Value.IsWallRunning;
-        public Vector3 WallNormal => UseLocalMotorState && wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : netMovementFlagsState.Value.WallNormal;
+        public bool IsOnLadder => UseLocalMotorState ? traversalCoordinator != null && traversalCoordinator.IsOnLadder : netMovementFlagsState.Value.IsOnLadder;
+        public float LadderSpeed => UseLocalMotorState && traversalCoordinator != null ? traversalCoordinator.LadderSpeed : netMovementFlagsState.Value.LadderSpeed;
+        public bool IsWallRunning => UseLocalMotorState ? traversalCoordinator != null && traversalCoordinator.IsWallRunning : netMovementFlagsState.Value.IsWallRunning;
+        public Vector3 WallNormal => UseLocalMotorState && traversalCoordinator != null ? traversalCoordinator.WallNormal : netMovementFlagsState.Value.WallNormal;
         public bool IsStrafeMode => IsOwner ? localInputState.IsStrafeMode : netInputState.Value.IsStrafeMode;
         public Vector3 InheritedGroundVelocity => UseLocalMotorState && motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => IsOwner ? localInputState.MoveInput : netInputState.Value.MoveInput;
@@ -143,9 +141,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
-            ladderTraversalFeature = GetComponent<ILadderTraversalFeature>();
-            wallRunTraversalFeature = GetComponent<IWallRunTraversalFeature>();
-            wireSwingFeature = GetComponent<IWireSwingTraversalFeature>();
+            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
 
             if (inputActionsConfig == null)
             {
@@ -361,14 +357,11 @@ namespace Koiusa.SteamMultiRuntime
                 lastConsumedJumpToken = inputState.JumpToken;
             }
 
-            if (wireSwingFeature != null && wireSwingFeature.IsEnabled)
-            {
-                wireSwingFeature.SetReelInput(inputState.ReelInput);
-                wireSwingFeature.SetGrappleInput(
-                    inputState.GrappleHeld,
-                    targetRigidbody.worldCenterOfMass,
-                    inputState.GrappleAimDirection);
-            }
+            traversalCoordinator?.SetWireInput(
+                inputState.GrappleHeld,
+                inputState.ReelInput,
+                targetRigidbody.worldCenterOfMass,
+                inputState.GrappleAimDirection);
 
             if (motor != null)
             {
@@ -395,13 +388,13 @@ namespace Koiusa.SteamMultiRuntime
                 motor.IsJumping,
                 motor.IsFreefall,
                 motor.IsFallingAfterJump,
-                ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder,
-                ladderTraversalFeature != null ? ladderTraversalFeature.ClimbSpeed : 0f,
-                wallRunTraversalFeature != null && wallRunTraversalFeature.IsWallRunning,
-                wallRunTraversalFeature != null ? wallRunTraversalFeature.WallNormal : Vector3.zero);
+                traversalCoordinator != null && traversalCoordinator.IsOnLadder,
+                traversalCoordinator != null ? traversalCoordinator.LadderSpeed : 0f,
+                traversalCoordinator != null && traversalCoordinator.IsWallRunning,
+                traversalCoordinator != null ? traversalCoordinator.WallNormal : Vector3.zero);
 
-            netWireSwingState.Value = wireSwingFeature != null && wireSwingFeature.IsAttached
-                ? new WireSwingNetworkState(true, wireSwingFeature.AnchorPoint, wireSwingFeature.RopeLength)
+            netWireSwingState.Value = traversalCoordinator != null && traversalCoordinator.IsWireAttached
+                ? new WireSwingNetworkState(true, traversalCoordinator.WireAnchorPoint, traversalCoordinator.WireRopeLength)
                 : new WireSwingNetworkState(false, Vector3.zero, 0f);
         }
 
@@ -412,7 +405,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplyWireSwingState(WireSwingNetworkState state)
         {
-            wireSwingFeature?.SetReplicatedState(state.IsAttached, state.AnchorPoint, state.RopeLength);
+            traversalCoordinator?.SetReplicatedWireState(state.IsAttached, state.AnchorPoint, state.RopeLength);
         }
 
         private void SyncMotorSettingsToNetwork()
