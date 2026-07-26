@@ -245,7 +245,10 @@ namespace Koiusa.SteamMultiRuntime
                         groundRotationDelta,
                         settings,
                         forcedStrafeMode ? 1f : 0f);
-                    var nextRotation = Quaternion.Slerp(normalRotation, wireRotation, wireGroundStrafeBlend);
+                    var nextRotation = Quaternion.Slerp(
+                        normalRotation,
+                        wireRotation,
+                        traversalCoordinator.WireGroundFacingBlend);
                     rb.MoveRotation(nextRotation);
                 }
             }

@@ -13,6 +13,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float facingRotationSpeed = 540f;
         [SerializeField, Min(0.01f), Tooltip("環境へ接続した際、通常移動からWire Strafeへ移行する減衰時間です。")]
         private float strafeBlendDamping = 0.3f;
+        [SerializeField, Min(0.01f), Tooltip("アンカー方向への旋回へ移行する減衰時間です。")]
+        private float facingBlendDamping = 0.12f;
 
         private IWireConnection connection;
         private IWireReelAction reelAction;
@@ -20,6 +22,8 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 moveDirection;
         private float strafeBlend;
         private float strafeBlendVelocity;
+        private float facingBlend;
+        private float facingBlendVelocity;
         private bool wasUsingStrafeMovement;
 
         public bool IsEnabled => isActiveAndEnabled;
@@ -35,6 +39,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool HandlesConnectionPhysics => HasDynamicAnchor;
         public bool UsesStrafeMovement => HasConnection && IsPlayerGrounded && !HasDynamicAnchor;
         public float StrafeBlend => UsesStrafeMovement ? strafeBlend : 0f;
+        public float FacingBlend => UsesStrafeMovement ? facingBlend : 0f;
         public float FacingRotationSpeed => facingRotationSpeed;
 
         private void Awake()
@@ -51,6 +56,7 @@ namespace Koiusa.SteamMultiRuntime
             objectPullAcceleration = Mathf.Max(0f, objectPullAcceleration);
             facingRotationSpeed = Mathf.Max(0f, facingRotationSpeed);
             strafeBlendDamping = Mathf.Max(0.01f, strafeBlendDamping);
+            facingBlendDamping = Mathf.Max(0.01f, facingBlendDamping);
         }
 
         public void SetMoveDirection(Vector3 value)
@@ -65,12 +71,21 @@ namespace Koiusa.SteamMultiRuntime
             {
                 strafeBlend = 0f;
                 strafeBlendVelocity = 0f;
+                facingBlend = 0f;
+                facingBlendVelocity = 0f;
             }
             strafeBlend = Mathf.SmoothDamp(
                 strafeBlend,
                 usesStrafeMovement ? 1f : 0f,
                 ref strafeBlendVelocity,
                 strafeBlendDamping,
+                Mathf.Infinity,
+                Time.fixedDeltaTime);
+            facingBlend = Mathf.SmoothDamp(
+                facingBlend,
+                usesStrafeMovement ? 1f : 0f,
+                ref facingBlendVelocity,
+                facingBlendDamping,
                 Mathf.Infinity,
                 Time.fixedDeltaTime);
             wasUsingStrafeMovement = usesStrafeMovement;

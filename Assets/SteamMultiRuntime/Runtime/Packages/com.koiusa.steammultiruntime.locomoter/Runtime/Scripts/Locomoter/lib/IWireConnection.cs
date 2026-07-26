@@ -61,6 +61,7 @@ namespace Koiusa.SteamMultiRuntime
         bool HandlesConnectionPhysics { get; }
         bool UsesStrafeMovement { get; }
         float StrafeBlend { get; }
+        float FacingBlend { get; }
         float FacingRotationSpeed { get; }
         void SetMoveDirection(Vector3 moveDirection);
     }
