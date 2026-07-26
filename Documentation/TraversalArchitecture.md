@@ -205,7 +205,8 @@ Wire機能全体の中心コンポーネントであり、接続状態とロー�
 ### WireAttachAction
 
 - Grapple入力の押下と解放を処理する
-- `WireGrappleTargetingFeature`へ接続先解決を依頼する
+- Coordinatorが評価済みの`WireAimResult`を受け取る
+- `Valid`と`Obstructed`の候補を、それぞれの実際のRaycast命中点へ接続する
 - アタッチとデタッチを実行する
 
 ### WireSwingAction
@@ -238,9 +239,30 @@ Facing Blend Damping: 0.12 sec
 
 ### WireGrappleTargetingFeature
 
-- マウスポインタ方向から接続候補をRaycastする
+- 照準原点からポインタが示す地点までRaycastし、手前側の最初の非Owner Colliderを評価する
 - アタッチ可能距離を管理する
+- `grappleLayers`外のColliderが最初に当たった場合は無効とする
+- ポインタ地点より手前の接続可能Colliderは`Obstructed`、地点付近の接続可能Colliderは`Valid`とする
 - Wire最大長とは独立している
+
+照準評価は`WireAimResult`へ集約されます。
+
+```text
+PlayerPointerAim
+  ↓ requested target point
+PlayerTraversalCoordinator
+  ↓ WireGrappleTargetingFeature.EvaluateTarget
+WireAimResult
+  ├─ Invalid: 接続不可
+  ├─ Obstructed: ポインタ地点の手前へ接続可能
+  └─ Valid: ポインタ地点へ接続可能
+       ↓
+WireAimCursorOverlay / WireAttachAction
+```
+
+`WireAimResult`は表示と発射で共有し、`RequestedPoint`、実際の`AttachPoint`、`AnchorTransform`を保持します。これにより、カーソル表示時と発射時で別々の判定結果を使うことを避けています。照準地点が変化した場合は、発射処理の直前にも再評価します。
+
+`WireAimCursorOverlay`の既定表示は、`Valid`がシアンの十字、`Obstructed`がオレンジの斜線付きダイヤ、`Invalid`が赤いダイヤです。`Obstructed`も`CanAttach`であり、画面上のポインタ地点ではなく手前の障害物へ接続します。
 
 ### WireLineVisualFeature
 

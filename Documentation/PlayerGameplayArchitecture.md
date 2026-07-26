@@ -20,7 +20,7 @@ com.koiusa.steammultiruntime.player.netcode
 
 ## 現在の実装状況
 
-`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤実装と、標準Character Prefabへの適用は完了しています。Local Playerでは`Player/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`から各Skillを発動できます。一方で、Networkとの接続はまだ行われていません。
+`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Player/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定する実装ですが、Combat機能はPlay Modeを含む動作確認が未完了です。
 
 ### 実装済み
 
@@ -33,6 +33,8 @@ com.koiusa.steammultiruntime.player.netcode
 - `PlayerCharacterCoordinatorEditor`によるMovement、Skill、Combatの論理階層表示と任意Featureの追加
 - 5種類の標準Character PrefabへのCoordinatorおよび初期Featureの適用
 - `PlayerSkillInputController`によるLocal PlayerのAttack／Dash／Guard／Heal入力接続
+- `NetworkPlayerSkillController`によるOwner入力、Skill発動／Guard解除のServerRpc接続
+- Active Skill IndexとActivation SequenceのServer書き込み・全Client読み取り同期
 - Input Guide OverlayによるSkillキーのBinding名とライブ入力状態表示
 
 `PlayerCharacterCoordinator`が現在提供する主な入口は以下です。
@@ -42,8 +44,10 @@ characterCoordinator.TryActivateSkill(skillId, direction, target);
 characterCoordinator.ResetState();
 ```
 
-### 未実装・未接続
+### 未完了・未接続・未確認
 
+- Combat全般のPlay Mode動作確認（Hit判定、Damage、Heal、Guard倍率、死亡状態）
+- Network環境でのCombat動作確認とServer Authorityの検証
 - Cooldown StateのNetwork同期
 - Network Skill Stateを利用したRemote側Animation／Effect再生
 - Sword AttackのLight／Heavy／Combo Action
@@ -51,7 +55,7 @@ characterCoordinator.ResetState();
 - Cooldown、Active Duration、Skill固有値の設定アセットへの分離
 - Player Gameplay用のRuntime／Editor自動テスト
 
-Local Playerの各Skill入力は`TryActivateSkill(...)`を呼び出します。Guardは入力押下中だけ継続し、入力解放時にキャンセルします。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作についても継続して確認が必要です。
+Local Playerの各Skill入力は`TryActivateSkill(...)`を直接呼び出します。Network PlayerではOwnerだけが入力を取得し、ServerRpcを経由してServer上の同じ入口を呼び出します。HostはRPCを経由せずServer処理を直接実行します。Guardは入力押下中だけ継続し、入力解放時にLocalまたはServer上のActive Skillをキャンセルします。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作については継続して確認が必要です。
 
 Player Action Mapには以下のSkill入力を定義しています。
 
@@ -117,7 +121,9 @@ Local Player
 
 Network Player
 ├─ Owner
-│  └─ NetworkPlayerSkillController                       [実装済]
+│  └─ NetworkPlayerSkillController
+│     ├─ InputActionLeaseによるOwner入力取得             [実装済]
+│     └─ Skill発動／Guard解除要求                         [実装済]
 └─ Server
    ├─ Skill発動／Guard解除ServerRpc                      [実装済]
    ├─ PlayerSkillCoordinator.TryActivate(...)            [実装済]
@@ -128,6 +134,8 @@ Network Player
 ```
 
 Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
+
+`ActiveSkillIndex`はAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。現在はRemote側のAnimation／Effect再生へは未接続です。
 
 ### 設定クラスの予定
 
@@ -235,3 +243,6 @@ Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付き�
 | `HealSkillFeature` | 生存中かつHPが減っている場合に回復する |
 
 各Skillには共通してSkill ID、Cooldown、Active Durationがあります。Dashだけは固有のDurationをモーション時間にも使用します。
+
+> [!CAUTION]
+> Combat関連クラスとPrefab設定は存在しますが、現時点では動作未確認です。この節の動作説明はコード上の意図を示すもので、検証済み仕様ではありません。

@@ -11,6 +11,7 @@ PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArc
 - NPCのModule構成、Local／Network駆動: [NpcArchitecture.md](NpcArchitecture.md)
 - Character Model、Profile、選択UI: [CharacterArchitecture.md](CharacterArchitecture.md)
 - Steam Lobby、Stage選択、Scene遷移: [SessionArchitecture.md](SessionArchitecture.md)
+- Camera切替、入力、障害物回避: [CameraArchitecture.md](CameraArchitecture.md)
 - Editor拡張: [EditorSpecification.md](EditorSpecification.md)
 
 Unity、Netcode for GameObjects、Input Systemなどの外部実装、Editor専用クラス、Sample、Thirdpartyの詳細は対象外です。
@@ -133,6 +134,8 @@ Camera
 ```
 
 `PlayerAnimatorStateDriver`は入力を再判定せず、ControllerとCoordinatorが公開する確定済み状態をAnimatorパラメータへ変換します。
+
+Camera Mixer、Focus Marker、入力割り当て、障害物回避の詳細は[CameraArchitecture.md](CameraArchitecture.md)を正本とします。
 
 ## Runtime全体の境界
 
