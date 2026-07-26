@@ -26,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         Vector3 WallNormal { get; }
         bool IsWireAttached { get; }
         bool IsWireGroundActionActive { get; }
+        bool UsesWireGroundStrafe { get; }
         Vector3 WireAnchorPoint { get; }
         float WireRopeLength { get; }
         void ResetState();

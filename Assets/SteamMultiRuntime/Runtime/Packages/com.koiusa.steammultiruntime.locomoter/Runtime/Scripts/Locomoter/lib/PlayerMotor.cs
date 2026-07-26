@@ -135,6 +135,8 @@ namespace Koiusa.SteamMultiRuntime
 
             var upAxis = GetUpAxis();
             var velocity = rb.linearVelocity;
+            var effectiveStrafeMode = forcedStrafeMode
+                || (traversalCoordinator != null && traversalCoordinator.UsesWireGroundStrafe);
             var isWireSwinging = IsWireSwinging;
             var jumpConsumed = traversalCoordinator != null
                 && traversalCoordinator.ProcessMotorInput(moveDirection, jumpRequested, slopeContactResolver.IsGrounded);
@@ -179,7 +181,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     slopeContactResolver,
                     settings,
-                    forcedStrafeMode);
+                    effectiveStrafeMode);
                 velocity = PlayerMotorMovementLogic.ApplyGroundStepAssist(
                     velocity,
                     moveDirection,
@@ -203,7 +205,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     slopeContactResolver,
                     settings,
-                    forcedStrafeMode);
+                    effectiveStrafeMode);
             }
             else if (!isWireSwinging
                 && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive))
@@ -215,7 +217,7 @@ namespace Koiusa.SteamMultiRuntime
                     inheritedGroundVelocity,
                     slopeContactResolver,
                     settings,
-                    forcedStrafeMode);
+                    effectiveStrafeMode);
             }
 
             var preserveWallRunFacing = traversalCoordinator != null
@@ -229,7 +231,7 @@ namespace Koiusa.SteamMultiRuntime
                     upAxis,
                     groundRotationDelta,
                     settings,
-                    forcedStrafeMode);
+                    effectiveStrafeMode);
                 rb.MoveRotation(nextRotation);
             }
 

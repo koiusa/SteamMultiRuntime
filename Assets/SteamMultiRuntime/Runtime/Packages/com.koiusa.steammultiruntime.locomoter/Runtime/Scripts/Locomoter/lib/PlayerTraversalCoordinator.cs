@@ -33,7 +33,8 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsWallRunning => wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning;
         public Vector3 WallNormal => IsWallRunning ? wallRunFeature.WallNormal : Vector3.zero;
         public bool IsWireAttached => wireConnection != null && wireConnection.IsEnabled && wireConnection.IsAttached;
-        public bool IsWireGroundActionActive => IsWireAttached && wireGroundAction != null && wireGroundAction.HandlesConnectionPhysics;
+        public bool IsWireGroundActionActive => IsWireAttached && wireGroundAction != null && wireGroundAction.BlocksSwing;
+        public bool UsesWireGroundStrafe => IsWireGroundActionActive && wireGroundAction.UsesStrafeMovement;
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
 

@@ -37,4 +37,13 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class WireGrappleTargetingFeatureEditor : UnityEditor.Editor { public override void OnInspectorGUI() { EditorGUILayout.HelpBox("WireAttachActionが利用する接続先判定です。", MessageType.Info); DrawDefaultInspector(); } }
     [CustomEditor(typeof(WireLineVisualFeature))]
     public sealed class WireLineVisualFeatureEditor : UnityEditor.Editor { public override void OnInspectorGUI() { EditorGUILayout.HelpBox("WireConnectionが利用する表示設定です。", MessageType.Info); DrawDefaultInspector(); } }
+    [CustomEditor(typeof(WireGroundAction))]
+    public sealed class WireGroundActionEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            EditorGUILayout.HelpBox("接地中、Dynamic Rigidbodyは振り回し、環境接続ではMaximum Range内をストライフ移動できます。Jumpでは解除しません。", MessageType.Info);
+            DrawDefaultInspector();
+        }
+    }
 }

@@ -73,7 +73,8 @@ namespace Koiusa.SteamMultiRuntime
                 EditorGUILayout.Toggle("Traversal Active", coordinator.IsTraversalActive);
                 EditorGUILayout.FloatField("State Time", coordinator.StateElapsedTime);
                 EditorGUILayout.Toggle("Wire Attached", coordinator.IsWireAttached);
-                EditorGUILayout.Toggle("Ground Object Action", coordinator.IsWireGroundActionActive);
+                EditorGUILayout.Toggle("Ground Wire Action", coordinator.IsWireGroundActionActive);
+                EditorGUILayout.Toggle("Ground Environment Strafe", coordinator.UsesWireGroundStrafe);
                 if (coordinator.IsWireAttached)
                 {
                     EditorGUILayout.Vector3Field("Wire Anchor", coordinator.WireAnchorPoint);

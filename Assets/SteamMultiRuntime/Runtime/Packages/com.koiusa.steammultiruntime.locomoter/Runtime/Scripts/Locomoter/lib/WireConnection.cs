@@ -58,9 +58,12 @@ namespace Koiusa.SteamMultiRuntime
             if (!IsAttached || Body == null || Body.isKinematic || (groundAction != null && groundAction.HandlesConnectionPhysics)) return;
             var toAnchor = AnchorPoint - Body.worldCenterOfMass;
             var distance = toAnchor.magnitude;
-            if (distance <= RopeLength + ropeSlack || distance < 0.001f) return;
+            var constraintLength = groundAction != null && groundAction.UsesStrafeMovement
+                ? MaximumRopeLength
+                : RopeLength;
+            if (distance <= constraintLength + ropeSlack || distance < 0.001f) return;
             var towardAnchor = toAnchor / distance;
-            Body.AddForce(towardAnchor * ((distance - RopeLength) * pullAcceleration), ForceMode.Acceleration);
+            Body.AddForce(towardAnchor * ((distance - constraintLength) * pullAcceleration), ForceMode.Acceleration);
             var awaySpeed = Vector3.Dot(Body.linearVelocity, -towardAnchor);
             if (awaySpeed > 0f) Body.linearVelocity += towardAnchor * (awaySpeed * radialVelocityDamping);
         }

@@ -49,6 +49,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsEnabled { get; }
         bool BlocksSwing { get; }
         bool HandlesConnectionPhysics { get; }
+        bool UsesStrafeMovement { get; }
         void SetMoveDirection(Vector3 moveDirection);
     }
 }
