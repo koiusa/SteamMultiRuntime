@@ -156,6 +156,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 lastGamepadAimCursorPosition = aimCursorPosition;
                 hasLastGamepadAimCursorPosition = true;
+                SyncSystemPointerPosition();
             }
             if (HasGamepadActivity())
             {
@@ -257,6 +258,19 @@ namespace Koiusa.SteamMultiRuntime
                 || IsActiveGamepadControl(grappleFireAction)
                 || IsActiveGamepadControl(reelAction)
                 || IsActiveGamepadControl(aimCursorMoveAction);
+        }
+
+        private void SyncSystemPointerPosition()
+        {
+            if (!gamepadAimCursorSettings.SyncSystemPointerPosition || Mouse.current == null)
+            {
+                return;
+            }
+
+            if ((Mouse.current.position.ReadValue() - aimCursorPosition).sqrMagnitude > 0.25f)
+            {
+                Mouse.current.WarpCursorPosition(aimCursorPosition);
+            }
         }
 
         private static bool IsActiveGamepadControl(InputAction action)
