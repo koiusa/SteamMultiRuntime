@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public class TestMotionMover : NetworkBehaviour, IGroundMotionSource
+    public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource
     {
         private static readonly Vector3 UnitScale = Vector3.one;
 
