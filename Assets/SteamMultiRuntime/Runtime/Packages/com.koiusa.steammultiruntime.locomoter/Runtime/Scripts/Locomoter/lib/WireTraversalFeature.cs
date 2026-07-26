@@ -27,6 +27,8 @@ namespace Koiusa.SteamMultiRuntime
         private IWireReelAction reelAction;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
+        private Transform visualAnchorTransform;
+        private Vector3 visualAnchorLocalPoint;
         private Vector3 fixedAnchorPoint;
 
         public bool IsEnabled => isActiveAndEnabled;
@@ -64,9 +66,9 @@ namespace Koiusa.SteamMultiRuntime
             elasticStretchLimit = Mathf.Max(0f, elasticStretchLimit);
         }
 
-        private void Update()
+        private void LateUpdate()
         {
-            if (IsAttached) wireVisual?.UpdateEndpoints(AnchorPoint);
+            if (IsAttached) wireVisual?.UpdateEndpoints(VisualAnchorPoint);
         }
 
         private void FixedUpdate()
@@ -130,6 +132,10 @@ namespace Koiusa.SteamMultiRuntime
             AnchorBody = movingAnchor != null ? movingAnchor.GetComponentInParent<Rigidbody>() : null;
             fixedAnchorPoint = worldPoint;
             anchorLocalPoint = movingAnchor != null ? movingAnchor.InverseTransformPoint(worldPoint) : Vector3.zero;
+            visualAnchorTransform = FindPresentationTransform(movingAnchor, out var presentationRoot) ?? movingAnchor;
+            visualAnchorLocalPoint = visualAnchorTransform != null
+                ? (presentationRoot ?? movingAnchor).InverseTransformPoint(worldPoint)
+                : Vector3.zero;
             var attachDistance = Vector3.Distance(Body.worldCenterOfMass, worldPoint);
             // Keep normal ground traversal free inside the maximum. Beyond it, start at
             // the actual distance and let FixedUpdate reel the excess in at a stable rate.
@@ -145,6 +151,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             IsAttached = false;
             anchorTransform = null;
+            visualAnchorTransform = null;
             AnchorBody = null;
             wireVisual?.SetVisible(false);
         }
@@ -153,6 +160,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (!isAttached) { Detach(); return; }
             anchorTransform = null;
+            visualAnchorTransform = null;
             AnchorBody = null;
             fixedAnchorPoint = anchorPoint;
             // Preserve an authoritative in-progress auto-reel length, which can
@@ -160,6 +168,29 @@ namespace Koiusa.SteamMultiRuntime
             RopeLength = Mathf.Max(minimumRopeLength, ropeLength);
             IsAttached = true;
             wireVisual?.SetVisible(true);
+        }
+
+        private Vector3 VisualAnchorPoint => visualAnchorTransform != null
+            ? visualAnchorTransform.TransformPoint(visualAnchorLocalPoint)
+            : AnchorPoint;
+
+        private static Transform FindPresentationTransform(Transform anchor, out Transform presentationRoot)
+        {
+            // Moving environment objects keep their collider on the physics root and
+            // render a smoothed child pose. Follow that pose for the line endpoint,
+            // while AnchorPoint continues to use the authoritative physics transform.
+            for (var current = anchor; current != null; current = current.parent)
+            {
+                var presentation = current.Find("Presentation");
+                if (presentation != null)
+                {
+                    presentationRoot = current;
+                    return presentation;
+                }
+            }
+
+            presentationRoot = null;
+            return null;
         }
     }
 }

@@ -91,7 +91,7 @@ namespace Koiusa.SteamMultiRuntime
             ApplyMotionMatrix(currentPhysicsMatrix);
         }
 
-        private void LateUpdate()
+        private void Update()
         {
             if (!ShouldApplyMotionLocally() || presentationTransform == null || Time.fixedDeltaTime <= 0f)
             {
