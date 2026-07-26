@@ -5,13 +5,16 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver
+    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver, IPlayerMotorMotionSink
     {
         private Rigidbody rb;
         private IPlayerMotor baseMotor;
         private IPlayerTraversalCoordinator traversalCoordinator;
         private Vector2 rawMoveInput;
         private Quaternion moveReferenceRotation;
+        private PlayerMotorMotionRequest activeMotion;
+        private float activeMotionEndsAt;
+        private bool hasActiveMotion;
 
         private void Awake()
         {
@@ -103,6 +106,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ResetState()
         {
+            hasActiveMotion = false;
             baseMotor?.ResetState();
             traversalCoordinator?.ResetState();
         }
@@ -147,6 +151,54 @@ namespace Koiusa.SteamMultiRuntime
                     jumpRequested && !motorResult.JumpConsumed,
                     baseMotor.IsGrounded);
             }
+
+            ApplyActiveMotion();
+        }
+
+        public bool TryStartMotion(PlayerMotorMotionRequest request)
+        {
+            if (!isActiveAndEnabled || request.Direction.sqrMagnitude <= 0.0001f || request.Duration <= 0f)
+            {
+                return false;
+            }
+
+            if (hasActiveMotion && Time.time < activeMotionEndsAt && request.Priority < activeMotion.Priority)
+            {
+                return false;
+            }
+
+            activeMotion = request;
+            activeMotionEndsAt = Time.time + request.Duration;
+            hasActiveMotion = true;
+            traversalCoordinator?.ResetState();
+            return true;
+        }
+
+        public void StopMotion(int ownerId)
+        {
+            if (hasActiveMotion && activeMotion.OwnerId == ownerId)
+            {
+                hasActiveMotion = false;
+            }
+        }
+
+        private void ApplyActiveMotion()
+        {
+            if (!hasActiveMotion || rb == null)
+            {
+                return;
+            }
+
+            if (Time.time >= activeMotionEndsAt)
+            {
+                hasActiveMotion = false;
+                return;
+            }
+
+            var upAxis = GetUpAxis();
+            var direction = Vector3.ProjectOnPlane(activeMotion.Direction, upAxis).normalized;
+            var verticalVelocity = Vector3.Project(rb.linearVelocity, upAxis);
+            rb.linearVelocity = direction * activeMotion.Speed + verticalVelocity;
         }
 
         private static Vector3 GetUpAxis()

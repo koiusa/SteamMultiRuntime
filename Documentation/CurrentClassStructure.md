@@ -1,10 +1,13 @@
 # Current Class Structure
 
+PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArchitecture.md](PlayerGameplayArchitecture.md)を参照してください。
+
 この文書は、現在のSteamMultiRuntime固有Runtime実装について、クラスの配置、責務、所有関係、処理の流れをまとめたものです。
 
 詳細仕様は領域別の文書へ分離しています。
 
 - Traversalの責務、状態、設定、依存規則: [TraversalArchitecture.md](TraversalArchitecture.md)
+- Player Skill／Combatの現在構成と予定クラス: [PlayerGameplayArchitecture.md](PlayerGameplayArchitecture.md)
 - NPCのModule構成、Local／Network駆動: [NpcArchitecture.md](NpcArchitecture.md)
 - Character Model、Profile、選択UI: [CharacterArchitecture.md](CharacterArchitecture.md)
 - Steam Lobby、Stage選択、Scene遷移: [SessionArchitecture.md](SessionArchitecture.md)

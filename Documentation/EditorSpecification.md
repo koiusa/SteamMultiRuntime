@@ -17,6 +17,10 @@
 `Action`で終わるコンポーネントには橙の稲妻アイコンを表示します。
 同じGameObjectに多数のコンポーネントが並んでも、役割を素早く判別できます。
 
+`PlayerCharacterCoordinatorEditor`はMovement、Skill、Combatを論理階層で表示します。
+Skill／Combat Featureは各行の`Add`から個別に装着でき、通常のComponentメニューから個別に削除できます。
+Skill Featureには紫の専用アイコンを表示します。
+
 | 対象 | Editor | 主な仕様 |
 |---|---|---|
 | `LocalPlayerController` | `LocalPlayerControllerEditor` | 使用中の`PlayerCompositeMotor`を表示する |

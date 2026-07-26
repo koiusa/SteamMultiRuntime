@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         private static readonly Texture2D FeatureIcon = CreateFeatureIcon();
         private static readonly Texture2D ActionIcon = CreateActionIcon();
+        private static readonly Texture2D SkillIcon = CreateSkillIcon();
 
         static TraversalComponentHeader()
         {
@@ -65,6 +66,12 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            if (componentType.Name.EndsWith("SkillFeature", StringComparison.Ordinal))
+            {
+                icon = SkillIcon;
+                return true;
+            }
+
             if (componentType.Name.EndsWith("Feature", StringComparison.Ordinal))
             {
                 icon = FeatureIcon;
@@ -107,6 +114,18 @@ namespace Koiusa.SteamMultiRuntime
                 var lower = y <= 8 && x >= 5 && x <= 8 - (7 - y) / 2;
                 var bridge = y >= 6 && y <= 9 && x >= 4 && x <= 11;
                 return upper || lower || bridge ? orange : default;
+            });
+        }
+
+        private static Texture2D CreateSkillIcon()
+        {
+            var purple = new Color32(190, 92, 255, 255);
+            return CreateIcon("Player Skill", (x, y) =>
+            {
+                // Four-point star: a player-triggered special ability.
+                var dx = Mathf.Abs(x - 7.5f);
+                var dy = Mathf.Abs(y - 7.5f);
+                return dx + dy <= 6f && (dx <= 2.5f || dy <= 2.5f) ? purple : default;
             });
         }
 
