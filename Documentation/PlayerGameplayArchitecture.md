@@ -2,6 +2,42 @@
 
 Playerの移動、スキル、戦闘は、以下の論理階層で管理します。すべて同じPlayer GameObjectへ配置し、Transformの子には分けません。
 
+## 現在の実装状況
+
+`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤実装と、標準Character Prefabへの適用は完了しています。一方で、入力およびNetworkとの接続はまだ行われていないため、現時点では通常操作やNetwork経由でSkillを発動できません。
+
+### 実装済み
+
+- `PlayerCharacterCoordinator`をMovement、Skill、Combatへの共通アクセスポイントとして追加
+- `PlayerSkillCoordinator`によるSkill ID検索、排他実行、キャンセル、Cooldown、開始／終了通知
+- `DashSkillFeature`、`SwordAttackSkillFeature`、`GuardSkillFeature`、`HealSkillFeature`の初期実装
+- `PlayerCombatCoordinator`によるHP、被ダメージ倍率、範囲Hit判定の仲介
+- `PlayerHealthFeature`、`PlayerDamageReceiverFeature`、`PlayerHitDetectionFeature`の初期実装
+- `PlayerCharacterCoordinatorEditor`によるMovement、Skill、Combatの論理階層表示と任意Featureの追加
+- 5種類の標準Character PrefabへのCoordinatorおよび初期Featureの適用
+- Editor初回更新時のPrefab移行処理と、手動再適用メニュー
+
+`PlayerCharacterCoordinator`が現在提供する主な入口は以下です。
+
+```csharp
+characterCoordinator.TryActivateSkill(skillId, direction, target);
+characterCoordinator.ResetState();
+```
+
+### 未実装・未接続
+
+- `PlayerGameplayInputReader`から`PlayerCharacterCoordinator.TryActivateSkill(...)`へのSkill入力接続
+- `ServerDrivenPlayerController`へのSkill入力統合
+- Owner入力を表す`PlayerSkillInputState`
+- Skill状態を同期する`PlayerSkillRuntimeState`
+- Server AuthorityによるSkill発動可否、Hit判定、Damage、Healの確定
+- Sword AttackのLight／Heavy／Combo Action
+- Guard Counter Action
+- Skill設定のSerializable設定クラスまたはScriptableObjectへの分離
+- Player Gameplay用のRuntime／Editor自動テスト
+
+コード上では`TryActivateSkill(...)`の実ゲーム側からの呼び出しはまだなく、現在の直接的な動作確認手段は専用Editorからのテスト発動です。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作についても継続して確認が必要です。
+
 ## 予定クラス構成
 
 以下をPlayer Gameplayの最終的なクラス構成とします。`[実装済]`は現在存在するクラス、`[予定]`は今後分割・追加するクラスです。
