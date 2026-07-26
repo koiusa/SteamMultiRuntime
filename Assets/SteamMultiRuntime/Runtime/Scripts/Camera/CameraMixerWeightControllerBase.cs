@@ -21,6 +21,13 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Transition")]
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
 
+        [Header("Camera Collision")]
+        [SerializeField] private LayerMask cameraCollisionLayers = Physics.DefaultRaycastLayers;
+        [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.3f;
+        [SerializeField, Min(0.01f)] private float minimumDistanceFromTarget = 0.5f;
+        [SerializeField, Min(0f)] private float collisionDamping = 0.7f;
+        [SerializeField, Min(0f)] private float collisionRecoveryDamping = 1.0f;
+
         private float targetDefaultWeight;
         private float targetFollowWeight;
         private IFocusMarkerContext context;
@@ -38,6 +45,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ConfigureCameraInputActions();
+            ConfigureCameraCollision();
 
             context = ResolveContext();
         }
@@ -150,6 +158,38 @@ namespace Koiusa.SteamMultiRuntime
                 var actionReference = InputActionReference.Create(action);
                 runtimeActionReferences.Add(actionReference);
                 axisController.Input.InputAction = actionReference;
+            }
+        }
+
+        private void ConfigureCameraCollision()
+        {
+            foreach (var camera in GetComponentsInChildren<CinemachineCamera>(true))
+            {
+                var deoccluder = camera.GetComponent<CinemachineDeoccluder>();
+                if (deoccluder == null)
+                {
+                    deoccluder = camera.gameObject.AddComponent<CinemachineDeoccluder>();
+                }
+
+                deoccluder.CollideAgainst = cameraCollisionLayers;
+                deoccluder.MinimumDistanceFromTarget = minimumDistanceFromTarget;
+                deoccluder.AvoidObstacles = new CinemachineDeoccluder.ObstacleAvoidance
+                {
+                    Enabled = true,
+                    DistanceLimit = 0f,
+                    MinimumOcclusionTime = 0f,
+                    CameraRadius = cameraCollisionRadius,
+                    UseFollowTarget = new CinemachineDeoccluder.ObstacleAvoidance.FollowTargetSettings
+                    {
+                        Enabled = true,
+                        YOffset = 0f
+                    },
+                    Strategy = CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PullCameraForward,
+                    MaximumEffort = 4,
+                    SmoothingTime = 0f,
+                    Damping = collisionRecoveryDamping,
+                    DampingWhenOccluded = collisionDamping
+                };
             }
         }
     }
