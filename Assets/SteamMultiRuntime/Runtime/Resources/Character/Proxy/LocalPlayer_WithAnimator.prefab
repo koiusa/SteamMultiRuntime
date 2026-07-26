@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 4387352645211788965}
   - component: {fileID: 566156994252057087}
   - component: {fileID: 4987499974731793392}
+  - component: {fileID: 7184251149495578003}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
   m_TagString: Untagged
@@ -619,7 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000010, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.DashSkillFeature
-  skillId: 
+  definition: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
   cooldown: 1
   activeDuration: 0.2
   speed: 12
@@ -637,7 +638,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000011, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.SwordAttackSkillFeature
-  skillId: 
+  definition: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
   cooldown: 1
   activeDuration: 0.2
   damage: 20
@@ -658,7 +659,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.GuardSkillFeature
-  skillId: 
+  definition: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
   cooldown: 1
   activeDuration: 0.2
   incomingDamageScale: 0.25
@@ -674,7 +675,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.HealSkillFeature
-  skillId: 
+  definition: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
   cooldown: 1
   activeDuration: 0.2
   amount: 25
@@ -718,6 +719,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
+--- !u!114 &7184251149495578003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66a72990ab334434a3552d5f3aec4d0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillInputController
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  attackActionPath: Player/Attack
+  dashActionPath: Player/Dash
+  guardActionPath: Player/Guard
+  healActionPath: Player/Heal
+  attackSkill: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
+  dashSkill: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
+  guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
+  healSkill: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
+  directionReference: {fileID: 4035978081068949003}
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

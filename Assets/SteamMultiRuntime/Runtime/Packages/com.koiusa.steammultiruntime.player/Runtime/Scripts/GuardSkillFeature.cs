@@ -7,6 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField, Range(0f, 1f)] private float incomingDamageScale = 0.25f;
         private IPlayerCombatCoordinator combat;
+        protected override float ActiveDuration => float.PositiveInfinity;
 
         private void Awake() => combat = GetComponent<IPlayerCombatCoordinator>();
 

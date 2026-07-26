@@ -4,14 +4,15 @@ namespace Koiusa.SteamMultiRuntime
 {
     public abstract class PlayerSkillFeature : MonoBehaviour, IPlayerSkillFeature
     {
-        [SerializeField] private string skillId;
+        [SerializeField] private PlayerSkillDefinition definition;
         [SerializeField, Min(0f)] private float cooldown = 1f;
         [SerializeField, Min(0f)] private float activeDuration = 0.2f;
 
         private float cooldownEndsAt;
         private float activeEndsAt;
 
-        public string SkillId => string.IsNullOrWhiteSpace(skillId) ? GetType().Name : skillId;
+        public PlayerSkillDefinition Definition => definition;
+        public string SkillId => definition != null ? definition.Id : string.Empty;
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsActive { get; private set; }
         public float CooldownRemaining => Mathf.Max(0f, cooldownEndsAt - Time.time);
@@ -20,7 +21,11 @@ namespace Koiusa.SteamMultiRuntime
 
         public virtual bool CanActivate(PlayerSkillContext context)
         {
-            return IsEnabled && !IsActive && CooldownRemaining <= 0f;
+            return definition != null
+                && !string.IsNullOrWhiteSpace(definition.Id)
+                && IsEnabled
+                && !IsActive
+                && CooldownRemaining <= 0f;
         }
 
         public bool TryActivate(PlayerSkillContext context)

@@ -50,6 +50,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 EditorGUI.indentLevel++;
                 DrawReadOnly<PlayerSkillCoordinator>(owner, "Coordinator");
+                DrawSkillInput(owner);
                 DrawOptional<DashSkillFeature>(owner, "Dash Skill");
                 DrawOptional<SwordAttackSkillFeature>(owner, "Sword Attack Skill");
                 DrawOptional<GuardSkillFeature>(owner, "Guard Skill");
@@ -90,6 +91,30 @@ namespace Koiusa.SteamMultiRuntime
                     Undo.AddComponent<T>(owner);
                     MarkDirty(owner);
                 }
+            }
+        }
+
+        private static void DrawSkillInput(GameObject owner)
+        {
+            var component = owner.GetComponent<PlayerSkillInputController>();
+            var supportsLocalInput = owner.GetComponent<LocalPlayerController>() != null;
+            if (component == null && !supportsLocalInput)
+            {
+                EditorGUILayout.LabelField("Skill Input Controller", "Not used for this player");
+                return;
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(
+                    "Skill Input Controller",
+                    component != null ? "Configured on this GameObject" : "Not added");
+
+                var buttonLabel = component == null ? "Add" : "Configure";
+                if (!GUILayout.Button(buttonLabel, GUILayout.Width(72f))) return;
+                if (component == null) Undo.AddComponent<PlayerSkillInputController>(owner);
+                PlayerCharacterPrefabSetup.ConfigureSkillInput(owner);
+                MarkDirty(owner);
             }
         }
 

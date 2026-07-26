@@ -4,18 +4,21 @@ Playerの移動、スキル、戦闘は、以下の論理階層で管理しま�
 
 ## 現在の実装状況
 
-`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤実装と、標準Character Prefabへの適用は完了しています。一方で、入力およびNetworkとの接続はまだ行われていないため、現時点では通常操作やNetwork経由でSkillを発動できません。
+`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤実装と、標準Character Prefabへの適用は完了しています。Local Playerでは`Player/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`から各Skillを発動できます。一方で、Networkとの接続はまだ行われていません。
 
 ### 実装済み
 
 - `PlayerCharacterCoordinator`をMovement、Skill、Combatへの共通アクセスポイントとして追加
 - `PlayerSkillCoordinator`によるSkill ID検索、排他実行、キャンセル、Cooldown、開始／終了通知
+- `PlayerSkillDefinition` ScriptableObjectによる固定Skill IDと表示名の一元管理
 - `DashSkillFeature`、`SwordAttackSkillFeature`、`GuardSkillFeature`、`HealSkillFeature`の初期実装
 - `PlayerCombatCoordinator`によるHP、被ダメージ倍率、範囲Hit判定の仲介
 - `PlayerHealthFeature`、`PlayerDamageReceiverFeature`、`PlayerHitDetectionFeature`の初期実装
 - `PlayerCharacterCoordinatorEditor`によるMovement、Skill、Combatの論理階層表示と任意Featureの追加
 - 5種類の標準Character PrefabへのCoordinatorおよび初期Featureの適用
 - Editor初回更新時のPrefab移行処理と、手動再適用メニュー
+- `PlayerSkillInputController`によるLocal PlayerのAttack／Dash／Guard／Heal入力接続
+- Input Guide OverlayによるSkillキーのBinding名とライブ入力状態表示
 
 `PlayerCharacterCoordinator`が現在提供する主な入口は以下です。
 
@@ -26,17 +29,25 @@ characterCoordinator.ResetState();
 
 ### 未実装・未接続
 
-- `PlayerGameplayInputReader`から`PlayerCharacterCoordinator.TryActivateSkill(...)`へのSkill入力接続
 - `ServerDrivenPlayerController`へのSkill入力統合
 - Owner入力を表す`PlayerSkillInputState`
 - Skill状態を同期する`PlayerSkillRuntimeState`
 - Server AuthorityによるSkill発動可否、Hit判定、Damage、Healの確定
 - Sword AttackのLight／Heavy／Combo Action
 - Guard Counter Action
-- Skill設定のSerializable設定クラスまたはScriptableObjectへの分離
+- Cooldown、Active Duration、Skill固有値の設定アセットへの分離
 - Player Gameplay用のRuntime／Editor自動テスト
 
-コード上では`TryActivateSkill(...)`の実ゲーム側からの呼び出しはまだなく、現在の直接的な動作確認手段は専用Editorからのテスト発動です。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作についても継続して確認が必要です。
+Local Playerの各Skill入力は`TryActivateSkill(...)`を呼び出します。Guardは入力押下中だけ継続し、入力解放時にキャンセルします。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作についても継続して確認が必要です。
+
+Player Action Mapには以下のSkill入力を定義しています。
+
+| Action | Keyboard／Mouse | Gamepad |
+|---|---|---|
+| `Player/Attack` | Left Click | Button West |
+| `Player/Dash` | Left Alt | Right Trigger |
+| `Player/Guard` | G | Left Shoulder |
+| `Player/Heal` | H | D-pad Down |
 
 ## 予定クラス構成
 
@@ -86,7 +97,9 @@ Player
 
 ```text
 Local Player
-└─ PlayerGameplayInputReader
+├─ PlayerGameplayInputReader
+│  └─ Movement／Traversal入力
+└─ PlayerSkillInputController
    └─ PlayerCharacterCoordinator.TryActivateSkill(...)
 
 Network Player
@@ -106,8 +119,11 @@ Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinat
 ### 設定クラスの予定
 
 ```text
+PlayerSkillDefinition                                   [実装済]
+├─ Id
+└─ Display Name
+
 PlayerSkillSettings                                     [予定]
-├─ SkillId
 ├─ Cooldown
 └─ ActiveDuration
 
@@ -125,7 +141,7 @@ AttackSkillSettings                                     [予定]
 └─ Combo定義
 ```
 
-現在は各Feature内のSerializeFieldに設定を保持しています。複数Characterや装備間で設定を共有する段階で、上記のSerializable設定クラスまたはScriptableObjectへ分離します。
+固定IDと表示名は`PlayerSkillDefinition`へ分離済みです。Cooldown、Active Duration、Damageなどの動作設定は現在も各Feature内のSerializeFieldに保持しています。複数Characterや装備間で設定を共有する段階で、上記の設定クラスまたはScriptableObjectへ分離します。
 
 ## 標準Character Prefab
 
@@ -174,11 +190,11 @@ PlayerCharacterCoordinator
 入力およびNetworkコードは具象Skillを直接操作せず、次の共通入口を使用します。
 
 ```csharp
-characterCoordinator.TryActivateSkill("DashSkillFeature", moveDirection);
-characterCoordinator.TryActivateSkill("SwordAttackSkillFeature", aimDirection);
+characterCoordinator.TryActivateSkill(dashSkillDefinition, moveDirection);
+characterCoordinator.TryActivateSkill(swordAttackSkillDefinition, aimDirection);
 ```
 
-`skillId`をInspectorで設定した場合は、その値を使用します。未設定時はコンポーネント型名がIDになります。
+各Featureと入力Bindingは同じ`PlayerSkillDefinition`を参照します。Definitionには変更されない固定IDと表示名を保持し、Definition未設定またはIDが空のSkillは発動できません。初期Skillには`skill.dash`、`skill.sword_attack`、`skill.guard`、`skill.heal`を割り当てています。Network通信やセーブデータではSO参照ではなく、この固定IDを使用します。
 
 ## 依存方向
 

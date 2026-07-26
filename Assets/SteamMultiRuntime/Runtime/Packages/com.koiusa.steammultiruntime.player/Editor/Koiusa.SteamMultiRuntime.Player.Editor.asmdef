@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Koiusa.SteamMultiRuntime.Player.Runtime",
-        "GUID:553d555c7e4d2e0489f667accc75a33e"
+        "GUID:553d555c7e4d2e0489f667accc75a33e",
+        "Koiusa.Input.Core.Runtime"
     ],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],

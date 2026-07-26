@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
 
     public interface IPlayerSkillFeature
     {
+        PlayerSkillDefinition Definition { get; }
         string SkillId { get; }
         bool IsEnabled { get; }
         bool IsActive { get; }

@@ -2,7 +2,9 @@
     "name": "Koiusa.SteamMultiRuntime.Player.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:553d555c7e4d2e0489f667accc75a33e"
+        "GUID:553d555c7e4d2e0489f667accc75a33e",
+        "Koiusa.Input.Core.Runtime",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -28,6 +28,11 @@ namespace Koiusa.SteamMultiRuntime
             return Skills != null && Skills.TryActivate(skillId, direction, target);
         }
 
+        public bool TryActivateSkill(PlayerSkillDefinition definition, Vector3 direction, GameObject target = null)
+        {
+            return definition != null && TryActivateSkill(definition.Id, direction, target);
+        }
+
         public void ResetState()
         {
             Skills?.CancelActiveSkill();
