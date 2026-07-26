@@ -108,10 +108,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             screenAimCursor.SetPosition(screenPosition);
-            var hasValidTarget = wireTargeting != null
-                && wireTargeting.IsEnabled
-                && wireTargeting.HasClearLineToTarget(origin, targetPoint, targetCollider);
-            screenAimCursor.SetTargetValidity(hasValidTarget);
+            var targetState = wireTargeting != null && wireTargeting.IsEnabled
+                ? wireTargeting.EvaluateTarget(origin, targetPoint, targetCollider)
+                : ScreenAimTargetState.Invalid;
+            screenAimCursor.SetTargetState(targetState);
             screenAimCursor.SetVisible(hasScreenPosition && canTarget);
         }
 

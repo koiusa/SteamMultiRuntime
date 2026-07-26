@@ -17,7 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector2 screenPosition;
         private bool isVisible;
         private float shownAt;
-        private bool isTargetValid = true;
+        private ScreenAimTargetState targetState = ScreenAimTargetState.Invalid;
 
         public void SetPosition(Vector2 position)
         {
@@ -34,9 +34,9 @@ namespace Koiusa.SteamMultiRuntime
             isVisible = visible;
         }
 
-        public void SetTargetValidity(bool isValid)
+        public void SetTargetState(ScreenAimTargetState state)
         {
-            isTargetValid = isValid;
+            targetState = state;
         }
 
         private void OnGUI()
@@ -52,17 +52,28 @@ namespace Koiusa.SteamMultiRuntime
             var halfSize = Mathf.Lerp(OpenHalfSize, ClosedHalfSize, closeProgress);
             var crossGap = Mathf.Lerp(OpenCrossGap, ClosedCrossGap, closeProgress);
             var previousColor = GUI.color;
-            GUI.color = isTargetValid
-                ? new Color(0.2f, 0.9f, 1f, 0.95f)
-                : new Color(1f, 0.2f, 0.15f, 0.95f);
-
-            if (isTargetValid)
+            GUI.color = targetState switch
             {
-                DrawCross(guiPosition, crossGap);
+                ScreenAimTargetState.Valid => new Color(0.2f, 0.9f, 1f, 0.95f),
+                ScreenAimTargetState.Obstructed => new Color(1f, 0.58f, 0.1f, 0.95f),
+                _ => new Color(1f, 0.2f, 0.15f, 0.95f),
+            };
+
+            if (targetState != ScreenAimTargetState.Invalid)
+            {
+                if (targetState == ScreenAimTargetState.Valid)
+                {
+                    DrawCross(guiPosition, crossGap);
+                }
+                else
+                {
+                    DrawDiamond(guiPosition, halfSize);
+                    DrawRotatedLine(guiPosition, halfSize * 2.4f, -45f);
+                }
             }
             else
             {
-                DrawDiamond(guiPosition, halfSize);
+                DrawDiamond(guiPosition, OpenHalfSize);
             }
 
             GUI.color = previousColor;

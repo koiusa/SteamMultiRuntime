@@ -62,18 +62,18 @@ namespace Koiusa.SteamMultiRuntime
             return false;
         }
 
-        public bool HasClearLineToTarget(Vector3 origin, Vector3 targetPoint, Collider targetCollider)
+        public ScreenAimTargetState EvaluateTarget(Vector3 origin, Vector3 targetPoint, Collider targetCollider)
         {
             if (targetCollider == null || (grappleLayers.value & (1 << targetCollider.gameObject.layer)) == 0)
             {
-                return false;
+                return ScreenAimTargetState.Invalid;
             }
 
             var offset = targetPoint - origin;
             var distance = offset.magnitude;
             if (distance <= 0.001f || distance > maximumRange)
             {
-                return false;
+                return ScreenAimTargetState.Invalid;
             }
 
             CacheOwner();
@@ -82,10 +82,12 @@ namespace Koiusa.SteamMultiRuntime
             for (var i = 0; i < hits.Length; i++)
             {
                 if (IsOwnerCollider(hits[i].collider)) continue;
-                return hits[i].collider == targetCollider;
+                return hits[i].collider == targetCollider
+                    ? ScreenAimTargetState.Valid
+                    : ScreenAimTargetState.Obstructed;
             }
 
-            return false;
+            return ScreenAimTargetState.Invalid;
         }
 
         private void CacheOwner()
