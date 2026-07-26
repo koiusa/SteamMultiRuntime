@@ -58,7 +58,7 @@ namespace Koiusa.SteamMultiRuntime
             if (!IsAttached || Body == null || Body.isKinematic || (groundAction != null && groundAction.HandlesConnectionPhysics)) return;
             var toAnchor = AnchorPoint - Body.worldCenterOfMass;
             var distance = toAnchor.magnitude;
-            var constraintLength = groundAction != null && groundAction.UsesStrafeMovement
+            var constraintLength = groundAction != null && groundAction.UsesMaximumRangeConstraint
                 ? MaximumRopeLength
                 : RopeLength;
             if (distance <= constraintLength + ropeSlack || distance < 0.001f) return;

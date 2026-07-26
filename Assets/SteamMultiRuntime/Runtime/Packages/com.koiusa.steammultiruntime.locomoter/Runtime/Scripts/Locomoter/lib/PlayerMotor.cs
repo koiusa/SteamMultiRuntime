@@ -223,7 +223,23 @@ namespace Koiusa.SteamMultiRuntime
             var preserveWallRunFacing = traversalCoordinator != null
                 && traversalCoordinator.IsEnabled
                 && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun;
-            if (!preserveWallRunFacing)
+            var useWireGroundFacing = traversalCoordinator != null
+                && traversalCoordinator.IsEnabled
+                && traversalCoordinator.UsesWireGroundStrafe;
+            if (useWireGroundFacing)
+            {
+                var facingDirection = Vector3.ProjectOnPlane(traversalCoordinator.WireGroundFacingDirection, upAxis);
+                if (facingDirection.sqrMagnitude > 0.0001f)
+                {
+                    var targetRotation = Quaternion.LookRotation(facingDirection.normalized, upAxis);
+                    var nextRotation = Quaternion.RotateTowards(
+                        rb.rotation,
+                        targetRotation,
+                        traversalCoordinator.WireGroundFacingRotationSpeed * Time.fixedDeltaTime);
+                    rb.MoveRotation(nextRotation);
+                }
+            }
+            else if (!preserveWallRunFacing)
             {
                 var nextRotation = PlayerMotorMovementLogic.CalculateRotation(
                     rb.rotation,

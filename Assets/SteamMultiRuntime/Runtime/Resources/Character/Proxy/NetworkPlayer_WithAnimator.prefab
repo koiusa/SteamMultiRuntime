@@ -639,6 +639,7 @@ MonoBehaviour:
   maximumObjectSwingSpeed: 10
   objectPullAcceleration: 55
   outwardVelocityDamping: 1
+  facingRotationSpeed: 540
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

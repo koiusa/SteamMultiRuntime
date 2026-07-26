@@ -10,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float maximumObjectSwingSpeed = 10f;
         [SerializeField, Min(0f)] private float objectPullAcceleration = 55f;
         [SerializeField, Range(0f, 1f)] private float outwardVelocityDamping = 1f;
+        [SerializeField, Min(0f)] private float facingRotationSpeed = 540f;
 
         private IWireConnection connection;
         private SlopeContactResolver ground;
@@ -27,6 +28,11 @@ namespace Koiusa.SteamMultiRuntime
         public bool BlocksSwing => HasGroundConnection;
         public bool HandlesConnectionPhysics => HasGroundConnection && HasDynamicAnchor;
         public bool UsesStrafeMovement => HasGroundConnection && !HasDynamicAnchor;
+        public bool UsesMaximumRangeConstraint => IsEnabled
+            && connection != null
+            && connection.IsAttached
+            && !HasDynamicAnchor;
+        public float FacingRotationSpeed => facingRotationSpeed;
 
         private void Awake()
         {
@@ -39,6 +45,7 @@ namespace Koiusa.SteamMultiRuntime
             objectSwingAcceleration = Mathf.Max(0f, objectSwingAcceleration);
             maximumObjectSwingSpeed = Mathf.Max(0f, maximumObjectSwingSpeed);
             objectPullAcceleration = Mathf.Max(0f, objectPullAcceleration);
+            facingRotationSpeed = Mathf.Max(0f, facingRotationSpeed);
         }
 
         public void SetMoveDirection(Vector3 value)
