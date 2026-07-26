@@ -1,0 +1,341 @@
+# Traversal Architecture
+
+この文書は、SteamMultiRuntimeのプレイヤー移動およびTraversal機能の現在のクラス構成をまとめた設計資料です。
+READMEとは分離し、実装変更時にクラスの責務と依存方向を確認する目的で使用します。
+
+プロジェクト全体のクラス配置は[CurrentClassStructure.md](CurrentClassStructure.md)、InspectorとRepair操作は[EditorSpecification.md](EditorSpecification.md)を参照してください。この文書をTraversalの詳細仕様の正本とします。
+
+## 全体構成
+
+Traversal関連コンポーネントは、同じPlayer GameObjectへ配置します。
+以下の階層はTransformの親子関係ではなく、責務とInspector上の論理的な所有関係を表します。
+
+```text
+Controller
+└─ PlayerCompositeMotor
+   ├─ PlayerMotor
+   └─ PlayerTraversalCoordinator
+      ├─ WallTraversalFeature
+      │  ├─ WallRunAction
+      │  ├─ WallSlideAction
+      │  └─ WallJumpAction
+      ├─ LadderTraversalFeature
+      │  ├─ LadderClimbAction
+      │  └─ LadderDetachAction
+      └─ WireTraversalFeature
+         ├─ WireAttachAction
+         ├─ WireSwingAction
+         ├─ WireReelAction
+         └─ WireGroundAction
+```
+
+補助コンポーネントは次のとおりです。
+
+```text
+WallTraversalFeature
+└─ SlopeContactResolver
+
+LadderTraversalFeature
+└─ LadderVolume（シーン側のTrigger）
+
+WireTraversalFeature
+├─ WireGrappleTargetingFeature
+└─ WireLineVisualFeature
+```
+
+## 命名と責務の規則
+
+### Feature
+
+Featureは、同じTraversalに属するActionが共有する状態や環境情報を管理します。
+
+- 入力を直接読み取らない
+- 接触先、接続先、現在状態を保持する
+- Actionへ共有情報をインターフェース経由で提供する
+- 個別操作の入力判断をできるだけ持たない
+
+### Action
+
+Actionは、入力やCoordinatorからの要求に対応する具体的な動作を担当します。
+
+- 入力結果を受け取る
+- 速度、加速度、拘束、離脱などを処理する
+- Input Systemの`InputAction`を直接参照しない
+- Featureまたは能力インターフェースを利用する
+
+### Coordinator
+
+`PlayerTraversalCoordinator`は、Traversal間の排他制御と状態遷移を担当します。
+
+- Wall、Ladder、Wireの優先順位を決める
+- Controllerから入力済みの値を受け取る
+- 各Actionをインターフェース経由で呼び出す
+- 個別Traversalの物理計算を持たない
+- AnimatorやControllerへ現在状態を公開する
+
+## 入力から物理処理まで
+
+```text
+InputActionsConfig
+  ↓
+PlayerGameplayInputReader
+  ↓ PlayerInputState
+LocalPlayerController / ServerDrivenPlayerController
+  ↓
+PlayerCompositeMotor
+  ├─ PlayerMotor
+  └─ PlayerTraversalCoordinator
+       ↓
+     各Traversal Action
+```
+
+`PlayerGameplayInputReader`だけがInput Systemを扱います。Traversal FeatureとActionは`InputAction`へ依存しません。
+
+LocalではControllerが入力を直接Physics Tickへ渡します。NetworkではOwnerが`PlayerInputSyncState`を送信し、Server上のCoordinatorとActionが物理処理を実行します。
+
+## Core Motor
+
+### PlayerCompositeMotor
+
+プレイヤー移動の外部窓口です。
+
+- `PlayerMotor`と`PlayerTraversalCoordinator`を統合する
+- Controllerが個別Traversal実装へ依存しないようにする
+- Strafe設定や移動入力を基礎Motorへ転送する
+
+### PlayerMotor
+
+通常の地上移動、空中移動、ジャンプ、回転を担当します。
+
+- 接地判定と通常移動
+- Ground、Air、Steep Slopeの加速
+- 通常StrafeとWire Ground Strafeのブレンド
+- Wire Swing中の通常空中加速抑制
+- WallRun中の向き維持
+
+### PlayerTraversalCoordinator
+
+現在状態は`PlayerTraversalState`で公開します。
+
+```text
+Grounded
+Airborne
+WallRun
+WallSlide
+Ladder
+WallJump
+WireSwing
+Cooldown
+```
+
+主な公開契約は`IPlayerTraversalCoordinator`です。
+
+## Wall Traversal
+
+### WallTraversalFeature
+
+Wall Action共通の壁接触解決を担当します。
+
+- `SlopeContactResolver`から障害物法線を取得する
+- Actionごとの`WallMaxUpDot`条件を受け取って壁法線を返す
+- `IWallTraversalFeature`を実装する
+
+### WallRunAction
+
+- WallRun開始・維持速度を判定する
+- 壁方向の加速を計算する
+- Arc、Maintain Height、Gravityの縦移動を処理する
+- 入力解放猶予とWallRun継続状態を保持する
+- `IWallRunAction`と`ITraversalSettingsSync`を実装する
+
+### WallSlideAction
+
+- WallSlide開始条件を判定する
+- 落下速度を制限する
+- 壁から離れる入力を処理する
+- 横移動許可オプションを適用する
+- `IWallSlideAction`と`ITraversalSettingsSync`を実装する
+
+### WallJumpAction
+
+- 壁法線からジャンプ方向を計算する
+- Arc／Triangle Kickの軌道を生成する
+- 同じ壁への連続Kickを一時的に制限する
+- `IWallJumpAction`と`ITraversalSettingsSync`を実装する
+
+## Ladder Traversal
+
+### LadderTraversalFeature
+
+梯子との接続状態と共有設定を管理します。
+
+- `LadderVolume`からEnter／Exit通知を受け取る
+- 現在の梯子と重複中の梯子を保持する
+- 重力の有効・無効を管理する
+- 再接続禁止時間を保持する
+- `ILadderTraversalFeature`を実装する
+
+### LadderClimbAction
+
+- 上下入力を梯子方向の速度へ変換する
+- 梯子面への吸着と横方向移動を適用する
+- `ILadderClimbAction`を実装する
+
+### LadderDetachAction
+
+- Jumpによる離脱を処理する
+- 横入力、梯子端、地上到達による離脱を処理する
+- 離脱後の再接続猶予を適用する
+- `ILadderDetachAction`を実装する
+
+## Wire Traversal
+
+### WireTraversalFeature
+
+Wire機能全体の中心コンポーネントであり、接続状態とロープ制約を管理します。
+
+- アンカー位置とアンカーRigidbodyを保持する
+- Target Rope Lengthと実距離を管理する
+- Rope／Elastic制約を適用する
+- 遠距離アタッチ後の自動巻き取りを処理する
+- `IWireConnection`を実装する
+
+クラス名は機能全体を表す`WireTraversalFeature`ですが、Actionへ提供する能力は接続契約であるため、インターフェース名は`IWireConnection`を維持します。
+
+### WireAttachAction
+
+- Grapple入力の押下と解放を処理する
+- `WireGrappleTargetingFeature`へ接続先解決を依頼する
+- アタッチとデタッチを実行する
+
+### WireSwingAction
+
+- 空中Swing中の接線方向加速を処理する
+- 上限速度付近で加速を二次曲線的に弱める
+- Ground Action中はSwing加速を停止する
+
+### WireReelAction
+
+- Q／負軸入力で巻き取る
+- E／正軸入力で繰り出す
+- 巻き取り中はElasticでも伸びない制約を要求する
+- GroundからJumpした後も現在距離から巻き取る
+
+### WireGroundAction
+
+- Dynamic Rigidbody接続時は物理オブジェクトを振り回す
+- 環境接続時はWire Ground Strafeを有効にする
+- Ground Jumpではアタッチを解除しない
+- 通常移動からStrafe移動へのブレンドを管理する
+- アンカー方向へのFacingブレンドを独立して管理する
+
+既定のブレンド時間は次のとおりです。
+
+```text
+Strafe Blend Damping: 0.30 sec
+Facing Blend Damping: 0.12 sec
+```
+
+### WireGrappleTargetingFeature
+
+- マウスポインタ方向から接続候補をRaycastする
+- アタッチ可能距離を管理する
+- Wire最大長とは独立している
+
+### WireLineVisualFeature
+
+- Wireの始点とアンカー間を描画する
+- 接続物理や入力は扱わない
+
+## Wire距離設定
+
+アタッチ射程と維持可能なWire長は別の設定です。
+
+```text
+Attach Maximum Range: 45 m
+Maximum Rope Length: 20 m
+Minimum Rope Length: 2 m
+```
+
+20mより遠い対象にもアタッチでき、超過分は段階的に自動巻き取りされます。
+
+## Animator
+
+`PlayerAnimatorStateDriver`がMotorとCoordinatorの状態をAnimatorパラメータへ変換します。
+
+`PlayerLocomotionAnimationMode`は次の値を使用します。
+
+```text
+Grounded = 0
+Airborne = 1
+Ladder = 2
+WallRun = 3
+WireSwing = 4
+```
+
+`WireSwing`は独立したAnimator Stateです。現在は`InAir`と同じAnimationClipを参照しており、専用Clip追加後は`WireSwing` StateのMotionだけを差し替えます。
+
+## Netcode
+
+Networkプレイヤーの物理処理はServer Authorityです。
+
+- Ownerが入力を読み取る
+- `PlayerInputSyncState`でServerへ送信する
+- Serverの`PlayerTraversalCoordinator`と各Actionが物理処理を行う
+- Wire接続状態とロープ長をClientへ同期する
+- Traversal設定は`ITraversalSettingsSync`から収集・適用する
+
+巻き取り入力の変化は定期送信を待たず、入力変化時にも送信されます。
+
+## InspectorとPrefab
+
+FeatureとActionは子GameObjectへ分けず、Playerと同じGameObjectへ配置します。
+
+Custom Inspectorの論理階層、Add／Repair操作の詳細は[EditorSpecification.md](EditorSpecification.md)に集約しています。
+
+主要Player Prefabは次の構成へ対応しています。
+
+- `LocalPlayer_WithAnimator`
+- `NetworkPlayer_WithAnimator`
+- `LocalPlayer_NPC`
+- `NetworkPlayer_Runtime`
+
+## 依存方向
+
+許可する依存方向は次のとおりです。
+
+```text
+Controller
+  → IPlayerCompositeMotor / IPlayerTraversalCoordinator
+
+Coordinator
+  → Feature・Actionのインターフェース
+
+Action
+  → Featureまたは能力インターフェース
+
+Feature
+  → 接触Resolver、Volume、Rigidbodyなどの基盤コンポーネント
+```
+
+避ける依存は次のとおりです。
+
+- Controllerから具体的なActionクラスを直接操作する
+- FeatureやActionがInput Systemを直接読む
+- Action同士が具体クラスで相互参照する
+- Animator Driverが入力状態からTraversalを再判定する
+- Client側でServer AuthorityのTraversal物理を確定する
+
+## 変更時の確認項目
+
+新しいTraversalまたはActionを追加するときは、次を確認します。
+
+1. 共有状態はFeatureに置かれているか
+2. 入力に対応する動作はActionに置かれているか
+3. Coordinatorはインターフェース経由で利用しているか
+4. LocalとNetworkの両方に入力経路があるか
+5. Server Authorityを維持しているか
+6. Animator StateとNetworkAnimatorパラメータが必要か
+7. Local／Network／NPC Prefabへコンポーネントを追加したか
+8. Custom Inspectorの階層表示とRepair処理を更新したか
+9. 既存スクリプトを改名する場合はmeta GUIDを維持したか
