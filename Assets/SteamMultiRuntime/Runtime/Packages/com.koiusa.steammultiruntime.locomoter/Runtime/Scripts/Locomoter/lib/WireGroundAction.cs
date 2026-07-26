@@ -66,9 +66,21 @@ namespace Koiusa.SteamMultiRuntime
             var towardPivot = toPivot / distance;
             if (distance > connection.RopeLength)
             {
-                targetBody.AddForce(towardPivot * ((distance - connection.RopeLength) * objectPullAcceleration), ForceMode.Acceleration);
+                var stretch = distance - connection.RopeLength;
+                if (connection.ConstraintMode == WireConstraintMode.Rope)
+                {
+                    targetBody.MovePosition(targetBody.position + towardPivot * stretch);
+                }
+                else
+                {
+                    targetBody.AddForce(towardPivot * (stretch * objectPullAcceleration), ForceMode.Acceleration);
+                }
                 var outwardSpeed = Vector3.Dot(targetBody.linearVelocity, -towardPivot);
-                if (outwardSpeed > 0f) targetBody.linearVelocity += towardPivot * (outwardSpeed * outwardVelocityDamping);
+                if (outwardSpeed > 0f)
+                {
+                    var damping = connection.ConstraintMode == WireConstraintMode.Rope ? 1f : outwardVelocityDamping;
+                    targetBody.linearVelocity += towardPivot * (outwardSpeed * damping);
+                }
             }
 
             var tangent = Vector3.ProjectOnPlane(moveDirection, towardPivot);

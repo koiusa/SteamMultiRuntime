@@ -9,6 +9,8 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class WireConnection : MonoBehaviour, IWireConnection
     {
         [SerializeField] private WireLineVisualFeature visual;
+        [SerializeField, Tooltip("Elasticはバネ力、Ropeは非伸縮の位置制約として処理します。")]
+        private WireConstraintMode constraintMode = WireConstraintMode.Elastic;
         [SerializeField, Min(0.1f)] private float minimumRopeLength = 2f;
         [SerializeField, Min(0f)] private float ropeSlack = 0.15f;
         [SerializeField, Min(0f)] private float pullAcceleration = 55f;
@@ -28,6 +30,7 @@ namespace Koiusa.SteamMultiRuntime
         public float MaximumRopeLength { get; private set; } = 45f;
         public Rigidbody Body { get; private set; }
         public Rigidbody AnchorBody { get; private set; }
+        public WireConstraintMode ConstraintMode => constraintMode;
 
         private void Awake()
         {
@@ -61,11 +64,24 @@ namespace Koiusa.SteamMultiRuntime
             var constraintLength = groundAction != null && groundAction.UsesMaximumRangeConstraint
                 ? MaximumRopeLength
                 : RopeLength;
-            if (distance <= constraintLength + ropeSlack || distance < 0.001f) return;
+            var allowedLength = constraintLength + ropeSlack;
+            if (distance <= allowedLength || distance < 0.001f) return;
             var towardAnchor = toAnchor / distance;
-            Body.AddForce(towardAnchor * ((distance - constraintLength) * pullAcceleration), ForceMode.Acceleration);
+            var stretch = distance - allowedLength;
+            if (constraintMode == WireConstraintMode.Rope)
+            {
+                Body.MovePosition(Body.position + towardAnchor * stretch);
+            }
+            else
+            {
+                Body.AddForce(towardAnchor * (stretch * pullAcceleration), ForceMode.Acceleration);
+            }
             var awaySpeed = Vector3.Dot(Body.linearVelocity, -towardAnchor);
-            if (awaySpeed > 0f) Body.linearVelocity += towardAnchor * (awaySpeed * radialVelocityDamping);
+            if (awaySpeed > 0f)
+            {
+                var damping = constraintMode == WireConstraintMode.Rope ? 1f : radialVelocityDamping;
+                Body.linearVelocity += towardAnchor * (awaySpeed * damping);
+            }
         }
 
         public void SetRopeLength(float value) => RopeLength = Mathf.Clamp(value, minimumRopeLength, MaximumRopeLength);

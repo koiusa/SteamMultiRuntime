@@ -2,6 +2,12 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public enum WireConstraintMode
+    {
+        Elastic = 0,
+        Rope = 1,
+    }
+
     /// <summary>
     /// Contract for a wire-swing traversal feature. Consumers such as player
     /// controllers, AI, and network authority code can use this interface
@@ -17,6 +23,7 @@ namespace Koiusa.SteamMultiRuntime
         float MaximumRopeLength { get; }
         Rigidbody Body { get; }
         Rigidbody AnchorBody { get; }
+        WireConstraintMode ConstraintMode { get; }
 
         void SetRopeLength(float value);
         void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
