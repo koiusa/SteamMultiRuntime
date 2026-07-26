@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Range(0f, 1f)] private float radialVelocityDamping = 1f;
 
         private IWireLineVisualFeature wireVisual;
+        private IWireGroundAction groundAction;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
         private Vector3 fixedAnchorPoint;
@@ -26,12 +27,14 @@ namespace Koiusa.SteamMultiRuntime
         public float MinimumRopeLength => minimumRopeLength;
         public float MaximumRopeLength { get; private set; } = 45f;
         public Rigidbody Body { get; private set; }
+        public Rigidbody AnchorBody { get; private set; }
 
         private void Awake()
         {
             Body = GetComponent<Rigidbody>();
             if (visual == null) visual = GetComponent<WireLineVisualFeature>();
             wireVisual = visual != null ? visual : GetComponent<IWireLineVisualFeature>();
+            groundAction = GetComponent<IWireGroundAction>();
             wireVisual?.Initialize();
             var target = GetComponent<IWireGrappleTargetingFeature>();
             if (target != null) MaximumRopeLength = target.MaximumRange;
@@ -52,7 +55,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void FixedUpdate()
         {
-            if (!IsAttached || Body == null || Body.isKinematic) return;
+            if (!IsAttached || Body == null || Body.isKinematic || (groundAction != null && groundAction.HandlesConnectionPhysics)) return;
             var toAnchor = AnchorPoint - Body.worldCenterOfMass;
             var distance = toAnchor.magnitude;
             if (distance <= RopeLength + ropeSlack || distance < 0.001f) return;
@@ -67,6 +70,7 @@ namespace Koiusa.SteamMultiRuntime
         public void Attach(Vector3 worldPoint, Transform movingAnchor = null)
         {
             anchorTransform = movingAnchor;
+            AnchorBody = movingAnchor != null ? movingAnchor.GetComponentInParent<Rigidbody>() : null;
             fixedAnchorPoint = worldPoint;
             anchorLocalPoint = movingAnchor != null ? movingAnchor.InverseTransformPoint(worldPoint) : Vector3.zero;
             SetRopeLength(Vector3.Distance(Body.worldCenterOfMass, worldPoint));
@@ -78,6 +82,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             IsAttached = false;
             anchorTransform = null;
+            AnchorBody = null;
             wireVisual?.SetVisible(false);
         }
 
@@ -85,6 +90,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (!isAttached) { Detach(); return; }
             anchorTransform = null;
+            AnchorBody = null;
             fixedAnchorPoint = anchorPoint;
             SetRopeLength(ropeLength);
             IsAttached = true;

@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         float MinimumRopeLength { get; }
         float MaximumRopeLength { get; }
         Rigidbody Body { get; }
+        Rigidbody AnchorBody { get; }
 
         void SetRopeLength(float value);
         void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
@@ -47,6 +48,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         bool IsEnabled { get; }
         bool BlocksSwing { get; }
-        bool HandleJump(bool jumpRequested, bool isGrounded);
+        bool HandlesConnectionPhysics { get; }
+        void SetMoveDirection(Vector3 moveDirection);
     }
 }

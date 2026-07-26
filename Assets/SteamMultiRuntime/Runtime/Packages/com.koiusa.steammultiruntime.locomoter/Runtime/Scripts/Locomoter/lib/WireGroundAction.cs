@@ -1,18 +1,74 @@
 using UnityEngine;
+
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(WireConnection)), RequireComponent(typeof(WireAttachAction)), DisallowMultipleComponent]
+    /// <summary>Uses a grounded player as the pivot for swinging an attached dynamic Rigidbody.</summary>
+    [RequireComponent(typeof(WireConnection)), RequireComponent(typeof(SlopeContactResolver)), DisallowMultipleComponent]
     public sealed class WireGroundAction : MonoBehaviour, IWireGroundAction
     {
-        private IWireConnection connection; private IWireAttachAction attachAction; private SlopeContactResolver ground;
+        [SerializeField, Min(0f)] private float objectSwingAcceleration = 12f;
+        [SerializeField, Min(0f)] private float maximumObjectSwingSpeed = 10f;
+        [SerializeField, Min(0f)] private float objectPullAcceleration = 55f;
+        [SerializeField, Range(0f, 1f)] private float outwardVelocityDamping = 1f;
+
+        private IWireConnection connection;
+        private SlopeContactResolver ground;
+        private Vector3 moveDirection;
+
         public bool IsEnabled => isActiveAndEnabled;
-        public bool BlocksSwing => IsEnabled && ground != null && ground.IsGrounded;
-        private void Awake() { connection = GetComponent<IWireConnection>(); attachAction = GetComponent<IWireAttachAction>(); ground = GetComponent<SlopeContactResolver>(); }
-        public bool HandleJump(bool jumpRequested, bool isGrounded)
+        public bool BlocksSwing => HandlesConnectionPhysics;
+        public bool HandlesConnectionPhysics => IsEnabled
+            && ground != null
+            && ground.IsGrounded
+            && connection != null
+            && connection.IsAttached
+            && connection.AnchorBody != null
+            && !connection.AnchorBody.isKinematic
+            && connection.AnchorBody != connection.Body;
+
+        private void Awake()
         {
-            if (!jumpRequested || !isGrounded || connection == null || !connection.IsAttached) return false;
-            attachAction?.DetachUntilInputRelease();
-            return true;
+            connection = GetComponent<IWireConnection>();
+            ground = GetComponent<SlopeContactResolver>();
+        }
+
+        private void OnValidate()
+        {
+            objectSwingAcceleration = Mathf.Max(0f, objectSwingAcceleration);
+            maximumObjectSwingSpeed = Mathf.Max(0f, maximumObjectSwingSpeed);
+            objectPullAcceleration = Mathf.Max(0f, objectPullAcceleration);
+        }
+
+        public void SetMoveDirection(Vector3 value)
+        {
+            moveDirection = Vector3.ClampMagnitude(value, 1f);
+        }
+
+        private void FixedUpdate()
+        {
+            if (!HandlesConnectionPhysics) return;
+
+            var targetBody = connection.AnchorBody;
+            var pivot = connection.Body.worldCenterOfMass;
+            var toPivot = pivot - targetBody.worldCenterOfMass;
+            var distance = toPivot.magnitude;
+            if (distance < 0.001f) return;
+
+            var towardPivot = toPivot / distance;
+            if (distance > connection.RopeLength)
+            {
+                targetBody.AddForce(towardPivot * ((distance - connection.RopeLength) * objectPullAcceleration), ForceMode.Acceleration);
+                var outwardSpeed = Vector3.Dot(targetBody.linearVelocity, -towardPivot);
+                if (outwardSpeed > 0f) targetBody.linearVelocity += towardPivot * (outwardSpeed * outwardVelocityDamping);
+            }
+
+            var tangent = Vector3.ProjectOnPlane(moveDirection, towardPivot);
+            if (tangent.sqrMagnitude <= 0.0001f || objectSwingAcceleration <= 0f) return;
+            var tangentialSpeed = Vector3.ProjectOnPlane(targetBody.linearVelocity, towardPivot).magnitude;
+            var remaining = maximumObjectSwingSpeed > 0f
+                ? Mathf.Clamp01((maximumObjectSwingSpeed - tangentialSpeed) / maximumObjectSwingSpeed)
+                : 0f;
+            targetBody.AddForce(tangent.normalized * (objectSwingAcceleration * remaining * remaining), ForceMode.Acceleration);
         }
     }
 }

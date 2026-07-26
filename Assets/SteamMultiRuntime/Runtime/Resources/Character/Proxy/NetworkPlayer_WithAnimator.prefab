@@ -635,6 +635,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_Script: {fileID: 11500000, guid: 967f4462d4f94edc899f064c3af77f29, type: 3}
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGroundAction
+  objectSwingAcceleration: 12
+  maximumObjectSwingSpeed: 10
+  objectPullAcceleration: 55
+  outwardVelocityDamping: 1
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

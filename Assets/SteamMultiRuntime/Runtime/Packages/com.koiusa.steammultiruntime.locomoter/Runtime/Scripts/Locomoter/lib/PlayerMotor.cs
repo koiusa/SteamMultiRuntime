@@ -34,7 +34,10 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsJumping => !IsGrounded && isAirborneFromJump && VerticalVelocity > 0f;
         public bool IsFallingAfterJump => !IsGrounded && isAirborneFromJump && VerticalVelocity <= 0f;
         public bool IsFreefall => !IsGrounded && !isAirborneFromJump;
-        private bool IsWireSwinging => traversalCoordinator != null && traversalCoordinator.IsEnabled && traversalCoordinator.IsWireAttached;
+        private bool IsWireSwinging => traversalCoordinator != null
+            && traversalCoordinator.IsEnabled
+            && traversalCoordinator.IsWireAttached
+            && !traversalCoordinator.IsWireGroundActionActive;
         public Vector3 InheritedGroundVelocity => inheritedGroundVelocity;
         public float HorizontalVelocity { get; private set; }
         public float VerticalVelocity { get; private set; }

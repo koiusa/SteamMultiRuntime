@@ -33,6 +33,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsWallRunning => wallRunFeature != null && wallRunFeature.IsEnabled && wallRunFeature.IsWallRunning;
         public Vector3 WallNormal => IsWallRunning ? wallRunFeature.WallNormal : Vector3.zero;
         public bool IsWireAttached => wireConnection != null && wireConnection.IsEnabled && wireConnection.IsAttached;
+        public bool IsWireGroundActionActive => IsWireAttached && wireGroundAction != null && wireGroundAction.HandlesConnectionPhysics;
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
 
@@ -93,12 +94,13 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             if (wireSwingAction != null && wireSwingAction.IsEnabled) wireSwingAction.SetMoveDirection(moveDirection);
+            if (wireGroundAction != null && wireGroundAction.IsEnabled) wireGroundAction.SetMoveDirection(moveDirection);
             if (!wireConnection.IsAttached || !jumpRequested)
             {
                 return false;
             }
 
-            if (wireGroundAction != null && wireGroundAction.IsEnabled && wireGroundAction.HandleJump(true, isGrounded))
+            if (isGrounded)
             {
                 return false;
             }
