@@ -36,6 +36,16 @@ GameObject:
   - component: {fileID: 930000000000000001}
   - component: {fileID: 930000000000000002}
   - component: {fileID: 930000000000000003}
+  - component: {fileID: 2277333357111400412}
+  - component: {fileID: 8786606430057324570}
+  - component: {fileID: 7952957115265635708}
+  - component: {fileID: 7099575249746740329}
+  - component: {fileID: 804400954607604548}
+  - component: {fileID: 5809044861996414448}
+  - component: {fileID: 9080776807677726674}
+  - component: {fileID: 4387352645211788965}
+  - component: {fileID: 566156994252057087}
+  - component: {fileID: 4987499974731793392}
   m_Layer: 0
   m_Name: LocalPlayer_WithAnimator
   m_TagString: Untagged
@@ -420,7 +430,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a6bb8109e634dce9e88d9cc8a73df01, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGrappleTargetingFeature
   aimTransform: {fileID: 0}
   maximumRange: 45
@@ -438,7 +448,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94ae9e3279ba4d07a61f2633528fe124, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireLineVisualFeature
   wireOrigin: {fileID: 4729856950231397882}
   lineRenderer: {fileID: 0}
@@ -455,7 +465,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireTraversalFeature
   visual: {fileID: 810000000000000002}
   constraintMode: 0
@@ -469,34 +479,54 @@ MonoBehaviour:
 --- !u!114 &810000000000000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1498a24b344a47e3ac327ca5a749574c, type: 3}
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireAttachAction
 --- !u!114 &810000000000000004
 MonoBehaviour:
   m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0bfe2db5b7f48ea981c40c8527f8873, type: 3}
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingAction
   swingAcceleration: 16
   maximumInputSwingSpeed: 8
 --- !u!114 &810000000000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 14337169162a44d8bd110162076d8a2b, type: 3}
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireReelAction
   reelSpeed: 12
   stepDistance: 1.5
 --- !u!114 &810000000000000006
 MonoBehaviour:
   m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 967f4462d4f94edc899f064c3af77f29, type: 3}
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGroundAction
   objectSwingAcceleration: 12
   maximumObjectSwingSpeed: 10
@@ -505,6 +535,189 @@ MonoBehaviour:
   facingRotationSpeed: 540
   strafeBlendDamping: 0.3
   facingBlendDamping: 0.12
+--- !u!114 &930000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6907f93f7aba43b798ed7a5427378da2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
+--- !u!114 &930000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5bbcc5fbc3845d599340678b032cd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
+--- !u!114 &930000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f9f7930211461ea57ae185dc840b1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction
+--- !u!114 &2277333357111400412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillCoordinator
+--- !u!114 &8786606430057324570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCombatCoordinator
+--- !u!114 &7952957115265635708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000014, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCharacterCoordinator
+--- !u!114 &7099575249746740329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.DashSkillFeature
+  skillId: 
+  cooldown: 1
+  activeDuration: 0.2
+  speed: 12
+  duration: 0.2
+  useFacingWhenDirectionIsEmpty: 1
+--- !u!114 &804400954607604548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000011, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.SwordAttackSkillFeature
+  skillId: 
+  cooldown: 1
+  activeDuration: 0.2
+  damage: 20
+  radius: 1.2
+  forwardOffset: 1
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &5809044861996414448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000012, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.GuardSkillFeature
+  skillId: 
+  cooldown: 1
+  activeDuration: 0.2
+  incomingDamageScale: 0.25
+--- !u!114 &9080776807677726674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10000000000000000000000000000013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.HealSkillFeature
+  skillId: 
+  cooldown: 1
+  activeDuration: 0.2
+  amount: 25
+--- !u!114 &4387352645211788965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHealthFeature
+  maxHealth: 100
+  restoreOnEnable: 1
+  currentHealth: 0
+--- !u!114 &566156994252057087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerDamageReceiverFeature
+  invincible: 0
+--- !u!114 &4987499974731793392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -626,39 +839,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
   isLocalPlayer: 1
---- !u!114 &930000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6907f93f7aba43b798ed7a5427378da2, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
---- !u!114 &930000000000000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5bbcc5fbc3845d599340678b032cd71, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
---- !u!114 &930000000000000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2f9f7930211461ea57ae185dc840b1e, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction

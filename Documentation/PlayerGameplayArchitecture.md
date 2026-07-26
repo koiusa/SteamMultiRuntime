@@ -91,6 +91,18 @@ AttackSkillSettings                                     [予定]
 
 現在は各Feature内のSerializeFieldに設定を保持しています。複数Characterや装備間で設定を共有する段階で、上記のSerializable設定クラスまたはScriptableObjectへ分離します。
 
+## 標準Character Prefab
+
+以下のProxy Prefabには、`PlayerCharacterCoordinator`、Skill／Combat Coordinator、初期Skill／Combat Featureを標準構成として適用します。
+
+- `LocalPlayer_WithAnimator`
+- `NetworkPlayer_WithAnimator`
+- `NetworkPlayer_Runtime`
+- `LocalPlayer_NPC`
+- `NetworkPlayer_NPC`
+
+Prefab移行処理はEditor更新後に一度だけ自動実行します。その後はFeatureを自由に付け外しでき、自動的に再追加されません。標準構成へ戻す場合だけEditorメニューの再適用操作を使用します。
+
 ## 現在の基本構成
 
 ```text
