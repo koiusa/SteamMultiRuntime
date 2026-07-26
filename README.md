@@ -29,3 +29,4 @@ Documentation
 -------------
 
 - [現在のクラス構成](Documentation/CurrentClassStructure.md)
+- [Development Notes](Documentation/DevelopmentNotes.md)

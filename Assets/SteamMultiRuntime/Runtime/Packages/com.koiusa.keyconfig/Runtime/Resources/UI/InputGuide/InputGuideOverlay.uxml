@@ -66,9 +66,10 @@
                                 <ui:VisualElement name="control-up" class="gamepad-button gamepad-dpad-up"><ui:Label text="▲" class="gamepad-label-small" /></ui:VisualElement>
                                 <ui:VisualElement class="gamepad-dpad-row">
                                     <ui:VisualElement name="control-left" class="gamepad-button gamepad-dpad-key"><ui:Label text="◀" class="gamepad-label-small" /></ui:VisualElement>
-                                    <ui:VisualElement name="control-down" class="gamepad-button gamepad-dpad-key"><ui:Label text="▼" class="gamepad-label-small" /></ui:VisualElement>
+                                    <ui:VisualElement class="gamepad-dpad-spacer" />
                                     <ui:VisualElement name="control-right" class="gamepad-button gamepad-dpad-key"><ui:Label text="▶" class="gamepad-label-small" /></ui:VisualElement>
                                 </ui:VisualElement>
+                                <ui:VisualElement name="control-down" class="gamepad-button gamepad-dpad-key"><ui:Label text="▼" class="gamepad-label-small" /></ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:VisualElement class="gamepad-center"><ui:Label text="GAMEPAD" class="gamepad-brand" /></ui:VisualElement>
