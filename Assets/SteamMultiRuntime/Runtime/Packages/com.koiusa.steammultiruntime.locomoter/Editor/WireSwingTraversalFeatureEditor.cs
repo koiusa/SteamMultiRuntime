@@ -73,6 +73,16 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var current = (WireSwingTraversalFeature)target;
+            if (current.GetComponent<PlayerTraversalCoordinator>() == null)
+            {
+                EditorGUILayout.HelpBox("PlayerTraversalCoordinatorがないため、ControllerからWire入力を受け取れません。", MessageType.Error);
+                if (GUILayout.Button("Add PlayerTraversalCoordinator"))
+                {
+                    Undo.AddComponent<PlayerTraversalCoordinator>(current.gameObject);
+                    MarkSceneDirty(current.gameObject);
+                }
+            }
+
             if (current.GetComponent<PlayerMotor>() == null)
             {
                 EditorGUILayout.HelpBox("PlayerMotorが同じGameObjectにないためMotor連携は無効です。", MessageType.Warning);

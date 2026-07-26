@@ -35,11 +35,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var traversalCoordinator = gameObject.GetComponent<PlayerTraversalCoordinator>();
-            EditorGUILayout.ObjectField(
-                "Traversal Coordinator",
-                traversalCoordinator,
-                typeof(PlayerTraversalCoordinator),
-                allowSceneObjects: true);
+            DrawComponentRow<PlayerTraversalCoordinator>(gameObject, "Traversal Coordinator");
 
             if (Application.isPlaying && traversalCoordinator != null)
             {
@@ -50,13 +46,15 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
+            EditorGUILayout.Space(2f);
+            EditorGUILayout.LabelField("Coordinator Features", EditorStyles.miniBoldLabel);
             DrawComponentRow<WallRunTraversalFeature>(gameObject, "WallRunTraversalFeature");
             DrawComponentRow<WallJumpTraversalFeature>(gameObject, "WallJumpTraversalFeature");
             DrawComponentRow<WallSlideTraversalFeature>(gameObject, "WallSlideTraversalFeature");
             DrawComponentRow<LadderTraversalFeature>(gameObject, "LadderTraversalFeature");
             DrawComponentRow<WireSwingTraversalFeature>(gameObject, "WireSwingTraversalFeature");
-            DrawComponentRow<WireGrappleTargetingFeature>(gameObject, "  WireGrappleTargetingFeature");
-            DrawComponentRow<WireLineVisualFeature>(gameObject, "  WireLineVisualFeature");
+            DrawReadOnlyComponentRow<WireGrappleTargetingFeature>(gameObject, "  GrappleTargetingFeature");
+            DrawReadOnlyComponentRow<WireLineVisualFeature>(gameObject, "  LineVisualFeature");
 
             EditorGUI.indentLevel--;
 
@@ -82,6 +80,12 @@ namespace Koiusa.SteamMultiRuntime
                     }
                 }
             }
+        }
+
+        private static void DrawReadOnlyComponentRow<T>(GameObject gameObject, string label) where T : Component
+        {
+            var component = gameObject.GetComponent<T>();
+            EditorGUILayout.ObjectField(label, component, typeof(T), allowSceneObjects: true);
         }
     }
 }

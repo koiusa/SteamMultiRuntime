@@ -7,6 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     /// same GameObject as the player Rigidbody and assign the input actions.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(PlayerTraversalCoordinator))]
     [RequireComponent(typeof(WireGrappleTargetingFeature))]
     [RequireComponent(typeof(WireLineVisualFeature))]
     [DisallowMultipleComponent]
