@@ -11,10 +11,11 @@ namespace Koiusa.SteamMultiRuntime
         public int JumpToken;
         public bool IsStrafeMode;
         public bool GrappleHeld;
+        public int GrappleFireToken;
         public float ReelInput;
         public Vector3 GrappleAimDirection;
 
-        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleAimDirection = default)
+        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleAimDirection = default, int grappleFireToken = 0)
         {
             MoveDirection = moveDirection;
             MoveInput = moveInput;
@@ -24,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
             GrappleHeld = grappleHeld;
             ReelInput = reelInput;
             GrappleAimDirection = grappleAimDirection;
+            GrappleFireToken = grappleFireToken;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -36,6 +38,7 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref GrappleHeld);
             serializer.SerializeValue(ref ReelInput);
             serializer.SerializeValue(ref GrappleAimDirection);
+            serializer.SerializeValue(ref GrappleFireToken);
         }
     }
 

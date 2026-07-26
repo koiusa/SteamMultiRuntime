@@ -203,6 +203,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "AimCursorMove",
+                    "type": "Value",
+                    "id": "353a8c97-734b-4ed0-9191-b36814cf0655",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "GrappleFire",
+                    "type": "Button",
+                    "id": "b68a73d5-7312-4288-a197-923521e31a11",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -907,6 +925,39 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "AimCursorPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "54219b89-ff34-49b0-823b-e43f0f20ae2a",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "StickDeadzone(min=0.15,max=0.95)",
+                    "groups": ";Gamepad",
+                    "action": "AimCursorMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8fbe194e-d197-405b-bce7-bfe8dbf762c1",
+                    "path": "<Gamepad>/rightStickPress",
+                    "interactions": "Press(behavior=0)",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "GrappleFire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "37f41226-705c-4164-bd23-ec8c1457a671",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Press(behavior=0)",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "GrappleFire",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

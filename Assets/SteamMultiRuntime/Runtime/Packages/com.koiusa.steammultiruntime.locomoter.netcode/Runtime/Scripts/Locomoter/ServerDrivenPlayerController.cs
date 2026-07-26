@@ -29,12 +29,15 @@ namespace Koiusa.SteamMultiRuntime
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
+        private int grappleFireToken;
+        private int lastConsumedGrappleFireToken;
         private bool isStrafeMode;
         private bool hasInitializedSettings;
         private PlayerInputSyncState localInputState;
         private PlayerInputSyncState serverInputState;
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
+        private int lastSentGrappleFireToken = -1;
         private bool lastSentGrappleHeld;
         private float lastSentReelInput = float.NaN;
         private float nextStateSyncTime;
@@ -294,6 +297,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var inputState = activeInputSource.ReadState();
+            if (inputState.GrappleFirePressed) grappleFireToken++;
             var moveInput = inputState.Move;
 
             var referenceTransform = injectedInputReferenceTransform != null
@@ -309,7 +313,7 @@ namespace Koiusa.SteamMultiRuntime
             isStrafeMode = inputState.IsStrafeMode;
             var aimPoint = default(Vector2);
             var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint);
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && inputState.GrappleHeld);
             var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
                 ? PlayerPointerAim.ResolveDirection(
                     cameraTransform,
@@ -327,7 +331,8 @@ namespace Koiusa.SteamMultiRuntime
                 isStrafeMode,
                 inputState.GrappleHeld,
                 inputState.ReelInput,
-                grappleAimDirection));
+                grappleAimDirection,
+                grappleFireToken));
         }
 
         private void SubmitInput(PlayerInputSyncState inputState)
@@ -335,10 +340,11 @@ namespace Koiusa.SteamMultiRuntime
             localInputState = inputState;
 
             var jumpChanged = inputState.JumpToken != lastSentJumpToken;
+            var grappleFireChanged = inputState.GrappleFireToken != lastSentGrappleFireToken;
             var grappleChanged = inputState.GrappleHeld != lastSentGrappleHeld;
             var reelChanged = float.IsNaN(lastSentReelInput)
                 || !Mathf.Approximately(inputState.ReelInput, lastSentReelInput);
-            if (!jumpChanged && !grappleChanged && !reelChanged && Time.unscaledTime < nextInputSendTime)
+            if (!jumpChanged && !grappleFireChanged && !grappleChanged && !reelChanged && Time.unscaledTime < nextInputSendTime)
                 return;
 
             var tickRate = NetworkManager != null
@@ -346,6 +352,7 @@ namespace Koiusa.SteamMultiRuntime
                 : 30;
             nextInputSendTime = Time.unscaledTime + 1f / tickRate;
             lastSentJumpToken = inputState.JumpToken;
+            lastSentGrappleFireToken = inputState.GrappleFireToken;
             lastSentGrappleHeld = inputState.GrappleHeld;
             lastSentReelInput = inputState.ReelInput;
 
@@ -381,9 +388,11 @@ namespace Koiusa.SteamMultiRuntime
 
             traversalCoordinator?.SetWireInput(
                 inputState.GrappleHeld,
+                inputState.GrappleFireToken != lastConsumedGrappleFireToken,
                 inputState.ReelInput,
                 targetRigidbody.worldCenterOfMass,
                 inputState.GrappleAimDirection);
+            lastConsumedGrappleFireToken = inputState.GrappleFireToken;
 
             if (motor != null)
             {

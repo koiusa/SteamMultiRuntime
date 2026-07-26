@@ -27,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         private int lastConsumedJumpToken;
         private bool isStrafeMode;
         private bool grappleHeld;
+        private bool grappleFireRequested;
         private float reelInput;
         private Vector3 grappleAimDirection;
 
@@ -139,9 +140,10 @@ namespace Koiusa.SteamMultiRuntime
             Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
             moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
             grappleHeld = inputState.GrappleHeld;
+            grappleFireRequested |= inputState.GrappleFirePressed;
             reelInput = inputState.ReelInput;
             var hasAimPoint = inputSource.TryReadAimPoint(out var aimPoint);
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint);
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && grappleHeld);
             grappleAimDirection = PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,
@@ -175,9 +177,11 @@ namespace Koiusa.SteamMultiRuntime
 
             traversalCoordinator?.SetWireInput(
                 grappleHeld,
+                grappleFireRequested,
                 reelInput,
                 targetRigidbody.worldCenterOfMass,
                 grappleAimDirection);
+            grappleFireRequested = false;
 
             moveInputReceiver?.SetMoveInput(moveInput);
             moveInputReceiver?.SetMoveReferenceRotation(cameraTransform != null ? cameraTransform.rotation : transform.rotation);

@@ -24,6 +24,8 @@ namespace Koiusa.SteamMultiRuntime
         private float targetDefaultWeight;
         private float targetFollowWeight;
         private IFocusMarkerContext context;
+        private CinemachineInputAxisController inputAxisController;
+        private InputAction grappleAction;
         private readonly List<InputActionReference> runtimeActionReferences = new();
 
         protected abstract IFocusMarkerContext ResolveContext();
@@ -70,10 +72,17 @@ namespace Koiusa.SteamMultiRuntime
             {
                 context.StateChanged -= OnContextStateChanged;
             }
+
+            if (inputAxisController != null) inputAxisController.enabled = true;
         }
 
         protected virtual void Update()
         {
+            if (inputAxisController != null)
+            {
+                inputAxisController.enabled = grappleAction == null || !grappleAction.IsPressed();
+            }
+
             if (mixingCamera == null)
             {
                 return;
@@ -113,16 +122,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ConfigureCameraInputActions()
         {
-            var controller = GetComponentInChildren<CinemachineInputAxisController>(true);
-            if (controller == null || inputActionsConfig == null)
+            inputAxisController = GetComponentInChildren<CinemachineInputAxisController>(true);
+            if (inputAxisController == null || inputActionsConfig == null)
             {
                 return;
             }
 
             var lookAction = inputActionsConfig.FindAction("Player/Look");
             var zoomAction = inputActionsConfig.FindAction("Player/CameraZoom");
+            grappleAction = inputActionsConfig.FindAction("Player/Grapple");
 
-            foreach (var axisController in controller.Controllers)
+            foreach (var axisController in inputAxisController.Controllers)
             {
                 var action = axisController.Name switch
                 {

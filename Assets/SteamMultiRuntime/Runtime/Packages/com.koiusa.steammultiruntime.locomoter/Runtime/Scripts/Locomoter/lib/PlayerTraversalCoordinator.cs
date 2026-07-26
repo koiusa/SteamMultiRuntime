@@ -110,7 +110,7 @@ namespace Koiusa.SteamMultiRuntime
             screenAimCursor.SetVisible(hasScreenPosition && canTarget);
         }
 
-        public void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection)
+        public void SetWireInput(bool held, bool fireRequested, float reelInput, Vector3 origin, Vector3 aimDirection)
         {
             if (!IsEnabled)
             {
@@ -118,7 +118,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             if (wireReelAction != null && wireReelAction.IsEnabled) wireReelAction.SetInput(reelInput);
-            if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, origin, aimDirection);
+            if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, fireRequested, origin, aimDirection);
         }
 
         public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null)
