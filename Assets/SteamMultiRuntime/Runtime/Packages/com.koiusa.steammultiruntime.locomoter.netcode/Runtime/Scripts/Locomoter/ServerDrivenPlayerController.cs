@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(PlayerCompositeMotor))]
-    public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
+    public class ServerDrivenPlayerController : NetworkBehaviour, IPlayerLocomotionState, IPlayerLadderState, IPlayerWallRunState
     {
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;

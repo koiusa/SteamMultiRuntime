@@ -426,9 +426,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 882053add94a44e795aeb7a53fd6df51, type: 3}
+  m_Script: {fileID: 11500000, guid: b46b4dcc8f8e473ea02c68cc8993ae42, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcPlayerControllerAdapter
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerControllerAdapter
+  stateSource: {fileID: 6060798533999104800}
 --- !u!114 &6969368263645434112
 MonoBehaviour:
   m_ObjectHideFlags: 0

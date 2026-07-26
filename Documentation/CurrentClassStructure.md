@@ -61,11 +61,16 @@ SteamMultiRuntime
 
 ```text
 IPlayerController
-├─ LocalPlayerController
+├─ LocalPlayerController（Local Player）
 │  ├─ PlayerGameplayInputReader : IPlayerInputSource
 │  └─ PlayerCompositeMotor
 │
-├─ ServerDrivenPlayerController : NetworkBehaviour
+└─ PlayerControllerAdapter（Network Player / 全NPC）
+   └─ IPlayerLocomotionState
+      ├─ ServerDrivenPlayerController : NetworkBehaviour
+      └─ NpcNavMeshController : INpcLocomotionState
+
+ServerDrivenPlayerController : NetworkBehaviour, IPlayerLocomotionState
 │  ├─ IPlayerInputSource
 │  │  ├─ PlayerGameplayInputReader（Network Player）
 │  │  └─ AiPlayerInputSource（Network NPC）
@@ -75,12 +80,9 @@ IPlayerController
 │     ├─ PlayerKinematicState
 │     ├─ PlayerMovementFlagsState
 │     └─ WireSwingNetworkState
-│
-└─ NpcPlayerControllerAdapter（Local NPCのみ）
-   └─ NpcNavMeshController : INpcLocomotionState
 
-Network NPCではServerDrivenPlayerControllerだけがIPlayerControllerを実装し、
-NpcNavMeshControllerはNPC固有の状態契約だけを公開する。
+Local／Network NPCはいずれもPlayerControllerAdapterだけがIPlayerControllerを実装する。
+Adapterの状態SourceはLocalではNpcNavMeshController、NetworkではServerDrivenPlayerControllerになる。
 
 PlayerCompositeMotor : IPlayerMoveInputReceiver
 ├─ PlayerMotor : IPlayerMotor

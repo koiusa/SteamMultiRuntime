@@ -63,21 +63,22 @@ Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、
 
 ## Controller契約の分離
 
-NPCの経路・移動状態は`INpcLocomotionState`として公開し、Network NPCで権威を持つ
-`IPlayerController`は`ServerDrivenPlayerController`だけにしています。
+NPCの経路・移動状態は`INpcLocomotionState`、Network同期状態は
+`IPlayerLocomotionState`として公開し、`IPlayerController`は共通Adapterだけが実装します。
 
 ```text
 NetworkPlayer_NPC
-├─ ServerDrivenPlayerController : IPlayerController
-└─ NpcNavMeshController : INpcLocomotionState
+├─ ServerDrivenPlayerController : IPlayerLocomotionState
+├─ NpcNavMeshController : INpcLocomotionState
+└─ PlayerControllerAdapter : IPlayerController
 
 LocalPlayer_NPC
 ├─ NpcNavMeshController : INpcLocomotionState
-└─ NpcPlayerControllerAdapter : IPlayerController
+└─ PlayerControllerAdapter : IPlayerController
 ```
 
-`NpcPlayerControllerAdapter`はローカルNPCでのみNPC状態を共通のPlayer Controller契約へ変換します。
-これにより、Animatorなどが行う`GetComponent<IPlayerController>()`の結果は各Prefabで一意です。
+`PlayerControllerAdapter`はLocalではNPC状態、Networkでは同期済み状態を共通のPlayer Controller契約へ変換します。
+Local／Networkとも構成が同じになり、Animatorなどが行う`GetComponent<IPlayerController>()`の結果も一意です。
 
 ## 変更時の確認項目
 

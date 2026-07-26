@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public interface IPlayerController
+    /// <summary>Read-only locomotion state supplied by a controller implementation.</summary>
+    public interface IPlayerLocomotionState
     {
         bool IsGrounded { get; }
         bool IsJumping { get; }
@@ -15,5 +16,13 @@ namespace Koiusa.SteamMultiRuntime
         float HorizontalVelocity { get; }
         float VerticalVelocity { get; }
         float MaxMoveSpeed { get; }
+    }
+
+    /// <summary>
+    /// Stable public contract consumed by presentation and gameplay systems.
+    /// Use PlayerControllerAdapter to expose an IPlayerLocomotionState source.
+    /// </summary>
+    public interface IPlayerController : IPlayerLocomotionState
+    {
     }
 }
