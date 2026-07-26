@@ -11,9 +11,9 @@
   <Project Path="UnityChan.Common.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Integration.Editor.csproj" />
   <Project Path="koiusa.Keyconfig.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Editor.csproj" />
   <Project Path="Koiusa.TargetingSystem.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Integration.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.csproj" />
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />

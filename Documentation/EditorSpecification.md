@@ -13,6 +13,10 @@
 
 ## Player／Traversal Inspector
 
+`Feature`で終わるTraversalコンポーネントには青い歯車アイコン、
+`Action`で終わるコンポーネントには橙の稲妻アイコンを表示します。
+同じGameObjectに多数のコンポーネントが並んでも、役割を素早く判別できます。
+
 | 対象 | Editor | 主な仕様 |
 |---|---|---|
 | `LocalPlayerController` | `LocalPlayerControllerEditor` | 使用中の`PlayerCompositeMotor`を表示する |
