@@ -42,7 +42,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("Player/Interact"), OnTogglePerformed);
+            var action = inputActionsConfig?.FindAction("Player/MenuToggle");
+            toggleBinding = InputActionBinding.Bind(action, OnTogglePerformed);
 
             if (lobbyService != null)
             {
