@@ -150,9 +150,10 @@
     border-bottom-right-radius: 28px;
 }
 .gamepad-shoulders, .gamepad-body, .gamepad-dpad-row, .gamepad-face-row { flex-direction: row; }
-.gamepad-shoulders { height: 38px; align-items: center; }
+.gamepad-shoulders { height: 55px; align-items: flex-start; }
+.gamepad-shoulder-stack { width: 62px; align-items: center; }
 .gamepad-flex-spacer, .gamepad-center { flex-grow: 1; }
-.gamepad-body { height: 125px; align-items: center; }
+.gamepad-body { height: 108px; align-items: center; }
 .gamepad-side { width: 165px; height: 120px; flex-shrink: 0; flex-direction: row; align-items: center; }
 .gamepad-side-right { justify-content: flex-end; }
 .gamepad-center { align-items: center; justify-content: center; }
@@ -170,18 +171,19 @@
     border-top-color: rgb(78, 94, 116); border-bottom-color: rgb(10, 15, 22);
 }
 .gamepad-shoulder { width: 62px; height: 30px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
-.gamepad-trigger { width: 48px; height: 25px; margin-left: 5px; margin-right: 5px; border-top-left-radius: 7px; border-top-right-radius: 7px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; }
+.gamepad-trigger { width: 48px; height: 22px; margin-bottom: 3px; border-top-left-radius: 7px; border-top-right-radius: 7px; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; }
 .gamepad-stick { width: 54px; height: 54px; border-top-left-radius: 27px; border-top-right-radius: 27px; border-bottom-left-radius: 27px; border-bottom-right-radius: 27px; }
 .gamepad-stick-press { width: 28px; height: 28px; margin-left: -17px; margin-top: 42px; border-top-left-radius: 14px; border-top-right-radius: 14px; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+.gamepad-stick-press-right { margin-left: 0; margin-right: -17px; }
 .gamepad-dpad { width: 84px; margin-left: 9px; align-items: center; }
 .gamepad-dpad-up, .gamepad-dpad-key { width: 27px; height: 27px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 .gamepad-dpad-spacer { width: 27px; height: 27px; }
-.gamepad-face-row { width: 92px; height: 92px; flex-wrap: wrap; }
-.gamepad-face { width: 38px; height: 38px; margin: 4px; border-top-left-radius: 19px; border-top-right-radius: 19px; border-bottom-left-radius: 19px; border-bottom-right-radius: 19px; }
-.gamepad-west { margin-top: 27px; }
-.gamepad-north { margin-top: 0; }
-.gamepad-east { margin-top: -19px; margin-left: 50px; }
-.gamepad-south { margin-top: -19px; margin-left: 4px; }
+.gamepad-face-row { position: relative; width: 92px; height: 92px; }
+.gamepad-face { position: absolute; width: 38px; height: 38px; border-top-left-radius: 19px; border-top-right-radius: 19px; border-bottom-left-radius: 19px; border-bottom-right-radius: 19px; }
+.gamepad-west { left: 0; top: 27px; }
+.gamepad-north { left: 27px; top: 0; }
+.gamepad-east { left: 54px; top: 27px; }
+.gamepad-south { left: 27px; top: 54px; }
 .gamepad-label { font-size: 9px; -unity-font-style: bold; color: rgb(213, 224, 240); }
 .gamepad-label-small { font-size: 7px; -unity-font-style: bold; color: rgb(180, 198, 220); }
 .gamepad-label-tiny { font-size: 6px; -unity-font-style: bold; color: rgb(180, 198, 220); }

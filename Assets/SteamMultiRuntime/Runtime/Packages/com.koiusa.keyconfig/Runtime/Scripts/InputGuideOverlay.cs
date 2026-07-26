@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -36,6 +37,10 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement keyboardLayout;
         private VisualElement mouseLayout;
         private VisualElement gamepadLayout;
+        private Label gamepadFaceWestLabel;
+        private Label gamepadFaceNorthLabel;
+        private Label gamepadFaceEastLabel;
+        private Label gamepadFaceSouthLabel;
         private InputActionAsset inputActionAsset;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
@@ -110,6 +115,10 @@ namespace Koiusa.Keyconfig.Runtime
 
             if (frameActiveDevice != null)
             {
+                if (frameActiveDevice != lastActiveDevice)
+                {
+                    UpdateGamepadFaceLabels(frameActiveDevice);
+                }
                 lastActiveDevice = frameActiveDevice;
                 if (autoSwitchDeviceLayout)
                 {
@@ -191,6 +200,10 @@ namespace Koiusa.Keyconfig.Runtime
             keyboardLayout = root.Q<VisualElement>("keyboard-layout");
             mouseLayout = root.Q<VisualElement>(className: "input-mouse");
             gamepadLayout = root.Q<VisualElement>("gamepad-layout");
+            gamepadFaceWestLabel = root.Q<Label>("gamepad-face-west-label");
+            gamepadFaceNorthLabel = root.Q<Label>("gamepad-face-north-label");
+            gamepadFaceEastLabel = root.Q<Label>("gamepad-face-east-label");
+            gamepadFaceSouthLabel = root.Q<Label>("gamepad-face-south-label");
             var deviceLayout = root.Q<VisualElement>("device-layout");
             var mapLabel = root.Q<Label>("map-label");
 
@@ -211,6 +224,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             mapLabel.text = Nicify(map.name);
             SetGamepadLayout(IsGamepadLike(lastActiveDevice));
+            UpdateGamepadFaceLabels(lastActiveDevice);
             foreach (var action in map.actions)
             {
                 for (var bindingIndex = 0; bindingIndex < action.bindings.Count; bindingIndex++)
@@ -273,6 +287,15 @@ namespace Koiusa.Keyconfig.Runtime
             if (keyboardLayout != null) keyboardLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
             if (mouseLayout != null) mouseLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
             if (gamepadLayout != null) gamepadLayout.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void UpdateGamepadFaceLabels(InputDevice device)
+        {
+            var isPlayStation = device is DualShockGamepad;
+            if (gamepadFaceWestLabel != null) gamepadFaceWestLabel.text = isPlayStation ? "□" : "X";
+            if (gamepadFaceNorthLabel != null) gamepadFaceNorthLabel.text = isPlayStation ? "△" : "Y";
+            if (gamepadFaceEastLabel != null) gamepadFaceEastLabel.text = isPlayStation ? "○" : "B";
+            if (gamepadFaceSouthLabel != null) gamepadFaceSouthLabel.text = isPlayStation ? "×" : "A";
         }
 
         private static bool IsGamepadLike(InputDevice device)
