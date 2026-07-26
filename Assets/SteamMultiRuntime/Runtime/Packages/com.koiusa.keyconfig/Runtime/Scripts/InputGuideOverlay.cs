@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -36,13 +35,13 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement gamepadLayout;
         private InputActionAsset inputActionAsset;
         private InputDevice lastActiveDevice;
-        private InputDevice pendingEventDevice;
         private bool isGamepadLayoutVisible;
 
         private sealed class GuideRow
         {
             public VisualElement Element;
             public InputControl Control;
+            public string BindingPath;
             public float ReleaseDelay;
             public float ActiveUntil;
         }
@@ -57,14 +56,8 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
-            InputSystem.onEvent += OnInputEvent;
             Build();
             SetVisible(startVisible);
-        }
-
-        private void OnDisable()
-        {
-            InputSystem.onEvent -= OnInputEvent;
         }
 
         private void Update()
@@ -74,23 +67,50 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            ApplyPendingEventDevice();
-            DetectActiveDevice();
+            for (var i = 0; i < rows.Count; i++)
+            {
+                rows[i].Element.RemoveFromClassList("active");
+            }
 
+            InputDevice frameActiveDevice = null;
             for (var i = 0; i < rows.Count; i++)
             {
                 var row = rows[i];
-                var inputDetected = InputControlActivity.IsActive(row.Control);
+                if (!InputControlActivity.IsUsable(row.Control))
+                {
+                    row.Control = InputControlActivity.Resolve(row.BindingPath);
+                }
+                var activeControl = InputControlActivity.FindActive(row.BindingPath, row.Control);
+                var inputDetected = activeControl != null;
                 if (inputDetected)
                 {
+                    row.Control = activeControl;
                     row.ActiveUntil = Time.unscaledTime + row.ReleaseDelay;
                 }
 
                 var active = inputDetected || Time.unscaledTime < row.ActiveUntil;
-                row.Element.EnableInClassList("active", active);
-                if (active && row.Control?.device != null)
+                if (active)
                 {
-                    lastActiveDevice = row.Control.device;
+                    row.Element.AddToClassList("active");
+                }
+
+                if (inputDetected && row.Control?.device != null)
+                {
+                    var inputDevice = row.Control.device;
+                    if (frameActiveDevice == null ||
+                        (!IsGamepadLike(frameActiveDevice) && IsGamepadLike(inputDevice)))
+                    {
+                        frameActiveDevice = inputDevice;
+                    }
+                }
+            }
+
+            if (frameActiveDevice != null)
+            {
+                lastActiveDevice = frameActiveDevice;
+                if (autoSwitchDeviceLayout)
+                {
+                    SetGamepadLayout(IsGamepadLike(lastActiveDevice));
                 }
             }
 
@@ -98,96 +118,6 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 deviceLabel.text = GetCurrentDeviceName(lastActiveDevice);
             }
-        }
-
-        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
-        {
-            if (device is Gamepad || device is Joystick || device is Keyboard || device is Mouse)
-            {
-                pendingEventDevice = device;
-            }
-        }
-
-        private void ApplyPendingEventDevice()
-        {
-            if (pendingEventDevice == null)
-            {
-                return;
-            }
-
-            var device = pendingEventDevice;
-            pendingEventDevice = null;
-            lastActiveDevice = device;
-            if (autoSwitchDeviceLayout)
-            {
-                SetGamepadLayout(IsGamepadLike(device));
-            }
-        }
-
-        private void DetectActiveDevice()
-        {
-            InputDevice activeDevice = null;
-
-            if (Keyboard.current != null && Keyboard.current.anyKey.isPressed)
-            {
-                activeDevice = Keyboard.current;
-            }
-
-            var mouse = Mouse.current;
-            var pointerThresholdSquared = InputControlActivity.DefaultActuationThreshold *
-                                          InputControlActivity.DefaultActuationThreshold;
-            if (mouse != null &&
-                (mouse.delta.ReadValue().sqrMagnitude > pointerThresholdSquared ||
-                 mouse.scroll.ReadValue().sqrMagnitude > pointerThresholdSquared ||
-                 mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed))
-            {
-                activeDevice = mouse;
-            }
-
-            // Check every connected pad instead of relying on controls that happened to
-            // receive a visual binding. Steam virtual pads and remapped controls are then
-            // detected as well.
-            foreach (var gamepad in Gamepad.all)
-            {
-                if (IsGamepadActive(gamepad))
-                {
-                    activeDevice = gamepad;
-                    break;
-                }
-            }
-
-            if (activeDevice == null || activeDevice == lastActiveDevice)
-            {
-                return;
-            }
-
-            lastActiveDevice = activeDevice;
-            if (autoSwitchDeviceLayout)
-            {
-                SetGamepadLayout(IsGamepadLike(activeDevice));
-            }
-        }
-
-        private static bool IsGamepadActive(Gamepad gamepad)
-        {
-            if (gamepad == null)
-            {
-                return false;
-            }
-
-            return gamepad.leftStick.ReadValue().sqrMagnitude >=
-                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
-                   gamepad.rightStick.ReadValue().sqrMagnitude >=
-                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
-                   gamepad.dpad.ReadValue().sqrMagnitude >=
-                       InputControlActivity.DefaultActuationThreshold * InputControlActivity.DefaultActuationThreshold ||
-                   gamepad.leftTrigger.ReadValue() >= InputControlActivity.DefaultActuationThreshold ||
-                   gamepad.rightTrigger.ReadValue() >= InputControlActivity.DefaultActuationThreshold ||
-                   gamepad.buttonSouth.isPressed || gamepad.buttonNorth.isPressed ||
-                   gamepad.buttonEast.isPressed || gamepad.buttonWest.isPressed ||
-                   gamepad.leftShoulder.isPressed || gamepad.rightShoulder.isPressed ||
-                   gamepad.leftStickButton.isPressed || gamepad.rightStickButton.isPressed ||
-                   gamepad.startButton.isPressed || gamepad.selectButton.isPressed;
         }
 
         public void SetVisible(bool visible)
@@ -327,6 +257,7 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 Element = controlElement,
                 Control = InputControlActivity.Resolve(path),
+                BindingPath = path,
                 // Pointer delta commonly returns to zero between input events. A short
                 // release delay makes motion read as continuous without delaying onset.
                 ReleaseDelay = string.Equals(controlName, "delta", StringComparison.Ordinal)

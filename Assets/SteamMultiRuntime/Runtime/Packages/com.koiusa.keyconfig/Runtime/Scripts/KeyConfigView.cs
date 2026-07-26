@@ -363,8 +363,17 @@ namespace Koiusa.Keyconfig.Runtime
             for (var i = 0; i < inputStateRows.Count; i++)
             {
                 var item = inputStateRows[i];
-                var magnitude = item.Control?.EvaluateMagnitude() ?? 0f;
-                var isActive = InputControlActivity.IsActive(item.Control);
+                if (!InputControlActivity.IsUsable(item.Control))
+                {
+                    item.Control = InputControlActivity.Resolve(item.Entry.BindingPath);
+                }
+                var activeControl = InputControlActivity.FindActive(item.Entry.BindingPath, item.Control);
+                if (activeControl != null)
+                {
+                    item.Control = activeControl;
+                }
+                var magnitude = InputControlActivity.EvaluateMagnitude(item.Control);
+                var isActive = activeControl != null;
 
                 // Some controls do not expose a magnitude. Keep action-level input visible
                 // as a fallback for custom controls and processor-driven bindings.
