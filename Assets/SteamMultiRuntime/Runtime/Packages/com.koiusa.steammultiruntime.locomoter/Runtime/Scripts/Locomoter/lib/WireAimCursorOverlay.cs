@@ -24,7 +24,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnGUI()
         {
-            if (!isVisible || Cursor.visible)
+            if (!isVisible)
             {
                 return;
             }
