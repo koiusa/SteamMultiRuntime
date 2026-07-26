@@ -191,7 +191,8 @@ namespace Koiusa.SteamMultiRuntime
                     rb,
                     bodyCollider,
                     slopeContactResolver,
-                    settings);
+                    settings,
+                    effectiveStrafeBlend);
             }
             else if (isOnSteepSlope)
             {

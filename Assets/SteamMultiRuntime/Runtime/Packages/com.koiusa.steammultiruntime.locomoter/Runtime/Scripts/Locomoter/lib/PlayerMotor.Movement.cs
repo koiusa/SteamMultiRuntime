@@ -126,7 +126,8 @@ namespace Koiusa.SteamMultiRuntime
             Rigidbody rb,
             Collider bodyCollider,
             SlopeContactResolver slopeContactResolver,
-            PlayerMotorSettings settings)
+            PlayerMotorSettings settings,
+            float strafeBlend)
         {
             if (!settings.EnableStepAssist || settings.StepAssistMaxHeight <= 0f || rb == null || bodyCollider == null)
             {
@@ -139,8 +140,16 @@ namespace Koiusa.SteamMultiRuntime
                 return velocity;
             }
 
-            var horizontalVelocity = Vector3.ProjectOnPlane(velocity, upAxis);
-            if (horizontalVelocity.magnitude < settings.StepAssistMinMoveSpeed)
+            // A collision with the face of a step can reduce actual velocity to
+            // almost zero before this probe runs. Strafe has a lower target speed,
+            // so checking the post-collision velocity disproportionately disables
+            // its step assist. Use intended movement speed for the activation gate.
+            var strafeSpeedMultiplier = Mathf.Lerp(
+                1f,
+                settings.StrafeMoveSpeedMultiplier,
+                Mathf.Clamp01(strafeBlend));
+            var intendedSpeed = settings.MoveSpeed * strafeSpeedMultiplier * horizontalMove.magnitude;
+            if (intendedSpeed < settings.StepAssistMinMoveSpeed)
             {
                 return velocity;
             }
@@ -195,6 +204,16 @@ namespace Koiusa.SteamMultiRuntime
             if (verticalSpeed < 0f)
             {
                 velocity -= upAxis * verticalSpeed;
+            }
+
+            // ConstrainHorizontalVelocity has already removed the component moving
+            // into the step's vertical face. Once the step-up succeeds that contact
+            // must no longer stop forward motion, otherwise the body rises in place
+            // and fails to move onto the upper surface (especially while strafing).
+            var forwardSpeed = Vector3.Dot(velocity, checkDirection);
+            if (forwardSpeed < intendedSpeed)
+            {
+                velocity += checkDirection * (intendedSpeed - forwardSpeed);
             }
 
             return velocity;
