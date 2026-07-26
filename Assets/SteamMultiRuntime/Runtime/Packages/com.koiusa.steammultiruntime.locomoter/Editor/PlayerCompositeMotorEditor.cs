@@ -7,6 +7,9 @@ namespace Koiusa.SteamMultiRuntime
     [CustomEditor(typeof(PlayerCompositeMotor))]
     public class PlayerCompositeMotorEditor : UnityEditor.Editor
     {
+        private bool traversalFeaturesExpanded = true;
+        private bool wireFeatureExpanded = true;
+
         public override void OnInspectorGUI()
         {
             EditorGUILayout.HelpBox(
@@ -16,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
                 "• WallJumpTraversalFeature - 壁ジャンプ（オプション）\n" +
                 "• WallSlideTraversalFeature - 壁滑り（オプション）\n" +
                 "• LadderTraversalFeature - 梯子昇降（オプション）\n" +
-                "• WireConnection + Wire Actions - ワイヤー接続と操作（オプション）",
+                "• WireConnectionFeature + Wire Actions - ワイヤー接続と操作（オプション）",
                 MessageType.Info);
 
             EditorGUILayout.Space();
@@ -46,18 +49,56 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             EditorGUILayout.Space(2f);
-            EditorGUILayout.LabelField("Coordinator Features", EditorStyles.miniBoldLabel);
-            DrawComponentRow<WallRunTraversalFeature>(gameObject, "WallRunTraversalFeature");
-            DrawComponentRow<WallJumpTraversalFeature>(gameObject, "WallJumpTraversalFeature");
-            DrawComponentRow<WallSlideTraversalFeature>(gameObject, "WallSlideTraversalFeature");
-            DrawComponentRow<LadderTraversalFeature>(gameObject, "LadderTraversalFeature");
-            DrawComponentRow<WireConnection>(gameObject, "WireConnection");
-            DrawComponentRow<WireAttachAction>(gameObject, "  WireAttachAction");
-            DrawComponentRow<WireSwingAction>(gameObject, "  WireSwingAction");
-            DrawComponentRow<WireReelAction>(gameObject, "  WireReelAction");
-            DrawComponentRow<WireGroundAction>(gameObject, "  WireGroundAction");
-            DrawReadOnlyComponentRow<WireGrappleTargetingFeature>(gameObject, "  GrappleTargetingFeature");
-            DrawReadOnlyComponentRow<WireLineVisualFeature>(gameObject, "  LineVisualFeature");
+            traversalFeaturesExpanded = EditorGUILayout.Foldout(
+                traversalFeaturesExpanded,
+                "Traversal Features",
+                true,
+                EditorStyles.foldoutHeader);
+            if (traversalFeaturesExpanded)
+            {
+                EditorGUI.indentLevel++;
+                DrawComponentRow<WallRunTraversalFeature>(gameObject, "Wall Run");
+                DrawComponentRow<WallJumpTraversalFeature>(gameObject, "Wall Jump");
+                DrawComponentRow<WallSlideTraversalFeature>(gameObject, "Wall Slide");
+                DrawComponentRow<LadderTraversalFeature>(gameObject, "Ladder");
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.Space(2f);
+            wireFeatureExpanded = EditorGUILayout.Foldout(
+                wireFeatureExpanded,
+                "Wire Connection Feature",
+                true,
+                EditorStyles.foldoutHeader);
+            if (wireFeatureExpanded)
+            {
+                EditorGUI.indentLevel++;
+                DrawComponentRow<WireConnectionFeature>(gameObject, "Feature");
+                if (gameObject.GetComponent<WireConnectionFeature>() != null)
+                {
+                    EditorGUILayout.LabelField("Actions", EditorStyles.miniBoldLabel);
+                    EditorGUI.indentLevel++;
+                    DrawReadOnlyComponentRow<WireAttachAction>(gameObject, "Attach");
+                    DrawReadOnlyComponentRow<WireSwingAction>(gameObject, "Swing");
+                    DrawReadOnlyComponentRow<WireReelAction>(gameObject, "Reel");
+                    DrawReadOnlyComponentRow<WireGroundAction>(gameObject, "Ground");
+                    EditorGUI.indentLevel--;
+
+                    EditorGUILayout.LabelField("Internal Features", EditorStyles.miniBoldLabel);
+                    EditorGUI.indentLevel++;
+                    DrawReadOnlyComponentRow<WireGrappleTargetingFeature>(gameObject, "Targeting");
+                    DrawReadOnlyComponentRow<WireLineVisualFeature>(gameObject, "Line Visual");
+                    EditorGUI.indentLevel--;
+
+                    if (!WireConnectionFeatureEditor.HasCompleteStack(gameObject))
+                    {
+                        EditorGUILayout.HelpBox("Wire Connection Featureの構成が不足しています。", MessageType.Error);
+                        if (GUILayout.Button("Repair Wire Connection Feature"))
+                            WireConnectionFeatureEditor.EnsureStack(gameObject);
+                    }
+                }
+                EditorGUI.indentLevel--;
+            }
 
             EditorGUI.indentLevel--;
 

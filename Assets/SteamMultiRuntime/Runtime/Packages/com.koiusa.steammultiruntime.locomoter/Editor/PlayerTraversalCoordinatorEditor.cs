@@ -31,31 +31,28 @@ namespace Koiusa.SteamMultiRuntime
             DrawFeatureRow<WallJumpTraversalFeature>(gameObject, "Wall Jump");
             DrawFeatureRow<WallSlideTraversalFeature>(gameObject, "Wall Slide");
             DrawFeatureRow<LadderTraversalFeature>(gameObject, "Ladder");
-            DrawFeatureRow<WireConnection>(gameObject, "Wire Connection");
+            DrawFeatureRow<WireConnectionFeature>(gameObject, "Wire Connection Feature");
 
-            var wire = gameObject.GetComponent<WireConnection>();
+            var wire = gameObject.GetComponent<WireConnectionFeature>();
             if (wire != null)
             {
                 EditorGUI.indentLevel++;
-                DrawFeatureRow<WireGrappleTargetingFeature>(gameObject, "Grapple Targeting", false);
-                DrawFeatureRow<WireLineVisualFeature>(gameObject, "Line Visual", false);
+                EditorGUILayout.LabelField("Actions", EditorStyles.miniBoldLabel);
                 DrawFeatureRow<WireAttachAction>(gameObject, "Attach Action", false);
                 DrawFeatureRow<WireSwingAction>(gameObject, "Swing Action", false);
                 DrawFeatureRow<WireReelAction>(gameObject, "Reel Action", false);
                 DrawFeatureRow<WireGroundAction>(gameObject, "Ground Action", false);
+                EditorGUILayout.LabelField("Internal Features", EditorStyles.miniBoldLabel);
+                DrawFeatureRow<WireGrappleTargetingFeature>(gameObject, "Targeting", false);
+                DrawFeatureRow<WireLineVisualFeature>(gameObject, "Line Visual", false);
                 EditorGUI.indentLevel--;
 
-                if (gameObject.GetComponent<WireGrappleTargetingFeature>() == null
-                    || gameObject.GetComponent<WireLineVisualFeature>() == null
-                    || gameObject.GetComponent<WireAttachAction>() == null
-                    || gameObject.GetComponent<WireSwingAction>() == null
-                    || gameObject.GetComponent<WireReelAction>() == null
-                    || gameObject.GetComponent<WireGroundAction>() == null)
+                if (!WireConnectionFeatureEditor.HasCompleteStack(gameObject))
                 {
-                    EditorGUILayout.HelpBox("Wireの内部Featureが不足しています。", MessageType.Error);
-                    if (GUILayout.Button("Repair Wire Feature Stack"))
+                    EditorGUILayout.HelpBox("Wire Connection Featureの構成が不足しています。", MessageType.Error);
+                    if (GUILayout.Button("Repair Wire Connection Feature"))
                     {
-                        WireConnectionEditor.EnsureStack(gameObject);
+                        WireConnectionFeatureEditor.EnsureStack(gameObject);
                     }
                 }
             }

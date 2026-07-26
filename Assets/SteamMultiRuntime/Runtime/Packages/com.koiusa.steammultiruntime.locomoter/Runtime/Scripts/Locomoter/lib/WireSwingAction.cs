@@ -1,7 +1,7 @@
 using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(Rigidbody)), RequireComponent(typeof(WireConnection)), DisallowMultipleComponent]
+    [RequireComponent(typeof(Rigidbody)), RequireComponent(typeof(WireConnectionFeature)), DisallowMultipleComponent]
     public sealed class WireSwingAction : MonoBehaviour, IWireSwingAction
     {
         [SerializeField, Min(0f)] private float swingAcceleration = 16f;

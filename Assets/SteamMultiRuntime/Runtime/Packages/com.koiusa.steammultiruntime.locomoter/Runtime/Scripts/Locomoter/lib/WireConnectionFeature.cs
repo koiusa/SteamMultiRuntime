@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(PlayerTraversalCoordinator))]
     [RequireComponent(typeof(WireLineVisualFeature))]
     [DisallowMultipleComponent]
-    public sealed class WireConnection : MonoBehaviour, IWireConnection
+    public sealed class WireConnectionFeature : MonoBehaviour, IWireConnection
     {
         [SerializeField] private WireLineVisualFeature visual;
         [SerializeField, Tooltip("Elasticはバネ力、Ropeは非伸縮の位置制約として処理します。")]

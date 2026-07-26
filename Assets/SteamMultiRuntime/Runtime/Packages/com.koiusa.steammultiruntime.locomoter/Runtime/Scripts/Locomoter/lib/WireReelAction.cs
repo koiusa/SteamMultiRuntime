@@ -1,7 +1,7 @@
 using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
-    [RequireComponent(typeof(WireConnection)), DisallowMultipleComponent]
+    [RequireComponent(typeof(WireConnectionFeature)), DisallowMultipleComponent]
     public sealed class WireReelAction : MonoBehaviour, IWireReelAction
     {
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
