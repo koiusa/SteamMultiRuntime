@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;
+        [SerializeField] private GamepadAimCursorSettings gamepadAimCursorSettings = new();
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -91,7 +92,7 @@ namespace Koiusa.SteamMultiRuntime
             // Reinitialize input source if already created
             activeInputSource?.Disable();
 
-            baseInputSource = new PlayerGameplayInputReader(config);
+            baseInputSource = new PlayerGameplayInputReader(config, gamepadAimCursorSettings);
             activeInputSource = baseInputSource;
             injectedInputReferenceTransform = null;
 
@@ -154,7 +155,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            baseInputSource = new PlayerGameplayInputReader(inputActionsConfig);
+            baseInputSource = new PlayerGameplayInputReader(inputActionsConfig, gamepadAimCursorSettings);
             activeInputSource = baseInputSource;
         }
 

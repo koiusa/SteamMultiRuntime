@@ -11,6 +11,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;
+        [SerializeField] private GamepadAimCursorSettings gamepadAimCursorSettings = new();
 
         [Header("References")]
         [SerializeField] private Transform cameraTransform;
@@ -60,7 +61,7 @@ namespace Koiusa.SteamMultiRuntime
                 inputSource.Disable();
             }
 
-            inputSource = new PlayerGameplayInputReader(config);
+            inputSource = new PlayerGameplayInputReader(config, gamepadAimCursorSettings);
 
             if (isActiveAndEnabled)
             {
@@ -97,7 +98,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            inputSource = new PlayerGameplayInputReader(inputActionsConfig);
+            inputSource = new PlayerGameplayInputReader(inputActionsConfig, gamepadAimCursorSettings);
 
             if (cameraTransform == null && Camera.main != null)
             {

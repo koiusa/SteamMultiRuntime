@@ -19,6 +19,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly InputAction aimCursorPositionAction;
         private readonly InputAction aimCursorMoveAction;
         private readonly InputAction grappleFireAction;
+        private readonly GamepadAimCursorSettings gamepadAimCursorSettings;
 
         private int jumpToken;
         private bool isStrafeMode;
@@ -36,7 +37,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasAimCursor;
         private bool wasGrappleHeld;
 
-        public PlayerGameplayInputReader(InputActionsConfig profile)
+        public PlayerGameplayInputReader(InputActionsConfig profile, GamepadAimCursorSettings gamepadAimCursorSettings = null)
         {
             if (profile == null)
             {
@@ -52,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
             aimCursorPositionAction = profile.FindAction("Player/AimCursorPosition");
             aimCursorMoveAction = profile.FindAction("Player/AimCursorMove");
             grappleFireAction = profile.FindAction("Player/GrappleFire");
+            this.gamepadAimCursorSettings = gamepadAimCursorSettings ?? new GamepadAimCursorSettings();
         }
 
         public void Enable()
@@ -187,12 +189,34 @@ namespace Koiusa.SteamMultiRuntime
             aimCursorPosition += delta;
             if (isGamepadAim && aimCursorMoveAction != null)
             {
-                const float screenHeightsPerSecond = 2.5f;
-                var speed = Screen.height * screenHeightsPerSecond;
-                aimCursorPosition += aimCursorMoveAction.ReadValue<Vector2>() * (speed * Time.unscaledDeltaTime);
+                var stick = ApplyAimResponseCurve(aimCursorMoveAction.ReadValue<Vector2>());
+                var center = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+                var radius = Screen.height * gamepadAimCursorSettings.RadiusInScreenHeights;
+                if (gamepadAimCursorSettings.Mode == GamepadAimCursorMode.Absolute)
+                {
+                    aimCursorPosition = center + Vector2.ClampMagnitude(stick, 1f) * radius;
+                }
+                else
+                {
+                    var speed = Screen.height * gamepadAimCursorSettings.SpeedInScreenHeightsPerSecond;
+                    aimCursorPosition += stick * (speed * Time.unscaledDeltaTime);
+                    aimCursorPosition = center + Vector2.ClampMagnitude(aimCursorPosition - center, radius);
+                }
             }
             aimCursorPosition.x = Mathf.Clamp(aimCursorPosition.x, edgePadding, Mathf.Max(edgePadding, Screen.width - edgePadding));
             aimCursorPosition.y = Mathf.Clamp(aimCursorPosition.y, edgePadding, Mathf.Max(edgePadding, Screen.height - edgePadding));
+        }
+
+        private Vector2 ApplyAimResponseCurve(Vector2 stick)
+        {
+            var magnitude = Mathf.Clamp01(stick.magnitude);
+            if (magnitude <= Mathf.Epsilon)
+            {
+                return Vector2.zero;
+            }
+
+            var curvedMagnitude = Mathf.Pow(magnitude, gamepadAimCursorSettings.ResponseExponent);
+            return stick / magnitude * curvedMagnitude;
         }
 
         private void OnJumpPerformed(InputAction.CallbackContext context)
