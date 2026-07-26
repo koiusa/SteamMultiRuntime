@@ -9,11 +9,11 @@ Player GameplayはNetcodeの有無でパッケージを分離します。
 ```text
 com.koiusa.steammultiruntime.player
 ├─ Runtime: Coordinator、Skill／Combat Feature、Local Skill入力
-└─ Editor: 共通Inspector、共通／Local Prefab設定
+└─ Editor: 共通Inspector、Local入力の参照設定補助
 
 com.koiusa.steammultiruntime.player.netcode
 ├─ Runtime: NetworkPlayerSkillController
-└─ Editor: Network Player Prefab設定
+└─ Editor: Network入力の参照設定補助
 ```
 
 依存方向は`Player.Netcode → Player`の一方向です。基本Playerパッケージは`Unity.Netcode`およびPlayer.Netcode型を参照しません。これにより、Local専用構成ではNetcode依存なしでPlayer Gameplayを利用できます。
@@ -32,7 +32,6 @@ com.koiusa.steammultiruntime.player.netcode
 - `PlayerHealthFeature`、`PlayerDamageReceiverFeature`、`PlayerHitDetectionFeature`の初期実装
 - `PlayerCharacterCoordinatorEditor`によるMovement、Skill、Combatの論理階層表示と任意Featureの追加
 - 5種類の標準Character PrefabへのCoordinatorおよび初期Featureの適用
-- Editor初回更新時のPrefab移行処理と、手動再適用メニュー
 - `PlayerSkillInputController`によるLocal PlayerのAttack／Dash／Guard／Heal入力接続
 - Input Guide OverlayによるSkillキーのBinding名とライブ入力状態表示
 
@@ -167,7 +166,7 @@ AttackSkillSettings                                     [予定]
 - `LocalPlayer_NPC`
 - `NetworkPlayer_NPC`
 
-Prefab移行処理はEditor更新後に一度だけ自動実行します。その後はFeatureを自由に付け外しでき、自動的に再追加されません。標準構成へ戻す場合だけEditorメニューの再適用操作を使用します。
+各Prefabは必要なComponentとSO参照を直接保持します。起動時の自動移行、固定Prefabパス、Asset検索パスは使用しません。Inspectorの設定補助は、同じGameObject上のControllerとSkill Featureから参照を取得します。
 
 ## 現在の基本構成
 

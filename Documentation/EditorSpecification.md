@@ -21,11 +21,7 @@
 Skill／Combat Featureは各行の`Add`から個別に装着でき、通常のComponentメニューから個別に削除できます。
 Skill Featureには紫の専用アイコンを表示します。
 
-標準Character Prefabへ新構成を再適用する操作は次のメニューから実行できます。既に存在するComponentと設定値は維持され、不足Componentだけを追加します。
-
-```text
-Tools/SteamMultiRuntime/Apply Player Gameplay Structure To Character Prefabs
-```
+`PlayerSkillInputController`と`NetworkPlayerSkillController`の設定補助は、固定Assetパスを使用せず、同じGameObject上のInput ControllerとSkill Featureから参照を取得します。Prefabの自動移行や一括再適用メニューは提供しません。
 
 | 対象 | Editor | 主な仕様 |
 |---|---|---|

@@ -113,7 +113,7 @@ namespace Koiusa.SteamMultiRuntime
                 var buttonLabel = localInput == null ? "Add" : "Configure";
                 if (!GUILayout.Button(buttonLabel, GUILayout.Width(72f))) return;
                 if (localInput == null) Undo.AddComponent<PlayerSkillInputController>(owner);
-                PlayerCharacterPrefabSetup.ConfigureSkillInput(owner);
+                PlayerSkillInputEditorUtility.ConfigureSkillInput(owner);
                 MarkDirty(owner);
             }
         }

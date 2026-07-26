@@ -41,6 +41,7 @@ namespace Koiusa.SteamMultiRuntime
         public float HorizontalVelocity => motor != null ? motor.HorizontalVelocity : 0f;
         public float VerticalVelocity => motor != null ? motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed => 5f;
+        public InputActionsConfig InputActionsConfig => inputActionsConfig;
 
         public void SetInputConfig(InputActionsConfig config)
         {

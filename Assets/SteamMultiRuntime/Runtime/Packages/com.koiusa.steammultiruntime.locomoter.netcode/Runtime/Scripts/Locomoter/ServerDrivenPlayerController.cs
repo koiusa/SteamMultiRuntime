@@ -73,6 +73,7 @@ namespace Koiusa.SteamMultiRuntime
         public float HorizontalVelocity => UseLocalMotorState && motor != null ? motor.HorizontalVelocity : netKinematicState.Value.HorizontalVelocity;
         public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
+        public InputActionsConfig InputActionsConfig => inputActionsConfig;
 
         public void SetInputConfig(InputActionsConfig config)
         {
