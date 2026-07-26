@@ -218,6 +218,29 @@ namespace Koiusa.Keyconfig.Runtime
                     BindControl(root, action, bindingIndex, binding);
                 }
             }
+
+            // Keep physical controller buttons visible in the input monitor even
+            // when the current action map does not assign an action to them.
+            BindDebugControl(root, "control-start", "<Gamepad>/start");
+            BindDebugControl(root, "control-select", "<Gamepad>/select");
+            BindDebugControl(root, "control-systembutton", "<DualShockGamepad>/systemButton");
+            BindDebugControl(root, "control-touchpadbutton", "<DualShockGamepad>/touchpadButton");
+        }
+
+        private void BindDebugControl(VisualElement root, string elementName, string bindingPath)
+        {
+            var element = root.Q<VisualElement>(elementName);
+            if (element == null || rows.Exists(row => row.Element == element))
+            {
+                return;
+            }
+
+            rows.Add(new GuideRow
+            {
+                Element = element,
+                Control = InputControlActivity.Resolve(bindingPath),
+                BindingPath = bindingPath
+            });
         }
 
         private void SetGamepadLayout(bool showGamepad)

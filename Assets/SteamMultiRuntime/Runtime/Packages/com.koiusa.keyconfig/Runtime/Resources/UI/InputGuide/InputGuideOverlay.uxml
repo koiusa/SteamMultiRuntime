@@ -72,7 +72,15 @@
                                 <ui:VisualElement name="control-down" class="gamepad-button gamepad-dpad-key"><ui:Label text="▼" class="gamepad-label-small" /></ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:VisualElement class="gamepad-center"><ui:Label text="GAMEPAD" class="gamepad-brand" /></ui:VisualElement>
+                        <ui:VisualElement class="gamepad-center">
+                            <ui:VisualElement class="gamepad-center-row">
+                                <ui:VisualElement name="control-select" class="gamepad-button gamepad-menu-button"><ui:Label text="SHARE" class="gamepad-label-tiny" /></ui:VisualElement>
+                                <ui:VisualElement name="control-start" class="gamepad-button gamepad-menu-button"><ui:Label text="OPTION" class="gamepad-label-tiny" /></ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:VisualElement name="control-touchpadbutton" class="gamepad-button gamepad-touchpad"><ui:Label text="TOUCH PAD" class="gamepad-label-tiny" /></ui:VisualElement>
+                            <ui:VisualElement name="control-systembutton" class="gamepad-button gamepad-system-button"><ui:Label text="PS" class="gamepad-label-small" /></ui:VisualElement>
+                            <ui:Label text="GAMEPAD" class="gamepad-brand" />
+                        </ui:VisualElement>
                         <ui:VisualElement class="gamepad-side gamepad-side-right">
                             <ui:VisualElement class="gamepad-face-row">
                                 <ui:VisualElement name="control-buttonwest" class="gamepad-button gamepad-face gamepad-west"><ui:Label text="X" class="gamepad-label" /></ui:VisualElement>
@@ -81,6 +89,7 @@
                                 <ui:VisualElement name="control-buttonsouth" class="gamepad-button gamepad-face gamepad-south"><ui:Label text="A" class="gamepad-label" /></ui:VisualElement>
                             </ui:VisualElement>
                             <ui:VisualElement name="control-rightstick" class="gamepad-stick"><ui:Label text="RS" class="gamepad-label" /></ui:VisualElement>
+                            <ui:VisualElement name="control-rightstickpress" class="gamepad-stick-press"><ui:Label text="R3" class="gamepad-label-small" /></ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
