@@ -76,8 +76,11 @@ IPlayerController
 │     ├─ PlayerMovementFlagsState
 │     └─ WireSwingNetworkState
 │
-└─ NpcNavMeshController
-   └─ 公開状態はServerDrivenPlayerControllerへ委譲可能
+└─ NpcPlayerControllerAdapter（Local NPCのみ）
+   └─ NpcNavMeshController : INpcLocomotionState
+
+Network NPCではServerDrivenPlayerControllerだけがIPlayerControllerを実装し、
+NpcNavMeshControllerはNPC固有の状態契約だけを公開する。
 
 PlayerCompositeMotor : IPlayerMoveInputReceiver
 ├─ PlayerMotor : IPlayerMotor

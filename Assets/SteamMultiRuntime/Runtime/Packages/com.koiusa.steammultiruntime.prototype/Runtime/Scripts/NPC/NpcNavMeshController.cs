@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(PlayerCompositeMotor))]
-    public partial class NpcNavMeshController : MonoBehaviour, IPlayerController
+    public partial class NpcNavMeshController : MonoBehaviour, INpcLocomotionState
     {
 
         private NpcNavMeshMovementModule movement;

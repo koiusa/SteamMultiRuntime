@@ -5,7 +5,7 @@
 ## クラス構成
 
 ```text
-NpcNavMeshController : IPlayerController
+NpcNavMeshController : INpcLocomotionState
 ├─ NpcNavMeshMovementModule
 │  ├─ ランダム目的地
 │  ├─ 到着待機
@@ -61,17 +61,23 @@ Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、
 - Client側の`NavMeshAgent.hasPath`を到着判定に使わない
 - 途中参加Clientも表示中の目的地を復元する
 
-## 現在の注意点
+## Controller契約の分離
 
-`NetworkPlayer_NPC`には2つの`IPlayerController`実装があります。
+NPCの経路・移動状態は`INpcLocomotionState`として公開し、Network NPCで権威を持つ
+`IPlayerController`は`ServerDrivenPlayerController`だけにしています。
 
 ```text
 NetworkPlayer_NPC
 ├─ ServerDrivenPlayerController : IPlayerController
-└─ NpcNavMeshController : IPlayerController
+└─ NpcNavMeshController : INpcLocomotionState
+
+LocalPlayer_NPC
+├─ NpcNavMeshController : INpcLocomotionState
+└─ NpcPlayerControllerAdapter : IPlayerController
 ```
 
-現在はNPC側がNetwork Controllerへ公開状態を委譲しています。単一実装を仮定した`GetComponent<IPlayerController>()`には曖昧さがあるため、将来はNPC固有状態を別契約へ分離する余地があります。
+`NpcPlayerControllerAdapter`はローカルNPCでのみNPC状態を共通のPlayer Controller契約へ変換します。
+これにより、Animatorなどが行う`GetComponent<IPlayerController>()`の結果は各Prefabで一意です。
 
 ## 変更時の確認項目
 

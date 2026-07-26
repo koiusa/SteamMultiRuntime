@@ -97,10 +97,10 @@ Network NPCでは、クライアントの `NavMeshAgent.hasPath` を到着判定
 
 ### P1: 次の改善候補
 
-3. **`IPlayerController`実装の一本化**
-   - Network NPC上には `NpcNavMeshController` と `ServerDrivenPlayerController` の2つの `IPlayerController` 実装が存在する。
-   - 現在はNPC側プロパティをNetwork Controllerへ委譲し、Prefab上でもNetwork Controllerを先に配置している。
-   - 将来的にはNPCの公開状態を別インターフェースへ分離し、Animatorが取得する `IPlayerController` を一意にする方が安全である。
+3. **`IPlayerController`実装の一本化（対応済み）**
+   - `NpcNavMeshController`の公開状態を`INpcLocomotionState`へ分離した。
+   - Network NPCの`IPlayerController`は`ServerDrivenPlayerController`だけになり、取得順への依存を解消した。
+   - Local NPCは`NpcPlayerControllerAdapter`を介して従来どおり`IPlayerController`を公開する。
 
 4. **入力Source未設定の診断**
    - 外部入力注入を許可するため、`PlayerInputActionsProfile` が未設定でも `ServerDrivenPlayerController` を無効化しなくなった。
