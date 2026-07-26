@@ -23,7 +23,7 @@ namespace Koiusa.SteamMultiRuntime
 
         [Header("Camera Collision")]
         [SerializeField] private LayerMask cameraCollisionLayers = Physics.DefaultRaycastLayers;
-        [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.3f;
+        [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.45f;
         [SerializeField, Min(0.01f)] private float minimumDistanceFromTarget = 0.5f;
         [SerializeField, Min(0f)] private float minimumOcclusionTime = 0.08f;
         [SerializeField, Range(0f, 2f)] private float collisionSmoothingTime = 0.25f;
@@ -191,6 +191,30 @@ namespace Koiusa.SteamMultiRuntime
                     SmoothingTime = collisionSmoothingTime,
                     Damping = collisionRecoveryDamping,
                     DampingWhenOccluded = collisionDamping
+                };
+
+                var decollider = camera.GetComponent<CinemachineDecollider>();
+                if (decollider == null)
+                {
+                    decollider = camera.gameObject.AddComponent<CinemachineDecollider>();
+                }
+
+                decollider.CameraRadius = cameraCollisionRadius;
+                decollider.Decollision = new CinemachineDecollider.DecollisionSettings
+                {
+                    Enabled = true,
+                    ObstacleLayers = cameraCollisionLayers,
+                    UseFollowTarget = new CinemachineDecollider.DecollisionSettings.FollowTargetSettings
+                    {
+                        Enabled = true,
+                        YOffset = 0f
+                    },
+                    Damping = collisionDamping,
+                    SmoothingTime = collisionSmoothingTime
+                };
+                decollider.TerrainResolution = new CinemachineDecollider.TerrainSettings
+                {
+                    Enabled = false
                 };
             }
         }
