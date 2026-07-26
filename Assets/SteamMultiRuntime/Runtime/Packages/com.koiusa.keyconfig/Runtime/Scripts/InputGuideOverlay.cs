@@ -12,6 +12,9 @@ namespace Koiusa.Keyconfig.Runtime
     public sealed class InputGuideOverlay : MonoBehaviour
     {
         private const string DefaultLayoutPath = "UI/InputGuide/InputGuideOverlay";
+        private const string KeyboardLayoutPath = "UI/InputGuide/InputGuideKeyboard";
+        private const string MouseLayoutPath = "UI/InputGuide/InputGuideMouse";
+        private const string GamepadLayoutPath = "UI/InputGuide/InputGuideGamepad";
 
         [Header("Input")]
         [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
@@ -175,6 +178,9 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             layout.CloneTree(root);
+            CloneDeviceLayout(root, "keyboard-layout-host", KeyboardLayoutPath);
+            CloneDeviceLayout(root, "mouse-layout-host", MouseLayoutPath);
+            CloneDeviceLayout(root, "gamepad-layout-host", GamepadLayoutPath);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             deviceLabel = root.Q<Label>("device-label");
             if (deviceLabel != null)
@@ -225,6 +231,24 @@ namespace Koiusa.Keyconfig.Runtime
             BindDebugControl(root, "control-select", "<Gamepad>/select");
             BindDebugControl(root, "control-systembutton", "<DualShockGamepad>/systemButton");
             BindDebugControl(root, "control-touchpadbutton", "<DualShockGamepad>/touchpadButton");
+        }
+
+        private void CloneDeviceLayout(VisualElement root, string hostName, string resourcePath)
+        {
+            var host = root.Q<VisualElement>(hostName);
+            if (host == null)
+            {
+                return;
+            }
+
+            var deviceLayoutAsset = Resources.Load<VisualTreeAsset>(resourcePath);
+            if (deviceLayoutAsset == null)
+            {
+                Debug.LogError($"Input guide device layout was not found at Resources/{resourcePath}.", this);
+                return;
+            }
+
+            deviceLayoutAsset.CloneTree(host);
         }
 
         private void BindDebugControl(VisualElement root, string elementName, string bindingPath)

@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="keyboard-layout" class="input-keyboard">
+        <ui:VisualElement class="keyboard-row">
+            <ui:VisualElement name="control-1" class="keycap"><ui:Label text="1" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-2" class="keycap"><ui:Label text="2" class="keycap-name" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="keyboard-row keyboard-row-offset">
+            <ui:VisualElement name="control-w" class="keycap"><ui:Label text="W" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-e" class="keycap"><ui:Label text="E" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement class="keyboard-gap keyboard-gap-one-right" />
+            <ui:VisualElement name="control-uparrow" class="keycap keycap-arrow"><ui:Label text="▲" class="keycap-name" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="keyboard-row">
+            <ui:VisualElement name="control-a" class="keycap"><ui:Label text="A" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-s" class="keycap"><ui:Label text="S" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-d" class="keycap"><ui:Label text="D" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-g" class="keycap"><ui:Label text="G" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-h" class="keycap"><ui:Label text="H" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-leftarrow" class="keycap keycap-arrow"><ui:Label text="◀" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-downarrow" class="keycap keycap-arrow"><ui:Label text="▼" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-rightarrow" class="keycap keycap-arrow"><ui:Label text="▶" class="keycap-name" /></ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="keyboard-row">
+            <ui:VisualElement name="control-leftalt" class="keycap keycap-wide"><ui:Label text="ALT" class="keycap-name keycap-name-small" /></ui:VisualElement>
+            <ui:VisualElement name="control-leftshift" class="keycap keycap-wide"><ui:Label text="SHIFT" class="keycap-name keycap-name-small" /></ui:VisualElement>
+            <ui:VisualElement name="control-c" class="keycap"><ui:Label text="C" class="keycap-name" /></ui:VisualElement>
+            <ui:VisualElement name="control-space" class="keycap keycap-space"><ui:Label text="SPACE" class="keycap-name keycap-name-small" /></ui:VisualElement>
+            <ui:VisualElement name="control-enter" class="keycap keycap-wide"><ui:Label text="ENTER" class="keycap-name keycap-name-small" /></ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
