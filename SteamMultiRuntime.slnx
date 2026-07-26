@@ -13,6 +13,7 @@
   <Project Path="koiusa.Keyconfig.Runtime.csproj" />
   <Project Path="Koiusa.TargetingSystem.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Integration.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.csproj" />
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
@@ -26,7 +27,6 @@
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.UI.Runtime.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Prototype.Editor.csproj" />
   <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.Runtime.csproj" />

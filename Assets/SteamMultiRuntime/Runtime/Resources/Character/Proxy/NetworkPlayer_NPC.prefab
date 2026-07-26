@@ -40,19 +40,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &940000000000000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b46b4dcc8f8e473ea02c68cc8993ae42, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerControllerAdapter
-  stateSource: {fileID: 910000000000000006}
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0
@@ -403,6 +390,19 @@ MonoBehaviour:
   inputActionsConfig: {fileID: 0}
   cameraTransform: {fileID: 0}
   controlMode: 1
+--- !u!114 &940000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b46b4dcc8f8e473ea02c68cc8993ae42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerControllerAdapter
+  stateSource: {fileID: 910000000000000006}
 --- !u!114 &1723194128134958813
 MonoBehaviour:
   m_ObjectHideFlags: 0
