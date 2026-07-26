@@ -500,8 +500,8 @@ MonoBehaviour:
         CancelDeltaTime: 0
       InputValue: -0
       Driver:
-        AccelTime: 0
-        DecelTime: 0
+        AccelTime: 0.12
+        DecelTime: 0.18
   PlayerIndex: -1
   AutoEnableInputs: 1
 --- !u!114 &7675892711836955579
