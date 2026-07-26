@@ -7,7 +7,8 @@ namespace Koiusa.SteamMultiRuntime
         Grounded = 0,
         Airborne = 1,
         Ladder = 2,
-        WallRun = 3
+        WallRun = 3,
+        WireSwing = 4
     }
 
     public enum PlayerAirAnimationState
@@ -112,6 +113,10 @@ namespace Koiusa.SteamMultiRuntime
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
             var hasTraversalCoordinator = traversalCoordinator != null;
+            var isWireSwinging = hasTraversalCoordinator
+                && traversalCoordinator.IsEnabled
+                && traversalCoordinator.CurrentState == PlayerTraversalState.WireSwing
+                && !traversalCoordinator.IsWireGroundActionActive;
             var isLadder = playerLadderState != null
                 ? playerLadderState.IsOnLadder
                 : hasTraversalCoordinator
@@ -135,15 +140,25 @@ namespace Koiusa.SteamMultiRuntime
                 ? PlayerLocomotionAnimationMode.Ladder
                 : useWallRunAnimation
                 ? PlayerLocomotionAnimationMode.WallRun
-                : isGrounded ? PlayerLocomotionAnimationMode.Grounded : PlayerLocomotionAnimationMode.Airborne;
+                : isWireSwinging
+                    ? PlayerLocomotionAnimationMode.WireSwing
+                : isGrounded && !isWireSwinging
+                    ? PlayerLocomotionAnimationMode.Grounded
+                    : PlayerLocomotionAnimationMode.Airborne;
             var wallRunSide = locomotionMode == PlayerLocomotionAnimationMode.WallRun
                 ? GetWallRunSide(wallNormal, upAxis)
                 : 0;
-            var airState = locomotionMode != PlayerLocomotionAnimationMode.Airborne
+            var usesAirAnimation = locomotionMode == PlayerLocomotionAnimationMode.Airborne
+                || locomotionMode == PlayerLocomotionAnimationMode.WireSwing;
+            var airState = !usesAirAnimation
                 ? PlayerAirAnimationState.None
                 : isJumping ? PlayerAirAnimationState.Rising
                 : isFreefall || isFallingAfterJump
                     ? PlayerAirAnimationState.Falling
+                    : isWireSwinging
+                        ? verticalSpeed > 0f
+                            ? PlayerAirAnimationState.Rising
+                            : PlayerAirAnimationState.Falling
                     : PlayerAirAnimationState.None;
             var animationVerticalSpeed = isLadder ? ladderSpeed : verticalSpeed;
 
