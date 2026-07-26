@@ -22,7 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
 
         [Header("Camera Collision")]
-        [SerializeField] private bool enableCameraCollision = true;
+        [SerializeField] private bool enableCameraCollision;
         [SerializeField] private LayerMask cameraCollisionLayers = Physics.DefaultRaycastLayers;
         [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.45f;
         [SerializeField, Min(0.01f)] private float minimumDistanceFromTarget = 0.5f;

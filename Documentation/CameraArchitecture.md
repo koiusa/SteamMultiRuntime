@@ -58,7 +58,7 @@ Grapple入力中は照準操作との競合を避けるため、Cameraの`Cinema
 現在の既定値は次のとおりです。
 
 ```text
-Enable Camera Collision:       On
+Enable Camera Collision:       Off
 Camera Collision Radius:       0.45 m
 Minimum Distance From Target:  0.50 m
 Minimum Occlusion Time:        0.08 sec
