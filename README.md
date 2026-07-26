@@ -24,3 +24,8 @@ Usage
    - ゲームシーン: 以下のいずれかを選択
      - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
 3. Unityエディタでサンプルシーンをプレイ。  
+
+Documentation
+-------------
+
+- [現在のクラス構成](Documentation/CurrentClassStructure.md)
