@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsEnabled { get; }
         bool IsAttached { get; }
         Vector3 AnchorPoint { get; }
+        Transform AnchorTransform { get; }
         float RopeLength { get; }
         float MinimumRopeLength { get; }
         float MaximumRopeLength { get; }
@@ -28,7 +29,7 @@ namespace Koiusa.SteamMultiRuntime
 
         void SetRopeLength(float value);
         void CaptureCurrentLength();
-        void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength);
+        void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null);
         void Attach(Vector3 worldPoint, Transform movingAnchor = null);
         void Detach();
     }

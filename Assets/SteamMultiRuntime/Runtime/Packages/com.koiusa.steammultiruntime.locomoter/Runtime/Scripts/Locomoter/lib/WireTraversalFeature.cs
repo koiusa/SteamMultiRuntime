@@ -34,6 +34,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsAttached { get; private set; }
         public Vector3 AnchorPoint => anchorTransform != null ? anchorTransform.TransformPoint(anchorLocalPoint) : fixedAnchorPoint;
+        public Transform AnchorTransform => anchorTransform;
         public float RopeLength { get; private set; }
         public float ActualLength => IsAttached && Body != null
             ? Vector3.Distance(Body.worldCenterOfMass, AnchorPoint)
@@ -156,12 +157,16 @@ namespace Koiusa.SteamMultiRuntime
             wireVisual?.SetVisible(false);
         }
 
-        public void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength)
+        public void SetReplicatedState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null)
         {
             if (!isAttached) { Detach(); return; }
-            anchorTransform = null;
-            visualAnchorTransform = null;
-            AnchorBody = null;
+            anchorTransform = movingAnchor;
+            anchorLocalPoint = movingAnchor != null ? movingAnchor.InverseTransformPoint(anchorPoint) : Vector3.zero;
+            AnchorBody = movingAnchor != null ? movingAnchor.GetComponentInParent<Rigidbody>() : null;
+            visualAnchorTransform = FindPresentationTransform(movingAnchor, out var presentationRoot) ?? movingAnchor;
+            visualAnchorLocalPoint = visualAnchorTransform != null
+                ? (presentationRoot ?? movingAnchor).InverseTransformPoint(anchorPoint)
+                : Vector3.zero;
             fixedAnchorPoint = anchorPoint;
             // Preserve an authoritative in-progress auto-reel length, which can
             // temporarily be longer than the configured maintained maximum.

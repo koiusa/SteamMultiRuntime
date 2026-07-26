@@ -32,10 +32,11 @@ namespace Koiusa.SteamMultiRuntime
         Vector3 WireGroundFacingDirection { get; }
         float WireGroundFacingRotationSpeed { get; }
         Vector3 WireAnchorPoint { get; }
+        Transform WireAnchorTransform { get; }
         float WireRopeLength { get; }
         void ResetState();
         void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection);
-        void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength);
+        void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null);
         bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded);
         void ApplyTraversal(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, bool jumpRequested, bool isGrounded);
     }

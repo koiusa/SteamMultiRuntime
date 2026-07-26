@@ -43,12 +43,20 @@ namespace Koiusa.SteamMultiRuntime
     {
         public bool IsAttached;
         public Vector3 AnchorPoint;
+        public bool HasAnchorObject;
+        public NetworkObjectReference AnchorObject;
+        public Vector3 AnchorLocalPoint;
         public float RopeLength;
 
-        public WireSwingNetworkState(bool isAttached, Vector3 anchorPoint, float ropeLength)
+        public WireSwingNetworkState(bool isAttached, Vector3 anchorPoint, float ropeLength,
+            NetworkObjectReference anchorObject = default, Vector3 anchorLocalPoint = default,
+            bool hasAnchorObject = false)
         {
             IsAttached = isAttached;
             AnchorPoint = anchorPoint;
+            HasAnchorObject = hasAnchorObject;
+            AnchorObject = anchorObject;
+            AnchorLocalPoint = anchorLocalPoint;
             RopeLength = ropeLength;
         }
 
@@ -56,6 +64,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             serializer.SerializeValue(ref IsAttached);
             serializer.SerializeValue(ref AnchorPoint);
+            serializer.SerializeValue(ref HasAnchorObject);
+            serializer.SerializeValue(ref AnchorObject);
+            serializer.SerializeValue(ref AnchorLocalPoint);
             serializer.SerializeValue(ref RopeLength);
         }
 
@@ -63,6 +74,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             return IsAttached == other.IsAttached
                 && AnchorPoint == other.AnchorPoint
+                && HasAnchorObject == other.HasAnchorObject
+                && AnchorObject.Equals(other.AnchorObject)
+                && AnchorLocalPoint == other.AnchorLocalPoint
                 && RopeLength.Equals(other.RopeLength);
         }
     }

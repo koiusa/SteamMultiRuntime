@@ -45,6 +45,7 @@ namespace Koiusa.SteamMultiRuntime
             : Vector3.zero;
         public float WireGroundFacingRotationSpeed => UsesWireGroundStrafe ? wireGroundAction.FacingRotationSpeed : 0f;
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
+        public Transform WireAnchorTransform => IsWireAttached ? wireConnection.AnchorTransform : null;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
 
         private void Awake()
@@ -91,9 +92,9 @@ namespace Koiusa.SteamMultiRuntime
             if (wireAttachAction != null && wireAttachAction.IsEnabled) wireAttachAction.SetInput(held, origin, aimDirection);
         }
 
-        public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength)
+        public void SetReplicatedWireState(bool isAttached, Vector3 anchorPoint, float ropeLength, Transform movingAnchor = null)
         {
-            wireConnection?.SetReplicatedState(isAttached, anchorPoint, ropeLength);
+            wireConnection?.SetReplicatedState(isAttached, anchorPoint, ropeLength, movingAnchor);
         }
 
         public bool ProcessMotorInput(Vector3 moveDirection, bool jumpRequested, bool isGrounded)

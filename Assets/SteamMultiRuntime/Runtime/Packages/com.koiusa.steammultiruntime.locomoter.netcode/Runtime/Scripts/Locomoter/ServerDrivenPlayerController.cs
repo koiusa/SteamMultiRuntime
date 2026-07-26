@@ -397,9 +397,32 @@ namespace Koiusa.SteamMultiRuntime
                 traversalCoordinator != null && traversalCoordinator.IsWallRunning,
                 traversalCoordinator != null ? traversalCoordinator.WallNormal : Vector3.zero);
 
-            netWireSwingState.Value = traversalCoordinator != null && traversalCoordinator.IsWireAttached
-                ? new WireSwingNetworkState(true, traversalCoordinator.WireAnchorPoint, traversalCoordinator.WireRopeLength)
-                : new WireSwingNetworkState(false, Vector3.zero, 0f);
+            netWireSwingState.Value = CreateWireSwingState();
+        }
+
+        private WireSwingNetworkState CreateWireSwingState()
+        {
+            if (traversalCoordinator == null || !traversalCoordinator.IsWireAttached)
+            {
+                return new WireSwingNetworkState(false, Vector3.zero, 0f);
+            }
+
+            var anchorPoint = traversalCoordinator.WireAnchorPoint;
+            var anchorObject = traversalCoordinator.WireAnchorTransform != null
+                ? traversalCoordinator.WireAnchorTransform.GetComponentInParent<NetworkObject>()
+                : null;
+            if (anchorObject == null || !anchorObject.IsSpawned)
+            {
+                return new WireSwingNetworkState(true, anchorPoint, traversalCoordinator.WireRopeLength);
+            }
+
+            return new WireSwingNetworkState(
+                true,
+                anchorPoint,
+                traversalCoordinator.WireRopeLength,
+                new NetworkObjectReference(anchorObject),
+                anchorObject.transform.InverseTransformPoint(anchorPoint),
+                true);
         }
 
         private void OnWireSwingStateChanged(WireSwingNetworkState oldValue, WireSwingNetworkState newValue)
@@ -409,7 +432,19 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplyWireSwingState(WireSwingNetworkState state)
         {
-            traversalCoordinator?.SetReplicatedWireState(state.IsAttached, state.AnchorPoint, state.RopeLength);
+            Transform anchorTransform = null;
+            var anchorPoint = state.AnchorPoint;
+            if (state.IsAttached && state.HasAnchorObject && state.AnchorObject.TryGet(out var anchorObject))
+            {
+                anchorTransform = anchorObject.transform;
+                anchorPoint = anchorTransform.TransformPoint(state.AnchorLocalPoint);
+            }
+
+            traversalCoordinator?.SetReplicatedWireState(
+                state.IsAttached,
+                anchorPoint,
+                state.RopeLength,
+                anchorTransform);
         }
 
         private void SyncMotorSettingsToNetwork()
