@@ -17,7 +17,8 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 RequestedPoint { get; }
         public Vector3 AttachPoint { get; }
         public Transform AnchorTransform { get; }
-        public bool CanAttach => State == ScreenAimTargetState.Valid && AnchorTransform != null;
+        public bool CanAttach => (State == ScreenAimTargetState.Valid || State == ScreenAimTargetState.Obstructed)
+            && AnchorTransform != null;
 
         public static WireAimResult Invalid(Vector3 requestedPoint = default) =>
             new WireAimResult(ScreenAimTargetState.Invalid, requestedPoint);

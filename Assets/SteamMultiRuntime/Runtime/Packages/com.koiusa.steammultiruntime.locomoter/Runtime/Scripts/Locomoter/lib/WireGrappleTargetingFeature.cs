@@ -79,7 +79,16 @@ namespace Koiusa.SteamMultiRuntime
                 if (IsOwnerCollider(hits[i].collider)) continue;
                 if (hits[i].distance < distance - 0.02f)
                 {
-                    return new WireAimResult(ScreenAimTargetState.Obstructed, targetPoint);
+                    if ((grappleLayers.value & (1 << hits[i].collider.gameObject.layer)) == 0)
+                    {
+                        return WireAimResult.Invalid(targetPoint);
+                    }
+
+                    return new WireAimResult(
+                        ScreenAimTargetState.Obstructed,
+                        targetPoint,
+                        hits[i].point,
+                        hits[i].collider.transform);
                 }
 
                 if ((grappleLayers.value & (1 << hits[i].collider.gameObject.layer)) == 0)
