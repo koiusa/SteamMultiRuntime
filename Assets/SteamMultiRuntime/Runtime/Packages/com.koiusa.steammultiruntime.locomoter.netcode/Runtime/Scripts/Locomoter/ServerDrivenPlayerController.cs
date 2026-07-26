@@ -109,6 +109,7 @@ namespace Koiusa.SteamMultiRuntime
             injectedInputReferenceTransform = referenceTransform;
             if (IsSpawned && IsOwner && isActiveAndEnabled)
                 activeInputSource?.Enable();
+                Cursor.visible = false;
         }
 
         public void ClearInputSource(IPlayerInputSource source)
@@ -211,6 +212,11 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             activeInputSource?.Disable();
+            traversalCoordinator?.SetWireAimCursor(default, false);
+            if (IsOwner)
+            {
+                Cursor.visible = true;
+            }
             motor?.ResetState();
             base.OnNetworkDespawn();
         }
@@ -220,12 +226,18 @@ namespace Koiusa.SteamMultiRuntime
             if (IsSpawned && IsOwner)
             {
                 activeInputSource?.Enable();
+                Cursor.visible = false;
             }
         }
 
         private void OnDisable()
         {
             activeInputSource?.Disable();
+            traversalCoordinator?.SetWireAimCursor(default, false);
+            if (IsOwner)
+            {
+                Cursor.visible = true;
+            }
             motor?.ResetState();
         }
 
@@ -297,6 +309,7 @@ namespace Koiusa.SteamMultiRuntime
             isStrafeMode = inputState.IsStrafeMode;
             var aimPoint = default(Vector2);
             var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint);
             var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
                 ? PlayerPointerAim.ResolveDirection(
                     cameraTransform,

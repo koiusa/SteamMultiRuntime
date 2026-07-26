@@ -21,6 +21,7 @@ namespace Koiusa.SteamMultiRuntime
         private IWireSwingAction wireSwingAction;
         private IWireReelAction wireReelAction;
         private IWireGroundAction wireGroundAction;
+        private IScreenAimCursor screenAimCursor;
         private float wallTraversalBlockedUntilTime;
         private bool wallRunBlockedUntilWallExit;
         private float stateEnteredAt;
@@ -54,7 +55,17 @@ namespace Koiusa.SteamMultiRuntime
             groundMotionTracker = GetComponent<GroundMotionTracker>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             CacheFeatures();
+            screenAimCursor = GetComponent<IScreenAimCursor>();
+            if (screenAimCursor == null)
+            {
+                screenAimCursor = gameObject.AddComponent<WireAimCursorOverlay>();
+            }
             stateEnteredAt = Time.time;
+        }
+
+        private void OnDisable()
+        {
+            screenAimCursor?.SetVisible(false);
         }
 
         public bool IsTraversalActive
@@ -79,6 +90,24 @@ namespace Koiusa.SteamMultiRuntime
             wallSlideAction?.ResetState();
             ladderFeature?.ResetState();
             wireConnection?.Detach();
+            screenAimCursor?.SetVisible(false);
+        }
+
+        public void SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition)
+        {
+            var canTarget = IsEnabled
+                && wireAttachAction != null
+                && wireAttachAction.IsEnabled
+                && wireConnection != null
+                && wireConnection.IsEnabled
+                && !wireConnection.IsAttached;
+            if (screenAimCursor == null)
+            {
+                return;
+            }
+
+            screenAimCursor.SetPosition(screenPosition);
+            screenAimCursor.SetVisible(hasScreenPosition && canTarget);
         }
 
         public void SetWireInput(bool held, float reelInput, Vector3 origin, Vector3 aimDirection)

@@ -107,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             inputSource?.Enable();
+            Cursor.visible = false;
         }
 
         private void OnDisable()
@@ -121,6 +122,8 @@ namespace Koiusa.SteamMultiRuntime
             grappleHeld = false;
             reelInput = 0f;
             grappleAimDirection = Vector3.zero;
+            traversalCoordinator?.SetWireAimCursor(default, false);
+            Cursor.visible = true;
         }
 
         private void Update()
@@ -138,6 +141,7 @@ namespace Koiusa.SteamMultiRuntime
             grappleHeld = inputState.GrappleHeld;
             reelInput = inputState.ReelInput;
             var hasAimPoint = inputSource.TryReadAimPoint(out var aimPoint);
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint);
             grappleAimDirection = PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,

@@ -53,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var isVisible = characterSelectUiDocument.gameObject.activeSelf;
             characterSelectUiDocument.gameObject.SetActive(!isVisible);
+            Cursor.visible = !isVisible;
         }
 
         public void Show()
@@ -63,6 +64,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             characterSelectUiDocument.gameObject.SetActive(true);
+            Cursor.visible = true;
         }
 
         public void Hide()
@@ -73,6 +75,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             characterSelectUiDocument.gameObject.SetActive(false);
+            Cursor.visible = false;
         }
     }
 }

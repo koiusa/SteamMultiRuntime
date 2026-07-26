@@ -58,6 +58,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var isVisible = stageSelectUiDocument.gameObject.activeSelf;
             stageSelectUiDocument.gameObject.SetActive(!isVisible);
+            Cursor.visible = !isVisible;
         }
 
         public void Show()
@@ -68,6 +69,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSelectUiDocument.gameObject.SetActive(true);
+            Cursor.visible = true;
         }
 
         public void Hide()
@@ -78,6 +80,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSelectUiDocument.gameObject.SetActive(false);
+            Cursor.visible = false;
         }
     }
 }

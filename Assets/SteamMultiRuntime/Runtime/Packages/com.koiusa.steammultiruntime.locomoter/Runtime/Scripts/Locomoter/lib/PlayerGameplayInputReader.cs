@@ -15,7 +15,8 @@ namespace Koiusa.SteamMultiRuntime
         private readonly InputAction strafeToggleAction;
         private readonly InputAction grappleAction;
         private readonly InputAction reelAction;
-        private readonly InputAction aimPointAction;
+        private readonly InputAction aimCursorDeltaAction;
+        private readonly InputAction aimCursorPositionAction;
 
         private int jumpToken;
         private bool isStrafeMode;
@@ -25,7 +26,10 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionLease strafeToggleLease;
         private InputActionLease grappleLease;
         private InputActionLease reelLease;
-        private InputActionLease aimPointLease;
+        private InputActionLease aimCursorDeltaLease;
+        private InputActionLease aimCursorPositionLease;
+        private Vector2 aimCursorPosition;
+        private bool hasAimCursor;
 
         public PlayerGameplayInputReader(InputActionsConfig profile)
         {
@@ -39,7 +43,8 @@ namespace Koiusa.SteamMultiRuntime
             strafeToggleAction = profile.FindAction("Player/StrafeToggle");
             grappleAction = profile.FindAction("Player/Grapple");
             reelAction = profile.FindAction("Player/Reel");
-            aimPointAction = profile.FindAction("Player/AimPoint");
+            aimCursorDeltaAction = profile.FindAction("Player/AimCursorDelta");
+            aimCursorPositionAction = profile.FindAction("Player/AimCursorPosition");
         }
 
         public void Enable()
@@ -53,7 +58,9 @@ namespace Koiusa.SteamMultiRuntime
             moveLease = InputActionLease.Acquire(moveAction);
             grappleLease = InputActionLease.Acquire(grappleAction);
             reelLease = InputActionLease.Acquire(reelAction);
-            aimPointLease = InputActionLease.Acquire(aimPointAction);
+            aimCursorDeltaLease = InputActionLease.Acquire(aimCursorDeltaAction);
+            aimCursorPositionLease = InputActionLease.Acquire(aimCursorPositionAction);
+            ResetAimCursor();
 
             if (jumpAction != null)
             {
@@ -93,17 +100,21 @@ namespace Koiusa.SteamMultiRuntime
             moveLease?.Dispose();
             grappleLease?.Dispose();
             reelLease?.Dispose();
-            aimPointLease?.Dispose();
+            aimCursorDeltaLease?.Dispose();
+            aimCursorPositionLease?.Dispose();
             moveLease = null;
             grappleLease = null;
             reelLease = null;
-            aimPointLease = null;
+            aimCursorDeltaLease = null;
+            aimCursorPositionLease = null;
+            hasAimCursor = false;
             jumpToken = 0;
             isStrafeMode = false;
         }
 
         public PlayerInputState ReadState()
         {
+            UpdateAimCursor();
             var move = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
             var jumpPressed = jumpToken > 0;
             jumpToken = 0;
@@ -114,14 +125,41 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool TryReadAimPoint(out Vector2 screenPosition)
         {
-            if (aimPointAction?.activeControl == null)
+            if (!hasAimCursor)
             {
                 screenPosition = default;
                 return false;
             }
 
-            screenPosition = aimPointAction.ReadValue<Vector2>();
+            screenPosition = aimCursorPosition;
             return true;
+        }
+
+        private void ResetAimCursor()
+        {
+            aimCursorPosition = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            hasAimCursor = aimCursorDeltaAction != null || aimCursorPositionAction != null;
+        }
+
+        private void UpdateAimCursor()
+        {
+            if (!hasAimCursor)
+            {
+                return;
+            }
+
+            const float edgePadding = 12f;
+            if (aimCursorPositionAction?.activeControl != null)
+            {
+                aimCursorPosition = aimCursorPositionAction.ReadValue<Vector2>();
+            }
+
+            var delta = aimCursorDeltaAction != null
+                ? aimCursorDeltaAction.ReadValue<Vector2>()
+                : Vector2.zero;
+            aimCursorPosition += delta;
+            aimCursorPosition.x = Mathf.Clamp(aimCursorPosition.x, edgePadding, Mathf.Max(edgePadding, Screen.width - edgePadding));
+            aimCursorPosition.y = Mathf.Clamp(aimCursorPosition.y, edgePadding, Mathf.Max(edgePadding, Screen.height - edgePadding));
         }
 
         private void OnJumpPerformed(InputAction.CallbackContext context)

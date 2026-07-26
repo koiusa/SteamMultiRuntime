@@ -187,9 +187,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "AimPoint",
+                    "name": "AimCursorDelta",
                     "type": "PassThrough",
                     "id": "f537678d-fc10-44e3-b94d-f744946805b6",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "AimCursorPosition",
+                    "type": "PassThrough",
+                    "id": "308b9d7f-75ea-46c4-aec8-f6d96c399f68",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
@@ -882,11 +891,22 @@
                 {
                     "name": "",
                     "id": "117098c6-3a73-47a3-986c-2830599ef812",
+                    "path": "<Touchscreen>/primaryTouch/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Touch",
+                    "action": "AimCursorDelta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8429d372-b9ad-407e-ac98-a1d42eef60c8",
                     "path": "<Pointer>/position",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "AimPoint",
+                    "action": "AimCursorPosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

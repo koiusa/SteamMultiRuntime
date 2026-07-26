@@ -94,6 +94,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var isVisible = lobbyUiDocument.gameObject.activeSelf;
             lobbyUiDocument.gameObject.SetActive(!isVisible);
+            Cursor.visible = !isVisible;
         }
 
         public void Show()
@@ -104,6 +105,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             lobbyUiDocument.gameObject.SetActive(true);
+            Cursor.visible = true;
         }
 
         public void Hide()
@@ -114,6 +116,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             lobbyUiDocument.gameObject.SetActive(false);
+            Cursor.visible = false;
         }
     }
 }
