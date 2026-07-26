@@ -36,6 +36,9 @@ namespace Koiusa.SteamMultiRuntime
         private Vector2 aimCursorPosition;
         private bool hasAimCursor;
         private bool wasGrappleHeld;
+        private float lastPointerMoveTime = float.NegativeInfinity;
+
+        public bool IsAimCursorRecentlyMoved => Time.unscaledTime - lastPointerMoveTime <= 1f;
 
         public PlayerGameplayInputReader(InputActionsConfig profile, GamepadAimCursorSettings gamepadAimCursorSettings = null)
         {
@@ -138,6 +141,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             UpdateAimCursor(isGamepadAim);
+            if (HasGamepadActivity())
+            {
+                lastPointerMoveTime = float.NegativeInfinity;
+            }
             wasGrappleHeld = grappleHeld;
             var move = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
             var jumpPressed = jumpToken > 0;
@@ -180,7 +187,13 @@ namespace Koiusa.SteamMultiRuntime
             const float edgePadding = 12f;
             if (!isGamepadAim && aimCursorPositionAction?.activeControl != null)
             {
-                aimCursorPosition = aimCursorPositionAction.ReadValue<Vector2>();
+                var pointerPosition = aimCursorPositionAction.ReadValue<Vector2>();
+                if ((pointerPosition - aimCursorPosition).sqrMagnitude > 0.01f)
+                {
+                    lastPointerMoveTime = Time.unscaledTime;
+                }
+
+                aimCursorPosition = pointerPosition;
             }
 
             var delta = aimCursorDeltaAction != null
@@ -217,6 +230,23 @@ namespace Koiusa.SteamMultiRuntime
 
             var curvedMagnitude = Mathf.Pow(magnitude, gamepadAimCursorSettings.ResponseExponent);
             return stick / magnitude * curvedMagnitude;
+        }
+
+        private bool HasGamepadActivity()
+        {
+            return IsActiveGamepadControl(moveAction)
+                || IsActiveGamepadControl(jumpAction)
+                || IsActiveGamepadControl(strafeToggleAction)
+                || IsActiveGamepadControl(grappleAction)
+                || IsActiveGamepadControl(grappleFireAction)
+                || IsActiveGamepadControl(reelAction)
+                || IsActiveGamepadControl(aimCursorMoveAction);
+        }
+
+        private static bool IsActiveGamepadControl(InputAction action)
+        {
+            var control = action?.activeControl;
+            return control?.device is Gamepad && control.IsActuated();
         }
 
         private void OnJumpPerformed(InputAction.CallbackContext context)

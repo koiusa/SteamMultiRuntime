@@ -314,7 +314,9 @@ namespace Koiusa.SteamMultiRuntime
             isStrafeMode = inputState.IsStrafeMode;
             var aimPoint = default(Vector2);
             var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && inputState.GrappleHeld);
+            var showAimCursor = inputState.GrappleHeld
+                || (baseInputSource != null && baseInputSource.IsAimCursorRecentlyMoved);
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && showAimCursor);
             var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
                 ? PlayerPointerAim.ResolveDirection(
                     cameraTransform,

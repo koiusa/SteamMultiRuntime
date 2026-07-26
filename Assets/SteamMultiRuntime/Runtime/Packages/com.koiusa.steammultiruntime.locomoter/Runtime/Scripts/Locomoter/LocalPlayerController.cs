@@ -144,7 +144,8 @@ namespace Koiusa.SteamMultiRuntime
             grappleFireRequested |= inputState.GrappleFirePressed;
             reelInput = inputState.ReelInput;
             var hasAimPoint = inputSource.TryReadAimPoint(out var aimPoint);
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && grappleHeld);
+            var showAimCursor = grappleHeld || inputSource.IsAimCursorRecentlyMoved;
+            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && showAimCursor);
             grappleAimDirection = PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,
