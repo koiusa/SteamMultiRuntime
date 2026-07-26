@@ -25,8 +25,10 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private LayerMask cameraCollisionLayers = Physics.DefaultRaycastLayers;
         [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.3f;
         [SerializeField, Min(0.01f)] private float minimumDistanceFromTarget = 0.5f;
-        [SerializeField, Min(0f)] private float collisionDamping = 0.7f;
-        [SerializeField, Min(0f)] private float collisionRecoveryDamping = 1.0f;
+        [SerializeField, Min(0f)] private float minimumOcclusionTime = 0.08f;
+        [SerializeField, Range(0f, 2f)] private float collisionSmoothingTime = 0.25f;
+        [SerializeField, Min(0f)] private float collisionDamping = 0.4f;
+        [SerializeField, Min(0f)] private float collisionRecoveryDamping = 0.7f;
 
         private float targetDefaultWeight;
         private float targetFollowWeight;
@@ -177,7 +179,7 @@ namespace Koiusa.SteamMultiRuntime
                 {
                     Enabled = true,
                     DistanceLimit = 0f,
-                    MinimumOcclusionTime = 0f,
+                    MinimumOcclusionTime = minimumOcclusionTime,
                     CameraRadius = cameraCollisionRadius,
                     UseFollowTarget = new CinemachineDeoccluder.ObstacleAvoidance.FollowTargetSettings
                     {
@@ -186,7 +188,7 @@ namespace Koiusa.SteamMultiRuntime
                     },
                     Strategy = CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PullCameraForward,
                     MaximumEffort = 4,
-                    SmoothingTime = 0f,
+                    SmoothingTime = collisionSmoothingTime,
                     Damping = collisionRecoveryDamping,
                     DampingWhenOccluded = collisionDamping
                 };
