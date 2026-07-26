@@ -398,6 +398,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   inputActionsConfig: {fileID: 0}
+  gamepadAimCursorSettings:
+    mode: 0
+    radiusInScreenHeights: 0.3
+    speedInScreenHeightsPerSecond: 2.5
+    responseExponent: 2
+    rememberLastRelativePosition: 1
+    syncSystemPointerPosition: 1
   cameraTransform: {fileID: 0}
   controlMode: 1
 --- !u!114 &940000000000000003

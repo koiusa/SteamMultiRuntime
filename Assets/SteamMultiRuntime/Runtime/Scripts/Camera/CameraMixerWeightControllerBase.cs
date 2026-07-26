@@ -22,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
 
         [Header("Camera Collision")]
+        [SerializeField] private bool enableCameraCollision = true;
         [SerializeField] private LayerMask cameraCollisionLayers = Physics.DefaultRaycastLayers;
         [SerializeField, Min(0.01f)] private float cameraCollisionRadius = 0.45f;
         [SerializeField, Min(0.01f)] private float minimumDistanceFromTarget = 0.5f;
@@ -36,6 +37,24 @@ namespace Koiusa.SteamMultiRuntime
         private CinemachineInputAxisController inputAxisController;
         private InputAction grappleAction;
         private readonly List<InputActionReference> runtimeActionReferences = new();
+        private readonly List<CameraCollisionState> cameraCollisionStates = new();
+        private bool appliedCameraCollision;
+
+        private sealed class CameraCollisionState
+        {
+            public CinemachineDeoccluder Deoccluder;
+            public bool AddedDeoccluder;
+            public bool DeoccluderEnabled;
+            public LayerMask CollideAgainst;
+            public float MinimumDistanceFromTarget;
+            public CinemachineDeoccluder.ObstacleAvoidance AvoidObstacles;
+            public CinemachineDecollider Decollider;
+            public bool AddedDecollider;
+            public bool DecolliderEnabled;
+            public float CameraRadius;
+            public CinemachineDecollider.DecollisionSettings Decollision;
+            public CinemachineDecollider.TerrainSettings TerrainResolution;
+        }
 
         protected abstract IFocusMarkerContext ResolveContext();
 
@@ -88,6 +107,11 @@ namespace Koiusa.SteamMultiRuntime
 
         protected virtual void Update()
         {
+            if (enableCameraCollision != appliedCameraCollision)
+            {
+                ConfigureCameraCollision();
+            }
+
             if (inputAxisController != null)
             {
                 inputAxisController.enabled = grappleAction == null || !grappleAction.IsPressed();
@@ -165,58 +189,114 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ConfigureCameraCollision()
         {
+            if (!enableCameraCollision)
+            {
+                RestoreCameraCollision();
+                return;
+            }
+
+            if (cameraCollisionStates.Count > 0)
+            {
+                ApplyCameraCollisionSettings();
+                appliedCameraCollision = true;
+                return;
+            }
+
             foreach (var camera in GetComponentsInChildren<CinemachineCamera>(true))
             {
                 var deoccluder = camera.GetComponent<CinemachineDeoccluder>();
+                var addedDeoccluder = deoccluder == null;
                 if (deoccluder == null)
                 {
                     deoccluder = camera.gameObject.AddComponent<CinemachineDeoccluder>();
                 }
 
-                deoccluder.CollideAgainst = cameraCollisionLayers;
-                deoccluder.MinimumDistanceFromTarget = minimumDistanceFromTarget;
-                deoccluder.AvoidObstacles = new CinemachineDeoccluder.ObstacleAvoidance
-                {
-                    Enabled = true,
-                    DistanceLimit = 0f,
-                    MinimumOcclusionTime = minimumOcclusionTime,
-                    CameraRadius = cameraCollisionRadius,
-                    UseFollowTarget = new CinemachineDeoccluder.ObstacleAvoidance.FollowTargetSettings
-                    {
-                        Enabled = true,
-                        YOffset = 0f
-                    },
-                    Strategy = CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PullCameraForward,
-                    MaximumEffort = 4,
-                    SmoothingTime = collisionSmoothingTime,
-                    Damping = collisionRecoveryDamping,
-                    DampingWhenOccluded = collisionDamping
-                };
-
                 var decollider = camera.GetComponent<CinemachineDecollider>();
+                var addedDecollider = decollider == null;
                 if (decollider == null)
                 {
                     decollider = camera.gameObject.AddComponent<CinemachineDecollider>();
                 }
 
-                decollider.CameraRadius = cameraCollisionRadius;
-                decollider.Decollision = new CinemachineDecollider.DecollisionSettings
+                cameraCollisionStates.Add(new CameraCollisionState
                 {
-                    Enabled = true,
-                    ObstacleLayers = cameraCollisionLayers,
-                    UseFollowTarget = new CinemachineDecollider.DecollisionSettings.FollowTargetSettings
-                    {
-                        Enabled = true,
-                        YOffset = 0f
-                    },
-                    Damping = collisionDamping,
-                    SmoothingTime = collisionSmoothingTime
-                };
-                decollider.TerrainResolution = new CinemachineDecollider.TerrainSettings
-                {
-                    Enabled = false
-                };
+                    Deoccluder = deoccluder,
+                    AddedDeoccluder = addedDeoccluder,
+                    DeoccluderEnabled = deoccluder.enabled,
+                    CollideAgainst = deoccluder.CollideAgainst,
+                    MinimumDistanceFromTarget = deoccluder.MinimumDistanceFromTarget,
+                    AvoidObstacles = deoccluder.AvoidObstacles,
+                    Decollider = decollider,
+                    AddedDecollider = addedDecollider,
+                    DecolliderEnabled = decollider.enabled,
+                    CameraRadius = decollider.CameraRadius,
+                    Decollision = decollider.Decollision,
+                    TerrainResolution = decollider.TerrainResolution
+                });
             }
+
+            ApplyCameraCollisionSettings();
+            appliedCameraCollision = true;
+        }
+
+        private void ApplyCameraCollisionSettings()
+        {
+            foreach (var state in cameraCollisionStates)
+            {
+                if (state.Deoccluder == null || state.Decollider == null) continue;
+                state.Deoccluder.enabled = true;
+                state.Deoccluder.CollideAgainst = cameraCollisionLayers;
+                state.Deoccluder.MinimumDistanceFromTarget = minimumDistanceFromTarget;
+                state.Deoccluder.AvoidObstacles = new CinemachineDeoccluder.ObstacleAvoidance
+                {
+                    Enabled = true, DistanceLimit = 0f, MinimumOcclusionTime = minimumOcclusionTime,
+                    CameraRadius = cameraCollisionRadius,
+                    UseFollowTarget = new CinemachineDeoccluder.ObstacleAvoidance.FollowTargetSettings { Enabled = true, YOffset = 0f },
+                    Strategy = CinemachineDeoccluder.ObstacleAvoidance.ResolutionStrategy.PullCameraForward,
+                    MaximumEffort = 4, SmoothingTime = collisionSmoothingTime,
+                    Damping = collisionRecoveryDamping, DampingWhenOccluded = collisionDamping
+                };
+
+                state.Decollider.enabled = true;
+                state.Decollider.CameraRadius = cameraCollisionRadius;
+                state.Decollider.Decollision = new CinemachineDecollider.DecollisionSettings
+                {
+                    Enabled = true, ObstacleLayers = cameraCollisionLayers,
+                    UseFollowTarget = new CinemachineDecollider.DecollisionSettings.FollowTargetSettings { Enabled = true, YOffset = 0f },
+                    Damping = collisionDamping, SmoothingTime = collisionSmoothingTime
+                };
+                state.Decollider.TerrainResolution = new CinemachineDecollider.TerrainSettings { Enabled = false };
+            }
+        }
+
+        private void RestoreCameraCollision()
+        {
+            foreach (var state in cameraCollisionStates)
+            {
+                if (state.Deoccluder != null)
+                {
+                    state.Deoccluder.enabled = state.AddedDeoccluder ? false : state.DeoccluderEnabled;
+                    if (!state.AddedDeoccluder)
+                    {
+                        state.Deoccluder.CollideAgainst = state.CollideAgainst;
+                        state.Deoccluder.MinimumDistanceFromTarget = state.MinimumDistanceFromTarget;
+                        state.Deoccluder.AvoidObstacles = state.AvoidObstacles;
+                    }
+                }
+
+                if (state.Decollider != null)
+                {
+                    state.Decollider.enabled = state.AddedDecollider ? false : state.DecolliderEnabled;
+                    if (!state.AddedDecollider)
+                    {
+                        state.Decollider.CameraRadius = state.CameraRadius;
+                        state.Decollider.Decollision = state.Decollision;
+                        state.Decollider.TerrainResolution = state.TerrainResolution;
+                    }
+                }
+            }
+
+            appliedCameraCollision = false;
         }
     }
 }
