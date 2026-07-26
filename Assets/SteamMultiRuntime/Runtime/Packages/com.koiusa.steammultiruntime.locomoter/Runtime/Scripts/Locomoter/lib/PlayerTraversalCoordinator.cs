@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         private ILadderDetachAction ladderDetachAction;
         private IWireConnection wireConnection;
         private IWireAttachAction wireAttachAction;
+        private IWireGrappleTargetingFeature wireTargeting;
         private IWireSwingAction wireSwingAction;
         private IWireReelAction wireReelAction;
         private IWireGroundAction wireGroundAction;
@@ -93,7 +94,7 @@ namespace Koiusa.SteamMultiRuntime
             screenAimCursor?.SetVisible(false);
         }
 
-        public void SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition)
+        public void SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default, Collider targetCollider = null)
         {
             var canTarget = IsEnabled
                 && wireAttachAction != null
@@ -107,6 +108,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             screenAimCursor.SetPosition(screenPosition);
+            var hasValidTarget = wireTargeting != null
+                && wireTargeting.IsEnabled
+                && wireTargeting.HasClearLineToTarget(origin, targetPoint, targetCollider);
+            screenAimCursor.SetTargetValidity(hasValidTarget);
             screenAimCursor.SetVisible(hasScreenPosition && canTarget);
         }
 
@@ -314,6 +319,7 @@ namespace Koiusa.SteamMultiRuntime
             ladderDetachAction = GetComponent<ILadderDetachAction>();
             wireConnection = GetComponent<IWireConnection>();
             wireAttachAction = GetComponent<IWireAttachAction>();
+            wireTargeting = GetComponent<IWireGrappleTargetingFeature>();
             wireSwingAction = GetComponent<IWireSwingAction>();
             wireReelAction = GetComponent<IWireReelAction>();
             wireGroundAction = GetComponent<IWireGroundAction>();

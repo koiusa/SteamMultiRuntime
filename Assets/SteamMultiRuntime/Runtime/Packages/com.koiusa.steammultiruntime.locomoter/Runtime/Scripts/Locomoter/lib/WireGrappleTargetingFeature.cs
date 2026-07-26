@@ -39,7 +39,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             CacheOwner();
-            var hits = Physics.RaycastAll(origin, direction.normalized, maximumRange, grappleLayers, triggerInteraction);
+            var hits = Physics.RaycastAll(origin, direction.normalized, maximumRange, ~0, triggerInteraction);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
             for (var i = 0; i < hits.Length; i++)
@@ -49,9 +49,40 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
 
+                if ((grappleLayers.value & (1 << hits[i].collider.gameObject.layer)) == 0)
+                {
+                    return false;
+                }
+
                 point = hits[i].point;
                 anchorTransform = hits[i].collider.transform;
                 return true;
+            }
+
+            return false;
+        }
+
+        public bool HasClearLineToTarget(Vector3 origin, Vector3 targetPoint, Collider targetCollider)
+        {
+            if (targetCollider == null || (grappleLayers.value & (1 << targetCollider.gameObject.layer)) == 0)
+            {
+                return false;
+            }
+
+            var offset = targetPoint - origin;
+            var distance = offset.magnitude;
+            if (distance <= 0.001f || distance > maximumRange)
+            {
+                return false;
+            }
+
+            CacheOwner();
+            var hits = Physics.RaycastAll(origin, offset / distance, distance + 0.05f, ~0, triggerInteraction);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            for (var i = 0; i < hits.Length; i++)
+            {
+                if (IsOwnerCollider(hits[i].collider)) continue;
+                return hits[i].collider == targetCollider;
             }
 
             return false;

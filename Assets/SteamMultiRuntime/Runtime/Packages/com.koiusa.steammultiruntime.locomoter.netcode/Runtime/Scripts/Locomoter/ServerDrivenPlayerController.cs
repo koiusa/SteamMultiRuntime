@@ -316,7 +316,8 @@ namespace Koiusa.SteamMultiRuntime
             var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
             var showAimCursor = inputState.GrappleHeld
                 || (baseInputSource != null && baseInputSource.IsAimCursorRecentlyMoved);
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && showAimCursor);
+            var grappleTargetPoint = default(Vector3);
+            Collider grappleTargetCollider = null;
             var grappleAimDirection = activeInputSource == baseInputSource && injectedInputReferenceTransform == null
                 ? PlayerPointerAim.ResolveDirection(
                     cameraTransform,
@@ -324,8 +325,16 @@ namespace Koiusa.SteamMultiRuntime
                     targetRigidbody.worldCenterOfMass,
                     targetRigidbody,
                     hasAimPoint,
-                    aimPoint)
+                    aimPoint,
+                    out grappleTargetPoint,
+                    out grappleTargetCollider)
                 : referenceTransform.forward;
+            traversalCoordinator?.SetWireAimCursor(
+                aimPoint,
+                hasAimPoint && showAimCursor,
+                targetRigidbody.worldCenterOfMass,
+                grappleTargetPoint,
+                grappleTargetCollider);
             SubmitInput(new PlayerInputSyncState(
                 moveDirection,
                 moveInput,

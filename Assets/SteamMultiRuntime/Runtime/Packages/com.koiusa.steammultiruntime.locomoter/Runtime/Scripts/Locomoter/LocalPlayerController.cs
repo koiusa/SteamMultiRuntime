@@ -145,14 +145,21 @@ namespace Koiusa.SteamMultiRuntime
             reelInput = inputState.ReelInput;
             var hasAimPoint = inputSource.TryReadAimPoint(out var aimPoint);
             var showAimCursor = grappleHeld || inputSource.IsAimCursorRecentlyMoved;
-            traversalCoordinator?.SetWireAimCursor(aimPoint, hasAimPoint && showAimCursor);
             grappleAimDirection = PlayerPointerAim.ResolveDirection(
                 cameraTransform,
                 referenceTransform,
                 targetRigidbody.worldCenterOfMass,
                 targetRigidbody,
                 hasAimPoint,
-                aimPoint);
+                aimPoint,
+                out var grappleTargetPoint,
+                out var grappleTargetCollider);
+            traversalCoordinator?.SetWireAimCursor(
+                aimPoint,
+                hasAimPoint && showAimCursor,
+                targetRigidbody.worldCenterOfMass,
+                grappleTargetPoint,
+                grappleTargetCollider);
 
             if (inputState.JumpPressed)
             {

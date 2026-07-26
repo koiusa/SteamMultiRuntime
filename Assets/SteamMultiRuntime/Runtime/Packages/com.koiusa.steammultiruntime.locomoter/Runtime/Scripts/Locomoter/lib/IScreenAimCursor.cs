@@ -6,5 +6,6 @@ namespace Koiusa.SteamMultiRuntime
     {
         void SetPosition(Vector2 screenPosition);
         void SetVisible(bool visible);
+        void SetTargetValidity(bool isValid);
     }
 }
