@@ -1498,6 +1498,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "DebugInputGuideToggle",
+                    "type": "Button",
+                    "id": "42594043-70af-4321-908f-143e18645556",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1509,6 +1518,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "GameQuit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "caf8d7d6-6735-4d68-b820-4096c7fc0527",
+                    "path": "<Keyboard>/f1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "DebugInputGuideToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "40f3c886-53fc-403a-9148-ea6fc8a9e154",
+                    "path": "<DualShockGamepad>/touchpadButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "DebugInputGuideToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -39,6 +39,8 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement keyboardLayout;
         private VisualElement mouseLayout;
         private VisualElement gamepadLayout;
+        private VisualElement keyboardOperationList;
+        private VisualElement gamepadOperationList;
         private Label gamepadFaceWestLabel;
         private Label gamepadFaceNorthLabel;
         private Label gamepadFaceEastLabel;
@@ -46,6 +48,7 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement leftStickVisual;
         private VisualElement rightStickVisual;
         private InputActionAsset inputActionAsset;
+        private InputAction debugToggleAction;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
 
@@ -68,8 +71,14 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
+            AcquireDebugToggleInput();
             Build();
             SetVisible(startVisible);
+        }
+
+        private void OnDisable()
+        {
+            ReleaseDebugToggleInput();
         }
 
         private void Update()
@@ -173,8 +182,39 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Refresh()
         {
+            ReleaseDebugToggleInput();
             inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
+            AcquireDebugToggleInput();
             Build();
+        }
+
+        private void AcquireDebugToggleInput()
+        {
+            debugToggleAction = inputActionAsset?.FindAction("System/DebugInputGuideToggle", false);
+            if (debugToggleAction == null)
+            {
+                return;
+            }
+
+            debugToggleAction.performed += OnDebugTogglePerformed;
+            debugToggleAction.Enable();
+        }
+
+        private void ReleaseDebugToggleInput()
+        {
+            if (debugToggleAction == null)
+            {
+                return;
+            }
+
+            debugToggleAction.performed -= OnDebugTogglePerformed;
+            debugToggleAction.Disable();
+            debugToggleAction = null;
+        }
+
+        private void OnDebugTogglePerformed(InputAction.CallbackContext context)
+        {
+            ToggleVisible();
         }
 
         private void Build()
@@ -206,6 +246,8 @@ namespace Koiusa.Keyconfig.Runtime
             keyboardLayout = root.Q<VisualElement>("keyboard-layout");
             mouseLayout = root.Q<VisualElement>(className: "input-mouse");
             gamepadLayout = root.Q<VisualElement>("gamepad-layout");
+            keyboardOperationList = root.Q<VisualElement>("keyboard-operation-list");
+            gamepadOperationList = root.Q<VisualElement>("gamepad-operation-list");
             gamepadFaceWestLabel = root.Q<Label>("gamepad-face-west-label");
             gamepadFaceNorthLabel = root.Q<Label>("gamepad-face-north-label");
             gamepadFaceEastLabel = root.Q<Label>("gamepad-face-east-label");
@@ -246,6 +288,7 @@ namespace Koiusa.Keyconfig.Runtime
                     BindControl(root, action, bindingIndex, binding);
                 }
             }
+            BuildOperationLists(map);
 
             // Keep physical controller buttons visible in the input monitor even
             // when the current action map does not assign an action to them.
@@ -295,6 +338,137 @@ namespace Koiusa.Keyconfig.Runtime
             if (keyboardLayout != null) keyboardLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
             if (mouseLayout != null) mouseLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
             if (gamepadLayout != null) gamepadLayout.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
+            if (keyboardOperationList != null) keyboardOperationList.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
+            if (gamepadOperationList != null) gamepadOperationList.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void BuildOperationLists(InputActionMap map)
+        {
+            keyboardOperationList?.Clear();
+            gamepadOperationList?.Clear();
+            if (keyboardOperationList == null || gamepadOperationList == null)
+            {
+                return;
+            }
+
+            BuildOperationSections(map, keyboardOperationList, false);
+            BuildOperationSections(map, gamepadOperationList, true);
+        }
+
+        private void BuildOperationSections(InputActionMap map, VisualElement target, bool gamepad)
+        {
+            for (var sectionIndex = 0; sectionIndex < 4; sectionIndex++)
+            {
+                var section = new VisualElement();
+                section.AddToClassList("input-operation-section");
+                var sectionTitle = new Label(GetOperationSectionTitle(sectionIndex));
+                sectionTitle.AddToClassList("input-operation-section-title");
+                section.Add(sectionTitle);
+                var rowCount = 0;
+
+                foreach (var action in map.actions)
+                {
+                    if (GetOperationSection(action.name) != sectionIndex)
+                    {
+                        continue;
+                    }
+
+                    var bindings = GetOperationBindings(action, gamepad);
+                    if (bindings.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    AddOperationRow(section, action.name, bindings);
+                    rowCount++;
+                }
+
+                if (rowCount > 0)
+                {
+                    target.Add(section);
+                }
+            }
+        }
+
+        private List<string> GetOperationBindings(InputAction action, bool gamepad)
+        {
+            var result = new List<string>();
+            for (var i = 0; i < action.bindings.Count; i++)
+            {
+                var binding = action.bindings[i];
+                if (binding.isComposite || !IsInBindingGroup(binding.groups))
+                {
+                    continue;
+                }
+
+                var path = string.IsNullOrWhiteSpace(binding.effectivePath) ? binding.path : binding.effectivePath;
+                if (gamepad ? !IsGamepadBinding(path) : !IsKeyboardMouseBinding(path))
+                {
+                    continue;
+                }
+
+                var displayName = action.GetBindingDisplayString(i);
+                if (!string.IsNullOrWhiteSpace(displayName) && !result.Contains(displayName))
+                {
+                    result.Add(displayName);
+                }
+            }
+            return result;
+        }
+
+        private static int GetOperationSection(string actionName)
+        {
+            return actionName switch
+            {
+                "Move" or "Jump" or "Sprint" or "Crouch" or "Dash" or "StrafeToggle" => 0,
+                "Attack" or "Guard" or "Heal" or "LockOn" or "Previous" or "Next" => 1,
+                "Grapple" or "GrappleFire" or "Reel" => 2,
+                _ => 3
+            };
+        }
+
+        private static string GetOperationSectionTitle(int sectionIndex)
+        {
+            return sectionIndex switch
+            {
+                0 => "MOVEMENT",
+                1 => "COMBAT / TARGETING",
+                2 => "GRAPPLE",
+                _ => "CAMERA / INTERACTION"
+            };
+        }
+
+        private static void AddOperationRow(VisualElement target, string actionName, List<string> bindings)
+        {
+            if (bindings.Count == 0)
+            {
+                return;
+            }
+
+            var row = new VisualElement();
+            row.AddToClassList("input-operation-row");
+            var actionLabel = new Label(Nicify(actionName));
+            actionLabel.AddToClassList("input-operation-action");
+            row.Add(actionLabel);
+            var bindingLabel = new Label(string.Join(" / ", bindings));
+            bindingLabel.AddToClassList("input-operation-binding");
+            row.Add(bindingLabel);
+            target.Add(row);
+        }
+
+        private static bool IsGamepadBinding(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path)
+                && (path.IndexOf("Gamepad", StringComparison.OrdinalIgnoreCase) >= 0
+                    || path.IndexOf("Joystick", StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private static bool IsKeyboardMouseBinding(string path)
+        {
+            return !string.IsNullOrWhiteSpace(path)
+                && (path.IndexOf("Keyboard", StringComparison.OrdinalIgnoreCase) >= 0
+                    || path.IndexOf("Mouse", StringComparison.OrdinalIgnoreCase) >= 0
+                    || path.IndexOf("Pointer", StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private void UpdateGamepadFaceLabels(InputDevice device)

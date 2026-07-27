@@ -2,10 +2,13 @@
     position: absolute;
     left: 24px;
     bottom: 24px;
-    width: 620px;
+    width: 1132px;
+    flex-direction: row;
+    align-items: flex-end;
 }
 
 .input-guide-panel {
+    width: 620px;
     padding: 14px;
     background-color: rgba(9, 14, 23, 0.88);
     border-left-width: 1px;
@@ -20,6 +23,99 @@
     border-top-right-radius: 8px;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+}
+
+.input-operation-panel {
+    width: 500px;
+    margin-left: 12px;
+    padding: 12px;
+    background-color: rgba(9, 14, 23, 0.92);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(145, 175, 215, 0.22);
+    border-right-color: rgba(145, 175, 215, 0.22);
+    border-top-color: rgba(145, 175, 215, 0.22);
+    border-bottom-color: rgba(145, 175, 215, 0.22);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.input-operation-header {
+    height: 28px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.input-operation-toggle-hint {
+    font-size: 8px;
+    color: rgb(95, 122, 155);
+}
+
+.input-operation-sections {
+    flex-grow: 1;
+}
+
+.input-operation-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.input-operation-section {
+    width: 48.7%;
+    margin-bottom: 9px;
+    padding-bottom: 4px;
+    background-color: rgba(20, 28, 40, 0.72);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.input-operation-section-title {
+    height: 22px;
+    padding-left: 7px;
+    padding-top: 5px;
+    font-size: 8px;
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+    color: rgb(77, 219, 164);
+    background-color: rgba(42, 61, 80, 0.55);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.input-operation-row {
+    min-height: 22px;
+    padding-left: 6px;
+    padding-right: 6px;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(145, 175, 215, 0.1);
+}
+
+.input-operation-action {
+    width: 102px;
+    flex-shrink: 0;
+    font-size: 9px;
+    -unity-font-style: bold;
+    color: rgb(207, 221, 240);
+}
+
+.input-operation-binding {
+    flex-grow: 1;
+    font-size: 8px;
+    color: rgb(119, 149, 184);
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .input-guide-header { flex-direction: row; align-items: center; height: 34px; }

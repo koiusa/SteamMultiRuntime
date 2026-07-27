@@ -19,5 +19,16 @@
             </ui:VisualElement>
             <ui:Label text="LIVE INPUT MONITOR" class="input-guide-footer" />
         </ui:VisualElement>
+        <ui:VisualElement class="input-operation-panel">
+            <ui:VisualElement class="input-operation-header">
+                <ui:Label text="OPERATIONS" class="input-guide-title" />
+                <ui:Label text="F1 / TOUCH PAD" class="input-operation-toggle-hint" />
+            </ui:VisualElement>
+            <ui:VisualElement class="input-guide-divider" />
+            <ui:VisualElement class="input-operation-sections">
+                <ui:VisualElement name="keyboard-operation-list" class="input-operation-list" />
+                <ui:VisualElement name="gamepad-operation-list" class="input-operation-list" />
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
