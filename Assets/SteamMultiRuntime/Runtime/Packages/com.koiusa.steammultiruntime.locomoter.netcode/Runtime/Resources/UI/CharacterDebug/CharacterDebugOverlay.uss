@@ -57,13 +57,18 @@
 }
 
 .character-debug-selector {
+    width: 100%;
     flex-direction: row;
     align-items: center;
     margin-bottom: 6px;
+    overflow: hidden;
 }
 
 .character-debug-selector > Button {
     width: 34px;
+    min-width: 34px;
+    flex-grow: 0;
+    flex-shrink: 0;
     height: 28px;
     color: rgb(94, 234, 212);
     background-color: rgba(30, 41, 59, 0.95);
@@ -75,11 +80,18 @@
 
 .character-debug-target-label {
     flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    min-width: 0;
     height: 28px;
     padding-left: 6px;
     padding-right: 6px;
     -unity-text-align: middle-center;
     color: rgb(241, 245, 249);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -unity-text-overflow-position: end;
 }
 
 .character-debug-refresh,
@@ -114,6 +126,42 @@
 
 .character-debug-scroll {
     flex-grow: 1;
+    min-height: 0;
+    background-color: rgba(15, 23, 42, 0.35);
+}
+
+.character-debug-scroll .unity-scroller--vertical {
+    width: 12px;
+    min-width: 12px;
+    background-color: rgb(15, 23, 42);
+    border-left-width: 1px;
+    border-left-color: rgba(94, 234, 212, 0.25);
+}
+
+.character-debug-scroll .unity-scroller--vertical .unity-scroller__low-button,
+.character-debug-scroll .unity-scroller--vertical .unity-scroller__high-button {
+    display: none;
+}
+
+.character-debug-scroll .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: rgba(30, 41, 59, 0.9);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.character-debug-scroll .unity-scroller--vertical .unity-base-slider__dragger {
+    width: 8px;
+    background-color: rgba(45, 212, 191, 0.65);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .character-debug-section {
@@ -135,6 +183,10 @@
     margin-bottom: 3px;
 }
 
+.character-debug-section > Toggle .unity-toggle__checkmark {
+    -unity-background-image-tint-color: rgb(94, 234, 212);
+}
+
 .character-debug-value {
     color: rgb(203, 213, 225);
     font-size: 12px;
@@ -142,4 +194,5 @@
     margin-top: 1px;
     margin-bottom: 1px;
     -unity-text-align: middle-left;
+    white-space: normal;
 }
