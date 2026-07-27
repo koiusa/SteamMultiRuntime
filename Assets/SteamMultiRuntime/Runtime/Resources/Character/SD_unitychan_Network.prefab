@@ -5507,12 +5507,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 400264}
+  - component: {fileID: 3632195355970530909}
   - component: {fileID: 9500000}
   - component: {fileID: 1772512430224808364}
   - component: {fileID: 11400084}
   - component: {fileID: 11400088}
   - component: {fileID: 11419662}
-  - component: {fileID: 3632195355970530909}
   - component: {fileID: 8492685055285324808}
   - component: {fileID: 4922140726917305977}
   - component: {fileID: 576379640670013187}
@@ -5543,6 +5543,34 @@ Transform:
   - {fileID: 6755609445687385846}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3632195355970530909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100264}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bcf7d8c603e71e4a8f7856e706d0474, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterDebugOverlay
+  showOnStart: 0
+  autoShowInPlayMode: 1
+  onlyLocalOwnedCharacter: 1
+  aggregateFromAllInstances: 1
+  includeNonOwnedCharactersInAggregate: 1
+  showLauncherButtonWhenHidden: 1
+  windowWidth: 360
+  windowHeight: 520
+  windowPosition: {x: 12, y: 12}
+  launcherButtonSize: {x: 140, y: 28}
+  panelSettings: {fileID: 0}
+  styleSheet: {fileID: 0}
+  targetRoot: {fileID: 0}
+  targetRigidbody: {fileID: 0}
+  targetAnimator: {fileID: 9500000}
+  targetFaceAnimator: {fileID: 9500000}
 --- !u!95 &9500000
 Animator:
   serializedVersion: 7
@@ -5722,32 +5750,6 @@ MonoBehaviour:
   m_rootUI: {fileID: 0}
   m_lookAtUITemplate: {fileID: 11400000, guid: c1c109f5877ad0245a091ddbeec007f3, type: 2}
   m_animator: {fileID: 9500000}
---- !u!114 &3632195355970530909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100264}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bcf7d8c603e71e4a8f7856e706d0474, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterDebugOverlay
-  showOnStart: 0
-  autoShowInPlayMode: 1
-  onlyLocalOwnedCharacter: 1
-  aggregateFromAllInstances: 1
-  includeNonOwnedCharactersInAggregate: 1
-  showLauncherButtonWhenHidden: 1
-  windowWidth: 360
-  windowHeight: 520
-  windowPosition: {x: 12, y: 12}
-  launcherButtonSize: {x: 140, y: 28}
-  targetRoot: {fileID: 0}
-  targetRigidbody: {fileID: 0}
-  targetAnimator: {fileID: 9500000}
-  targetFaceAnimator: {fileID: 9500000}
 --- !u!114 &8492685055285324808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5767,6 +5769,7 @@ MonoBehaviour:
   motionSpeedParameter: MotionSpeed
   locomotionModeParameter: LocomotionMode
   airStateParameter: AirState
+  wallRunSideParameter: WallRunSide
   speedDampTime: 0.08
   motionSpeedMultiplier: 2
 --- !u!114 &4922140726917305977
@@ -5782,7 +5785,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver
   m_animator: {fileID: 9500000}
-  m_faceAvatarMask: {fileID: 101100000, guid: b8c79e82c7e400440b997a003b504c3f, type: 2}
   m_faceLayerIndex: 1
   m_defaultFaceStateName: default
   m_lockFace: 0
@@ -5792,6 +5794,7 @@ MonoBehaviour:
   - default@sd_hmd
   - eye_close@sd_hmd
   - JumpToTop
+  - Ladder
   - Running@loop
   - smile@sd_hmd
   - smile2@sd_hmd
@@ -5799,6 +5802,8 @@ MonoBehaviour:
   - surprise@sd_hmd
   - TopOfJump
   - Walking@loop
+  - WallRun_L@Loop
+  - WallRun_R@Loop
 --- !u!114 &576379640670013187
 MonoBehaviour:
   m_ObjectHideFlags: 0

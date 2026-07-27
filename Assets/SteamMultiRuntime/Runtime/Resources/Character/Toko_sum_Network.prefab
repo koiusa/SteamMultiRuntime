@@ -603,6 +603,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4058200767122284}
+  - component: {fileID: 756842115252158605}
   - component: {fileID: 95902892598462830}
   - component: {fileID: 5362608602617473077}
   - component: {fileID: 114585031484379960}
@@ -638,6 +639,34 @@ Transform:
   - {fileID: 1867000386337398158}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &756842115252158605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105312985725752}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bcf7d8c603e71e4a8f7856e706d0474, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.CharacterDebugOverlay
+  showOnStart: 0
+  autoShowInPlayMode: 1
+  onlyLocalOwnedCharacter: 1
+  aggregateFromAllInstances: 1
+  includeNonOwnedCharactersInAggregate: 1
+  showLauncherButtonWhenHidden: 1
+  windowWidth: 360
+  windowHeight: 520
+  windowPosition: {x: 12, y: 12}
+  launcherButtonSize: {x: 140, y: 28}
+  panelSettings: {fileID: 0}
+  styleSheet: {fileID: 0}
+  targetRoot: {fileID: 0}
+  targetRigidbody: {fileID: 0}
+  targetAnimator: {fileID: 95902892598462830}
+  targetFaceAnimator: {fileID: 95902892598462830}
 --- !u!95 &95902892598462830
 Animator:
   serializedVersion: 7
@@ -755,6 +784,7 @@ MonoBehaviour:
   motionSpeedParameter: MotionSpeed
   locomotionModeParameter: LocomotionMode
   airStateParameter: AirState
+  wallRunSideParameter: WallRunSide
   speedDampTime: 0.08
   motionSpeedMultiplier: 2
 --- !u!114 &3856001576539625298
@@ -770,7 +800,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver
   m_animator: {fileID: 95902892598462830}
-  m_faceAvatarMask: {fileID: 101100000, guid: 8a87710a2e10e154da34c5edd989b03f, type: 2}
   m_faceLayerIndex: 1
   m_defaultFaceStateName: default
   m_lockFace: 0
@@ -780,6 +809,7 @@ MonoBehaviour:
   - default@sd_hmd
   - eye_close@sd_hmd
   - JumpToTop
+  - Ladder
   - Running@loop
   - smile@sd_hmd
   - smile2@sd_hmd
@@ -787,6 +817,8 @@ MonoBehaviour:
   - surprise@sd_hmd
   - TopOfJump
   - Walking@loop
+  - WallRun_L@Loop
+  - WallRun_R@Loop
 --- !u!114 &1429602109519472716
 MonoBehaviour:
   m_ObjectHideFlags: 0
