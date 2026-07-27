@@ -231,6 +231,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            DisableStageSceneCameras(targetScene);
             SceneManager.SetActiveScene(targetScene);
 
             var previousScene = SceneUtilityEx.GetLoadedScene(previousSceneReference);
@@ -328,7 +329,17 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            DisableStageSceneCameras(scene);
             return SceneManager.GetActiveScene() == scene || SceneManager.SetActiveScene(scene);
+        }
+
+        private static void DisableStageSceneCameras(Scene scene)
+        {
+            // NGO's additive scene path bypasses SceneLoadUtility, so apply the
+            // presentation-camera policy here as soon as that stage finishes loading.
+            // Only the loaded stage is passed in; the persistent bootstrap/Root scene
+            // and its gameplay camera are left untouched.
+            SceneLoadUtility.ApplyLoadedSceneCameraSettings(scene, disableCamerasInLoadedScenes: true);
         }
 
         private static async Task<bool> ExecuteSceneEventAsync(
