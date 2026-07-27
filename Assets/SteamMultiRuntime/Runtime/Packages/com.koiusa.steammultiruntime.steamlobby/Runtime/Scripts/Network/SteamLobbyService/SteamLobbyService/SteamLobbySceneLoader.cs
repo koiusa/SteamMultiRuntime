@@ -314,12 +314,15 @@ namespace Koiusa.SteamMultiRuntime
 
             await ExecuteWithLoadingScopeAsync(async () =>
             {
-                await UnloadLobbySceneOnLeftCoreAsync(sceneNameToUnload);
-
                 if (ShouldLoadDefaultSceneAfterLobbyLeft())
                 {
+                    // Keep the bootstrap/root scene alive. Loading the default scene
+                    // additively gives Unity a safe active scene before only the
+                    // lobby-loaded presentation scene is unloaded below.
                     await LoadDefaultSceneCoreAsync();
                 }
+
+                await UnloadLobbySceneOnLeftCoreAsync(sceneNameToUnload);
             });
         }
 

@@ -266,14 +266,26 @@ namespace Koiusa.SteamMultiRuntime
 
         public void LeaveLobby()
         {
-            if (!IsInLobby)
+            if (!IsInLobby || lobbyManager == null)
             {
                 Log("LeaveLobby ignored: not in lobby");
                 return;
             }
 
             Log("Leaving lobby...");
-            _ = lobbyManager.LeaveCurrentLobbyAsync();
+            _ = LeaveLobbyAsync();
+        }
+
+        private async Task LeaveLobbyAsync()
+        {
+            try
+            {
+                await lobbyManager.LeaveCurrentLobbyAsync();
+            }
+            catch (Exception exception)
+            {
+                LogError($"Failed to leave lobby: {exception}");
+            }
         }
 
         public async Task RefreshLobbiesAsync()

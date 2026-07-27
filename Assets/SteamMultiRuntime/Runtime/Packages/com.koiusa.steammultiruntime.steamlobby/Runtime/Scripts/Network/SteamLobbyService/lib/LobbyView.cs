@@ -599,9 +599,25 @@ namespace Koiusa.SteamMultiRuntime
 
         private void RestoreFocusAfterListRebuild()
         {
+            if (uiDocument == null)
+            {
+                return;
+            }
+
             var root = uiDocument.rootVisualElement;
+            if (root == null || root.panel == null)
+            {
+                return;
+            }
+
             root.schedule.Execute(() =>
             {
+                // The document can be detached while a lobby exit replaces scenes.
+                if (root.panel == null)
+                {
+                    return;
+                }
+
                 if (!HasValidFocus(root))
                 {
                     switch (activeFocusSection)
