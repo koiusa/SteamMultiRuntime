@@ -6,8 +6,13 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal sealed class LobbyView
     {
+        private const string DropdownPopupStyleSheetPath = "UI/SteamLobby/Styles/SteamLobbyDropdownPopup";
+
         private readonly UIDocument uiDocument;
         private StyleSheet appliedThemeStyleSheet;
+        private StyleSheet dropdownPopupStyleSheet;
+        private VisualElement dropdownPopupStyleHost;
+        private VisualElement pendingPanelRoot;
         private Label connectionLabel;
         private Label currentLobbyLabel;
         private Label infoLabel;
@@ -56,6 +61,7 @@ namespace Koiusa.SteamMultiRuntime
             DisposeControllers();
             var root = uiDocument.rootVisualElement;
             root.Clear();
+            ApplyDropdownPopupStyle(root);
 
             if (appliedThemeStyleSheet != null && appliedThemeStyleSheet != themeStyleSheet)
             {
@@ -208,6 +214,56 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        private void ApplyDropdownPopupStyle(VisualElement root)
+        {
+            dropdownPopupStyleSheet ??= Resources.Load<StyleSheet>(DropdownPopupStyleSheetPath);
+            if (dropdownPopupStyleSheet == null)
+            {
+                Debug.LogWarning($"LobbyView: Dropdown popup stylesheet not found at '{DropdownPopupStyleSheetPath}'.");
+                return;
+            }
+
+            if (root.panel != null)
+            {
+                AttachDropdownPopupStyle(root.panel.visualTree);
+                return;
+            }
+
+            if (pendingPanelRoot != null)
+            {
+                pendingPanelRoot.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+            }
+
+            pendingPanelRoot = root;
+            pendingPanelRoot.RegisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+        }
+
+        private void OnRootAttachedToPanel(AttachToPanelEvent evt)
+        {
+            pendingPanelRoot?.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+            pendingPanelRoot = null;
+            AttachDropdownPopupStyle(evt.destinationPanel.visualTree);
+        }
+
+        private void AttachDropdownPopupStyle(VisualElement panelRoot)
+        {
+            if (dropdownPopupStyleHost == panelRoot)
+            {
+                return;
+            }
+
+            if (dropdownPopupStyleHost != null)
+            {
+                dropdownPopupStyleHost.styleSheets.Remove(dropdownPopupStyleSheet);
+            }
+
+            dropdownPopupStyleHost = panelRoot;
+            if (!dropdownPopupStyleHost.styleSheets.Contains(dropdownPopupStyleSheet))
+            {
+                dropdownPopupStyleHost.styleSheets.Add(dropdownPopupStyleSheet);
+            }
+        }
+
         private LobbyViewContext CreateContext()
         {
             return new LobbyViewContext
@@ -237,6 +293,17 @@ namespace Koiusa.SteamMultiRuntime
         public void Dispose()
         {
             DisposeControllers();
+            if (pendingPanelRoot != null)
+            {
+                pendingPanelRoot.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+                pendingPanelRoot = null;
+            }
+
+            if (dropdownPopupStyleHost != null && dropdownPopupStyleSheet != null)
+            {
+                dropdownPopupStyleHost.styleSheets.Remove(dropdownPopupStyleSheet);
+                dropdownPopupStyleHost = null;
+            }
         }
 
         private void DisposeControllers()

@@ -23,7 +23,59 @@
 
 /* Shared runtime DropdownField popup. The popup is attached directly to the
    panel root, so these classes intentionally aren't scoped below .field. */
+.unity-base-dropdown {
+    min-width: 280px;
+    max-height: 350px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-color: rgba(7, 18, 30, 255);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.unity-base-dropdown > .unity-scroll-view__content-viewport,
+.unity-base-dropdown .unity-scroll-view__content-viewport {
+    background-color: rgba(7, 18, 30, 255);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.unity-base-dropdown .unity-scroll-view__content-container {
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-color: rgba(7, 18, 30, 255);
+}
+
+.unity-base-dropdown .unity-scroll-view__vertical-scroller {
+    width: 8px;
+    margin-left: 3px;
+    background-color: rgba(18, 31, 43, 255);
+}
+
+.unity-base-dropdown .unity-scroller__slider {
+    min-height: 24px;
+    background-color: rgba(112, 137, 145, 210);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.unity-base-dropdown .unity-scroller__slider:hover {
+    background-color: rgba(108, 230, 255, 230);
+}
+
 .unity-base-dropdown__container-outer {
+    min-width: 280px;
+    max-height: 360px;
     padding-left: 4px;
     padding-right: 4px;
     padding-top: 4px;
@@ -33,10 +85,10 @@
     border-bottom-width: 3px;
     border-left-width: 3px;
     border-right-width: 3px;
-    border-top-color: rgba(108, 230, 255, 255);
-    border-bottom-color: rgba(108, 230, 255, 255);
-    border-left-color: rgba(108, 230, 255, 255);
-    border-right-color: rgba(108, 230, 255, 255);
+    border-top-color: rgba(126, 153, 161, 235);
+    border-bottom-color: rgba(86, 105, 112, 235);
+    border-left-color: rgba(112, 137, 145, 235);
+    border-right-color: rgba(112, 137, 145, 235);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom-left-radius: 5px;
@@ -45,6 +97,10 @@
 
 .unity-base-dropdown__container-inner {
     background-color: rgba(7, 22, 38, 255);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 .unity-base-dropdown__item {
@@ -54,16 +110,29 @@
     padding-top: 7px;
     padding-bottom: 7px;
     margin-bottom: 2px;
-    color: rgba(218, 242, 255, 255);
-    background-color: rgba(12, 34, 54, 255);
-    border-left-width: 4px;
-    border-left-color: rgba(51, 168, 204, 80);
+    color: rgba(207, 218, 224, 255);
+    background-color: rgba(17, 30, 43, 255);
+    border-left-width: 3px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(120, 145, 153, 90);
+    border-right-color: rgba(104, 124, 132, 45);
+    border-top-color: rgba(126, 148, 156, 38);
+    border-bottom-color: rgba(75, 91, 99, 70);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 .unity-base-dropdown__item:hover {
     color: rgba(255, 255, 255, 255);
     background-color: rgba(18, 105, 140, 255);
     border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 180);
+    border-top-color: rgba(108, 230, 255, 180);
+    border-bottom-color: rgba(108, 230, 255, 180);
     -unity-font-style: bold;
 }
 
@@ -71,6 +140,9 @@
     color: rgba(159, 247, 255, 255);
     background-color: rgba(13, 62, 86, 255);
     border-left-color: rgba(115, 245, 166, 255);
+    border-right-color: rgba(115, 245, 166, 120);
+    border-top-color: rgba(115, 245, 166, 120);
+    border-bottom-color: rgba(115, 245, 166, 120);
 }
 
 .unity-base-dropdown__item:checked:hover {
@@ -99,7 +171,7 @@
 }
 
 .unity-base-dropdown__label {
-    color: rgba(218, 242, 255, 255);
+    color: rgba(207, 218, 224, 255);
     -unity-text-align: middle-left;
 }
 
@@ -116,7 +188,7 @@
     height: 1px;
     margin-top: 4px;
     margin-bottom: 4px;
-    background-color: rgba(83, 208, 235, 150);
+    background-color: rgba(125, 150, 158, 105);
 }
 
 .lobby-list,
@@ -157,10 +229,10 @@
     border-bottom-width: 2px;
     border-left-width: 2px;
     border-right-width: 2px;
-    border-top-color: rgba(51, 168, 204, 35);
-    border-bottom-color: rgba(51, 168, 204, 35);
-    border-left-color: rgba(51, 168, 204, 35);
-    border-right-color: rgba(51, 168, 204, 35);
+    border-top-color: rgba(125, 150, 158, 35);
+    border-bottom-color: rgba(125, 150, 158, 35);
+    border-left-color: rgba(125, 150, 158, 35);
+    border-right-color: rgba(125, 150, 158, 35);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     border-bottom-left-radius: 5px;
@@ -175,15 +247,15 @@
     border-right-color: rgba(108, 230, 255, 230);
 }
 
-.focus-group-title {
+.smr-theme .focus-group-title {
     margin-bottom: 8px;
-    color: rgba(162, 208, 230, 255);
+    color: rgba(168, 181, 187, 255);
     font-size: 14px;
     -unity-font-style: bold;
 }
 
-.lobby-focus-group--active > .focus-group-title {
-    color: rgba(153, 248, 255, 255);
+.smr-theme .lobby-focus-group--active > .focus-group-title {
+    color: rgba(185, 218, 215, 255);
 }
 
 .lobby-search-focus-group {
