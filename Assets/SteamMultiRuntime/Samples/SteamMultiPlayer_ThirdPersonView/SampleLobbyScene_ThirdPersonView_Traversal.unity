@@ -799,6 +799,10 @@ PrefabInstance:
       propertyPath: lobbyService
       value: 
       objectReference: {fileID: 75165694}
+    - target: {fileID: 5649759960531656290, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
+      propertyPath: cameraCollisionLayers.m_Bits
+      value: 51
+      objectReference: {fileID: 0}
     - target: {fileID: 6667912240168262587, guid: f6dbc4c86e648cd46a1a4b3bed600d4e, type: 3}
       propertyPath: m_ControllerManager.Controllers.Array.data[0].Input.InputAction
       value: 

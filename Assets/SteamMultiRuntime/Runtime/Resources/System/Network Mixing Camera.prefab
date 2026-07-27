@@ -160,6 +160,16 @@ MonoBehaviour:
   defaultCameraIndex: 0
   followCameraIndex: 1
   transitionSpeed: 10
+  enableCameraCollision: 0
+  cameraCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 51
+  cameraCollisionRadius: 0.45
+  minimumDistanceFromTarget: 0.5
+  minimumOcclusionTime: 0.08
+  collisionSmoothingTime: 0.25
+  collisionDamping: 0.4
+  collisionRecoveryDamping: 0.7
   networkContext: {fileID: 1407171741054070296}
   lobbyService: {fileID: 0}
 --- !u!114 &1407171741054070296

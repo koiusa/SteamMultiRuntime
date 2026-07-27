@@ -763,6 +763,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7357919562320602132, guid: 5fc0a0bca5b4a1e4c8a7229e814f2976, type: 3}
+      propertyPath: cameraCollisionLayers.m_Bits
+      value: 51
+      objectReference: {fileID: 0}
     - target: {fileID: 8400822812273775864, guid: 5fc0a0bca5b4a1e4c8a7229e814f2976, type: 3}
       propertyPath: localManager
       value: 

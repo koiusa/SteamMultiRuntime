@@ -24,6 +24,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.SteamLobby.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Editor.csproj" />
   <Project Path="UnityChan.Editor.csproj" />
