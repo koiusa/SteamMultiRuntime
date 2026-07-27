@@ -21,7 +21,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private NpcNavMeshController controller;
         private NpcDestinationDebugMarker marker;
-
         private void Awake()
         {
             controller = GetComponent<NpcNavMeshController>();

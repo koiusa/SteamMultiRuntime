@@ -442,10 +442,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b879a5076e0c6847ad8056df67e09da, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarker
   markerScale: 0.35
   arriveBuffer: 0.1
+  markerPrefab: {fileID: 100000, guid: 5756f0f7249d4f66921aeebcf8c47030, type: 3}
 --- !u!114 &7842634654398573961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -456,7 +457,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03e1ff0cd9845cc4aad63f8f93d8a4d6, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcDestinationDebugMarkerNetSync
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &910000000000000001

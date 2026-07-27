@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Rendering;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -11,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private float markerScale = 0.35f;
         [SerializeField] private float arriveBuffer = 0.1f;
+        [SerializeField] private GameObject markerPrefab;
 
         private NavMeshAgent _agent;
         private NpcNavMeshController _controller;
@@ -100,8 +100,12 @@ namespace Koiusa.SteamMultiRuntime
             if (_marker == null)
                 _marker = CreateMarker();
 
+            if (_marker == null)
+                return;
+
             _marker.transform.position = _currentDestination;
             _marker.SetActive(true);
+
         }
 
         public void ClearDestination()
@@ -117,50 +121,18 @@ namespace Koiusa.SteamMultiRuntime
 
         private GameObject CreateMarker()
         {
-            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            marker.name = $"{gameObject.name}_DestinationMarker";
+            if (markerPrefab == null)
+            {
+                Debug.LogWarning("[NpcDestinationDebugMarker] markerPrefab is not assigned.", this);
+                return null;
+            }
+
+            // 親を指定したInstantiateで、Active SceneではなくNPCと同じSceneへ直接生成する。
+            var marker = Instantiate(markerPrefab, _currentDestination, Quaternion.identity, transform);
+            marker.transform.SetParent(null, true);
             marker.transform.localScale = Vector3.one * Mathf.Max(0.01f, markerScale);
-
-            var collider = marker.GetComponent<Collider>();
-            if (collider != null)
-                Destroy(collider);
-
-            var renderer = marker.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                var shader = ResolveMarkerShader();
-                if (shader != null)
-                {
-                    var material = new Material(shader);
-                    material.color = Color.red;
-                    renderer.material = material;
-                }
-            }
-
+            marker.name = $"{gameObject.name}_DestinationMarker";
             return marker;
-        }
-
-        private static Shader ResolveMarkerShader()
-        {
-            var pipeline = GraphicsSettings.defaultRenderPipeline;
-            var pipelineName = pipeline != null ? pipeline.GetType().Name : string.Empty;
-
-            if (pipelineName.Contains("HighDefinition") || pipelineName.Contains("HDRP"))
-            {
-                return Shader.Find("HDRP/Unlit")
-                    ?? Shader.Find("HDRP/Lit");
-            }
-
-            if (pipelineName.Contains("Universal") || pipelineName.Contains("URP"))
-            {
-                return Shader.Find("Universal Render Pipeline/Unlit")
-                    ?? Shader.Find("Universal Render Pipeline/Lit")
-                    ?? Shader.Find("Universal Render Pipeline/Simple Lit");
-            }
-
-            // Built-in
-            return Shader.Find("Unlit/Color")
-                ?? Shader.Find("Standard");
         }
 
         private void DestroyMarker()

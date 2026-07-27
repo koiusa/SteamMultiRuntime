@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly bool useAdditiveClientSynchronization;
         private int? protectedClientSceneHandle;
         private NetworkManager stopEventSource;
+        private NetworkManager clientSceneEventSource;
         private TaskCompletionSource<bool> stopCompletion;
         private bool hasObservedNetworkStop;
 
@@ -95,6 +96,8 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            EnsureClientSceneActivationSubscription(networkManager);
+
             if (networkManager.IsListening)
             {
                 return networkManager.IsClient && !networkManager.IsServer;
@@ -155,6 +158,38 @@ namespace Koiusa.SteamMultiRuntime
         {
             hasObservedNetworkStop = true;
             stopCompletion?.TrySetResult(true);
+        }
+
+        private void EnsureClientSceneActivationSubscription(NetworkManager networkManager)
+        {
+            if (clientSceneEventSource == networkManager || networkManager.SceneManager == null)
+            {
+                return;
+            }
+
+            if (clientSceneEventSource != null && clientSceneEventSource.SceneManager != null)
+            {
+                clientSceneEventSource.SceneManager.OnSceneEvent -= OnClientSceneEvent;
+            }
+
+            clientSceneEventSource = networkManager;
+            clientSceneEventSource.SceneManager.OnSceneEvent += OnClientSceneEvent;
+        }
+
+        private void OnClientSceneEvent(SceneEvent sceneEvent)
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null
+                || !networkManager.IsClient
+                || networkManager.IsServer
+                || sceneEvent.ClientId != networkManager.LocalClientId
+                || sceneEvent.SceneEventType != SceneEventType.LoadComplete)
+            {
+                return;
+            }
+
+            var scene = SceneUtilityEx.GetLoadedScene(sceneEvent.SceneName);
+            ActivateClientScene(scene);
         }
 
         private void OnClientDisconnected(ulong clientId)
@@ -255,7 +290,7 @@ namespace Koiusa.SteamMultiRuntime
             var loadedScene = SceneUtilityEx.GetLoadedScene(sceneReference);
             if (loadedScene.IsValid() && loadedScene.isLoaded)
             {
-                return Task.FromResult(true);
+                return Task.FromResult(ActivateClientScene(loadedScene));
             }
 
             var networkManager = NetworkManager.Singleton;
@@ -277,11 +312,23 @@ namespace Koiusa.SteamMultiRuntime
                 }
 
                 networkManager.SceneManager.OnSceneEvent -= OnSceneEvent;
-                completion.TrySetResult(true);
+                var scene = SceneUtilityEx.GetLoadedScene(sceneReference);
+                completion.TrySetResult(
+                    ActivateClientScene(scene));
             }
 
             networkManager.SceneManager.OnSceneEvent += OnSceneEvent;
             return completion.Task;
+        }
+
+        private static bool ActivateClientScene(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return false;
+            }
+
+            return SceneManager.GetActiveScene() == scene || SceneManager.SetActiveScene(scene);
         }
 
         private static async Task<bool> ExecuteSceneEventAsync(

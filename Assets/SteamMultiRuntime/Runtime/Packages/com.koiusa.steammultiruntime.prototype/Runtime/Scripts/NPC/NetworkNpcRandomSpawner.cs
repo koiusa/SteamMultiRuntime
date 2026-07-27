@@ -10,6 +10,55 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class NetworkNpcRandomSpawner : MonoBehaviour
     {
+        private struct NpcSpawnSceneData : INetworkSerializable
+        {
+            public int SceneBuildIndex;
+
+            public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+            {
+                serializer.SerializeValue(ref SceneBuildIndex);
+            }
+        }
+
+        private sealed class NpcScenePrefabHandler : NetworkPrefabInstanceHandlerWithData<NpcSpawnSceneData>
+        {
+            private readonly GameObject prefab;
+
+            public NpcScenePrefabHandler(GameObject prefab)
+            {
+                this.prefab = prefab;
+            }
+
+            public override NetworkObject Instantiate(
+                ulong ownerClientId,
+                Vector3 position,
+                Quaternion rotation,
+                NpcSpawnSceneData instantiationData)
+            {
+                var anchor = FindSpawnAnchor(instantiationData.SceneBuildIndex, prefab);
+                if (anchor == null)
+                {
+                    Debug.LogError(
+                        $"[NetworkNpcRandomSpawner] Scene buildIndex={instantiationData.SceneBuildIndex} " +
+                        "のNPC生成先が見つかりません。クライアントのScene LoadComplete前にSpawnされています。");
+                    return null;
+                }
+
+                return InstantiateInScene(prefab, anchor.transform, position, rotation)
+                    .GetComponent<NetworkObject>();
+            }
+
+            public override void Destroy(NetworkObject networkObject)
+            {
+                if (networkObject != null)
+                {
+                    Object.Destroy(networkObject.gameObject);
+                }
+            }
+        }
+
+        private static readonly List<NetworkNpcRandomSpawner> SpawnAnchors = new();
+
         [Header("NPC Prefab")]
         [SerializeField] private GameObject networkNpcPrefab;
         [SerializeField] private GameObject localNpcPrefab;
@@ -22,7 +71,6 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(1)] private int spawnCount = 5;
         [SerializeField] private bool spawnOnStart = true;
         [SerializeField] private bool oneShot = true;
-        [SerializeField, Min(0.1f)] private float spawnRetryInterval = 2f;
         [SerializeField] private float spawnHeightOffset = 0.05f;
 
         [Header("Area")]
@@ -40,32 +88,69 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool hasSpawned;
         private bool hasSubscribedServerStarted;
-        private float nextSpawnRetryTime;
         private bool isWaitingForActiveScene;
+        private bool isWaitingForNavMeshUpdate;
+        private bool isWaitingForNetworkSceneLoad;
+        private NetworkSceneManager subscribedSceneManager;
+
+        private void Awake()
+        {
+            if (!SpawnAnchors.Contains(this))
+            {
+                SpawnAnchors.Add(this);
+            }
+
+            // SceneのLoadComplete直後にSpawnを受信しても間に合うよう、可能ならAwakeで登録する。
+            RegisterNetworkPrefabHandler();
+        }
 
         private void Start()
         {
+            RegisterNetworkPrefabHandler();
+
             if (!spawnOnStart)
             {
                 return;
             }
 
-            TrySpawnOrSubscribe();
-        }
-
-        private void Update()
-        {
-            if (!spawnOnStart || hasSpawned || isWaitingForActiveScene || Time.time < nextSpawnRetryTime)
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null)
             {
+                WaitForNavMeshUpdate();
                 return;
             }
 
-            TrySpawnOrSubscribe();
+            if (!networkManager.IsListening)
+            {
+                SubscribeServerStarted(networkManager);
+                return;
+            }
+
+            if (!networkManager.IsServer)
+            {
+                enabled = false;
+                return;
+            }
+
+            SubscribeNetworkSceneEvents(networkManager);
+
+            // Network開始前からロード済みのSceneにはLoadEventCompletedが来ない。
+            if (IsOwnSceneActive())
+            {
+                WaitForNavMeshUpdate();
+            }
+            else
+            {
+                isWaitingForNetworkSceneLoad = true;
+            }
         }
 
         private void OnDestroy()
         {
+            SpawnAnchors.Remove(this);
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            NavMesh.onPreUpdate -= OnNavMeshPreUpdate;
+            UnsubscribeNetworkSceneEvents();
             UnsubscribeServerStarted();
         }
 
@@ -76,11 +161,27 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            // activeSceneChanged は SetActiveScene と同期的に発火するため、
-            // この時点では NavMesh がまだ初期化されていない。
-            // フラグだけ解除して次フレームの Update に委ねる。
             isWaitingForActiveScene = false;
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            WaitForNavMeshUpdate();
+        }
+
+        private void WaitForNavMeshUpdate()
+        {
+            if (isWaitingForNavMeshUpdate)
+            {
+                return;
+            }
+
+            isWaitingForNavMeshUpdate = true;
+            NavMesh.onPreUpdate += OnNavMeshPreUpdate;
+        }
+
+        private void OnNavMeshPreUpdate()
+        {
+            NavMesh.onPreUpdate -= OnNavMeshPreUpdate;
+            isWaitingForNavMeshUpdate = false;
+            TrySpawnOrSubscribe();
         }
 
         private bool IsOwnSceneActive()
@@ -100,6 +201,8 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            var networkManager = NetworkManager.Singleton;
+
             // NavMesh はアクティブシーンに紐付くため、自シーンがアクティブになるまで待つ
             // Local/Network を問わず共通のガード
             if (!IsOwnSceneActive())
@@ -112,7 +215,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var networkManager = NetworkManager.Singleton;
             if (networkManager == null || networkManager.IsServer)
             {
                 SpawnInternal();
@@ -125,13 +227,74 @@ namespace Koiusa.SteamMultiRuntime
                 hasSubscribedServerStarted = true;
             }
 
-            nextSpawnRetryTime = Time.time + spawnRetryInterval;
         }
 
         private void OnServerStarted()
         {
             UnsubscribeServerStarted();
-            TrySpawnOrSubscribe();
+
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || !networkManager.IsServer)
+            {
+                return;
+            }
+
+            SubscribeNetworkSceneEvents(networkManager);
+            if (IsOwnSceneActive())
+            {
+                WaitForNavMeshUpdate();
+            }
+            else
+            {
+                isWaitingForNetworkSceneLoad = true;
+            }
+        }
+
+        private void SubscribeServerStarted(NetworkManager networkManager)
+        {
+            if (hasSubscribedServerStarted)
+            {
+                return;
+            }
+
+            networkManager.OnServerStarted += OnServerStarted;
+            hasSubscribedServerStarted = true;
+        }
+
+        private void SubscribeNetworkSceneEvents(NetworkManager networkManager)
+        {
+            if (subscribedSceneManager == networkManager.SceneManager || networkManager.SceneManager == null)
+            {
+                return;
+            }
+
+            UnsubscribeNetworkSceneEvents();
+            subscribedSceneManager = networkManager.SceneManager;
+            subscribedSceneManager.OnSceneEvent += OnNetworkSceneEvent;
+        }
+
+        private void UnsubscribeNetworkSceneEvents()
+        {
+            if (subscribedSceneManager == null)
+            {
+                return;
+            }
+
+            subscribedSceneManager.OnSceneEvent -= OnNetworkSceneEvent;
+            subscribedSceneManager = null;
+        }
+
+        private void OnNetworkSceneEvent(SceneEvent sceneEvent)
+        {
+            if (sceneEvent.SceneEventType != SceneEventType.LoadEventCompleted
+                || sceneEvent.SceneName != gameObject.scene.name)
+            {
+                return;
+            }
+
+            UnsubscribeNetworkSceneEvents();
+            isWaitingForNetworkSceneLoad = false;
+            WaitForNavMeshUpdate();
         }
 
         private void SpawnInternal()
@@ -149,7 +312,6 @@ namespace Koiusa.SteamMultiRuntime
                 Debug.LogError(useNetworkSpawn
                     ? "[NetworkNpcRandomSpawner] networkNpcPrefab is not assigned."
                     : "[NetworkNpcRandomSpawner] localNpcPrefab is not assigned.", this);
-                nextSpawnRetryTime = Time.time + spawnRetryInterval;
                 return;
             }
 
@@ -186,15 +348,8 @@ namespace Koiusa.SteamMultiRuntime
                     ? spawnPosition
                     : spawnPosition + spawnUp * spawnHeightOffset;
 
-                var instance = Instantiate(prefab, finalSpawnPosition, Quaternion.identity);
-
-                // スポナー自身のシーンへ移動する
-                // （スポナーのシーンがアクティブであれば Instantiate は既に同シーンに生成するため通常は no-op）
                 var spawnerScene = gameObject.scene;
-                if (spawnerScene.IsValid() && instance.scene != spawnerScene)
-                {
-                    SceneManager.MoveGameObjectToScene(instance, spawnerScene);
-                }
+                var instance = InstantiateInScene(prefab, transform, finalSpawnPosition, Quaternion.identity);
 
                 var networkObject = instance.GetComponent<NetworkObject>();
 
@@ -203,11 +358,15 @@ namespace Koiusa.SteamMultiRuntime
                     // OnNetworkSpawn がプレイヤー用の既定モデルを解決する前に、
                     // NPC 固有のモデル情報を確定させる。
                     PrepareNetworkModelSync(instance);
-
                     if (!networkObject.IsSpawned)
                     {
-                        networkObject.Spawn();
+                        networkManager.PrefabHandler.SetInstantiationData(
+                            networkObject,
+                            new NpcSpawnSceneData { SceneBuildIndex = spawnerScene.buildIndex });
+                        networkObject.Spawn(destroyWithScene: true);
                     }
+
+                    ApplyNetworkModelSelection(instance);
                 }
                 else if (networkObject == null && useNetworkSpawn)
                 {
@@ -230,12 +389,60 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             Debug.LogWarning($"[NetworkNpcRandomSpawner] NPC spawn failed (no valid spawn point). agentTypeId={sampleAgentTypeId}, sampleRadius={navMeshSampleRadius}, fallback={fallbackToAnyAgentType}", this);
-            nextSpawnRetryTime = Time.time + spawnRetryInterval;
         }
 
         private GameObject SelectNpcPrefab(bool useNetworkSpawn)
         {
             return useNetworkSpawn ? networkNpcPrefab : localNpcPrefab;
+        }
+
+        private void RegisterNetworkPrefabHandler()
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || networkNpcPrefab == null)
+            {
+                return;
+            }
+
+            networkManager.PrefabHandler.AddHandler(
+                networkNpcPrefab,
+                new NpcScenePrefabHandler(networkNpcPrefab));
+        }
+
+        private static NetworkNpcRandomSpawner FindSpawnAnchor(int sceneBuildIndex, GameObject prefab)
+        {
+            for (var i = SpawnAnchors.Count - 1; i >= 0; i--)
+            {
+                var anchor = SpawnAnchors[i];
+                if (anchor == null)
+                {
+                    SpawnAnchors.RemoveAt(i);
+                    continue;
+                }
+
+                if (anchor.gameObject.scene.buildIndex != sceneBuildIndex
+                    || anchor.networkNpcPrefab != prefab)
+                {
+                    continue;
+                }
+
+                return anchor;
+            }
+
+            return null;
+        }
+
+        private static GameObject InstantiateInScene(
+            GameObject prefab,
+            Transform sceneAnchor,
+            Vector3 position,
+            Quaternion rotation)
+        {
+            // 位置・回転・親を同時指定し、Awakeより前に正しい初期位置を確定する。
+            // 親のSceneへ直接生成されるため、Active Sceneにも依存しない。
+            var instance = Instantiate(prefab, position, rotation, sceneAnchor);
+            instance.transform.SetParent(null, true);
+            return instance;
         }
 
         private void PrepareNetworkModelSync(GameObject instance)
@@ -252,10 +459,22 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkModelSync.modelIdList = npcModelIdList;
-            if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
+        }
+
+        private void ApplyNetworkModelSelection(GameObject instance)
+        {
+            if (!randomizeModelOnSpawn || npcModelIdList == null || npcModelIdList.modelIds == null || npcModelIdList.modelIds.Length == 0)
             {
-                networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
+                return;
             }
+
+            var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
+            if (networkModelSync == null || !networkModelSync.IsSpawned || !networkModelSync.IsServer)
+            {
+                return;
+            }
+
+            networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
         }
 
         private void ApplyLocalModelSync(GameObject instance)
