@@ -451,6 +451,15 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             scope.Bind(characterDebugDisplayState);
+
+            var overlay = instance.GetComponent<CharacterDebugOverlay>();
+            if (overlay == null)
+            {
+                overlay = instance.AddComponent<CharacterDebugOverlay>();
+            }
+
+            scope.SetOwnerOverlay(overlay);
+            overlay.ResolveReferences();
         }
 
         private Transform EnsureDebugDisplayRoot()

@@ -36,6 +36,11 @@ namespace Koiusa.SteamMultiRuntime
         private Rect windowRect;
         private Vector2 scrollPosition;
         private bool isVisible;
+        private bool targetSectionExpanded = true;
+        private bool controllerSectionExpanded = true;
+        private bool rigidbodySectionExpanded = true;
+        private bool bodyAnimatorSectionExpanded = true;
+        private bool faceAnimationSectionExpanded = true;
 
         private void Awake()
         {
@@ -127,7 +132,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (targetAnimator == null)
             {
-                targetAnimator = GetComponent<Animator>();
+                targetAnimator = FindBodyAnimator(root);
             }
 
             if (targetFaceAnimator == null)
@@ -206,7 +211,7 @@ namespace Koiusa.SteamMultiRuntime
                 displayScope = GetComponentInParent<CharacterDebugDisplayScope>();
             }
 
-            return displayScope == null || displayScope.IsVisible;
+            return displayScope == null || displayScope.CanRender(this);
         }
 
         private void DrawAggregateWindow(int windowId)
@@ -296,45 +301,51 @@ namespace Koiusa.SteamMultiRuntime
 
             target.ResolveReferences();
 
-            target.BeginSection("Target");
-            GUILayout.Label($"Name: {target.GetTargetDisplayName()}");
-            GUILayout.Label($"NetworkMode: {target.GetNetworkModeDisplayName()}");
+            if (target.BeginSection("Target", ref target.targetSectionExpanded))
+            {
+                GUILayout.Label($"Name: {target.GetTargetDisplayName()}");
+                GUILayout.Label($"NetworkMode: {target.GetNetworkModeDisplayName()}");
+            }
             target.EndSection();
 
-            target.BeginSection("Controller State");
-            if (target.playerController == null)
+            if (target.BeginSection("Controller State", ref target.controllerSectionExpanded))
             {
-                GUILayout.Label("IPlayerController: not found");
-            }
-            else
-            {
-                GUILayout.Label($"Grounded: {target.playerController.IsGrounded}");
-                GUILayout.Label($"Jumping: {target.playerController.IsJumping}");
-                GUILayout.Label($"Freefall: {target.playerController.IsFreefall}");
-                GUILayout.Label($"FallingAfterJump: {target.playerController.IsFallingAfterJump}");
-                if (target.playerController is IPlayerLadderState ladderState)
+                if (target.playerController == null)
                 {
-                    GUILayout.Label($"OnLadder: {ladderState.IsOnLadder}");
-                    GUILayout.Label($"LadderSpeed: {ladderState.LadderSpeed:F3}");
+                    GUILayout.Label("IPlayerController: not found");
                 }
-                GUILayout.Label($"HorizontalVelocity: {target.playerController.HorizontalVelocity:F3}");
-                GUILayout.Label($"VerticalVelocity: {target.playerController.VerticalVelocity:F3}");
-                GUILayout.Label($"MaxMoveSpeed: {target.playerController.MaxMoveSpeed:F3}");
-                GUILayout.Label($"InheritedGroundVelocity: {target.playerController.InheritedGroundVelocity}");
+                else
+                {
+                    GUILayout.Label($"Grounded: {target.playerController.IsGrounded}");
+                    GUILayout.Label($"Jumping: {target.playerController.IsJumping}");
+                    GUILayout.Label($"Freefall: {target.playerController.IsFreefall}");
+                    GUILayout.Label($"FallingAfterJump: {target.playerController.IsFallingAfterJump}");
+                    if (target.playerController is IPlayerLadderState ladderState)
+                    {
+                        GUILayout.Label($"OnLadder: {ladderState.IsOnLadder}");
+                        GUILayout.Label($"LadderSpeed: {ladderState.LadderSpeed:F3}");
+                    }
+                    GUILayout.Label($"HorizontalVelocity: {target.playerController.HorizontalVelocity:F3}");
+                    GUILayout.Label($"VerticalVelocity: {target.playerController.VerticalVelocity:F3}");
+                    GUILayout.Label($"MaxMoveSpeed: {target.playerController.MaxMoveSpeed:F3}");
+                    GUILayout.Label($"InheritedGroundVelocity: {target.playerController.InheritedGroundVelocity}");
+                }
             }
             target.EndSection();
 
-            target.BeginSection("Rigidbody");
-            if (target.targetRigidbody == null)
+            if (target.BeginSection("Rigidbody", ref target.rigidbodySectionExpanded))
             {
-                GUILayout.Label("Rigidbody: not found");
-            }
-            else
-            {
-                GUILayout.Label($"Position: {target.targetRigidbody.position}");
-                GUILayout.Label($"Velocity: {target.targetRigidbody.linearVelocity}");
-                GUILayout.Label($"Speed: {target.targetRigidbody.linearVelocity.magnitude:F3}");
-                GUILayout.Label($"AngularVelocity: {target.targetRigidbody.angularVelocity}");
+                if (target.targetRigidbody == null)
+                {
+                    GUILayout.Label("Rigidbody: not found");
+                }
+                else
+                {
+                    GUILayout.Label($"Position: {target.targetRigidbody.position}");
+                    GUILayout.Label($"Velocity: {target.targetRigidbody.linearVelocity}");
+                    GUILayout.Label($"Speed: {target.targetRigidbody.linearVelocity.magnitude:F3}");
+                    GUILayout.Label($"AngularVelocity: {target.targetRigidbody.angularVelocity}");
+                }
             }
             target.EndSection();
 
@@ -344,7 +355,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void DrawAnimatorSection(string title, Animator animator, int layerIndex, bool includeParameters)
         {
-            BeginSection(title);
+            if (!BeginSection(title, ref bodyAnimatorSectionExpanded))
+            {
+                EndSection();
+                return;
+            }
             if (animator == null)
             {
                 GUILayout.Label($"{title}: not found");
@@ -392,7 +407,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void DrawFaceAnimationSection()
         {
-            BeginSection("Face Animation");
+            if (!BeginSection("Face Animation", ref faceAnimationSectionExpanded))
+            {
+                EndSection();
+                return;
+            }
 
             if (!TryGetFaceAnimatorAndLayer(out var animator, out var layerIndex))
             {
@@ -477,6 +496,41 @@ namespace Koiusa.SteamMultiRuntime
             return fallbackAnimator;
         }
 
+        private Animator FindBodyAnimator(Transform root)
+        {
+            var rootAnimator = root.GetComponent<Animator>();
+            if (rootAnimator != null)
+            {
+                return rootAnimator;
+            }
+
+            var animators = root.GetComponentsInChildren<Animator>(includeInactive: true);
+            Animator fallbackAnimator = null;
+
+            for (var i = 0; i < animators.Length; i++)
+            {
+                var animator = animators[i];
+                if (animator == null)
+                {
+                    continue;
+                }
+
+                fallbackAnimator ??= animator;
+                if (animator.name.IndexOf(
+                        PreferredFaceLayerName,
+                        System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    continue;
+                }
+
+                // A combined body/face controller is still the body animator. Only
+                // objects explicitly named as a face animator are excluded here.
+                return animator;
+            }
+
+            return fallbackAnimator;
+        }
+
         private int FindFaceLayerIndex(Animator animator)
         {
             if (animator == null)
@@ -514,10 +568,15 @@ namespace Koiusa.SteamMultiRuntime
             return state.shortNameHash.ToString();
         }
 
-        private void BeginSection(string title)
+        private bool BeginSection(string title, ref bool expanded)
         {
             GUILayout.BeginVertical("box");
-            GUILayout.Label(title);
+            if (GUILayout.Button($"{(expanded ? "▼" : "▶")} {title}", GUI.skin.label))
+            {
+                expanded = !expanded;
+            }
+
+            return expanded;
         }
 
         private void EndSection()
