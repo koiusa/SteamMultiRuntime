@@ -1,18 +1,17 @@
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Netcode.Transports.Facepunch;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
 
 namespace Koiusa.SteamMultiRuntime
 {
     internal sealed class SteamLobbyNetworkFacade : INetworkSessionController
     {
         private readonly bool useAdditiveClientSynchronization;
-        private readonly HashSet<int> protectedClientSceneHandles = new HashSet<int>();
+        private int? protectedClientSceneHandle;
 
         public event Action Stopping;
 
@@ -308,7 +307,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool TryActivateBootstrapScene(string excludedPresentationSceneReference)
         {
-            protectedClientSceneHandles.Clear();
+            protectedClientSceneHandle = null;
 
             for (var index = 0; index < SceneManager.sceneCount; index++)
             {
@@ -323,7 +322,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 if (SceneManager.SetActiveScene(scene))
                 {
-                    protectedClientSceneHandles.Add(scene.handle);
+                    protectedClientSceneHandle = scene.handle;
                     return true;
                 }
             }
@@ -362,7 +361,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkManager.SceneManager.VerifySceneBeforeUnloading = scene =>
-                !protectedClientSceneHandles.Contains(scene.handle);
+                scene.handle != protectedClientSceneHandle;
         }
 
         public bool IsHostListening()
