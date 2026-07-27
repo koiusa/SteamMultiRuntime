@@ -36,15 +36,20 @@
 .smr-theme .keyconfig-title,
 .smr-theme .title {
     border-left-width: 3px;
-    border-left-color: rgb(77, 219, 164);
+    border-left-color: rgb(102, 164, 145);
     padding-left: 10px;
 }
 
-.smr-theme .section-title,
 .smr-theme .focus-group-title,
 .smr-theme .keyconfig-th,
 .smr-theme .character-debug-section > Toggle {
-    color: rgb(77, 219, 164);
+    color: rgb(158, 185, 178);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.smr-theme .section-title {
+    color: rgb(174, 194, 201);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }

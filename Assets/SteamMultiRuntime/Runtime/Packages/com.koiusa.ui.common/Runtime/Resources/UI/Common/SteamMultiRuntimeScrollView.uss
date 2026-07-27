@@ -5,7 +5,7 @@
     min-width: 12px;
     background-color: rgb(15, 23, 42);
     border-left-width: 1px;
-    border-left-color: rgba(94, 234, 212, 0.25);
+    border-left-color: rgba(120, 155, 150, 0.22);
 }
 
 .unity-scroll-view .unity-scroller--vertical .unity-scroller__low-button,
