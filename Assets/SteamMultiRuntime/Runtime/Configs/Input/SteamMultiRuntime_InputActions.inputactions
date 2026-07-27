@@ -1277,6 +1277,17 @@
                 },
                 {
                     "name": "",
+                    "id": "8253ee4d-0670-45a6-ae53-ec2a49eb5825",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "CharacterMenuToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "0fb152ca-03d8-4f62-af54-990ac3d8cedd",
                     "path": "<Gamepad>/select",
                     "interactions": "",

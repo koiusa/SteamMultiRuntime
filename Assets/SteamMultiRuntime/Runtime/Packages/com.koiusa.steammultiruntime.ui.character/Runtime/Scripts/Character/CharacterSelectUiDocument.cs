@@ -21,12 +21,23 @@ namespace Koiusa.SteamMultiRuntime
 
         private UIDocument uiDocument;
         private CharacterSelectView view;
+        private VisualElement registeredRoot;
         private int pendingIndex = -1;
 
         private IRuntimeUserProfileModelSource UserProfile => userProfile != null ? userProfile.Value : null;
 
         private void Awake()
         {
+            EnsureInitialized();
+        }
+
+        private void EnsureInitialized()
+        {
+            if (uiDocument != null && view != null)
+            {
+                return;
+            }
+
             uiDocument = GetComponent<UIDocument>();
 
             if (layoutAsset == null)
@@ -48,10 +59,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            EnsureInitialized();
+            if (uiDocument == null || view == null)
+            {
+                return;
+            }
+
             var ids = ResolveModelIdList();
             view.Build(ids);
             view.BindActions(OnCharacterSelected, OnConfirmClicked);
-            uiDocument.rootVisualElement.RegisterCallback<NavigationCancelEvent>(OnCancelNavigation);
+            registeredRoot = uiDocument.rootVisualElement;
+            registeredRoot?.RegisterCallback<NavigationCancelEvent>(OnCancelNavigation);
 
             pendingIndex = UserProfile != null ? UserProfile.SelectedModelIndex : 0;
             view.SetSelectedIndex(pendingIndex, ids != null ? ids.modelIds : null);
@@ -60,8 +78,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
-            if (uiDocument != null)
-                uiDocument.rootVisualElement.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
+            registeredRoot?.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
+            registeredRoot = null;
             view?.UnbindActions();
         }
 
