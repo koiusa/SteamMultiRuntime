@@ -51,6 +51,11 @@
       "displayName": "Samples Steam Multi Player Third Person View",
       "description": "Sample for Steam Multi Player Third Person View.",
       "path": "Samples/SteamMultiPlayer_ThirdPersonView"
+    },
+    {
+      "displayName": "Build Profile Scene Preset",
+      "description": "Scene preset for configuring a Unity Build Profile. Import the Common Assets and Third Person View samples first.",
+      "path": "Samples/BuildPreset"
     }
   ]
 }

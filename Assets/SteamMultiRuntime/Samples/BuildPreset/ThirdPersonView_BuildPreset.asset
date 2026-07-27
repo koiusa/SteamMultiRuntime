@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cf77b7d89cb40e59b12df8bd232823c, type: 3}
+  m_Name: ThirdPersonView_BuildPreset
+  m_EditorClassIdentifier:
+  scenes:
+  - enabled: 1
+    guid: f260e861340702c40906e7fa0b340044
+    path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_ThirdPersonView/SampleLobbyScene_ThirdPersonView_Traversal.unity
+  - enabled: 1
+    guid: 2eb1146ffd007e045b00384444ce1c9a
+    path: Assets/SteamMultiRuntime/Samples/Common/PlayGroundScene.unity
+  - enabled: 1
+    guid: 253d20b74fbe77c4b93d653045227478
+    path: Assets/SteamMultiRuntime/Samples/Common/SandBoxScene.unity
+  - enabled: 1
+    guid: 2b64709540d56cd4a9e0714b6197cc60
+    path: Assets/SteamMultiRuntime/Samples/Common/UnityLogo.unity
+  - enabled: 1
+    guid: 0ad083b12f9e5c04abd9318132df160d
+    path: Assets/SteamMultiRuntime/Samples/Common/NPCVilleg.unity
