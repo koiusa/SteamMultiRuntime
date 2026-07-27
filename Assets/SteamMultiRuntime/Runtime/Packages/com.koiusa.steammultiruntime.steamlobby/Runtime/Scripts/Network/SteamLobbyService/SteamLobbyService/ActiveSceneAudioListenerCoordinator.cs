@@ -30,6 +30,11 @@ namespace Koiusa.SteamMultiRuntime
             ReconcileListeners();
         }
 
+        public static void Refresh()
+        {
+            ReconcileListeners();
+        }
+
         private static void EnsureFallbackListener()
         {
             if (fallbackListener != null)
@@ -113,7 +118,6 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            // Scene側に有効なListenerがない遷移中も、必ずFallbackを1つ有効に保つ。
             fallbackListener.enabled = selected == null;
             if (selected != null)
             {

@@ -81,33 +81,12 @@ namespace Koiusa.SteamMultiRuntime
 
                 var startupScene = Network.StageStartupSceneLoader.ResolveStartupSceneReference(this, this, nameof(LocalSceneFlowLoader));
                 var scene = SceneUtilityEx.GetLoadedScene(startupScene);
-                DisableSceneCameras(scene);
+                SceneLoadUtility.ApplyLoadedSceneCameraSettings(scene, disableCamerasInLoadedScenes: true);
                 return loaded;
             }
             finally
             {
                 LoadingFinished?.Invoke();
-            }
-        }
-
-        private static void DisableSceneCameras(Scene scene)
-        {
-            if (!scene.IsValid() || !scene.isLoaded)
-            {
-                return;
-            }
-
-            foreach (var rootGameObject in scene.GetRootGameObjects())
-            {
-                foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
-                {
-                    camera.enabled = false;
-
-                    if (camera.gameObject.activeSelf)
-                    {
-                        camera.gameObject.SetActive(false);
-                    }
-                }
             }
         }
 

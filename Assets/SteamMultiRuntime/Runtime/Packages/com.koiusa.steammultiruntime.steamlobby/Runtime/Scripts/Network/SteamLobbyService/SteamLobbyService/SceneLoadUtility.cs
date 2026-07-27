@@ -136,6 +136,10 @@ namespace Koiusa.SteamMultiRuntime
                     }
                 }
             }
+
+            // sceneLoaded通知より後にCameraを無効化する経路でも、次の描画を待たず
+            // Root側を含む有効なAudioListenerをその場で1つに確定させる。
+            ActiveSceneAudioListenerCoordinator.Refresh();
         }
 
         public static void ActivatePresentationScene(Scene scene)

@@ -47,7 +47,9 @@ namespace Koiusa.SteamMultiRuntime.Network
 
                 var startupScene = StageStartupSceneLoader.ResolveStartupSceneReference(this, this, nameof(LocalStartupSceneLoader));
                 var scene = SceneUtilityEx.GetLoadedScene(startupScene);
-                DisableSceneCameras(scene);
+                Koiusa.SteamMultiRuntime.SceneLoadUtility.ApplyLoadedSceneCameraSettings(
+                    scene,
+                    disableCamerasInLoadedScenes: true);
                 return loaded;
             }
             finally
@@ -56,25 +58,5 @@ namespace Koiusa.SteamMultiRuntime.Network
             }
         }
 
-        private static void DisableSceneCameras(Scene scene)
-        {
-            if (!scene.IsValid() || !scene.isLoaded)
-            {
-                return;
-            }
-
-            foreach (var rootGameObject in scene.GetRootGameObjects())
-            {
-                foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
-                {
-                    camera.enabled = false;
-
-                    if (camera.gameObject.activeSelf)
-                    {
-                        camera.gameObject.SetActive(false);
-                    }
-                }
-            }
-        }
     }
 }
