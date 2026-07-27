@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbySceneLoader : MonoBehaviour, ISteamLobbySceneLoader, ISteamLobbyTransitionScope, ISceneLoadContext
+    public class SteamLobbySceneLoader : MonoBehaviour, ISteamLobbySceneLoader, ISteamLobbyTransitionScope, ISceneLoadContext, ILobbySceneTransitionController
     {
         [Serializable]
         private class SceneCatalogSettings
@@ -67,6 +67,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool isApplicationQuitting;
         private int lobbyTransitionScopeCount;
         private string lobbySceneName;
+        private string loadedLobbySceneName;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -138,9 +139,81 @@ namespace Koiusa.SteamMultiRuntime
                     return false;
                 }
 
+                loadedLobbySceneName = lobbySceneRef;
                 await UnloadDefaultSceneOnEnteredAsync();
                 return true;
             });
+        }
+
+        public async Task<bool> SwitchLobbySceneAsync(string previousSceneName)
+        {
+            if (!lobbyScenePolicy.loadOnEntered || string.IsNullOrWhiteSpace(lobbySceneName))
+            {
+                await UnloadDefaultSceneOnEnteredAsync();
+                return true;
+            }
+
+            var lobbySceneRef = lobbySceneName;
+            return await ExecuteWithLoadingScopeAsync(async () =>
+            {
+                var scenesToUnload = GetLoadedStageScenesExcept(lobbySceneRef);
+                AddSceneReferenceIfMissing(scenesToUnload, loadedLobbySceneName, lobbySceneRef);
+                AddSceneReferenceIfMissing(scenesToUnload, previousSceneName, lobbySceneRef);
+
+                var loaded = await SceneLoadUtility.SwitchPresentationSceneAsync(
+                    lobbySceneRef,
+                    scenesToUnload,
+                    DisableCamerasInLoadedScenes,
+                    this,
+                    nameof(SteamLobbySceneLoader));
+                if (!loaded)
+                {
+                    return false;
+                }
+
+                loadedLobbySceneName = lobbySceneRef;
+                await UnloadDefaultSceneOnEnteredAsync();
+                return true;
+            });
+        }
+
+        private List<string> GetLoadedStageScenesExcept(string targetSceneReference)
+        {
+            var loadedScenes = new List<string>();
+            foreach (var stageSceneName in CreatableStageSceneNames)
+            {
+                if (SceneLoadUtility.AreSameSceneReference(stageSceneName, targetSceneReference))
+                {
+                    continue;
+                }
+
+                var scene = SceneUtilityEx.GetLoadedScene(stageSceneName);
+                if (scene.IsValid() && scene.isLoaded)
+                {
+                    loadedScenes.Add(stageSceneName);
+                }
+            }
+
+            return loadedScenes;
+        }
+
+        private static void AddSceneReferenceIfMissing(List<string> scenes, string sceneReference, string targetSceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference)
+                || SceneLoadUtility.AreSameSceneReference(sceneReference, targetSceneReference))
+            {
+                return;
+            }
+
+            foreach (var scene in scenes)
+            {
+                if (SceneLoadUtility.AreSameSceneReference(scene, sceneReference))
+                {
+                    return;
+                }
+            }
+
+            scenes.Add(sceneReference);
         }
 
         private async Task UnloadDefaultSceneOnEnteredAsync()
@@ -178,7 +251,16 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            await SceneLoadUtility.UnloadSceneAsync(sceneNameToUnload);
+            var scenesToUnload = GetLoadedStageScenesExcept(string.Empty);
+            AddSceneReferenceIfMissing(scenesToUnload, loadedLobbySceneName, string.Empty);
+            AddSceneReferenceIfMissing(scenesToUnload, sceneNameToUnload, string.Empty);
+
+            foreach (var sceneReference in scenesToUnload)
+            {
+                await SceneLoadUtility.UnloadSceneAsync(sceneReference);
+            }
+
+            loadedLobbySceneName = string.Empty;
         }
 
         public void LoadDefaultSceneOnLeft()

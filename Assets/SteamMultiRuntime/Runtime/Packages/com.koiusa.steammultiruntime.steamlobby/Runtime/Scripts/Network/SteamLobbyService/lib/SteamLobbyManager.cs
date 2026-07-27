@@ -43,10 +43,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private readonly List<Lobby> lobbyCache = new List<Lobby>();
         private readonly SemaphoreSlim lobbyRefreshGate = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim lobbyTransitionGate = new SemaphoreSlim(1, 1);
         private readonly LobbyState lobbyState = new LobbyState();
         private readonly SteamConnection steamConnection;
         private readonly ISteamLobbySceneLoader sceneLoader;
         private readonly ISteamLobbyTransitionScope transitionScope;
+        private readonly INetworkSessionController networkSession;
+        private readonly ILobbySceneTransitionController sceneTransitionController;
         private int defaultMaxPlayers = 4;
         private Action onStateChanged;
         private Action<Lobby> onLobbyCreated;
@@ -60,10 +63,6 @@ namespace Koiusa.SteamMultiRuntime
         private Action<Lobby> onLobbyHostChanged;
         private Func<bool> onEnsureReady;
         private Func<Task<bool>> onTryLoadLobbySceneAsync;
-        private Func<bool> onStartNetworkHost;
-        private Func<bool> onStartNetworkServer;
-        private Func<ulong, bool> onStartNetworkClient;
-        private Action onShutdownNetwork;
 
         public bool IsInLobby => lobbyState.CurrentLobby.HasValue;
         public ulong CurrentLobbyId => lobbyState.CurrentLobby?.Id ?? 0;
@@ -92,11 +91,13 @@ namespace Koiusa.SteamMultiRuntime
             return (Mathf.Max(0, lobby.MemberCount - offset), Mathf.Max(1, lobby.MaxMembers - offset));
         }
 
-        public SteamLobbyManager(SteamConnection steamConnection, ISteamLobbySceneLoader sceneLoader)
+        public SteamLobbyManager(SteamConnection steamConnection, ISteamLobbySceneLoader sceneLoader, INetworkSessionController networkSession)
         {
             this.steamConnection = steamConnection;
             this.sceneLoader = sceneLoader;
             this.transitionScope = sceneLoader as ISteamLobbyTransitionScope;
+            this.networkSession = networkSession;
+            this.sceneTransitionController = sceneLoader as ILobbySceneTransitionController;
         }
 
         public void SetDefaultMaxPlayers(int maxPlayers)
@@ -116,11 +117,7 @@ namespace Koiusa.SteamMultiRuntime
             Action<Lobby> lobbySessionClosed,
             Action<Lobby> lobbyHostChanged,
             Func<bool> ensureReady,
-            Func<Task<bool>> tryLoadLobbySceneAsync,
-            Func<bool> startNetworkHost,
-            Func<bool> startNetworkServer,
-            Func<ulong, bool> startNetworkClient,
-            Action shutdownNetwork)
+            Func<Task<bool>> tryLoadLobbySceneAsync)
         {
             onStateChanged = stateChanged;
             onLobbyCreated = lobbyCreated;
@@ -134,22 +131,19 @@ namespace Koiusa.SteamMultiRuntime
             onLobbyHostChanged = lobbyHostChanged;
             onEnsureReady = ensureReady;
             onTryLoadLobbySceneAsync = tryLoadLobbySceneAsync;
-            onStartNetworkHost = startNetworkHost;
-            onStartNetworkServer = startNetworkServer;
-            onStartNetworkClient = startNetworkClient;
-            onShutdownNetwork = shutdownNetwork;
         }
 
         public async Task<bool> CreateLobbyAsync(string lobbyName, string stageSceneName)
         {
+            await lobbyTransitionGate.WaitAsync();
             transitionScope?.BeginLobbyTransitionScope();
 
             try
             {
+                var previousSceneName = IsInLobby ? sceneLoader?.LobbySceneName : string.Empty;
                 if (IsInLobby)
                 {
                     await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: false);
-                    await Task.Yield();
                 }
 
                 ApplySelectedStageScene(stageSceneName);
@@ -162,15 +156,17 @@ namespace Koiusa.SteamMultiRuntime
                     return false;
                 }
 
-                if (!await TryLoadLobbySceneOnEnterAsync())
+                networkSession?.TryActivateBootstrapScene((sceneLoader as ISceneLoadContext)?.DefaultSceneName);
+                if (networkSession == null || !networkSession.TryStartHost())
                 {
-                    FailAndLeaveLobby(lobby.Value, unloadLobbyScene: false);
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: true);
                     return false;
                 }
 
-                if (!onStartNetworkHost?.Invoke() ?? false)
+                if (!await networkSession.SwitchStageSceneAsync(sceneLoader?.LobbySceneName, string.Empty)
+                    || !await TrySwitchLobbySceneAsync(string.Empty))
                 {
-                    FailAndLeaveLobby(lobby.Value, unloadLobbyScene: true);
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: true);
                     return false;
                 }
 
@@ -183,39 +179,59 @@ namespace Koiusa.SteamMultiRuntime
             finally
             {
                 transitionScope?.EndLobbyTransitionScope();
+                lobbyTransitionGate.Release();
             }
         }
 
         public async Task<bool> CreateLobbyAsServerAsync(string lobbyName, string stageSceneName)
         {
-            ApplySelectedStageScene(stageSceneName);
+            await lobbyTransitionGate.WaitAsync();
+            transitionScope?.BeginLobbyTransitionScope();
 
-            // +1 to account for the dedicated server itself occupying one Steam lobby slot
-            var maxPlayers = Mathf.Max(2, defaultMaxPlayers) + 1;
-            var lobby = await SteamMatchmaking.CreateLobbyAsync(maxPlayers);
-
-            if (!lobby.HasValue)
+            try
             {
-                return false;
-            }
+                var previousSceneName = IsInLobby ? sceneLoader?.LobbySceneName : string.Empty;
+                if (IsInLobby)
+                {
+                    await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: false);
+                }
 
-            if (!await TryLoadLobbySceneOnEnterAsync())
+                ApplySelectedStageScene(stageSceneName);
+
+                // +1 to account for the dedicated server itself occupying one Steam lobby slot
+                var maxPlayers = Mathf.Max(2, defaultMaxPlayers) + 1;
+                var lobby = await SteamMatchmaking.CreateLobbyAsync(maxPlayers);
+
+                if (!lobby.HasValue)
+                {
+                    return false;
+                }
+
+                networkSession?.TryActivateBootstrapScene((sceneLoader as ISceneLoadContext)?.DefaultSceneName);
+                if (networkSession == null || !networkSession.TryStartServer())
+                {
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: true);
+                    return false;
+                }
+
+                if (!await networkSession.SwitchStageSceneAsync(sceneLoader?.LobbySceneName, string.Empty)
+                    || !await TrySwitchLobbySceneAsync(string.Empty))
+                {
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: true);
+                    return false;
+                }
+
+                ConfigureLobbyAsServer(lobby.Value, lobbyName, stageSceneName);
+                BeginLobbyEntry(lobby.Value, SteamClient.SteamId);
+                onLobbyCreated?.Invoke(lobby.Value);
+                await RefreshLobbiesAsync();
+                return true;
+            }
+            finally
             {
-                FailAndLeaveLobby(lobby.Value, unloadLobbyScene: false);
-                return false;
+                transitionScope?.EndLobbyTransitionScope();
+                lobbyTransitionGate.Release();
             }
-
-            if (!onStartNetworkServer?.Invoke() ?? false)
-            {
-                FailAndLeaveLobby(lobby.Value, unloadLobbyScene: true);
-                return false;
-            }
-
-            ConfigureLobbyAsServer(lobby.Value, lobbyName, stageSceneName);
-            BeginLobbyEntry(lobby.Value, SteamClient.SteamId);
-            onLobbyCreated?.Invoke(lobby.Value);
-            await RefreshLobbiesAsync();
-            return true;
         }
 
         public async Task<bool> JoinLobbyAsync(ulong lobbyId)
@@ -226,14 +242,15 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
+            await lobbyTransitionGate.WaitAsync();
             transitionScope?.BeginLobbyTransitionScope();
 
             try
             {
+                var previousSceneName = IsInLobby ? sceneLoader?.LobbySceneName : string.Empty;
                 if (IsInLobby)
                 {
                     await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: false);
-                    await Task.Yield();
                 }
 
                 var lobby = await SteamMatchmaking.JoinLobbyAsync((SteamId)lobbyId);
@@ -249,19 +266,22 @@ namespace Koiusa.SteamMultiRuntime
 
                 if (!IsValidClientTarget(hostSteamId))
                 {
-                    FailAndLeaveLobby(lobby.Value, unloadLobbyScene: false);
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: false);
                     return false;
                 }
 
-                if (!onStartNetworkClient?.Invoke(hostSteamId) ?? false)
+                networkSession?.TryActivateBootstrapScene((sceneLoader as ISceneLoadContext)?.DefaultSceneName);
+                if (networkSession == null || !networkSession.TryStartClient(hostSteamId))
                 {
-                    FailAndLeaveLobby(lobby.Value, unloadLobbyScene: false);
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: false);
                     return false;
                 }
 
-                if (!await TryLoadLobbySceneOnEnterAsync())
+                if (!await networkSession.WaitForClientStageSceneAsync(sceneLoader?.LobbySceneName)
+                    || !await TrySwitchLobbySceneAsync(string.Empty))
                 {
-                    // Don't fail, scene loading errors shouldn't prevent join
+                    await FailAndLeaveLobbyAsync(lobby.Value, unloadLobbyScene: false);
+                    return false;
                 }
 
                 BeginLobbyEntry(lobby.Value, hostSteamId);
@@ -272,12 +292,36 @@ namespace Koiusa.SteamMultiRuntime
             finally
             {
                 transitionScope?.EndLobbyTransitionScope();
+                lobbyTransitionGate.Release();
             }
         }
 
         public async Task LeaveCurrentLobbyAsync()
         {
-            await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: true);
+            await lobbyTransitionGate.WaitAsync();
+            try
+            {
+                await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: true);
+            }
+            finally
+            {
+                lobbyTransitionGate.Release();
+            }
+        }
+
+        public async Task<bool> ChangeHostedLobbyStageAsync(string stageSceneName)
+        {
+            await lobbyTransitionGate.WaitAsync();
+            transitionScope?.BeginLobbyTransitionScope();
+            try
+            {
+                return await ChangeHostedLobbyStageCoreAsync(stageSceneName);
+            }
+            finally
+            {
+                transitionScope?.EndLobbyTransitionScope();
+                lobbyTransitionGate.Release();
+            }
         }
 
         public async Task RefreshLobbiesAsync()
@@ -336,6 +380,15 @@ namespace Koiusa.SteamMultiRuntime
             UpsertLobbyCache(lobby);
             onLobbyDataChanged?.Invoke(lobby);
             NotifyStateChanged();
+            if (!lobbyState.IsHost)
+            {
+                var nextStageSceneName = lobby.GetData(LobbyDataKeys.StageScene);
+                if (!string.IsNullOrWhiteSpace(nextStageSceneName)
+                    && !SceneLoadUtility.AreSameSceneReference(sceneLoader?.LobbySceneName, nextStageSceneName))
+                {
+                    ApplySelectedStageScene(nextStageSceneName);
+                }
+            }
             ValidateCurrentLobbyState(lobby);
         }
 
@@ -366,7 +419,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public ulong GetHostSteamId() => lobbyState.HostSteamId;
 
-        private async Task LeaveCurrentLobbyInternalAsync(bool shutdownNetwork, bool refreshLobbies)
+        private async Task LeaveCurrentLobbyInternalAsync(bool shutdownNetwork, bool refreshLobbies, bool preserveScene = false)
         {
             if (!lobbyState.CurrentLobby.HasValue)
             {
@@ -380,30 +433,41 @@ namespace Koiusa.SteamMultiRuntime
             lobbyState.Clear();
             NotifyStateChanged();
 
-            if (sceneLoader != null)
+            try
             {
-                await sceneLoader.HandleLobbyLeftAsync(previousLobbySceneName);
-            }
-            onLobbyLeft?.Invoke();
+                if (shutdownNetwork && networkSession != null)
+                {
+                    if (wasHost && !string.IsNullOrWhiteSpace(previousLobbySceneName))
+                    {
+                        await networkSession.UnloadStageSceneAsync(previousLobbySceneName);
+                    }
 
-            if (wasHost && currentLobby.HasValue)
-            {
-                CloseLobby(currentLobby.Value);
-            }
+                    await networkSession.StopAsync();
+                }
 
-            if (shutdownNetwork)
-            {
-                onShutdownNetwork?.Invoke();
+                if (!preserveScene && sceneLoader != null)
+                {
+                    await sceneLoader.HandleLobbyLeftAsync(previousLobbySceneName);
+                }
             }
-
-            if (currentLobby.HasValue)
+            finally
             {
-                currentLobby.Value.Leave();
-            }
+                onLobbyLeft?.Invoke();
 
-            if (refreshLobbies)
-            {
-                await RefreshLobbiesAsync();
+                if (wasHost && currentLobby.HasValue)
+                {
+                    CloseLobby(currentLobby.Value);
+                }
+
+                if (currentLobby.HasValue)
+                {
+                    currentLobby.Value.Leave();
+                }
+
+                if (refreshLobbies)
+                {
+                    await RefreshLobbiesAsync();
+                }
             }
         }
 
@@ -480,6 +544,52 @@ namespace Koiusa.SteamMultiRuntime
             return await (onTryLoadLobbySceneAsync?.Invoke() ?? Task.FromResult(true));
         }
 
+        private async Task<bool> TrySwitchLobbySceneAsync(string previousSceneName)
+        {
+            if (sceneTransitionController != null)
+            {
+                return await sceneTransitionController.SwitchLobbySceneAsync(previousSceneName);
+            }
+
+            return await TryLoadLobbySceneOnEnterAsync();
+        }
+
+        private async Task<bool> ChangeHostedLobbyStageCoreAsync(string stageSceneName)
+        {
+            if (!lobbyState.CurrentLobby.HasValue || !lobbyState.IsHost)
+            {
+                return false;
+            }
+
+            var previousSceneName = sceneLoader?.LobbySceneName ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(stageSceneName)
+                && SceneLoadUtility.AreSameSceneReference(previousSceneName, stageSceneName))
+            {
+                return true;
+            }
+
+            ApplySelectedStageScene(stageSceneName);
+            if (networkSession == null
+                || !await networkSession.SwitchStageSceneAsync(sceneLoader?.LobbySceneName, previousSceneName))
+            {
+                sceneLoader?.SetLobbySceneName(previousSceneName);
+                return false;
+            }
+
+            if (!await TrySwitchLobbySceneAsync(previousSceneName))
+            {
+                sceneLoader?.SetLobbySceneName(previousSceneName);
+                return false;
+            }
+
+            var lobby = lobbyState.CurrentLobby.Value;
+            lobby.SetData(LobbyDataKeys.StageScene, stageSceneName);
+            lobbyState.CurrentLobby = lobby;
+            UpsertLobbyCache(lobby);
+            PublishLobbyCache();
+            return true;
+        }
+
         private void NotifyStateChanged()
         {
             onStateChanged?.Invoke();
@@ -513,12 +623,20 @@ namespace Koiusa.SteamMultiRuntime
             lobby.SetData(LobbyDataKeys.SessionState, LobbySessionStates.Closed);
         }
 
-        private void FailAndLeaveLobby(Lobby lobby, bool unloadLobbyScene)
+        private async Task FailAndLeaveLobbyAsync(Lobby lobby, bool unloadLobbyScene)
         {
             lobby.Leave();
+            if (networkSession != null)
+            {
+                await networkSession.StopAsync();
+            }
+
             if (unloadLobbyScene)
             {
-                sceneLoader?.UnloadLobbySceneOnLeft();
+                if (sceneLoader != null)
+                {
+                    await sceneLoader.HandleLobbyLeftAsync(sceneLoader.LobbySceneName);
+                }
             }
         }
 

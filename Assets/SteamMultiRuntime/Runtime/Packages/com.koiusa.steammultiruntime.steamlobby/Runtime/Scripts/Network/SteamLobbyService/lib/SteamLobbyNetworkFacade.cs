@@ -4,12 +4,15 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal sealed class SteamLobbyNetworkFacade
+    internal sealed class SteamLobbyNetworkFacade : INetworkSessionController
     {
         private readonly bool useAdditiveClientSynchronization;
+
+        public event Action Stopping;
 
         public SteamLobbyNetworkFacade(bool useAdditiveClientSynchronization)
         {
@@ -45,13 +48,19 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            if (networkManager.IsListening)
+            {
+                return networkManager.IsHost;
+            }
+
+            ConfigureClientSynchronizationMode(networkManager);
             var started = networkManager.StartHost();
             if (!started)
             {
                 return false;
             }
 
-            ConfigureClientSynchronizationMode(networkManager);
+            EnableActiveSceneSynchronization(networkManager);
             return true;
         }
 
@@ -63,6 +72,11 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            if (networkManager.IsListening)
+            {
+                return networkManager.IsServer && !networkManager.IsClient;
+            }
+
             // Start server without the server itself being a player
             // Set server to not be part of the connected clients count
             if (!networkManager.StartServer())
@@ -70,6 +84,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            EnableActiveSceneSynchronization(networkManager);
             return true;
         }
 
@@ -87,17 +102,227 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            if (networkManager.IsListening)
+            {
+                return networkManager.IsClient && !networkManager.IsServer;
+            }
+
             transport.targetSteamId = hostSteamId;
+            ConfigureClientSynchronizationMode(networkManager);
             return networkManager.StartClient();
         }
 
-        public void ShutdownIfListening()
+        public Task StopAsync()
         {
             var networkManager = NetworkManager.Singleton;
-            if (networkManager != null && networkManager.IsListening)
+            if (networkManager == null || !networkManager.IsListening)
             {
-                networkManager.Shutdown();
+                return Task.CompletedTask;
             }
+
+            Stopping?.Invoke();
+            var completion = new TaskCompletionSource<bool>();
+            var wasServer = networkManager.IsServer;
+
+            void OnStopped(bool _)
+            {
+                if (wasServer)
+                    networkManager.OnServerStopped -= OnStopped;
+                else
+                    networkManager.OnClientStopped -= OnStopped;
+                completion.TrySetResult(true);
+            }
+
+            if (wasServer)
+                networkManager.OnServerStopped += OnStopped;
+            else
+                networkManager.OnClientStopped += OnStopped;
+
+            networkManager.Shutdown(discardMessageQueue: true);
+            return completion.Task;
+        }
+
+        public async Task<bool> SwitchStageSceneAsync(string targetSceneReference, string previousSceneReference)
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || !networkManager.IsListening || !networkManager.IsServer || networkManager.SceneManager == null)
+            {
+                return false;
+            }
+
+            var targetSceneName = SceneUtilityEx.ToSceneName(targetSceneReference);
+            if (string.IsNullOrWhiteSpace(targetSceneName))
+            {
+                return false;
+            }
+
+            var targetScene = SceneUtilityEx.GetLoadedScene(targetSceneReference);
+            if (!targetScene.IsValid() || !targetScene.isLoaded)
+            {
+                if (!await ExecuteSceneEventAsync(
+                        networkManager.SceneManager,
+                        targetSceneName,
+                        SceneEventType.LoadEventCompleted,
+                        () => networkManager.SceneManager.LoadScene(targetSceneName, LoadSceneMode.Additive)))
+                {
+                    return false;
+                }
+
+                targetScene = SceneUtilityEx.GetLoadedScene(targetSceneReference);
+            }
+
+            if (!targetScene.IsValid() || !targetScene.isLoaded)
+            {
+                return false;
+            }
+
+            SceneManager.SetActiveScene(targetScene);
+
+            var previousScene = SceneUtilityEx.GetLoadedScene(previousSceneReference);
+            if (previousScene.IsValid()
+                && previousScene.isLoaded
+                && previousScene != targetScene)
+            {
+                if (!await ExecuteSceneEventAsync(
+                        networkManager.SceneManager,
+                        previousScene.name,
+                        SceneEventType.UnloadEventCompleted,
+                        () => networkManager.SceneManager.UnloadScene(previousScene)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> UnloadStageSceneAsync(string sceneReference)
+        {
+            var networkManager = NetworkManager.Singleton;
+            var scene = SceneUtilityEx.GetLoadedScene(sceneReference);
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return true;
+            }
+
+            if (networkManager == null || !networkManager.IsListening || !networkManager.IsServer || networkManager.SceneManager == null)
+            {
+                return false;
+            }
+
+            if (SceneManager.GetActiveScene() == scene)
+            {
+                for (var index = 0; index < SceneManager.sceneCount; index++)
+                {
+                    var fallbackScene = SceneManager.GetSceneAt(index);
+                    if (fallbackScene.IsValid() && fallbackScene.isLoaded && fallbackScene != scene)
+                    {
+                        SceneManager.SetActiveScene(fallbackScene);
+                        break;
+                    }
+                }
+            }
+
+            return await ExecuteSceneEventAsync(
+                networkManager.SceneManager,
+                scene.name,
+                SceneEventType.UnloadEventCompleted,
+                () => networkManager.SceneManager.UnloadScene(scene));
+        }
+
+        public Task<bool> WaitForClientStageSceneAsync(string sceneReference)
+        {
+            var loadedScene = SceneUtilityEx.GetLoadedScene(sceneReference);
+            if (loadedScene.IsValid() && loadedScene.isLoaded)
+            {
+                return Task.FromResult(true);
+            }
+
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || !networkManager.IsClient || networkManager.SceneManager == null)
+            {
+                return Task.FromResult(false);
+            }
+
+            var sceneName = SceneUtilityEx.ToSceneName(sceneReference);
+            var completion = new TaskCompletionSource<bool>();
+
+            void OnSceneEvent(SceneEvent sceneEvent)
+            {
+                if (sceneEvent.SceneEventType != SceneEventType.LoadComplete
+                    || sceneEvent.ClientId != networkManager.LocalClientId
+                    || !string.Equals(sceneEvent.SceneName, sceneName, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                networkManager.SceneManager.OnSceneEvent -= OnSceneEvent;
+                completion.TrySetResult(true);
+            }
+
+            networkManager.SceneManager.OnSceneEvent += OnSceneEvent;
+            return completion.Task;
+        }
+
+        private static async Task<bool> ExecuteSceneEventAsync(
+            NetworkSceneManager sceneManager,
+            string sceneName,
+            SceneEventType completionType,
+            Func<SceneEventProgressStatus> beginOperation)
+        {
+            var completion = new TaskCompletionSource<bool>();
+
+            void OnSceneEvent(SceneEvent sceneEvent)
+            {
+                if (sceneEvent.SceneEventType != completionType
+                    || !string.Equals(sceneEvent.SceneName, sceneName, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                sceneManager.OnSceneEvent -= OnSceneEvent;
+                completion.TrySetResult(sceneEvent.ClientsThatTimedOut == null || sceneEvent.ClientsThatTimedOut.Count == 0);
+            }
+
+            sceneManager.OnSceneEvent += OnSceneEvent;
+            var status = beginOperation();
+            if (status != SceneEventProgressStatus.Started)
+            {
+                sceneManager.OnSceneEvent -= OnSceneEvent;
+                return false;
+            }
+
+            return await completion.Task;
+        }
+
+        private static void EnableActiveSceneSynchronization(NetworkManager networkManager)
+        {
+            if (networkManager.SceneManager != null)
+            {
+                networkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
+            }
+        }
+
+        public bool TryActivateBootstrapScene(string excludedPresentationSceneReference)
+        {
+            for (var index = 0; index < SceneManager.sceneCount; index++)
+            {
+                var scene = SceneManager.GetSceneAt(index);
+                if (!scene.IsValid()
+                    || !scene.isLoaded
+                    || SceneLoadUtility.AreSameSceneReference(scene.path, excludedPresentationSceneReference)
+                    || SceneLoadUtility.AreSameSceneReference(scene.name, excludedPresentationSceneReference))
+                {
+                    continue;
+                }
+
+                if (SceneManager.SetActiveScene(scene))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool TryGetLocalClientId(out ulong localClientId)

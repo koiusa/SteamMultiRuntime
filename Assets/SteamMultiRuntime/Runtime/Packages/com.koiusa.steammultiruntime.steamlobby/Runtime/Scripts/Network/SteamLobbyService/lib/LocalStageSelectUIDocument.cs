@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TNRD;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
 
@@ -152,11 +150,16 @@ namespace Koiusa.SteamMultiRuntime
 
             try
             {
-                // ステージ一覧にある既存のロード済みシーンをすべてアンロード（読み込み対象は除く）
-                await UnloadOtherStagesAsync(stageName);
-
-                // 新しいシーンを読み込む
-                await LoadStageSceneAsync(stageName);
+                var loaded = await SceneLoadUtility.SwitchPresentationSceneAsync(
+                    stageName,
+                    SceneLoader.CreatableStageSceneNames,
+                    true,
+                    this,
+                    nameof(LocalStageSelectUIDocument));
+                if (!loaded)
+                {
+                    Debug.LogError($"LocalStageSelectUIDocument: Failed to load stage '{stageName}'.");
+                }
             }
             catch (Exception ex)
             {
@@ -167,69 +170,6 @@ namespace Koiusa.SteamMultiRuntime
                 isLoading = false;
                 LoadingFinished?.Invoke();
             }
-        }
-
-        private async Task UnloadOtherStagesAsync(string exceptStageName)
-        {
-            if (SceneLoader == null)
-            {
-                return;
-            }
-
-            foreach (var name in SceneLoader.CreatableStageSceneNames)
-            {
-                if (name == exceptStageName)
-                {
-                    continue;
-                }
-
-                var scene = SceneManager.GetSceneByName(name);
-                if (!scene.IsValid() || !scene.isLoaded)
-                {
-                    continue;
-                }
-
-                var asyncOp = SceneManager.UnloadSceneAsync(scene);
-                if (asyncOp == null)
-                {
-                    continue;
-                }
-
-                await SceneUtilityEx.WaitForOperationAsync(asyncOp);
-            }
-        }
-
-        private async Task LoadStageSceneAsync(string stageName)
-        {
-            // 同じシーンが既にロード済みの場合は追加ロードをスキップする
-            // （UnloadOtherStagesAsync はロード対象をアンロードしないため、
-            //   同一シーンを再選択すると二重にロードされてしまう）
-            var existingScene = SceneManager.GetSceneByName(stageName);
-            if (!existingScene.IsValid() || !existingScene.isLoaded)
-            {
-                var asyncOp = SceneManager.LoadSceneAsync(stageName, LoadSceneMode.Additive);
-
-                if (asyncOp == null)
-                {
-                    throw new InvalidOperationException($"Failed to start loading scene '{stageName}'");
-                }
-
-                await SceneUtilityEx.WaitForOperationAsync(asyncOp);
-            }
-
-            var loadedScene = SceneManager.GetSceneByName(stageName);
-            if (!loadedScene.IsValid() || !loadedScene.isLoaded)
-            {
-                Debug.LogWarning($"LocalStageSelectUIDocument: Loaded scene '{stageName}' could not be set as active.");
-                return;
-            }
-
-            // ロードしたシーンのカメラを無効化する
-            SceneLoadUtility.ApplyLoadedSceneCameraSettings(loadedScene, disableCamerasInLoadedScenes: true);
-
-            // ロードしたシーンをアクティブに設定する
-            // Instantiate はアクティブシーンに生成するため、NPCなどが正しいシーンに配置される
-            SceneManager.SetActiveScene(loadedScene);
         }
 
         /// <summary>

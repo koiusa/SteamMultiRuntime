@@ -19,9 +19,10 @@ namespace Koiusa.SteamMultiRuntime
         {
             ResolveContext();
 
-            if (_cinemachineCamera == null)
+            var followCamera = GetComponent<CinemachineCamera>();
+            if (followCamera != null)
             {
-                _cinemachineCamera = GetComponent<CinemachineCamera>();
+                _cinemachineCamera = followCamera;
             }
 
             if (_cinemachineCamera == null)

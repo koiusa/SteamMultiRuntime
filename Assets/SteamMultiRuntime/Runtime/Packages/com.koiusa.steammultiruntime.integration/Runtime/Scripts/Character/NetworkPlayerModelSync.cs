@@ -1,6 +1,7 @@
 using Koiusa.SteamMultiRuntime;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime.Network
 {
@@ -28,12 +29,23 @@ namespace Koiusa.SteamMultiRuntime.Network
             PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
             PlayerModelSyncUtility.EnsurePrefabLoader(gameObject, ref prefabLoaderBehaviour);
             SelectedModelIndex.OnValueChanged += OnModelChanged;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
             ApplyCurrentModel();
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            base.OnNetworkDespawn();
         }
 
         private new void OnDestroy()
         {
             SelectedModelIndex.OnValueChanged -= OnModelChanged;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             base.OnDestroy();
         }
 
@@ -51,6 +63,27 @@ namespace Koiusa.SteamMultiRuntime.Network
 
         private void OnModelChanged(int oldIndex, int newIndex)
         {
+            ApplyCurrentModel();
+        }
+
+        private void OnSceneLoaded(Scene _, LoadSceneMode __)
+        {
+            ApplyCurrentModelIfMissing();
+        }
+
+        private void OnActiveSceneChanged(Scene _, Scene __)
+        {
+            ApplyCurrentModelIfMissing();
+        }
+
+        private void ApplyCurrentModelIfMissing()
+        {
+            var loader = prefabLoaderBehaviour as ICharacterPrefabLoader;
+            if (loader != null && loader.IsCharacterReady)
+            {
+                return;
+            }
+
             ApplyCurrentModel();
         }
 

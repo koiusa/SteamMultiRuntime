@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,14 +40,58 @@ namespace Koiusa.SteamMultiRuntime
 
         public static async Task<bool> LoadPresentationSceneAsync(string sceneReference, ISceneLoadContext context, UnityEngine.Object owner, string logPrefix)
         {
+            return await LoadPresentationSceneWithCameraPolicyAsync(sceneReference, context.DisableCamerasInLoadedScenes, owner, logPrefix);
+        }
+
+        private static async Task<bool> LoadPresentationSceneWithCameraPolicyAsync(string sceneReference, bool disableCamerasInLoadedScenes, UnityEngine.Object owner, string logPrefix)
+        {
+            var existingScene = SceneUtilityEx.GetLoadedScene(sceneReference);
+            if (existingScene.IsValid()
+                && existingScene.isLoaded
+                && SceneManager.GetActiveScene() == existingScene)
+            {
+                return true;
+            }
+
             if (!await LoadSceneAdditiveAsync(sceneReference, owner, logPrefix))
             {
                 return false;
             }
 
             var loadedScene = SceneUtilityEx.GetLoadedScene(sceneReference);
-            ApplyLoadedSceneCameraSettings(loadedScene, context.DisableCamerasInLoadedScenes);
+            ApplyLoadedSceneCameraSettings(loadedScene, disableCamerasInLoadedScenes);
             ActivatePresentationScene(loadedScene);
+            return true;
+        }
+
+        public static async Task<bool> SwitchPresentationSceneAsync(
+            string targetSceneReference,
+            IEnumerable<string> previousSceneReferences,
+            bool disableCamerasInLoadedScenes,
+            UnityEngine.Object owner,
+            string logPrefix)
+        {
+            if (!await LoadPresentationSceneWithCameraPolicyAsync(targetSceneReference, disableCamerasInLoadedScenes, owner, logPrefix))
+            {
+                return false;
+            }
+
+            if (previousSceneReferences == null)
+            {
+                return true;
+            }
+
+            foreach (var previousSceneReference in previousSceneReferences)
+            {
+                if (string.IsNullOrWhiteSpace(previousSceneReference)
+                    || AreSameSceneReference(previousSceneReference, targetSceneReference))
+                {
+                    continue;
+                }
+
+                await UnloadSceneAsync(previousSceneReference);
+            }
+
             return true;
         }
 
@@ -58,7 +103,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var operation = SceneManager.UnloadSceneAsync(sceneReference);
+            var operation = SceneManager.UnloadSceneAsync(scene);
             if (operation == null)
             {
                 return false;

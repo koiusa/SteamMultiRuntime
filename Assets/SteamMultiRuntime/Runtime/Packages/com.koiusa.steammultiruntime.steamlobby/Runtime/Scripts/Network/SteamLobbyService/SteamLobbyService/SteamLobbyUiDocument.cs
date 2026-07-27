@@ -191,6 +191,13 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            if (lobbyService.IsInLobby && lobbyService.IsHost)
+            {
+                var changed = await lobbyService.ChangeStageAsync(view.SelectedStageSceneName);
+                view.SetInfo(changed ? "Stage changed." : "Stage change failed.");
+                return;
+            }
+
             var created = await lobbyService.CreateLobbyAsync(view.LobbyName, view.SelectedStageSceneName);
             view.SetInfo(created ? "Lobby created." : "Lobby create failed.");
         }

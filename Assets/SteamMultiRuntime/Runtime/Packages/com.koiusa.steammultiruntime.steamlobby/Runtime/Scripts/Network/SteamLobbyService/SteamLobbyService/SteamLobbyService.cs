@@ -28,6 +28,28 @@ namespace Koiusa.SteamMultiRuntime
 
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
 
+        public bool HasLoadedStageScene
+        {
+            get
+            {
+                if (SceneLoader == null)
+                {
+                    return false;
+                }
+
+                foreach (var stageSceneName in SceneLoader.CreatableStageSceneNames)
+                {
+                    var scene = SceneUtilityEx.GetLoadedScene(stageSceneName);
+                    if (scene.IsValid() && scene.isLoaded)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public event Action StateChanged;
         public event Action<Lobby> LobbyCreated;
         public event Action<Lobby> LobbyJoined;
@@ -43,6 +65,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsReady => SteamClient.IsValid;
         public bool IsInLobby => lobbyManager?.IsInLobby ?? false;
+        public bool IsHost => lobbyManager?.IsHost ?? false;
         public string LocalPlayerName => IsReady ? SteamClient.Name : "Not Connected";
         public ulong CurrentLobbyId => lobbyManager?.CurrentLobbyId ?? 0;
         public IReadOnlyList<Lobby> LobbyCache => lobbyManager?.LobbyCache ?? new List<Lobby>();
@@ -85,7 +108,7 @@ namespace Koiusa.SteamMultiRuntime
 
             networkFacade = new SteamLobbyNetworkFacade(useAdditiveClientSynchronization);
 
-            lobbyManager = new SteamLobbyManager(steamConnection, SceneLoader);
+            lobbyManager = new SteamLobbyManager(steamConnection, SceneLoader, networkFacade);
             lobbyManager.SetDefaultMaxPlayers(defaultMaxPlayers);
             lobbyManager.SetCallbacks(
                 NotifyStateChanged,
@@ -99,11 +122,7 @@ namespace Koiusa.SteamMultiRuntime
                 lobby => LobbySessionClosed?.Invoke(lobby),
                 lobby => LobbyHostChanged?.Invoke(lobby),
                 EnsureReady,
-                TryLoadLobbySceneOnEnterAsync,
-                StartNetworkHost,
-                StartNetworkServer,
-                StartNetworkClient,
-                ShutdownNetwork);
+                TryLoadLobbySceneOnEnterAsync);
 
             qualityTracker = new SteamLobbyQualityTracker();
             qualityTracker.Initialize(networkFacade, useAdditiveClientSynchronization);
@@ -112,6 +131,7 @@ namespace Koiusa.SteamMultiRuntime
                 GetCurrentLobbyMembers,
                 ApplyMemberQualitySnapshot,
                 NotifyStateChanged);
+            networkFacade.Stopping += qualityTracker.OnNetworkShutdown;
         }
 
         private void OnEnable()
@@ -175,6 +195,16 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             return success;
+        }
+
+        public async Task<bool> ChangeStageAsync(string stageSceneName)
+        {
+            if (!EnsureReadyOrLog() || lobbyManager == null || !IsInLobby || !IsHost)
+            {
+                return false;
+            }
+
+            return await lobbyManager.ChangeHostedLobbyStageAsync(stageSceneName);
         }
 
         public async Task<bool> JoinLobbyAsync(ulong lobbyId)
@@ -395,27 +425,6 @@ namespace Koiusa.SteamMultiRuntime
         {
             lobbyManager.OnLobbyMemberLeave(lobby, friend);
             qualityTracker.OnMemberLeft();
-        }
-
-        private bool StartNetworkHost()
-        {
-            return networkFacade != null && networkFacade.TryStartHost();
-        }
-
-        private bool StartNetworkServer()
-        {
-            return networkFacade != null && networkFacade.TryStartServer();
-        }
-
-        private bool StartNetworkClient(ulong hostSteamId)
-        {
-            return networkFacade != null && networkFacade.TryStartClient(hostSteamId);
-        }
-
-        private void ShutdownNetwork()
-        {
-            qualityTracker.OnNetworkShutdown();
-            networkFacade?.ShutdownIfListening();
         }
 
         private List<Friend> GetCurrentLobbyMembers()

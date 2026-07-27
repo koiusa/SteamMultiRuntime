@@ -12,9 +12,11 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private SteamLobbyService lobbyService;
 
-        public bool IsActive => lobbyService != null && lobbyService.IsInLobby;
+        public bool IsActive => lobbyService != null && (lobbyService.IsInLobby || lobbyService.HasLoadedStageScene);
 
         public event Action StateChanged;
+
+        private bool wasActive;
 
         private void Awake()
         {
@@ -26,6 +28,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            wasActive = IsActive;
             if (lobbyService != null)
             {
                 lobbyService.StateChanged += OnLobbyStateChanged;
@@ -42,6 +45,19 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnLobbyStateChanged()
         {
+            wasActive = IsActive;
+            StateChanged?.Invoke();
+        }
+
+        private void Update()
+        {
+            var isActive = IsActive;
+            if (isActive == wasActive)
+            {
+                return;
+            }
+
+            wasActive = isActive;
             StateChanged?.Invoke();
         }
     }

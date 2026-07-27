@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using TNRD;
 using Unity.Netcode;
 using UnityEngine;
@@ -27,7 +26,6 @@ namespace Koiusa.SteamMultiRuntime
         private VisualElement splashImageElement;
         private Label splashMessageElement;
         private int splashVisibilityVersion;
-        private const float SceneReadyWaitTimeoutSeconds = 15f;
 
         private void Awake()
         {
@@ -164,111 +162,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var visibilityVersion = splashVisibilityVersion;
-            _ = HideSplashWhenCharacterReadyAsync(visibilityVersion);
-        }
-
-        private async Task HideSplashWhenCharacterReadyAsync(int visibilityVersion)
-        {
-            await WaitForCharacterReadyAsync(visibilityVersion);
-            await WaitForSceneReadyAsync(visibilityVersion);
-
-            if (!isActiveAndEnabled || visibilityVersion != splashVisibilityVersion)
-            {
-                return;
-            }
-
             HideSplashUi();
-        }
-
-        private async Task WaitForCharacterReadyAsync(int visibilityVersion)
-        {
-            ResolveNetworkManager();
-
-            while (isActiveAndEnabled && visibilityVersion == splashVisibilityVersion)
-            {
-                ResolveNetworkManager();
-
-                if (networkManager == null || !networkManager.IsListening)
-                {
-                    return;
-                }
-
-                var playerObject = networkManager.LocalClient?.PlayerObject;
-                if (playerObject == null)
-                {
-                    await Task.Yield();
-                    continue;
-                }
-
-                var runtimeCharacterLoader = playerObject.GetComponent<ICharacterPrefabLoader>();
-                if (runtimeCharacterLoader == null)
-                {
-                    return;
-                }
-
-                if (runtimeCharacterLoader.IsCharacterReady)
-                {
-                    return;
-                }
-
-                await Task.Yield();
-            }
-        }
-
-        private async Task WaitForSceneReadyAsync(int visibilityVersion)
-        {
-            var startedAt = Time.realtimeSinceStartup;
-
-            while (isActiveAndEnabled && visibilityVersion == splashVisibilityVersion)
-            {
-                if (IsSceneReadyForSplashHide())
-                {
-                    return;
-                }
-
-                if (Time.realtimeSinceStartup - startedAt >= SceneReadyWaitTimeoutSeconds)
-                {
-                    return;
-                }
-
-                await Task.Yield();
-            }
-        }
-
-        private bool IsSceneReadyForSplashHide()
-        {
-            var activeScene = SceneManager.GetActiveScene();
-            if (!activeScene.IsValid() || !activeScene.isLoaded)
-            {
-                return false;
-            }
-
-            ResolveSceneLoader();
-            var loader = SceneLoader;
-            if (loader is ISteamLobbyTransitionScope transitionScope && transitionScope.IsLobbyTransitionInProgress)
-            {
-                return false;
-            }
-
-            ResolveNetworkManager();
-            if (networkManager == null || !networkManager.IsListening)
-            {
-                return true;
-            }
-
-            if (loader == null || string.IsNullOrWhiteSpace(loader.LobbySceneName))
-            {
-                return true;
-            }
-
-            var lobbySceneRef = loader.LobbySceneName;
-            if (lobbySceneRef.Contains("/") || lobbySceneRef.EndsWith(".unity", StringComparison.OrdinalIgnoreCase))
-            {
-                return string.Equals(activeScene.path, lobbySceneRef, StringComparison.OrdinalIgnoreCase);
-            }
-
-            return string.Equals(activeScene.name, lobbySceneRef, StringComparison.Ordinal);
         }
 
         private void EnsureSplashUi()
