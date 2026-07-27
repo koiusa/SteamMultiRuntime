@@ -95,7 +95,7 @@ namespace Koiusa.SteamMultiRuntime
             screenAimCursor?.SetVisible(false);
         }
 
-        public WireAimResult SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default)
+        public WireAimResult SetWireAimCursor(Vector2 screenPosition, bool hasScreenPosition, Vector3 origin = default, Vector3 targetPoint = default, bool isAiming = false)
         {
             var canTarget = IsEnabled
                 && wireAttachAction != null
@@ -107,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
             if (screenAimCursor != null)
             {
                 screenAimCursor.SetPosition(screenPosition);
+                screenAimCursor.SetAiming(isAiming);
                 screenAimCursor.SetTargetState(currentWireAimResult.State);
                 screenAimCursor.SetVisible(hasScreenPosition && canTarget);
             }

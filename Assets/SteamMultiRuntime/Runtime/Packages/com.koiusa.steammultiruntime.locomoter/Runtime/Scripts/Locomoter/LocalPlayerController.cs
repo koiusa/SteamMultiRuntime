@@ -158,7 +158,8 @@ namespace Koiusa.SteamMultiRuntime
                 aimPoint,
                 hasAimPoint && showAimCursor,
                 targetRigidbody.worldCenterOfMass,
-                grappleTargetPoint);
+                grappleTargetPoint,
+                grappleHeld);
 
             if (inputState.JumpPressed)
             {

@@ -337,7 +337,8 @@ namespace Koiusa.SteamMultiRuntime
                 aimPoint,
                 hasAimPoint && showAimCursor,
                 targetRigidbody.worldCenterOfMass,
-                grappleTargetPoint);
+                grappleTargetPoint,
+                inputState.GrappleHeld);
             SubmitInput(new PlayerInputSyncState(
                 moveDirection,
                 moveInput,

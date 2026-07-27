@@ -16,7 +16,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private Vector2 screenPosition;
         private bool isVisible;
-        private float shownAt;
+        private bool isAiming;
+        private float aimStartedAt;
         private ScreenAimTargetState targetState = ScreenAimTargetState.Invalid;
 
         public void SetPosition(Vector2 position)
@@ -26,12 +27,17 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetVisible(bool visible)
         {
-            if (visible && !isVisible)
+            isVisible = visible;
+        }
+
+        public void SetAiming(bool aiming)
+        {
+            if (aiming && !isAiming)
             {
-                shownAt = Time.unscaledTime;
+                aimStartedAt = Time.unscaledTime;
             }
 
-            isVisible = visible;
+            isAiming = aiming;
         }
 
         public void SetTargetState(ScreenAimTargetState state)
@@ -47,7 +53,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var guiPosition = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
-            var closeProgress = Mathf.Clamp01((Time.unscaledTime - shownAt - CloseDelay) / CloseDuration);
+            var closeProgress = isAiming
+                ? Mathf.Clamp01((Time.unscaledTime - aimStartedAt - CloseDelay) / CloseDuration)
+                : 0f;
             closeProgress = closeProgress * closeProgress * (3f - 2f * closeProgress);
             var halfSize = Mathf.Lerp(OpenHalfSize, ClosedHalfSize, closeProgress);
             var crossGap = Mathf.Lerp(OpenCrossGap, ClosedCrossGap, closeProgress);
