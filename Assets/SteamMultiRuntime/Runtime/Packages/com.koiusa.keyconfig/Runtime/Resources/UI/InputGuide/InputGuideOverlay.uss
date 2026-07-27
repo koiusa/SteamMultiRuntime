@@ -219,7 +219,7 @@
     border-bottom-right-radius: 28px;
 }
 .gamepad-shoulders, .gamepad-body, .gamepad-dpad-row, .gamepad-face-row { flex-direction: row; }
-.gamepad-shoulders { height: 55px; align-items: flex-start; }
+.gamepad-shoulders { height: 55px; padding-left: 36px; padding-right: 36px; align-items: flex-start; }
 .gamepad-shoulder-stack { width: 62px; align-items: center; }
 .gamepad-flex-spacer, .gamepad-center { flex-grow: 1; }
 .gamepad-body { height: 108px; align-items: center; }
