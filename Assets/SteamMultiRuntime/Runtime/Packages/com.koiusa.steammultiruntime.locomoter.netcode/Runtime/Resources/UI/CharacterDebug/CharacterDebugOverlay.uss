@@ -89,10 +89,60 @@
     height: 30px;
 }
 
-.character-debug-scroll {
+.character-debug-content {
     flex-grow: 1;
     min-height: 0;
     background-color: rgba(15, 23, 42, 0.35);
+    overflow: hidden;
+}
+
+.character-debug-tabs {
+    height: 32px;
+    flex-direction: row;
+    margin-bottom: 6px;
+}
+
+.character-debug-tab {
+    flex-grow: 1;
+    height: 30px;
+    margin-right: 4px;
+    color: rgb(119, 149, 184);
+    background-color: rgba(20, 28, 40, 0.9);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(145, 175, 215, 0.2);
+}
+
+.character-debug-tab:hover {
+    color: rgb(207, 221, 240);
+    background-color: rgba(35, 150, 112, 0.18);
+}
+
+.character-debug-tab.active {
+    color: rgb(245, 255, 251);
+    -unity-font-style: bold;
+    background-color: rgba(35, 150, 112, 0.28);
+    border-bottom-color: rgb(77, 219, 164);
+}
+
+.character-debug-page {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.character-debug-columns {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+}
+
+.character-debug-column {
+    width: 50%;
+    min-width: 0;
+    padding-right: 3px;
+    padding-left: 3px;
 }
 
 .character-debug-section {
@@ -123,4 +173,26 @@
     margin-bottom: 1px;
     -unity-text-align: middle-left;
     white-space: normal;
+}
+
+.character-debug-parameter-title {
+    margin-top: 5px;
+    margin-bottom: 3px;
+    color: rgb(77, 219, 164);
+    -unity-font-style: bold;
+}
+
+.character-debug-parameter-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.character-debug-parameter-grid > .character-debug-value {
+    width: 50%;
+    min-width: 0;
+    margin-left: 0;
+    padding-right: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }

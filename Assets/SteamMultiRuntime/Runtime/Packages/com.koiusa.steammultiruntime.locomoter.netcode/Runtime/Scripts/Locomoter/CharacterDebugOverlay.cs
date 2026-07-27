@@ -55,6 +55,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector2 dragStartPointer;
         private Vector2 dragStartWindow;
         private bool dragging;
+        private int selectedPageIndex;
 
         private sealed class LabelBinding
         {
@@ -175,7 +176,7 @@ namespace Koiusa.SteamMultiRuntime
             launcherButton = new Button(Show) { text = "Show Character Debug" };
             launcherButton.AddToClassList("character-debug-launcher");
             launcherButton.style.position = Position.Absolute;
-            launcherButton.style.left = windowPosition.x;
+            launcherButton.style.right = windowPosition.x;
             launcherButton.style.top = windowPosition.y;
             launcherButton.style.width = launcherButtonSize.x;
             launcherButton.style.height = launcherButtonSize.y;
@@ -183,9 +184,9 @@ namespace Koiusa.SteamMultiRuntime
 
             window = new VisualElement { name = "character-debug-window" };
             window.style.position = Position.Absolute;
-            window.style.left = windowPosition.x;
+            window.style.right = windowPosition.x;
             window.style.top = windowPosition.y;
-            window.style.width = windowWidth;
+            window.style.width = Mathf.Max(windowWidth, 680f);
             window.style.height = windowHeight;
             window.style.paddingLeft = 8;
             window.style.paddingRight = 8;
@@ -231,11 +232,10 @@ namespace Koiusa.SteamMultiRuntime
             refreshButton.AddToClassList("character-debug-refresh");
             window.Add(refreshButton);
 
-            var scrollView = new ScrollView(ScrollViewMode.Vertical);
-            scrollView.AddToClassList("character-debug-scroll");
-            scrollView.style.flexGrow = 1;
-            window.Add(scrollView);
-            content = scrollView.contentContainer;
+            content = new VisualElement();
+            content.AddToClassList("character-debug-content");
+            content.style.flexGrow = 1;
+            window.Add(content);
             BuildContent(GetDisplayedTarget());
             UpdateVisibility();
         }
@@ -253,25 +253,79 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             target.ResolveReferences();
-            AddSection("Target", section =>
+
+            var tabBar = new VisualElement();
+            tabBar.AddToClassList("character-debug-tabs");
+            content.Add(tabBar);
+            var statePage = new VisualElement();
+            statePage.AddToClassList("character-debug-page");
+            var animationPage = new VisualElement();
+            animationPage.AddToClassList("character-debug-page");
+            content.Add(statePage);
+            content.Add(animationPage);
+
+            var stateTab = new Button { text = "STATE" };
+            var animationTab = new Button { text = "ANIMATION" };
+            stateTab.AddToClassList("character-debug-tab");
+            animationTab.AddToClassList("character-debug-tab");
+            tabBar.Add(stateTab);
+            tabBar.Add(animationTab);
+            stateTab.clicked += () => SelectPage(0, statePage, animationPage, stateTab, animationTab);
+            animationTab.clicked += () => SelectPage(1, statePage, animationPage, stateTab, animationTab);
+
+            AddSection(statePage, "Target", section =>
             {
                 BindLabel(section, "Name", target.GetTargetDisplayName);
                 BindLabel(section, "NetworkMode", GetNetworkModeDisplayName);
             });
-            AddSection("Controller State", section => BindControllerLabels(section, target));
-            AddSection("Rigidbody", section => BindRigidbodyLabels(section, target));
-            AddSection("Body Animator", section => BindAnimatorLabels(section, target.targetAnimator, 0, true));
-            AddSection("Face Animation", section => BindFaceAnimatorLabels(section, target));
+
+            var stateColumns = CreateColumns(statePage);
+            AddSection(stateColumns.left, "Controller State", section => BindControllerLabels(section, target));
+            AddSection(stateColumns.right, "Rigidbody", section => BindRigidbodyLabels(section, target));
+
+            var animationColumns = CreateColumns(animationPage);
+            AddSection(animationColumns.left, "Body Animator", section =>
+                BindAnimatorLabels(section, target.targetAnimator, 0, true));
+            AddSection(animationColumns.right, "Face Animation", section => BindFaceAnimatorLabels(section, target));
+            SelectPage(selectedPageIndex, statePage, animationPage, stateTab, animationTab);
             UpdateBoundLabels();
             UpdateTargetSelector(target);
         }
 
-        private void AddSection(string title, Action<VisualElement> build)
+        private static (VisualElement left, VisualElement right) CreateColumns(VisualElement parent)
+        {
+            var columns = new VisualElement();
+            columns.AddToClassList("character-debug-columns");
+            var left = new VisualElement();
+            var right = new VisualElement();
+            left.AddToClassList("character-debug-column");
+            right.AddToClassList("character-debug-column");
+            columns.Add(left);
+            columns.Add(right);
+            parent.Add(columns);
+            return (left, right);
+        }
+
+        private void SelectPage(
+            int pageIndex,
+            VisualElement statePage,
+            VisualElement animationPage,
+            Button stateTab,
+            Button animationTab)
+        {
+            selectedPageIndex = pageIndex;
+            statePage.style.display = pageIndex == 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            animationPage.style.display = pageIndex == 1 ? DisplayStyle.Flex : DisplayStyle.None;
+            stateTab.EnableInClassList("active", pageIndex == 0);
+            animationTab.EnableInClassList("active", pageIndex == 1);
+        }
+
+        private void AddSection(VisualElement parent, string title, Action<VisualElement> build)
         {
             var foldout = new Foldout { text = title, value = true };
             foldout.AddToClassList("character-debug-section");
             foldout.style.marginBottom = 4;
-            content.Add(foldout);
+            parent.Add(foldout);
             build(foldout);
         }
 
@@ -319,11 +373,16 @@ namespace Koiusa.SteamMultiRuntime
             }
             BindAnimatorState(parent, animator, layer);
             if (!parameters) return;
-            parent.Add(new Label("Parameters"));
+            var parameterTitle = new Label("Parameters");
+            parameterTitle.AddToClassList("character-debug-parameter-title");
+            parent.Add(parameterTitle);
+            var parameterGrid = new VisualElement();
+            parameterGrid.AddToClassList("character-debug-parameter-grid");
+            parent.Add(parameterGrid);
             foreach (var parameter in animator.parameters)
             {
                 var captured = parameter;
-                BindLabel(parent, captured.name, () => GetAnimatorParameterValue(animator, captured));
+                BindLabel(parameterGrid, captured.name, () => GetAnimatorParameterValue(animator, captured));
             }
         }
 
@@ -406,6 +465,8 @@ namespace Koiusa.SteamMultiRuntime
             dragging = true;
             dragStartPointer = evt.position;
             dragStartWindow = new Vector2(window.resolvedStyle.left, window.resolvedStyle.top);
+            window.style.right = StyleKeyword.Auto;
+            window.style.left = dragStartWindow.x;
             ((VisualElement)evt.currentTarget).CapturePointer(evt.pointerId);
         }
 
