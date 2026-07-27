@@ -25,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private SteamLobbyNetworkFacade networkFacade;
         private bool isSubscribedToNetworkEvents;
         private bool isSubscribedToLobbyEvents;
+        private bool hasPerformedExitCleanup;
 
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
 
@@ -72,6 +73,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
+            Application.quitting += OnApplicationQuitting;
+
             if (steamConnection == null)
             {
                 steamConnection = GetComponent<SteamConnection>();
@@ -144,6 +147,42 @@ namespace Koiusa.SteamMultiRuntime
         {
             UnsubscribeNetworkEvents();
             UnsubscribeLobbyEvents();
+        }
+
+        private void OnApplicationQuit()
+        {
+            PerformExitCleanup();
+        }
+
+        private void OnDestroy()
+        {
+            Application.quitting -= OnApplicationQuitting;
+            PerformExitCleanup();
+        }
+
+        private void OnApplicationQuitting()
+        {
+            PerformExitCleanup();
+        }
+
+        private void PerformExitCleanup()
+        {
+            if (hasPerformedExitCleanup)
+            {
+                return;
+            }
+
+            hasPerformedExitCleanup = true;
+
+            // SteamClient が終了する前にロビーを閉じて退出する。
+            // ホストの場合は参加不可・非公開・Closed を設定してから Leave する。
+            lobbyManager?.LeaveCurrentLobbyImmediately();
+
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager != null && networkManager.IsListening)
+            {
+                networkManager.Shutdown(discardMessageQueue: true);
+            }
         }
 
         private void Update()

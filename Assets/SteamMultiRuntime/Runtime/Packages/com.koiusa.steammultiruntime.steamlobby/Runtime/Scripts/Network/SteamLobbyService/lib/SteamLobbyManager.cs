@@ -309,6 +309,29 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        /// <summary>
+        /// アプリ終了時用。終了フレームでは非同期のシーン処理を完了できないため、
+        /// Steam ロビーを閉じて退出する操作だけを同期的に確定する。
+        /// </summary>
+        public void LeaveCurrentLobbyImmediately()
+        {
+            if (!lobbyState.CurrentLobby.HasValue)
+            {
+                return;
+            }
+
+            var currentLobby = lobbyState.CurrentLobby.Value;
+            var wasHost = lobbyState.IsHost;
+            lobbyState.Clear();
+
+            if (wasHost)
+            {
+                CloseLobby(currentLobby);
+            }
+
+            currentLobby.Leave();
+        }
+
         public async Task<bool> ChangeHostedLobbyStageAsync(string stageSceneName)
         {
             await lobbyTransitionGate.WaitAsync();
