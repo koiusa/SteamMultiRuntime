@@ -13,8 +13,6 @@
         </ui:VisualElement>
         <ui:VisualElement class="gamepad-body">
             <ui:VisualElement class="gamepad-side">
-                <ui:VisualElement name="control-leftstick" class="gamepad-stick"><ui:Label text="LS" class="gamepad-label" /></ui:VisualElement>
-                <ui:VisualElement name="control-leftstickpress" class="gamepad-stick-press"><ui:Label text="L3" class="gamepad-label-small" /></ui:VisualElement>
                 <ui:VisualElement class="gamepad-dpad">
                     <ui:VisualElement name="control-up" class="gamepad-button gamepad-dpad-up"><ui:Label text="▲" class="gamepad-label-small" /></ui:VisualElement>
                     <ui:VisualElement class="gamepad-dpad-row">
@@ -23,6 +21,10 @@
                         <ui:VisualElement name="control-right" class="gamepad-button gamepad-dpad-key"><ui:Label text="▶" class="gamepad-label-small" /></ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="control-down" class="gamepad-button gamepad-dpad-key"><ui:Label text="▼" class="gamepad-label-small" /></ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="control-leftstick" class="gamepad-stick gamepad-stick-left">
+                    <ui:Label text="LS" class="gamepad-label" />
+                    <ui:VisualElement name="control-leftstickpress" class="gamepad-stick-press gamepad-stick-press-left"><ui:Label text="L3" class="gamepad-label-small" /></ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="gamepad-center">
@@ -35,14 +37,16 @@
                 <ui:Label text="GAMEPAD" class="gamepad-brand" />
             </ui:VisualElement>
             <ui:VisualElement class="gamepad-side gamepad-side-right">
+                <ui:VisualElement name="control-rightstick" class="gamepad-stick gamepad-stick-right">
+                    <ui:Label text="RS" class="gamepad-label" />
+                    <ui:VisualElement name="control-rightstickpress" class="gamepad-stick-press gamepad-stick-press-right"><ui:Label text="R3" class="gamepad-label-small" /></ui:VisualElement>
+                </ui:VisualElement>
                 <ui:VisualElement class="gamepad-face-row">
                     <ui:VisualElement name="control-buttonwest" class="gamepad-button gamepad-face gamepad-west"><ui:Label name="gamepad-face-west-label" text="X" class="gamepad-label" /></ui:VisualElement>
                     <ui:VisualElement name="control-buttonnorth" class="gamepad-button gamepad-face gamepad-north"><ui:Label name="gamepad-face-north-label" text="Y" class="gamepad-label" /></ui:VisualElement>
                     <ui:VisualElement name="control-buttoneast" class="gamepad-button gamepad-face gamepad-east"><ui:Label name="gamepad-face-east-label" text="B" class="gamepad-label" /></ui:VisualElement>
                     <ui:VisualElement name="control-buttonsouth" class="gamepad-button gamepad-face gamepad-south"><ui:Label name="gamepad-face-south-label" text="A" class="gamepad-label" /></ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="control-rightstickpress" class="gamepad-stick-press gamepad-stick-press-right"><ui:Label text="R3" class="gamepad-label-small" /></ui:VisualElement>
-                <ui:VisualElement name="control-rightstick" class="gamepad-stick"><ui:Label text="RS" class="gamepad-label" /></ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

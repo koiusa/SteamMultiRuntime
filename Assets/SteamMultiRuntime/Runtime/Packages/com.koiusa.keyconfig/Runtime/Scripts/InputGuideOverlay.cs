@@ -29,6 +29,8 @@ namespace Koiusa.Keyconfig.Runtime
         [SerializeField] private InputBindingIconResolver iconResolver;
         [SerializeField] private bool startVisible = true;
         [SerializeField] private bool autoSwitchDeviceLayout = true;
+        [SerializeField, Range(0f, 16f)] private float stickVisualTravel = 8f;
+        [SerializeField, Range(0f, 0.5f)] private float stickVisualDeadzone = 0.08f;
 
         private readonly List<GuideRow> rows = new List<GuideRow>();
         private UIDocument uiDocument;
@@ -41,6 +43,8 @@ namespace Koiusa.Keyconfig.Runtime
         private Label gamepadFaceNorthLabel;
         private Label gamepadFaceEastLabel;
         private Label gamepadFaceSouthLabel;
+        private VisualElement leftStickVisual;
+        private VisualElement rightStickVisual;
         private InputActionAsset inputActionAsset;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
@@ -130,6 +134,8 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 deviceLabel.text = GetCurrentDeviceName(lastActiveDevice);
             }
+
+            UpdateStickVisuals(lastActiveDevice as Gamepad ?? Gamepad.current);
         }
 
         public void SetVisible(bool visible)
@@ -204,6 +210,8 @@ namespace Koiusa.Keyconfig.Runtime
             gamepadFaceNorthLabel = root.Q<Label>("gamepad-face-north-label");
             gamepadFaceEastLabel = root.Q<Label>("gamepad-face-east-label");
             gamepadFaceSouthLabel = root.Q<Label>("gamepad-face-south-label");
+            leftStickVisual = root.Q<VisualElement>("control-leftstick");
+            rightStickVisual = root.Q<VisualElement>("control-rightstick");
             var deviceLayout = root.Q<VisualElement>("device-layout");
             var mapLabel = root.Q<Label>("map-label");
 
@@ -298,6 +306,41 @@ namespace Koiusa.Keyconfig.Runtime
             if (gamepadFaceSouthLabel != null) gamepadFaceSouthLabel.text = isPlayStation ? "×" : "A";
         }
 
+        private void UpdateStickVisuals(Gamepad gamepad)
+        {
+            var left = gamepad != null ? gamepad.leftStick.ReadValue() : Vector2.zero;
+            var right = gamepad != null ? gamepad.rightStick.ReadValue() : Vector2.zero;
+            var displayedLeft = ApplyStickVisualDeadzone(left);
+            var displayedRight = ApplyStickVisualDeadzone(right);
+            SetStickVisualPosition(leftStickVisual, displayedLeft);
+            SetStickVisualPosition(rightStickVisual, displayedRight);
+        }
+
+        private Vector2 ApplyStickVisualDeadzone(Vector2 value)
+        {
+            var magnitude = Mathf.Clamp01(value.magnitude);
+            if (magnitude <= stickVisualDeadzone)
+            {
+                return Vector2.zero;
+            }
+
+            var range = Mathf.Max(0.0001f, 1f - stickVisualDeadzone);
+            var remappedMagnitude = (magnitude - stickVisualDeadzone) / range;
+            return value.normalized * remappedMagnitude;
+        }
+
+        private void SetStickVisualPosition(VisualElement stick, Vector2 value)
+        {
+            if (stick == null)
+            {
+                return;
+            }
+
+            stick.style.translate = new Translate(
+                new Length(value.x * stickVisualTravel, LengthUnit.Pixel),
+                new Length(-value.y * stickVisualTravel, LengthUnit.Pixel));
+        }
+
         private static bool IsGamepadLike(InputDevice device)
         {
             return device is Gamepad || device is Joystick;
@@ -318,10 +361,22 @@ namespace Koiusa.Keyconfig.Runtime
             var actionName = binding.isPartOfComposite
                 ? $"{Nicify(action.name)} · {Nicify(binding.name)}"
                 : Nicify(action.name);
-            var actionLabel = new Label(actionName);
-            actionLabel.AddToClassList("input-device-action");
-            controlElement.Add(actionLabel);
-            controlElement.tooltip = $"{action.GetBindingDisplayString(bindingIndex)} — {actionName}";
+            var actionLabel = controlElement.Q<Label>("control-action-label");
+            if (actionLabel == null)
+            {
+                actionLabel = new Label(actionName) { name = "control-action-label" };
+                actionLabel.AddToClassList("input-device-action");
+                controlElement.Add(actionLabel);
+            }
+            else if (!actionLabel.text.Contains(actionName, StringComparison.Ordinal))
+            {
+                actionLabel.text += $" / {actionName}";
+            }
+
+            var tooltipEntry = $"{action.GetBindingDisplayString(bindingIndex)} — {actionName}";
+            controlElement.tooltip = string.IsNullOrWhiteSpace(controlElement.tooltip)
+                ? tooltipEntry
+                : $"{controlElement.tooltip}\n{tooltipEntry}";
 
             rows.Add(new GuideRow
             {
@@ -339,6 +394,8 @@ namespace Koiusa.Keyconfig.Runtime
         private static string GetControlName(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) return string.Empty;
+            if (path.StartsWith("<Mouse>/scroll/", StringComparison.OrdinalIgnoreCase)) return "middlebutton";
+            if (path.StartsWith("<Pointer>/position", StringComparison.OrdinalIgnoreCase)) return "delta";
             var slash = path.LastIndexOf('/');
             var controlName = slash >= 0 ? path.Substring(slash + 1) : path;
 

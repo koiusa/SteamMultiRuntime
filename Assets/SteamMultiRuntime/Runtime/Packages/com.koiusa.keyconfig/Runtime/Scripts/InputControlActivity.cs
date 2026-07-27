@@ -40,7 +40,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public static bool IsActive(InputControl control, float threshold = DefaultActuationThreshold)
         {
-            if (!IsUsable(control))
+            if (!IsUsable(control) || IsAbsolutePointerPosition(control))
             {
                 return false;
             }
@@ -76,6 +76,12 @@ namespace Koiusa.Keyconfig.Runtime
         public static bool IsUsable(InputControl control)
         {
             return control != null && control.device != null && control.device.added;
+        }
+
+        private static bool IsAbsolutePointerPosition(InputControl control)
+        {
+            return control?.device is Pointer
+                && string.Equals(control.name, "position", StringComparison.OrdinalIgnoreCase);
         }
 
         public static InputControl FindActive(string bindingPath, InputControl cachedControl = null)
