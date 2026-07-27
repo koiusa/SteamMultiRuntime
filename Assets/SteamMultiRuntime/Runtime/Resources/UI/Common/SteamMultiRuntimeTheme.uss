@@ -1,0 +1,175 @@
+/* Shared visual language derived from the runtime input-device monitor. */
+.smr-theme .input-guide-panel,
+.smr-theme .input-operation-panel,
+.smr-theme .character-select-panel,
+.smr-theme .keyconfig-panel,
+.smr-theme .main-panel,
+.smr-theme .stage-select-panel,
+.smr-theme #character-debug-window {
+    color: rgb(207, 221, 240);
+    background-color: rgba(9, 14, 23, 0.94);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(145, 175, 215, 0.22);
+    border-right-color: rgba(145, 175, 215, 0.22);
+    border-top-color: rgba(145, 175, 215, 0.22);
+    border-bottom-color: rgba(145, 175, 215, 0.22);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.smr-theme .input-guide-title,
+.smr-theme .character-select-title,
+.smr-theme .keyconfig-title,
+.smr-theme .title,
+.smr-theme .character-debug-title {
+    color: rgb(238, 245, 255);
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+}
+
+.smr-theme .character-select-title,
+.smr-theme .keyconfig-title,
+.smr-theme .title {
+    border-left-width: 3px;
+    border-left-color: rgb(77, 219, 164);
+    padding-left: 10px;
+}
+
+.smr-theme .section-title,
+.smr-theme .focus-group-title,
+.smr-theme .keyconfig-th,
+.smr-theme .character-debug-section > Toggle {
+    color: rgb(77, 219, 164);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.smr-theme .section-panel,
+.smr-theme .input-operation-section,
+.smr-theme .keyconfig-input-monitor,
+.smr-theme .character-debug-section {
+    background-color: rgba(20, 28, 40, 0.72);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.smr-theme .character-select-option,
+.smr-theme .keyconfig-button,
+.smr-theme .keyconfig-map-tab-button,
+.smr-theme .button,
+.smr-theme .join-button,
+.smr-theme .character-debug-refresh,
+.smr-theme .character-debug-launcher,
+.smr-theme .character-debug-selector > Button {
+    color: rgb(207, 221, 240);
+    background-color: rgb(28, 36, 49);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 3px;
+    border-left-color: rgb(68, 82, 102);
+    border-right-color: rgb(68, 82, 102);
+    border-top-color: rgb(78, 94, 116);
+    border-bottom-color: rgb(10, 15, 22);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.smr-theme .character-select-option:hover,
+.smr-theme .keyconfig-button:hover,
+.smr-theme .keyconfig-map-tab-button:hover,
+.smr-theme .button:hover,
+.smr-theme .join-button:hover,
+.smr-theme .character-debug-refresh:hover,
+.smr-theme .character-debug-launcher:hover,
+.smr-theme .character-debug-selector > Button:hover {
+    color: rgb(245, 255, 251);
+    background-color: rgb(35, 150, 112);
+    border-left-color: rgb(83, 245, 181);
+    border-right-color: rgb(83, 245, 181);
+    border-top-color: rgb(111, 255, 202);
+    border-bottom-color: rgb(18, 74, 57);
+}
+
+.smr-theme .character-select-option:focus,
+.smr-theme .keyconfig-map-tab-button.active,
+.smr-theme .button:focus,
+.smr-theme .join-button:focus {
+    color: rgb(245, 255, 251);
+    background-color: rgb(35, 150, 112);
+    border-left-color: rgb(83, 245, 181);
+    border-right-color: rgb(83, 245, 181);
+    border-top-color: rgb(111, 255, 202);
+    border-bottom-color: rgb(18, 74, 57);
+    -unity-font-style: bold;
+}
+
+.smr-theme .field > .unity-base-text-field__input,
+.smr-theme .field > .unity-text-field__input,
+.smr-theme .field > .unity-base-popup-field__input,
+.smr-theme .stage-dropdown > .unity-base-popup-field__input,
+.smr-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input {
+    color: rgb(207, 221, 240);
+    background-color: rgba(1, 5, 10, 0.65);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(68, 82, 102);
+    border-right-color: rgb(68, 82, 102);
+    border-top-color: rgb(78, 94, 116);
+    border-bottom-color: rgb(68, 82, 102);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.smr-theme .field > .unity-base-text-field__input:focus,
+.smr-theme .field > .unity-text-field__input:focus,
+.smr-theme .field > .unity-base-popup-field__input:focus,
+.smr-theme .stage-dropdown > .unity-base-popup-field__input:focus,
+.smr-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input:focus {
+    background-color: rgba(35, 150, 112, 0.28);
+    border-left-color: rgb(83, 245, 181);
+    border-right-color: rgb(83, 245, 181);
+    border-top-color: rgb(111, 255, 202);
+    border-bottom-color: rgb(83, 245, 181);
+}
+
+.smr-theme .field > .unity-base-field__label,
+.smr-theme .stage-dropdown > .unity-base-field__label,
+.smr-theme .keyconfig-binding-group-dropdown > .unity-base-field__label,
+.smr-theme .muted,
+.smr-theme .keyconfig-status,
+.smr-theme .keyconfig-input-help {
+    color: rgb(119, 149, 184);
+}
+
+.smr-theme .keyconfig-table-header {
+    background-color: rgba(42, 61, 80, 0.55);
+    border-bottom-color: rgba(145, 175, 215, 0.16);
+}
+
+.smr-theme .keyconfig-row,
+.smr-theme .input-operation-row {
+    border-bottom-color: rgba(145, 175, 215, 0.1);
+}
+
+.smr-theme .keyconfig-row:hover {
+    background-color: rgba(35, 150, 112, 0.16);
+}
+
+.smr-theme .keyconfig-row.input-active {
+    background-color: rgba(35, 150, 112, 0.25);
+    border-left-color: rgb(83, 245, 181);
+}

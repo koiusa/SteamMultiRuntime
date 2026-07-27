@@ -7,6 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     internal sealed class LobbyView
     {
         private const string CommonScrollStyleSheetPath = "UI/Common/SteamMultiRuntimeScrollView";
+        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
         private readonly UIDocument uiDocument;
         private StyleSheet appliedThemeStyleSheet;
         private Label connectionLabel;
@@ -74,6 +75,12 @@ namespace Koiusa.SteamMultiRuntime
             {
                 root.styleSheets.Add(commonScrollStyle);
             }
+            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
+            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
+            {
+                root.styleSheets.Add(commonThemeStyle);
+            }
+            root.AddToClassList("smr-theme");
 
             appliedThemeStyleSheet = themeStyleSheet;
 

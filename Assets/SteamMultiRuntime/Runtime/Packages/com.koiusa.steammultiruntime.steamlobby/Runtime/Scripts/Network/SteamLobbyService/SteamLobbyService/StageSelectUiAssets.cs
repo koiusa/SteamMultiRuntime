@@ -61,6 +61,12 @@ namespace Koiusa.SteamMultiRuntime
 
             var root = uiDocument.rootVisualElement;
             root.Clear();
+            var commonTheme = Resources.Load<StyleSheet>("UI/Common/SteamMultiRuntimeTheme");
+            if (commonTheme != null && !root.styleSheets.Contains(commonTheme))
+            {
+                root.styleSheets.Add(commonTheme);
+            }
+            root.AddToClassList("smr-theme");
 
             // レイアウトを適用
             if (layoutAsset != null)

@@ -12,19 +12,6 @@
     bottom: 0;
     width: 620px;
     padding: 14px;
-    background-color: rgba(9, 14, 23, 0.88);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(145, 175, 215, 0.22);
-    border-right-color: rgba(145, 175, 215, 0.22);
-    border-top-color: rgba(145, 175, 215, 0.22);
-    border-bottom-color: rgba(145, 175, 215, 0.22);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
 }
 
 .input-operation-panel {
@@ -33,19 +20,6 @@
     top: 0;
     width: 500px;
     padding: 12px;
-    background-color: rgba(9, 14, 23, 0.92);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgba(145, 175, 215, 0.22);
-    border-right-color: rgba(145, 175, 215, 0.22);
-    border-top-color: rgba(145, 175, 215, 0.22);
-    border-bottom-color: rgba(145, 175, 215, 0.22);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
 }
 
 .input-operation-header {
@@ -76,11 +50,6 @@
     width: 48.7%;
     margin-bottom: 9px;
     padding-bottom: 4px;
-    background-color: rgba(20, 28, 40, 0.72);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
 }
 
 .input-operation-section-title {
@@ -124,7 +93,7 @@
 
 .input-guide-header { flex-direction: row; align-items: center; height: 34px; }
 .input-guide-accent { width: 3px; height: 28px; margin-right: 9px; background-color: rgb(77, 219, 164); border-top-left-radius: 2px; border-top-right-radius: 2px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
-.input-guide-title { font-size: 13px; -unity-font-style: bold; letter-spacing: 2px; color: rgb(238, 245, 255); }
+.input-guide-title { font-size: 13px; }
 .input-guide-map { margin-top: -2px; font-size: 9px; color: rgb(116, 141, 173); }
 .input-guide-spacer { flex-grow: 1; }
 .input-guide-device { padding-left: 7px; padding-right: 7px; padding-top: 4px; padding-bottom: 4px; font-size: 9px; -unity-font-style: bold; color: rgb(149, 174, 205); background-color: rgba(90, 120, 160, 0.16); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }

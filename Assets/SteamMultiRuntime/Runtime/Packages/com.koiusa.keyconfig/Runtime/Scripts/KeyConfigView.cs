@@ -9,6 +9,7 @@ namespace Koiusa.Keyconfig.Runtime
     internal sealed class KeyConfigView
     {
         private const string CommonScrollStyleSheetPath = "UI/Common/SteamMultiRuntimeScrollView";
+        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
         private readonly StyleSheet styleSheet;
@@ -68,6 +69,12 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 root.styleSheets.Add(commonScrollStyle);
             }
+            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
+            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
+            {
+                root.styleSheets.Add(commonThemeStyle);
+            }
+            root.AddToClassList("smr-theme");
 
             if (layoutAsset != null)
             {

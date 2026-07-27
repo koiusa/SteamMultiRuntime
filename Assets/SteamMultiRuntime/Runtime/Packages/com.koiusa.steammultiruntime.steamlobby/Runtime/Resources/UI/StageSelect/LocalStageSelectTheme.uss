@@ -8,9 +8,7 @@
 }
 
 .title {
-	-unity-font-style: bold;
 	font-size: 24px;
-	color: rgba(196, 245, 255, 255);
 	margin-bottom: 20px;
 	padding-bottom: 10px;
 	border-bottom-width: 2px;
@@ -28,40 +26,18 @@
 }
 
 .stage-dropdown {
-	color: rgba(226, 245, 255, 255);
 	--unity-cursor-color: rgba(150, 245, 255, 255);
 	--unity-selection-color: rgba(65, 165, 210, 140);
 }
 
 .stage-dropdown > .unity-base-field__label {
-	color: rgba(148, 228, 255, 255);
 	font-size: 14px;
 	-unity-font-style: bold;
 	margin-bottom: 8px;
 }
 
 .stage-dropdown > .unity-base-popup-field__input {
-	color: rgba(220, 244, 255, 255);
-	background-color: rgba(9, 24, 40, 230);
-	border-top-width: 4px;
-	border-bottom-width: 4px;
-	border-left-width: 4px;
-	border-right-width: 4px;
-	border-top-color: rgba(83, 208, 235, 60);
-	border-bottom-color: rgba(83, 208, 235, 60);
-	border-left-color: rgba(83, 208, 235, 60);
-	border-right-color: rgba(83, 208, 235, 60);
 	padding: 8px;
-}
-
-.stage-dropdown > .unity-base-popup-field__input:focus {
-    color: rgba(255, 255, 255, 255);
-    background-color: rgba(22, 65, 96, 255);
-    -unity-font-style: bold;
-    border-top-color: rgba(108, 230, 255, 255);
-    border-bottom-color: rgba(108, 230, 255, 255);
-    border-left-color: rgba(108, 230, 255, 255);
-    border-right-color: rgba(108, 230, 255, 255);
 }
 
 .stage-dropdown > .unity-base-popup-field__arrow {

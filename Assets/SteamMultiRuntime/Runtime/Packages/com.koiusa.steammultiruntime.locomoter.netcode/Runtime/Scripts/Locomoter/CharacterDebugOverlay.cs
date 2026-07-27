@@ -13,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         private const string DefaultPanelSettingsPath = "UI/CharacterSelect/CharacterSelect Panel Settings";
         private const string DefaultStyleSheetPath = "UI/CharacterDebug/CharacterDebugOverlay";
         private const string CommonScrollStyleSheetPath = "UI/Common/SteamMultiRuntimeScrollView";
+        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
         private const float RefreshInterval = 0.1f;
 
         [Header("Display")]
@@ -159,6 +160,10 @@ namespace Koiusa.SteamMultiRuntime
             var commonScrollStyle = Resources.Load<StyleSheet>(CommonScrollStyleSheetPath);
             if (commonScrollStyle != null && !root.styleSheets.Contains(commonScrollStyle))
                 root.styleSheets.Add(commonScrollStyle);
+            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
+            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
+                root.styleSheets.Add(commonThemeStyle);
+            root.AddToClassList("smr-theme");
             root.style.position = Position.Absolute;
             root.style.left = 0;
             root.style.top = 0;
@@ -192,11 +197,6 @@ namespace Koiusa.SteamMultiRuntime
             window.style.paddingLeft = 8;
             window.style.paddingRight = 8;
             window.style.paddingBottom = 8;
-            window.style.backgroundColor = new Color(0.08f, 0.08f, 0.09f, 0.96f);
-            window.style.borderTopLeftRadius = 4;
-            window.style.borderTopRightRadius = 4;
-            window.style.borderBottomLeftRadius = 4;
-            window.style.borderBottomRightRadius = 4;
             overlayRoot.Add(window);
 
             var titleBar = new VisualElement();
