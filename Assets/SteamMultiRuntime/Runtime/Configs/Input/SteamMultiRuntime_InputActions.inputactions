@@ -160,24 +160,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "MenuToggle",
-                    "type": "Button",
-                    "id": "36bd9827-6cf7-40b4-a140-a3e241b68a30",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "CharacterMenuToggle",
-                    "type": "Button",
-                    "id": "55580658-0217-41b0-a589-f8ab735a16b7",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "CameraZoom",
                     "type": "Value",
                     "id": "004ac9d1-3d13-4ce3-bff8-697608fa5b23",
@@ -820,50 +802,6 @@
                 },
                 {
                     "name": "",
-                    "id": "f299a325-640e-4078-8d22-e53f051e53fb",
-                    "path": "<Keyboard>/tab",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "MenuToggle",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "2272b973-ad83-40cf-972e-e7e46ba94234",
-                    "path": "<Gamepad>/start",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "MenuToggle",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "4b4d5f96-9da6-4ee3-8434-64558eb42f5c",
-                    "path": "<Keyboard>/backquote",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "CharacterMenuToggle",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0fb152ca-03d8-4f62-af54-990ac3d8cedd",
-                    "path": "<Gamepad>/select",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "CharacterMenuToggle",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "4f62f025-a0ed-42a7-b0e6-49fc3ce68a4f",
                     "path": "<Mouse>/scroll/y",
                     "interactions": "",
@@ -962,6 +900,42 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "MenuToggle",
+                    "type": "Button",
+                    "id": "36bd9827-6cf7-40b4-a140-a3e241b68a30",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CharacterMenuToggle",
+                    "type": "Button",
+                    "id": "55580658-0217-41b0-a589-f8ab735a16b7",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PreviousSection",
+                    "type": "Button",
+                    "id": "41ca22e7-43ee-4c81-9855-6188ac898c14",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "NextSection",
+                    "type": "Button",
+                    "id": "de75c99f-6900-4635-be53-b35b145c6689",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Point",
                     "type": "PassThrough",
                     "id": "32b35790-4ed0-4e9a-aa41-69ac6d629449",
@@ -1042,18 +1016,7 @@
                     "id": "14a5d6e8-4aaf-4119-a9ef-34b8c2c548bf",
                     "path": "<Gamepad>/leftStick/up",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "up",
-                    "id": "9144cbe6-05e1-4687-a6d7-24f99d23dd81",
-                    "path": "<Gamepad>/rightStick/up",
-                    "interactions": "",
-                    "processors": "",
+                    "processors": "AxisDeadzone(min=0.35,max=0.95)",
                     "groups": ";Gamepad",
                     "action": "Navigate",
                     "isComposite": false,
@@ -1064,18 +1027,7 @@
                     "id": "2db08d65-c5fb-421b-983f-c71163608d67",
                     "path": "<Gamepad>/leftStick/down",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "down",
-                    "id": "58748904-2ea9-4a80-8579-b500e6a76df8",
-                    "path": "<Gamepad>/rightStick/down",
-                    "interactions": "",
-                    "processors": "",
+                    "processors": "AxisDeadzone(min=0.35,max=0.95)",
                     "groups": ";Gamepad",
                     "action": "Navigate",
                     "isComposite": false,
@@ -1086,18 +1038,7 @@
                     "id": "8ba04515-75aa-45de-966d-393d9bbd1c14",
                     "path": "<Gamepad>/leftStick/left",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "left",
-                    "id": "712e721c-bdfb-4b23-a86c-a0d9fcfea921",
-                    "path": "<Gamepad>/rightStick/left",
-                    "interactions": "",
-                    "processors": "",
+                    "processors": "AxisDeadzone(min=0.35,max=0.95)",
                     "groups": ";Gamepad",
                     "action": "Navigate",
                     "isComposite": false,
@@ -1108,18 +1049,7 @@
                     "id": "fcd248ae-a788-4676-a12e-f4d81205600b",
                     "path": "<Gamepad>/leftStick/right",
                     "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Navigate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "1f04d9bc-c50b-41a1-bfcc-afb75475ec20",
-                    "path": "<Gamepad>/rightStick/right",
-                    "interactions": "",
-                    "processors": "",
+                    "processors": "AxisDeadzone(min=0.35,max=0.95)",
                     "groups": ";Gamepad",
                     "action": "Navigate",
                     "isComposite": false,
@@ -1309,6 +1239,72 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse;Gamepad;Touch;Joystick;XR",
                     "action": "Cancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f299a325-640e-4078-8d22-e53f051e53fb",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "MenuToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2272b973-ad83-40cf-972e-e7e46ba94234",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "MenuToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4b4d5f96-9da6-4ee3-8434-64558eb42f5c",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "CharacterMenuToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0fb152ca-03d8-4f62-af54-990ac3d8cedd",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "CharacterMenuToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "50fe13af-d371-4143-84cf-6cb44b26ec73",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "PreviousSection",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f6cd0eb2-eb3d-410b-a434-86d9481987de",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "NextSection",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -131,7 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/Point
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 32b35790-4ed0-4e9a-aa41-69ac6d629449
 --- !u!114 &165986622
 MonoBehaviour:
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/Click
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 3c7022bf-7922-4f7c-a998-c437916075ad
 --- !u!114 &323747003
 MonoBehaviour:
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/TrackedDevicePosition
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 24908448-c609-4bc3-a128-ea258674378a
 --- !u!1 &447303305
 GameObject:
@@ -343,7 +343,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/Cancel
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 15cef263-9014-4fd5-94d9-4e4a6234a6ef
 --- !u!114 &628399203
 MonoBehaviour:
@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/TrackedDeviceOrientation
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be
 --- !u!1 &634971122
 GameObject:
@@ -390,10 +390,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
   m_SendPointerHoverToParent: 1
-  m_MoveRepeatDelay: 0.5
-  m_MoveRepeatRate: 0.1
+  m_MoveRepeatDelay: 0.12
+  m_MoveRepeatRate: 0.06
   m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_PointAction: {fileID: 1700983}
   m_MoveAction: {fileID: 794504595}
   m_SubmitAction: {fileID: 1488089951}
@@ -450,7 +450,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/Navigate
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: c95b2375-e6d9-4b88-9c4c-c5e76515df4b
 --- !u!114 &1135255498
 MonoBehaviour:
@@ -464,7 +464,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/ScrollWheel
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 0489e84a-4833-4c40-bfae-cea84b696689
 --- !u!114 &1141921908
 MonoBehaviour:
@@ -478,7 +478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/RightClick
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 44b200b1-1557-4083-816c-b22cbdf77ddf
 --- !u!114 &1166426897
 MonoBehaviour:
@@ -492,7 +492,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/MiddleClick
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: dad70c86-b58c-4b17-88ad-f5e53adf419e
 --- !u!114 &1488089951
 MonoBehaviour:
@@ -506,7 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc1515ab76e54f068e2f2207940fab32, type: 3}
   m_Name: UI/Submit
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.InputActionReference
-  m_Asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_Asset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   m_ActionId: 7607c7b6-cd76-4816-beef-bd0341cfe950
 --- !u!1001 &1829968614
 PrefabInstance:
@@ -717,6 +717,7 @@ MonoBehaviour:
     rawReference:
       rid: -2
   uiAssets: {fileID: 11400000, guid: 20f7720e98a6f314785f2a56050019fc, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   references:
     version: 2
     RefIds:

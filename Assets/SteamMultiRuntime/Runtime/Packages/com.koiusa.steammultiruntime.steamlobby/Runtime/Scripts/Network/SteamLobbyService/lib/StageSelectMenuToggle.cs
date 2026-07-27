@@ -34,7 +34,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            var action = inputActionsConfig?.FindAction("Player/MenuToggle");
+            var action = inputActionsConfig?.FindAction("UI/MenuToggle");
             toggleBinding = InputActionBinding.Bind(action, OnTogglePerformed);
         }
 

@@ -82,6 +82,14 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        public void Focus()
+        {
+            if (stageSceneField == null || !stageSceneField.enabledSelf)
+                return;
+
+            stageSceneField.schedule.Execute(stageSceneField.Focus);
+        }
+
         public void Cleanup()
         {
             if (stageSceneField != null)

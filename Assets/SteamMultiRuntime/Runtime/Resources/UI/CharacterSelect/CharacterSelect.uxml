@@ -5,7 +5,6 @@
             <ui:Label text="キャラクター選択" class="character-select-title" />
             <ui:ScrollView name="character-list-view" mode="Vertical" class="character-select-list" />
             <ui:Label name="selected-name-label" text="選択中: なし" class="character-select-selected-name" />
-            <ui:Button name="confirm-button" text="確定" class="character-select-confirm-button" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

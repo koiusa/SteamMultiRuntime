@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
+using Koiusa.Input;
 using Koiusa.SteamMultiRuntime.Network;
 using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -18,17 +20,29 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private SteamLobbyUiAssets uiAssets;
 
+        [Header("Input")]
+        [SerializeField] private InputActionsConfig inputActionsConfig;
+
         private UIDocument uiDocument;
         private LobbyView view;
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
         private Coroutine waitForSteamCoroutine;
         private bool isRefreshing;
         private string lobbyNameSearch = string.Empty;
+        private InputActionBinding previousSectionBinding;
+        private InputActionBinding nextSectionBinding;
 
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
             view = new LobbyView(uiDocument);
+
+            if (inputActionsConfig == null)
+            {
+                var menuToggle = GetComponent<SteamLobbyMenuToggle>()
+                    ?? FindFirstObjectByType<SteamLobbyMenuToggle>(FindObjectsInactive.Include);
+                inputActionsConfig = menuToggle?.InputActionsConfig;
+            }
 
             if (lobbyService == null)
             {
@@ -54,6 +68,12 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             BuildUi();
+            previousSectionBinding = InputActionBinding.Bind(
+                inputActionsConfig?.FindAction("UI/PreviousSection"),
+                OnPreviousSectionPerformed);
+            nextSectionBinding = InputActionBinding.Bind(
+                inputActionsConfig?.FindAction("UI/NextSection"),
+                OnNextSectionPerformed);
 
             if (lobbyService != null)
             {
@@ -76,6 +96,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            previousSectionBinding?.Dispose();
+            previousSectionBinding = null;
+            nextSectionBinding?.Dispose();
+            nextSectionBinding = null;
+
             if (waitForSteamCoroutine != null)
             {
                 StopCoroutine(waitForSteamCoroutine);
@@ -101,6 +126,16 @@ namespace Koiusa.SteamMultiRuntime
             view?.UnbindActions(OnCreateClicked, OnJoinByIdClicked, OnSearchByNameClicked, OnRefreshClicked, OnLeaveClicked);
         }
 
+        private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
+        {
+            view?.FocusPreviousSection();
+        }
+
+        private void OnNextSectionPerformed(InputAction.CallbackContext context)
+        {
+            view?.FocusNextSection();
+        }
+
         private void BuildUi()
         {
             if (uiAssets == null)
@@ -120,6 +155,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             view.BindActions(OnCreateClicked, OnJoinByIdClicked, OnSearchByNameClicked, OnRefreshClicked, OnLeaveClicked);
+            view.FocusInitialControl();
         }
 
         private void OnCreateClicked()

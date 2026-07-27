@@ -121,6 +121,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSelectUI.StageSelected += OnStageSelected;
+            stageSelectUI.Focus();
         }
 
         private void UnbindUI()

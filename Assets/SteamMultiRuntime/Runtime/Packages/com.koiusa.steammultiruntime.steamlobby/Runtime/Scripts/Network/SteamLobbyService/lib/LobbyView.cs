@@ -23,6 +23,23 @@ namespace Koiusa.SteamMultiRuntime
         private Button searchByNameButton;
         private Button refreshButton;
         private Button leaveButton;
+        private VisualElement createSectionHost;
+        private VisualElement searchSectionHost;
+        private VisualElement listSectionHost;
+        private readonly System.Collections.Generic.List<VisualElement> createControls = new System.Collections.Generic.List<VisualElement>();
+        private readonly System.Collections.Generic.List<VisualElement> searchControls = new System.Collections.Generic.List<VisualElement>();
+        private readonly System.Collections.Generic.List<VisualElement> lobbyRows = new System.Collections.Generic.List<VisualElement>();
+        private VisualElement lastCreateControl;
+        private VisualElement lastSearchControl;
+        private VisualElement lastLobbyRow;
+        private FocusSection activeFocusSection = FocusSection.Create;
+
+        private enum FocusSection
+        {
+            Create,
+            Search,
+            LobbyList
+        }
 
         public LobbyView(UIDocument uiDocument)
         {
@@ -89,11 +106,24 @@ namespace Koiusa.SteamMultiRuntime
             lobbyIdField = root.Q<TextField>("lobby-id-field");
             lobbyNameSearchField = root.Q<TextField>("lobby-name-search-field");
             lobbyListView = root.Q<ScrollView>("lobby-list-view");
+            if (lobbyListView != null)
+            {
+                lobbyListView.focusable = true;
+                lobbyListView.tabIndex = -1;
+                lobbyListView.RegisterCallback<FocusInEvent>(_ => SetActiveFocusSection(FocusSection.LobbyList));
+            }
             createButton = root.Q<Button>("create-button");
             joinByIdButton = root.Q<Button>("join-by-id-button");
             searchByNameButton = root.Q<Button>("search-by-name-button");
             refreshButton = root.Q<Button>("refresh-button");
             leaveButton = root.Q<Button>("leave-button");
+
+            createSectionHost = root.Q<VisualElement>("create-focus-group");
+            searchSectionHost = root.Q<VisualElement>("search-focus-group");
+            listSectionHost = root.Q<VisualElement>("list-focus-group");
+            ConfigureFocusSections(root);
+
+            FocusInitialControl();
         }
 
         public void BindActions(System.Action onCreate, System.Action onJoinById, System.Action onSearchByName, System.Action onRefresh, System.Action onLeave)
@@ -201,9 +231,12 @@ namespace Koiusa.SteamMultiRuntime
         public void ShowNoLobbies(string message = "Lobby が見つかりませんでした。")
         {
             lobbyListView.Clear();
+            lobbyRows.Clear();
+            lastLobbyRow = null;
             var emptyLabel = new Label(message);
             emptyLabel.AddToClassList("muted");
             lobbyListView.Add(emptyLabel);
+
         }
 
         public void ShowLobbies(
@@ -215,7 +248,10 @@ namespace Koiusa.SteamMultiRuntime
             ulong currentLobbyId,
             System.Action<ulong> onJoinLobby)
         {
+            var rememberedLobbyId = lastLobbyRow?.userData is ulong lobbyIdValue ? lobbyIdValue : 0;
             lobbyListView.Clear();
+            lobbyRows.Clear();
+            lastLobbyRow = null;
 
             foreach (var lobby in lobbies)
             {
@@ -226,6 +262,11 @@ namespace Koiusa.SteamMultiRuntime
                 var isCurrentLobby = currentLobbyId != 0 && lobby.Id == currentLobbyId;
                 var (memberCount, maxMembers) = getPlayerCount != null ? getPlayerCount(lobby) : (lobby.MemberCount, lobby.MaxMembers);
                 var isFullLobby = memberCount >= maxMembers;
+                var canJoinLobby = canJoin && !isLocalHostLobby && !isCurrentLobby && !isFullLobby;
+
+                row.focusable = canJoinLobby;
+                row.tabIndex = canJoinLobby ? 0 : -1;
+                row.userData = lobby.Id;
 
                 var name = getLobbyDisplayName(lobby);
                 var label = new Label($"{name}  {memberCount}/{maxMembers}  [{lobby.Id}]");
@@ -263,12 +304,327 @@ namespace Koiusa.SteamMultiRuntime
                     text = "Join"
                 };
                 joinButton.AddToClassList("join-button");
-                joinButton.SetEnabled(canJoin && !isLocalHostLobby && !isCurrentLobby && !isFullLobby);
+                joinButton.SetEnabled(canJoinLobby);
+                // The row is the gamepad/keyboard target. The button remains
+                // clickable by pointer without creating a duplicate focus stop.
+                joinButton.focusable = false;
                 actions.Add(joinButton);
 
                 row.Add(actions);
                 lobbyListView.Add(row);
+
+                if (canJoinLobby)
+                {
+                    var lobbyId = lobby.Id;
+                    row.RegisterCallback<FocusInEvent>(_ => OnLobbyRowFocused(row));
+                    row.RegisterCallback<NavigationSubmitEvent>(evt =>
+                    {
+                        evt.PreventDefault();
+                        evt.StopPropagation();
+                        onJoinLobby?.Invoke(lobbyId);
+                    });
+                    lobbyRows.Add(row);
+
+                    if (lobby.Id == rememberedLobbyId)
+                        lastLobbyRow = row;
+                }
             }
+
+            RestoreFocusAfterListRebuild();
+        }
+
+        public void FocusInitialControl()
+        {
+            var root = uiDocument.rootVisualElement;
+            root.schedule.Execute(() =>
+            {
+                if (HasValidFocus(root))
+                    return;
+
+                FocusCreateSection();
+            });
+        }
+
+        public void FocusPreviousSection()
+        {
+            switch (activeFocusSection)
+            {
+                case FocusSection.Create:
+                    FocusLobbySection();
+                    break;
+                case FocusSection.Search:
+                    FocusCreateSection();
+                    break;
+                default:
+                    FocusSearchSection();
+                    break;
+            }
+        }
+
+        public void FocusNextSection()
+        {
+            switch (activeFocusSection)
+            {
+                case FocusSection.Create:
+                    FocusSearchSection();
+                    break;
+                case FocusSection.Search:
+                    FocusLobbySection();
+                    break;
+                default:
+                    FocusCreateSection();
+                    break;
+            }
+        }
+
+        private void ConfigureFocusSections(VisualElement root)
+        {
+            root.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
+            root.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
+
+            createControls.Clear();
+            AddCreateControl(lobbyNameField);
+            AddCreateControl(stageSceneField);
+            AddCreateControl(createButton);
+            lastCreateControl = stageSceneField;
+
+            searchControls.Clear();
+            AddSearchControl(lobbyIdField);
+            AddSearchControl(joinByIdButton);
+            AddSearchControl(lobbyNameSearchField);
+            AddSearchControl(searchByNameButton);
+            AddSearchControl(refreshButton);
+            AddSearchControl(leaveButton);
+
+            SetActiveFocusSection(FocusSection.Create);
+        }
+
+        private void AddCreateControl(VisualElement control)
+        {
+            if (control == null)
+                return;
+
+            createControls.Add(control);
+            control.RegisterCallback<FocusInEvent>(_ =>
+            {
+                lastCreateControl = control;
+                SetActiveFocusSection(FocusSection.Create);
+            });
+        }
+
+        private void AddSearchControl(VisualElement control)
+        {
+            if (control == null)
+                return;
+
+            searchControls.Add(control);
+            control.RegisterCallback<FocusInEvent>(_ =>
+            {
+                lastSearchControl = control;
+                SetActiveFocusSection(FocusSection.Search);
+            });
+        }
+
+        private void OnNavigationMove(NavigationMoveEvent evt)
+        {
+            var root = uiDocument.rootVisualElement;
+            var focused = root.focusController?.focusedElement as VisualElement;
+            if (focused == null)
+                return;
+
+            var searchControl = FindContaining(focused, searchControls);
+            var createControl = FindContaining(focused, createControls);
+            var lobbyRow = FindContaining(focused, lobbyRows);
+            var isInsideLobbyList = lobbyListView != null &&
+                                    (focused == lobbyListView || lobbyListView.Contains(focused));
+
+            if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+                createControl != null)
+            {
+                FocusAdjacent(createControls, createControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
+                evt.PreventDefault();
+                evt.StopPropagation();
+            }
+            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+                searchControl != null)
+            {
+                FocusAdjacent(searchControls, searchControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
+                evt.PreventDefault();
+                evt.StopPropagation();
+            }
+            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+                     lobbyRow != null)
+            {
+                FocusAdjacent(lobbyRows, lobbyRow, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
+                evt.PreventDefault();
+                evt.StopPropagation();
+            }
+            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+                     isInsideLobbyList)
+            {
+                var target = evt.direction == NavigationMoveEvent.Direction.Down
+                    ? lobbyRows.Find(IsFocusable)
+                    : lobbyRows.FindLast(IsFocusable);
+
+                if (target != null)
+                {
+                    target.Focus();
+                    ScrollToLobbyRow(target);
+                }
+
+                // Keep navigation inside the list even when it has no
+                // joinable rows. Section changes are handled by LB/RB.
+                evt.PreventDefault();
+                evt.StopPropagation();
+            }
+            else if (evt.direction == NavigationMoveEvent.Direction.Right &&
+                     searchControl != null &&
+                     searchControl is not TextField)
+            {
+                if (FocusLobbySection())
+                {
+                    evt.PreventDefault();
+                    evt.StopPropagation();
+                }
+            }
+            else if (evt.direction == NavigationMoveEvent.Direction.Left && lobbyRow != null)
+            {
+                FocusSearchSection();
+                evt.PreventDefault();
+                evt.StopPropagation();
+            }
+        }
+
+        private void OnLobbyRowFocused(VisualElement row)
+        {
+            lastLobbyRow = row;
+            SetActiveFocusSection(FocusSection.LobbyList);
+            ScrollToLobbyRow(row);
+        }
+
+        private void FocusSearchSection()
+        {
+            var target = IsFocusable(lastSearchControl)
+                ? lastSearchControl
+                : searchControls.Find(IsFocusable);
+
+            if (target == null)
+                return;
+
+            SetActiveFocusSection(FocusSection.Search);
+            target.Focus();
+        }
+
+        private void FocusCreateSection()
+        {
+            var target = IsFocusable(lastCreateControl)
+                ? lastCreateControl
+                : createControls.Find(IsFocusable);
+
+            if (target == null)
+                return;
+
+            SetActiveFocusSection(FocusSection.Create);
+            target.Focus();
+        }
+
+        private bool FocusLobbySection()
+        {
+            var target = IsFocusable(lastLobbyRow)
+                ? lastLobbyRow
+                : lobbyRows.Find(IsFocusable);
+
+            if (target == null)
+                target = lobbyListView;
+
+            if (!IsFocusable(target))
+                return false;
+
+            SetActiveFocusSection(FocusSection.LobbyList);
+            target.Focus();
+            ScrollToLobbyRow(target);
+            return true;
+        }
+
+        private void ScrollToLobbyRow(VisualElement target)
+        {
+            if (lobbyListView == null ||
+                target == null ||
+                target == lobbyListView ||
+                !lobbyListView.contentContainer.Contains(target))
+                return;
+
+            lobbyListView.ScrollTo(target);
+        }
+
+        private void SetActiveFocusSection(FocusSection section)
+        {
+            activeFocusSection = section;
+            var createIsActive = section == FocusSection.Create;
+            var searchIsActive = section == FocusSection.Search;
+            createSectionHost?.EnableInClassList("lobby-focus-group--active", createIsActive);
+            searchSectionHost?.EnableInClassList("lobby-focus-group--active", searchIsActive);
+            listSectionHost?.EnableInClassList("lobby-focus-group--active", section == FocusSection.LobbyList);
+        }
+
+        private static VisualElement FindContaining(VisualElement focused, System.Collections.Generic.List<VisualElement> elements)
+        {
+            return elements.Find(element => element == focused || element.Contains(focused));
+        }
+
+        private static void FocusAdjacent(
+            System.Collections.Generic.List<VisualElement> elements,
+            VisualElement current,
+            int direction)
+        {
+            if (elements.Count == 0)
+                return;
+
+            var currentIndex = elements.IndexOf(current);
+            for (var offset = 1; offset <= elements.Count; offset++)
+            {
+                var index = (currentIndex + direction * offset + elements.Count) % elements.Count;
+                if (!IsFocusable(elements[index]))
+                    continue;
+
+                elements[index].Focus();
+                return;
+            }
+        }
+
+        private static bool IsFocusable(VisualElement element)
+        {
+            return element != null && element.panel != null && element.enabledInHierarchy && element.focusable;
+        }
+
+        private void RestoreFocusAfterListRebuild()
+        {
+            var root = uiDocument.rootVisualElement;
+            root.schedule.Execute(() =>
+            {
+                if (!HasValidFocus(root))
+                {
+                    switch (activeFocusSection)
+                    {
+                        case FocusSection.Create:
+                            FocusCreateSection();
+                            break;
+                        case FocusSection.LobbyList:
+                            if (!FocusLobbySection())
+                                FocusCreateSection();
+                            break;
+                        default:
+                            FocusSearchSection();
+                            break;
+                    }
+                }
+            });
+        }
+
+        private static bool HasValidFocus(VisualElement root)
+        {
+            var focused = root?.focusController?.focusedElement as VisualElement;
+            return focused != null && focused.panel != null && root.Contains(focused);
         }
 
         public void SetCreatableStageScenes(System.Collections.Generic.IReadOnlyList<string> sceneNames)
@@ -381,6 +737,15 @@ namespace Koiusa.SteamMultiRuntime
             searchByNameButton = null;
             refreshButton = null;
             leaveButton = null;
+            createSectionHost = null;
+            searchSectionHost = null;
+            listSectionHost = null;
+            createControls.Clear();
+            searchControls.Clear();
+            lobbyRows.Clear();
+            lastCreateControl = null;
+            lastSearchControl = null;
+            lastLobbyRow = null;
         }
     }
 }

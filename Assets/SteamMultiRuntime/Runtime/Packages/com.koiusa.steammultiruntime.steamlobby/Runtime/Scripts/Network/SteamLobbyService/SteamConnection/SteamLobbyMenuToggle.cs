@@ -18,6 +18,8 @@ namespace Koiusa.SteamMultiRuntime
         private bool lastIsInLobby;
         private InputActionBinding toggleBinding;
 
+        public InputActionsConfig InputActionsConfig => inputActionsConfig;
+
         private void Awake()
         {
             if (lobbyUiDocument == null)
@@ -42,7 +44,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            var action = inputActionsConfig?.FindAction("Player/MenuToggle");
+            var action = inputActionsConfig?.FindAction("UI/MenuToggle");
             toggleBinding = InputActionBinding.Bind(action, OnTogglePerformed);
 
             if (lobbyService != null)

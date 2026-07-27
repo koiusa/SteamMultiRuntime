@@ -204,6 +204,7 @@ MonoBehaviour:
     rawReference:
       rid: -2
   uiAssets: {fileID: 11400000, guid: 20f7720e98a6f314785f2a56050019fc, type: 2}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   references:
     version: 2
     RefIds:

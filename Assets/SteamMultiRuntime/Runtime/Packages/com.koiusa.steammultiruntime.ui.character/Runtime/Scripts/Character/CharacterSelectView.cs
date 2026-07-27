@@ -18,7 +18,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private ScrollView listScroll;
         private Label selectedNameLabel;
-        private Button confirmButton;
         private int selectedIndex = -1;
 
         private Action<int> onSelect;
@@ -46,7 +45,6 @@ namespace Koiusa.SteamMultiRuntime
                 layoutAsset.CloneTree(root);
                 listScroll = root.Q<ScrollView>("character-list-view");
                 selectedNameLabel = root.Q<Label>("selected-name-label");
-                confirmButton = root.Q<Button>("confirm-button");
             }
             else
             {
@@ -58,22 +56,16 @@ namespace Koiusa.SteamMultiRuntime
             if (selectedNameLabel != null)
                 selectedNameLabel.text = "選択中: なし";
 
-            if (confirmButton != null)
-                confirmButton.SetEnabled(false);
         }
 
         public void BindActions(Action<int> onSelectCallback, Action onConfirmCallback)
         {
             onSelect = onSelectCallback;
             onConfirm = onConfirmCallback;
-            if (confirmButton != null)
-                confirmButton.clicked += onConfirm;
         }
 
         public void UnbindActions()
         {
-            if (confirmButton != null && onConfirm != null)
-                confirmButton.clicked -= onConfirm;
             onSelect = null;
             onConfirm = null;
         }
@@ -95,8 +87,20 @@ namespace Koiusa.SteamMultiRuntime
             if (selectedNameLabel != null)
                 selectedNameLabel.text = $"選択中: {displayName}";
 
-            if (confirmButton != null)
-                confirmButton.SetEnabled(selectedIndex >= 0);
+        }
+
+        public void FocusSelectedCharacter()
+        {
+            if (characterButtons.Count == 0)
+                return;
+
+            var index = selectedIndex >= 0 && selectedIndex < characterButtons.Count ? selectedIndex : 0;
+            var button = characterButtons[index];
+            button.schedule.Execute(() =>
+            {
+                button.Focus();
+                listScroll?.ScrollTo(button);
+            });
         }
 
         private void PopulateCharacterList(string[] modelIds)
@@ -111,6 +115,7 @@ namespace Koiusa.SteamMultiRuntime
                 btn.text = modelIds[i];
                 btn.AddToClassList("character-select-option");
                 btn.style.backgroundColor = NormalColor;
+                btn.RegisterCallback<FocusInEvent>(_ => OnCharacterButtonFocused(index));
                 characterButtons.Add(btn);
                 listScroll.Add(btn);
             }
@@ -143,16 +148,20 @@ namespace Koiusa.SteamMultiRuntime
             selectedNameLabel.style.marginBottom = 16;
             container.Add(selectedNameLabel);
 
-            confirmButton = new Button();
-            confirmButton.text = "確定";
-            confirmButton.style.width = 200;
-            confirmButton.style.height = 48;
-            container.Add(confirmButton);
         }
 
         private void OnCharacterButtonClicked(int index)
         {
             onSelect?.Invoke(index);
+            onConfirm?.Invoke();
         }
+
+        private void OnCharacterButtonFocused(int index)
+        {
+            // Directional navigation should preview the focused character just as
+            // pointing at an option and clicking it does with a mouse.
+            onSelect?.Invoke(index);
+        }
+
     }
 }

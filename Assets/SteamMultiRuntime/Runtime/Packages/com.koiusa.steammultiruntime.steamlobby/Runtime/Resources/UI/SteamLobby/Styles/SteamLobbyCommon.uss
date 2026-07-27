@@ -30,10 +30,10 @@
 .field > .unity-text-field__input {
     color: rgba(220, 244, 255, 255);
     background-color: rgba(9, 24, 40, 230);
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-right-width: 1px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
     border-top-color: rgba(83, 208, 235, 180);
     border-bottom-color: rgba(83, 208, 235, 180);
     border-left-color: rgba(83, 208, 235, 180);
@@ -42,11 +42,158 @@
 
 .field > .unity-base-text-field__input:focus,
 .field > .unity-text-field__input:focus {
-    background-color: rgba(15, 40, 66, 245);
-    border-top-color: rgba(117, 236, 255, 220);
-    border-bottom-color: rgba(117, 236, 255, 220);
-    border-left-color: rgba(117, 236, 255, 220);
-    border-right-color: rgba(117, 236, 255, 220);
+    background-color: rgba(22, 65, 96, 255);
+    border-top-color: rgba(108, 230, 255, 255);
+    border-bottom-color: rgba(108, 230, 255, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 255);
+}
+
+.field > .unity-base-popup-field__input {
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-color: rgba(83, 208, 235, 90);
+    border-bottom-color: rgba(83, 208, 235, 90);
+    border-left-color: rgba(83, 208, 235, 90);
+    border-right-color: rgba(83, 208, 235, 90);
+}
+
+.field > .unity-base-popup-field__input:focus {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(22, 65, 96, 255);
+    -unity-font-style: bold;
+    scale: 1.03 1.03;
+    border-top-color: rgba(108, 230, 255, 255);
+    border-bottom-color: rgba(108, 230, 255, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 255);
+}
+
+.button,
+.join-button {
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+}
+
+.join-button {
+    border-top-color: rgba(88, 237, 255, 90);
+    border-bottom-color: rgba(88, 237, 255, 90);
+    border-left-color: rgba(88, 237, 255, 90);
+    border-right-color: rgba(88, 237, 255, 90);
+}
+
+.button:focus,
+.join-button:focus {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(18, 105, 140, 255);
+    -unity-font-style: bold;
+    scale: 1.06 1.06;
+    border-top-color: rgba(108, 230, 255, 255);
+    border-bottom-color: rgba(108, 230, 255, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 255);
+}
+
+/* Shared runtime DropdownField popup. The popup is attached directly to the
+   panel root, so these classes intentionally aren't scoped below .field. */
+.unity-base-dropdown__container-outer {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    background-color: rgba(5, 17, 30, 252);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-color: rgba(108, 230, 255, 255);
+    border-bottom-color: rgba(108, 230, 255, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 255);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.unity-base-dropdown__container-inner {
+    background-color: rgba(7, 22, 38, 255);
+}
+
+.unity-base-dropdown__item {
+    min-height: 38px;
+    padding-left: 8px;
+    padding-right: 10px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    margin-bottom: 2px;
+    color: rgba(218, 242, 255, 255);
+    background-color: rgba(12, 34, 54, 255);
+    border-left-width: 4px;
+    border-left-color: rgba(51, 168, 204, 80);
+}
+
+.unity-base-dropdown__item:hover {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(18, 105, 140, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    -unity-font-style: bold;
+}
+
+.unity-base-dropdown__item:checked {
+    color: rgba(159, 247, 255, 255);
+    background-color: rgba(13, 62, 86, 255);
+    border-left-color: rgba(115, 245, 166, 255);
+}
+
+.unity-base-dropdown__item:checked:hover {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(18, 105, 140, 255);
+    border-left-color: rgba(115, 245, 166, 255);
+}
+
+.unity-base-dropdown__item-content {
+    flex-direction: row;
+    align-items: center;
+}
+
+.unity-base-dropdown__checkmark {
+    width: 10px;
+    min-width: 10px;
+    margin-right: 7px;
+}
+
+.unity-base-dropdown__item:checked > .unity-base-dropdown__item-content > .unity-base-dropdown__checkmark {
+    background-color: rgba(115, 245, 166, 255);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.unity-base-dropdown__label {
+    color: rgba(218, 242, 255, 255);
+    -unity-text-align: middle-left;
+}
+
+.unity-base-dropdown__item:hover .unity-base-dropdown__label,
+.unity-base-dropdown__item:checked:hover .unity-base-dropdown__label {
+    color: rgba(255, 255, 255, 255);
+}
+
+.unity-base-dropdown__item:checked .unity-base-dropdown__label {
+    color: rgba(159, 247, 255, 255);
+}
+
+.unity-base-dropdown__separator {
+    height: 1px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    background-color: rgba(83, 208, 235, 150);
 }
 
 .lobby-list,
@@ -66,7 +213,66 @@
     background-color: rgba(7, 14, 24, 230);
 }
 
+.lobby-list:focus {
+    border-top-color: rgba(108, 230, 255, 255);
+    border-bottom-color: rgba(108, 230, 255, 255);
+    border-left-color: rgba(108, 230, 255, 255);
+    border-right-color: rgba(108, 230, 255, 255);
+}
+
 .lobby-row-label,
 .online-member-name {
     color: rgba(218, 238, 255, 255);
+}
+
+.lobby-focus-group {
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-color: rgba(51, 168, 204, 35);
+    border-bottom-color: rgba(51, 168, 204, 35);
+    border-left-color: rgba(51, 168, 204, 35);
+    border-right-color: rgba(51, 168, 204, 35);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.lobby-focus-group--active {
+    background-color: rgba(10, 38, 58, 90);
+    border-top-color: rgba(108, 230, 255, 230);
+    border-bottom-color: rgba(108, 230, 255, 230);
+    border-left-color: rgba(108, 230, 255, 230);
+    border-right-color: rgba(108, 230, 255, 230);
+}
+
+.focus-group-title {
+    margin-bottom: 8px;
+    color: rgba(162, 208, 230, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.lobby-focus-group--active > .focus-group-title {
+    color: rgba(153, 248, 255, 255);
+}
+
+.lobby-search-focus-group {
+    margin-bottom: 10px;
+}
+
+.lobby-create-focus-group {
+    margin-bottom: 10px;
+}
+
+.lobby-list-focus-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 140px;
 }

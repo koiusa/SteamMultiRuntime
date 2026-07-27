@@ -26,14 +26,14 @@
 .create-panel .field > .unity-text-field__input {
     color: rgba(220, 244, 255, 255);
     background-color: rgba(9, 24, 40, 230);
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-color: rgba(83, 208, 235, 180);
-    border-bottom-color: rgba(83, 208, 235, 180);
-    border-left-color: rgba(83, 208, 235, 180);
-    border-right-color: rgba(83, 208, 235, 180);
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-color: rgba(83, 208, 235, 60);
+    border-bottom-color: rgba(83, 208, 235, 60);
+    border-left-color: rgba(83, 208, 235, 60);
+    border-right-color: rgba(83, 208, 235, 60);
 }
 
 .create-panel .field > .unity-base-text-field__input:focus,

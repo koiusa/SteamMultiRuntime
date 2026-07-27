@@ -51,14 +51,18 @@ namespace Koiusa.SteamMultiRuntime
             var ids = ResolveModelIdList();
             view.Build(ids);
             view.BindActions(OnCharacterSelected, OnConfirmClicked);
+            uiDocument.rootVisualElement.RegisterCallback<NavigationCancelEvent>(OnCancelNavigation);
 
             pendingIndex = UserProfile != null ? UserProfile.SelectedModelIndex : 0;
             view.SetSelectedIndex(pendingIndex, ids != null ? ids.modelIds : null);
+            view.FocusSelectedCharacter();
         }
 
         private void OnDisable()
         {
-            view.UnbindActions();
+            if (uiDocument != null)
+                uiDocument.rootVisualElement.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
+            view?.UnbindActions();
         }
 
         private CharacterModelIdList ResolveModelIdList()
@@ -89,7 +93,20 @@ namespace Koiusa.SteamMultiRuntime
 
             UserProfile.SetSelectedModel(pendingIndex);
             UserProfile.ApplySelectedModel();
+            Close();
+        }
+
+        private void OnCancelNavigation(NavigationCancelEvent evt)
+        {
+            evt.PreventDefault();
+            evt.StopPropagation();
+            Close();
+        }
+
+        private void Close()
+        {
             gameObject.SetActive(false);
+            UnityEngine.Cursor.visible = false;
         }
     }
 }

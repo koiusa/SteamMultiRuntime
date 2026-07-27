@@ -84,14 +84,14 @@
     margin-right: 6px;
     color: rgba(166, 241, 255, 255);
     background-color: rgba(20, 42, 72, 255);
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-color: rgba(88, 237, 255, 200);
-    border-bottom-color: rgba(88, 237, 255, 200);
-    border-left-color: rgba(88, 237, 255, 200);
-    border-right-color: rgba(88, 237, 255, 200);
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-top-color: rgba(88, 237, 255, 70);
+    border-bottom-color: rgba(88, 237, 255, 70);
+    border-left-color: rgba(88, 237, 255, 70);
+    border-right-color: rgba(88, 237, 255, 70);
 }
 
 .button:hover {
