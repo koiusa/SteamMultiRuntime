@@ -302,6 +302,23 @@ namespace Koiusa.SteamMultiRuntime
             return HandleLobbyLeftAsyncInternal(sceneNameToUnload);
         }
 
+        public async Task PrepareForLobbyExitAsync()
+        {
+            if (isApplicationQuitting || string.IsNullOrWhiteSpace(sceneCatalog.defaultSceneName))
+            {
+                return;
+            }
+
+            var defaultScene = SceneUtilityEx.GetLoadedScene(sceneCatalog.defaultSceneName);
+            if (defaultScene.IsValid() && defaultScene.isLoaded)
+            {
+                SceneLoadUtility.ActivatePresentationScene(defaultScene);
+                return;
+            }
+
+            await ExecuteWithLoadingScopeAsync(LoadDefaultSceneCoreAsync);
+        }
+
         private async Task HandleLobbyLeftAsyncInternal(string sceneNameToUnload)
         {
             // NetworkManager raises its disconnect callback while Unity is quitting.

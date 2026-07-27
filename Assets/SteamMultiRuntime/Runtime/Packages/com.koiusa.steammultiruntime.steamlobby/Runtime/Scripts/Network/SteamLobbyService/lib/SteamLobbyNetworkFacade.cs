@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Netcode.Transports.Facepunch;
 using Unity.Collections;
 using Unity.Netcode;
@@ -11,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     internal sealed class SteamLobbyNetworkFacade : INetworkSessionController
     {
         private readonly bool useAdditiveClientSynchronization;
+        private readonly HashSet<int> protectedClientSceneHandles = new HashSet<int>();
 
         public event Action Stopping;
 
@@ -53,13 +55,13 @@ namespace Koiusa.SteamMultiRuntime
                 return networkManager.IsHost;
             }
 
-            ConfigureClientSynchronizationMode(networkManager);
             var started = networkManager.StartHost();
             if (!started)
             {
                 return false;
             }
 
+            ConfigureServerSynchronizationMode(networkManager);
             EnableActiveSceneSynchronization(networkManager);
             return true;
         }
@@ -84,6 +86,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            ConfigureServerSynchronizationMode(networkManager);
             EnableActiveSceneSynchronization(networkManager);
             return true;
         }
@@ -108,7 +111,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             transport.targetSteamId = hostSteamId;
-            ConfigureClientSynchronizationMode(networkManager);
+            ConfigureClientSceneProtection(networkManager);
             return networkManager.StartClient();
         }
 
@@ -305,6 +308,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool TryActivateBootstrapScene(string excludedPresentationSceneReference)
         {
+            protectedClientSceneHandles.Clear();
+
             for (var index = 0; index < SceneManager.sceneCount; index++)
             {
                 var scene = SceneManager.GetSceneAt(index);
@@ -318,6 +323,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 if (SceneManager.SetActiveScene(scene))
                 {
+                    protectedClientSceneHandles.Add(scene.handle);
                     return true;
                 }
             }
@@ -338,7 +344,7 @@ namespace Koiusa.SteamMultiRuntime
             return true;
         }
 
-        private void ConfigureClientSynchronizationMode(NetworkManager networkManager)
+        private void ConfigureServerSynchronizationMode(NetworkManager networkManager)
         {
             if (!useAdditiveClientSynchronization || networkManager.SceneManager == null)
             {
@@ -346,6 +352,17 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkManager.SceneManager.SetClientSynchronizationMode(LoadSceneMode.Additive);
+        }
+
+        private void ConfigureClientSceneProtection(NetworkManager networkManager)
+        {
+            if (!useAdditiveClientSynchronization || networkManager.SceneManager == null)
+            {
+                return;
+            }
+
+            networkManager.SceneManager.VerifySceneBeforeUnloading = scene =>
+                !protectedClientSceneHandles.Contains(scene.handle);
         }
 
         public bool IsHostListening()

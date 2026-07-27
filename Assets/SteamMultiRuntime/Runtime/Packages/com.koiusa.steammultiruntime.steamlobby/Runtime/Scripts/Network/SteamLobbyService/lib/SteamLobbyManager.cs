@@ -458,6 +458,14 @@ namespace Koiusa.SteamMultiRuntime
 
             try
             {
+                // A client shutdown can unload its synchronized active scene. Keep a
+                // local presentation scene active first so bootstrap/root objects are
+                // not lost with the lobby stage.
+                if (!preserveScene && sceneTransitionController != null)
+                {
+                    await sceneTransitionController.PrepareForLobbyExitAsync();
+                }
+
                 if (shutdownNetwork && networkSession != null)
                 {
                     if (wasHost && !string.IsNullOrWhiteSpace(previousLobbySceneName))
