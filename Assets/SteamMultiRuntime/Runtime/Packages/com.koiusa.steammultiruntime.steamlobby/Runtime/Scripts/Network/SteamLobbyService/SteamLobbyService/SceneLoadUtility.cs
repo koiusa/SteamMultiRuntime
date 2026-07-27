@@ -50,6 +50,10 @@ namespace Koiusa.SteamMultiRuntime
                 && existingScene.isLoaded
                 && SceneManager.GetActiveScene() == existingScene)
             {
+                // Editorの開始SceneやNetcode側で先にロードされたSceneでも、
+                // Presentation Scene内のCameraを残さない。ここでreturnすると
+                // Cinemachineが追従していても、このSceneの固定CameraがGame画面を描画する。
+                ApplyLoadedSceneCameraSettings(existingScene, disableCamerasInLoadedScenes);
                 return true;
             }
 

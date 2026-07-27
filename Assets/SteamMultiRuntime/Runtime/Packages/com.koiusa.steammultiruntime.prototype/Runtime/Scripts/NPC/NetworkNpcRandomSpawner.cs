@@ -200,6 +200,10 @@ namespace Koiusa.SteamMultiRuntime
 
                 if (networkObject != null && useNetworkSpawn)
                 {
+                    // OnNetworkSpawn がプレイヤー用の既定モデルを解決する前に、
+                    // NPC 固有のモデル情報を確定させる。
+                    PrepareNetworkModelSync(instance);
+
                     if (!networkObject.IsSpawned)
                     {
                         networkObject.Spawn();
@@ -210,7 +214,10 @@ namespace Koiusa.SteamMultiRuntime
                     Debug.LogWarning("[NetworkNpcRandomSpawner] Spawned network NPC prefab does not have NetworkObject. Spawned as local instance.", instance);
                 }
 
-                ApplyModelSync(instance, useNetworkSpawn);
+                if (!useNetworkSpawn)
+                {
+                    ApplyLocalModelSync(instance);
+                }
 
                 usedSpawnPositions.Add(spawnPosition);
                 spawnedCount++;
@@ -231,38 +238,43 @@ namespace Koiusa.SteamMultiRuntime
             return useNetworkSpawn ? networkNpcPrefab : localNpcPrefab;
         }
 
-        private void ApplyModelSync(GameObject instance, bool useNetworkSpawn)
+        private void PrepareNetworkModelSync(GameObject instance)
         {
             if (npcModelIdList == null)
             {
                 return;
             }
 
-            if (useNetworkSpawn)
+            var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
+            if (networkModelSync == null)
             {
-                var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
-                if (networkModelSync != null)
-                {
-                    networkModelSync.modelIdList = npcModelIdList;
-
-                    if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
-                    {
-                        networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
-                    }
-                }
+                return;
             }
-            else
-            {
-                var localModelSync = instance.GetComponent<LocalPlayerModelSync>();
-                if (localModelSync != null)
-                {
-                    localModelSync.modelIdList = npcModelIdList;
 
-                    if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
-                    {
-                        localModelSync.ApplyModelIndex(Random.Range(0, npcModelIdList.modelIds.Length));
-                    }
-                }
+            networkModelSync.modelIdList = npcModelIdList;
+            if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
+            {
+                networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
+            }
+        }
+
+        private void ApplyLocalModelSync(GameObject instance)
+        {
+            if (npcModelIdList == null)
+            {
+                return;
+            }
+
+            var localModelSync = instance.GetComponent<LocalPlayerModelSync>();
+            if (localModelSync == null)
+            {
+                return;
+            }
+
+            localModelSync.modelIdList = npcModelIdList;
+            if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
+            {
+                localModelSync.ApplyModelIndex(Random.Range(0, npcModelIdList.modelIds.Length));
             }
         }
 

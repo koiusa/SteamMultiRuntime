@@ -1,5 +1,6 @@
 using TNRD;
 using Unity.Cinemachine;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -12,25 +13,14 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private SerializableInterface<IFocusMarkerContext> _contextSource;
 
         private IFocusMarkerContext _context;
-        private CameraTrackMarker _activeMarker;
+        private GameObject _activePlayer;
         private Transform _defaultTrackingTarget;
 
         private void Awake()
         {
             ResolveContext();
-
-            var followCamera = GetComponent<CinemachineCamera>();
-            if (followCamera != null)
-            {
-                _cinemachineCamera = followCamera;
-            }
-
-            if (_cinemachineCamera == null)
-            {
-                _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
-            }
-
-            _defaultTrackingTarget = FocusMarkerUtility.GetTrackingTarget(_cinemachineCamera);
+            ResolveCamera();
+            _defaultTrackingTarget = _cinemachineCamera != null ? _cinemachineCamera.Follow : null;
         }
 
         private void OnEnable()
@@ -38,7 +28,7 @@ namespace Koiusa.SteamMultiRuntime
             ResolveContext();
             if (_context != null)
             {
-                _context.StateChanged += OnContextStateChanged;
+                _context.StateChanged += RefreshTrackingTarget;
             }
 
             RefreshTrackingTarget();
@@ -48,97 +38,76 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (_context != null)
             {
-                _context.StateChanged -= OnContextStateChanged;
+                _context.StateChanged -= RefreshTrackingTarget;
             }
 
-            ClearActiveMarker();
-            RestoreDefaultTarget();
+            SetTrackingTarget(null);
         }
 
         private void Update()
         {
-            if (_context != null && !_context.IsActive)
+            // PlayerObjectは接続通知より後に生成されることがあるため、現在の割り当てを
+            // 軽量な参照比較で監視する。シーン全体のMarker検索は行わない。
+            var player = ResolvePlayerObject();
+            if (player != _activePlayer)
             {
-                if (_activeMarker != null)
-                {
-                    ClearActiveMarker();
-                    RestoreDefaultTarget();
-                }
-
-                return;
+                SetTrackingTarget(player);
             }
-
-            if (_activeMarker != null)
-            {
-                if (_activeMarker.IsLocalPlayerMarker)
-                {
-                    return;
-                }
-
-                ClearActiveMarker();
-                RestoreDefaultTarget();
-            }
-
-            TryResolveLocalMarker();
-        }
-
-        private void OnContextStateChanged()
-        {
-            RefreshTrackingTarget();
         }
 
         private void RefreshTrackingTarget()
         {
+            SetTrackingTarget(ResolvePlayerObject());
+        }
+
+        private GameObject ResolvePlayerObject()
+        {
             if (_context != null && !_context.IsActive)
             {
-                ClearActiveMarker();
-                RestoreDefaultTarget();
-                return;
+                return null;
             }
 
-            if (_activeMarker != null && !_activeMarker.IsLocalPlayerMarker)
+            if (_context is NetworkFocusMarkerContext)
             {
-                ClearActiveMarker();
-                RestoreDefaultTarget();
+                return NetworkManager.Singleton?.LocalClient?.PlayerObject?.gameObject;
             }
 
-            TryResolveLocalMarker();
+            if (LocalManager.Singleton != null && LocalManager.Singleton.LocalPlayerObject != null)
+            {
+                return LocalManager.Singleton.LocalPlayerObject;
+            }
+
+            var controller = FindFirstObjectByType<LocalPlayerController>();
+            return controller != null ? controller.gameObject : null;
         }
 
-        private void TryResolveLocalMarker()
+        private void SetTrackingTarget(GameObject player)
         {
-            var markers = FindObjectsByType<CameraTrackMarker>(FindObjectsSortMode.None);
-            for (var i = 0; i < markers.Length; i++)
-            {
-                if (!markers[i].IsLocalPlayerMarker)
-                {
-                    continue;
-                }
-
-                AttachToMarker(markers[i]);
-                return;
-            }
-        }
-
-        private void AttachToMarker(CameraTrackMarker marker)
-        {
-            _activeMarker = marker;
-            if (marker == null)
+            _activePlayer = player;
+            if (_cinemachineCamera == null)
             {
                 return;
             }
 
-            FocusMarkerUtility.SetTrackingTarget(_cinemachineCamera, marker.transform);
+            var marker = player != null
+                ? player.GetComponentInChildren<CameraTrackMarker>(true)
+                : null;
+            _cinemachineCamera.Follow = marker != null
+                ? marker.transform
+                : _defaultTrackingTarget;
         }
 
-        private void RestoreDefaultTarget()
+        private void ResolveCamera()
         {
-            FocusMarkerUtility.SetTrackingTarget(_cinemachineCamera, _defaultTrackingTarget);
-        }
-
-        private void ClearActiveMarker()
-        {
-            _activeMarker = null;
+            var attachedCamera = GetComponent<CinemachineCamera>();
+            if (attachedCamera != null)
+            {
+                _cinemachineCamera = attachedCamera;
+            }
+            else if (_cinemachineCamera == null)
+            {
+                _cinemachineCamera = GetComponentInChildren<CinemachineCamera>();
+            }
         }
 
         private void ResolveContext()
@@ -148,19 +117,12 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var configuredContext = _contextSource != null ? _contextSource.Value : null;
-            if (configuredContext != null)
-            {
-                _context = configuredContext;
-                return;
-            }
-
-            _context = GetComponent<IFocusMarkerContext>();
+            _context = _contextSource != null ? _contextSource.Value : null;
             if (_context == null)
             {
-                _context = GetComponentInChildren<IFocusMarkerContext>();
+                _context = GetComponent<IFocusMarkerContext>()
+                    ?? GetComponentInChildren<IFocusMarkerContext>();
             }
         }
     }
 }
-
