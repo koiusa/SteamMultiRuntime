@@ -36,4 +36,8 @@ Documentation
 - [Character Architecture](Documentation/CharacterArchitecture.md)
 - [Session Architecture](Documentation/SessionArchitecture.md)
 - [Editor Specification](Documentation/EditorSpecification.md)
+
+Development Notes
+-----------------
+
 - [Development Notes](Documentation/DevelopmentNotes.md)

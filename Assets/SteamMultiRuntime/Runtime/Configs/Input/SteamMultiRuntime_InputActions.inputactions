@@ -538,6 +538,17 @@
                 },
                 {
                     "name": "",
+                    "id": "f7245965-6652-4050-849d-0cdf081e63fa",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "StrafeToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "1eeccb07-1837-4d3a-9cc9-4e4bc69f6544",
                     "path": "<Keyboard>/leftShift",
                     "interactions": "",
@@ -1310,11 +1321,33 @@
                 },
                 {
                     "name": "",
+                    "id": "610ad17b-2957-4cb8-a675-da30573c9351",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "PreviousSection",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f6cd0eb2-eb3d-410b-a434-86d9481987de",
                     "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
+                    "action": "NextSection",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "35d015ca-931f-456d-96d8-8864600d6e2e",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "NextSection",
                     "isComposite": false,
                     "isPartOfComposite": false
