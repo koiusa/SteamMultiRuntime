@@ -114,6 +114,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            view?.Dispose();
             previousSectionBinding?.Dispose();
             previousSectionBinding = null;
             nextSectionBinding?.Dispose();
