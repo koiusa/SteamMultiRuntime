@@ -1,6 +1,7 @@
 using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -46,11 +47,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             var action = inputActionsConfig?.FindAction("UI/MenuToggle");
             toggleBinding = InputActionBinding.Bind(action, OnTogglePerformed);
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
             if (lobbyService != null)
             {
                 lobbyService.StateChanged += OnLobbyStateChanged;
-                hasLobbyMembershipState = false;
+                lastIsInLobby = lobbyService.IsInLobby;
+                hasLobbyMembershipState = true;
             }
         }
 
@@ -58,6 +61,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             toggleBinding?.Dispose();
             toggleBinding = null;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
 
             if (lobbyService != null)
             {
@@ -68,6 +72,11 @@ namespace Koiusa.SteamMultiRuntime
         private void OnTogglePerformed(InputAction.CallbackContext context)
         {
             Toggle();
+        }
+
+        private void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
+        {
+            Hide();
         }
 
         private void OnLobbyStateChanged()

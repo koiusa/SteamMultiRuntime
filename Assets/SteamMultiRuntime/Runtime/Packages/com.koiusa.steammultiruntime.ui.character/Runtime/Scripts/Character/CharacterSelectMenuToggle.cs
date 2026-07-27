@@ -1,6 +1,7 @@
 using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -31,17 +32,24 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("UI/CharacterMenuToggle"), OnTogglePerformed);
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
         }
 
         private void OnDisable()
         {
             toggleBinding?.Dispose();
             toggleBinding = null;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
         }
 
         private void OnTogglePerformed(InputAction.CallbackContext context)
         {
             Toggle();
+        }
+
+        private void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
+        {
+            Hide();
         }
 
         public void Toggle()
