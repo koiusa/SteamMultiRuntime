@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:Style src="InputGuideOverlay.uss" />
-    <ui:VisualElement name="input-guide-overlay" class="input-guide-screen">
+    <ui:VisualElement name="input-guide-overlay" class="input-guide-screen" picking-mode="Ignore">
         <ui:VisualElement class="input-guide-panel">
             <ui:VisualElement class="input-guide-header">
                 <ui:VisualElement class="input-guide-accent" />

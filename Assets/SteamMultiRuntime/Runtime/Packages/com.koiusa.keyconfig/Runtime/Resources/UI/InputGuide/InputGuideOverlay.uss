@@ -1,13 +1,15 @@
 .input-guide-screen {
     position: absolute;
     left: 24px;
+    right: 24px;
+    top: 24px;
     bottom: 24px;
-    width: 1132px;
-    flex-direction: row;
-    align-items: flex-end;
 }
 
 .input-guide-panel {
+    position: absolute;
+    left: 0;
+    bottom: 0;
     width: 620px;
     padding: 14px;
     background-color: rgba(9, 14, 23, 0.88);
@@ -26,8 +28,10 @@
 }
 
 .input-operation-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 500px;
-    margin-left: 12px;
     padding: 12px;
     background-color: rgba(9, 14, 23, 0.92);
     border-left-width: 1px;

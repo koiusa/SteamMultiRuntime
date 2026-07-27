@@ -27,7 +27,7 @@ namespace Koiusa.Keyconfig.Runtime
         [Header("UI Toolkit")]
         [SerializeField] private VisualTreeAsset layoutAsset;
         [SerializeField] private InputBindingIconResolver iconResolver;
-        [SerializeField] private bool startVisible = true;
+        [SerializeField] private bool startVisible;
         [SerializeField] private bool autoSwitchDeviceLayout = true;
         [SerializeField, Range(0f, 16f)] private float stickVisualTravel = 8f;
         [SerializeField, Range(0f, 0.5f)] private float stickVisualDeadzone = 0.08f;
