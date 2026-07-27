@@ -16,7 +16,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private LoadingSplashPresenter splashPresenter;
         private int splashVisibilityVersion;
-        private const float SceneReadyWaitTimeoutSeconds = 15f;
         private readonly HashSet<ILoadingSplashEventSource> subscribedSources = new HashSet<ILoadingSplashEventSource>();
 
         private void Awake()
@@ -116,7 +115,6 @@ namespace Koiusa.SteamMultiRuntime
         private async Task HideSplashWhenCharacterReadyAsync(int visibilityVersion)
         {
             await WaitForCharacterReadyAsync(visibilityVersion);
-            await WaitForSceneReadyAsync(visibilityVersion);
 
             if (!isActiveAndEnabled || visibilityVersion != splashVisibilityVersion)
             {
@@ -144,30 +142,5 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private async Task WaitForSceneReadyAsync(int visibilityVersion)
-        {
-            var startedAt = Time.realtimeSinceStartup;
-
-            while (isActiveAndEnabled && visibilityVersion == splashVisibilityVersion)
-            {
-                if (IsSceneReadyForSplashHide())
-                {
-                    return;
-                }
-
-                if (Time.realtimeSinceStartup - startedAt >= SceneReadyWaitTimeoutSeconds)
-                {
-                    return;
-                }
-
-                await Task.Yield();
-            }
-        }
-
-        private bool IsSceneReadyForSplashHide()
-        {
-            var activeScene = SceneManager.GetActiveScene();
-            return activeScene.IsValid() && activeScene.isLoaded;
-        }
     }
 }

@@ -23,7 +23,6 @@ namespace Koiusa.SteamMultiRuntime
         private SteamLobbyManager lobbyManager;
         private SteamLobbyQualityTracker qualityTracker;
         private SteamLobbyNetworkFacade networkFacade;
-        private bool isSubscribedToNetworkEvents;
         private bool isSubscribedToLobbyEvents;
         private bool hasPerformedExitCleanup;
 
@@ -110,6 +109,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkFacade = new SteamLobbyNetworkFacade(useAdditiveClientSynchronization);
+            networkFacade.ClientDisconnected += OnClientDisconnected;
 
             lobbyManager = new SteamLobbyManager(steamConnection, SceneLoader, networkFacade);
             lobbyManager.SetDefaultMaxPlayers(defaultMaxPlayers);
@@ -139,13 +139,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            SubscribeNetworkEvents();
             SubscribeLobbyEvents();
         }
 
         private void OnDisable()
         {
-            UnsubscribeNetworkEvents();
             UnsubscribeLobbyEvents();
         }
 
@@ -157,6 +155,10 @@ namespace Koiusa.SteamMultiRuntime
         private void OnDestroy()
         {
             Application.quitting -= OnApplicationQuitting;
+            if (networkFacade != null)
+            {
+                networkFacade.ClientDisconnected -= OnClientDisconnected;
+            }
             PerformExitCleanup();
         }
 
@@ -388,28 +390,6 @@ namespace Koiusa.SteamMultiRuntime
             StateChanged?.Invoke();
         }
 
-        private void SubscribeNetworkEvents()
-        {
-            if (isSubscribedToNetworkEvents)
-            {
-                return;
-            }
-
-            if (networkFacade != null && networkFacade.SubscribeClientDisconnect(OnClientDisconnected))
-            {
-                isSubscribedToNetworkEvents = true;
-            }
-        }
-
-        private void UnsubscribeNetworkEvents()
-        {
-            if (isSubscribedToNetworkEvents)
-            {
-                networkFacade?.UnsubscribeClientDisconnect(OnClientDisconnected);
-                isSubscribedToNetworkEvents = false;
-            }
-        }
-
         private void SubscribeLobbyEvents()
         {
             if (isSubscribedToLobbyEvents)
@@ -457,8 +437,20 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             ClientDisconnected?.Invoke(clientId);
-            Log("Client disconnected from server, leaving lobby");
-            LeaveLobby();
+            Log("Client disconnected from server, recovering from host loss");
+            _ = RecoverFromHostLossAsync();
+        }
+
+        private async Task RecoverFromHostLossAsync()
+        {
+            try
+            {
+                await lobbyManager.RecoverFromHostLossAsync();
+            }
+            catch (Exception exception)
+            {
+                LogError($"Failed to recover from host loss: {exception}");
+            }
         }
 
         private void OnLobbyDataChanged(Lobby lobby)

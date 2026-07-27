@@ -42,6 +42,7 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         private readonly List<Lobby> lobbyCache = new List<Lobby>();
+        private readonly HashSet<ulong> departedLobbyIds = new HashSet<ulong>();
         private readonly SemaphoreSlim lobbyRefreshGate = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim lobbyTransitionGate = new SemaphoreSlim(1, 1);
         private readonly LobbyState lobbyState = new LobbyState();
@@ -309,6 +310,28 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        public async Task RecoverFromHostLossAsync()
+        {
+            await lobbyTransitionGate.WaitAsync();
+            transitionScope?.BeginLobbyTransitionScope();
+            try
+            {
+                if (!lobbyState.CurrentLobby.HasValue || lobbyState.IsHost)
+                {
+                    return;
+                }
+
+                await LeaveCurrentLobbyInternalAsync(
+                    shutdownNetwork: true,
+                    refreshLobbies: true);
+            }
+            finally
+            {
+                transitionScope?.EndLobbyTransitionScope();
+                lobbyTransitionGate.Release();
+            }
+        }
+
         /// <summary>
         /// アプリ終了時用。終了フレームでは非同期のシーン処理を完了できないため、
         /// Steam ロビーを閉じて退出する操作だけを同期的に確定する。
@@ -435,6 +458,20 @@ namespace Koiusa.SteamMultiRuntime
 
             onLobbyMemberLeft?.Invoke(lobby, friend);
             NotifyStateChanged();
+
+            // Steam can report the host leaving before the lobby owner change or the
+            // closed session metadata reaches the remaining members. Compare against
+            // the host captured on entry so a deleted host lobby cannot remain active
+            // locally just because the Lobby snapshot in this callback is stale.
+            if (!lobbyState.IsHost
+                && lobbyState.HostSteamId != 0
+                && friend.Id == lobbyState.HostSteamId)
+            {
+                onLobbyHostChanged?.Invoke(lobby);
+                _ = RecoverFromHostLossAsync();
+                return;
+            }
+
             ValidateCurrentLobbyState(lobby);
         }
 
@@ -442,7 +479,10 @@ namespace Koiusa.SteamMultiRuntime
 
         public ulong GetHostSteamId() => lobbyState.HostSteamId;
 
-        private async Task LeaveCurrentLobbyInternalAsync(bool shutdownNetwork, bool refreshLobbies, bool preserveScene = false)
+        private async Task LeaveCurrentLobbyInternalAsync(
+            bool shutdownNetwork,
+            bool refreshLobbies,
+            bool preserveScene = false)
         {
             if (!lobbyState.CurrentLobby.HasValue)
             {
@@ -451,21 +491,28 @@ namespace Koiusa.SteamMultiRuntime
 
             var currentLobby = lobbyState.CurrentLobby;
             var wasHost = lobbyState.IsHost;
+            var hasLeftSteamLobby = false;
             var previousLobbySceneName = sceneLoader != null ? sceneLoader.LobbySceneName : string.Empty;
 
             lobbyState.Clear();
-            NotifyStateChanged();
+            if (currentLobby.HasValue)
+            {
+                departedLobbyIds.Add(currentLobby.Value.Id);
+                lobbyCache.RemoveAll(lobby => lobby.Id == currentLobby.Value.Id);
+            }
+            PublishLobbyCache();
+
+            // A departing client does not need to remain in the Steam lobby while
+            // network shutdown and scene recovery are running. Leave immediately so
+            // membership does not linger during asynchronous scene operations.
+            if (!wasHost && currentLobby.HasValue)
+            {
+                currentLobby.Value.Leave();
+                hasLeftSteamLobby = true;
+            }
 
             try
             {
-                // A client shutdown can unload its synchronized active scene. Keep a
-                // local presentation scene active first so bootstrap/root objects are
-                // not lost with the lobby stage.
-                if (!preserveScene && sceneTransitionController != null)
-                {
-                    await sceneTransitionController.PrepareForLobbyExitAsync();
-                }
-
                 if (shutdownNetwork && networkSession != null)
                 {
                     if (wasHost && !string.IsNullOrWhiteSpace(previousLobbySceneName))
@@ -480,6 +527,11 @@ namespace Koiusa.SteamMultiRuntime
                 {
                     await sceneLoader.HandleLobbyLeftAsync(previousLobbySceneName);
                 }
+
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
             }
             finally
             {
@@ -490,7 +542,7 @@ namespace Koiusa.SteamMultiRuntime
                     CloseLobby(currentLobby.Value);
                 }
 
-                if (currentLobby.HasValue)
+                if (!hasLeftSteamLobby && currentLobby.HasValue)
                 {
                     currentLobby.Value.Leave();
                 }
@@ -512,19 +564,20 @@ namespace Koiusa.SteamMultiRuntime
             if (IsLobbySessionClosed(lobby))
             {
                 onLobbySessionClosed?.Invoke(lobby);
-                _ = LeaveCurrentLobbyInternalAsync(shutdownNetwork: false, refreshLobbies: true);
+                _ = RecoverFromHostLossAsync();
                 return;
             }
 
             if (HasHostChanged(lobby))
             {
                 onLobbyHostChanged?.Invoke(lobby);
-                _ = LeaveCurrentLobbyInternalAsync(shutdownNetwork: false, refreshLobbies: true);
+                _ = RecoverFromHostLossAsync();
             }
         }
 
         private void BeginLobbyEntry(Lobby lobby, ulong hostSteamId)
         {
+            departedLobbyIds.Remove(lobby.Id);
             lobbyState.CurrentLobby = lobby;
             lobbyState.HostSteamId = hostSteamId;
 
@@ -549,7 +602,9 @@ namespace Koiusa.SteamMultiRuntime
         private void ReplaceLobbyCache(List<Lobby> snapshot)
         {
             lobbyCache.Clear();
-            lobbyCache.AddRange(snapshot);
+            lobbyCache.AddRange(snapshot.Where(lobby =>
+                !departedLobbyIds.Contains(lobby.Id)
+                && !IsLobbySessionClosed(lobby)));
         }
 
         private void UpsertLobbyCache(Lobby lobby)

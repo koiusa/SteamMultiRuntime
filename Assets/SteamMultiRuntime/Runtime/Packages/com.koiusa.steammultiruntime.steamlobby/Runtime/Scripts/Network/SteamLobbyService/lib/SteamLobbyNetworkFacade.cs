@@ -12,33 +12,16 @@ namespace Koiusa.SteamMultiRuntime
     {
         private readonly bool useAdditiveClientSynchronization;
         private int? protectedClientSceneHandle;
+        private NetworkManager stopEventSource;
+        private TaskCompletionSource<bool> stopCompletion;
+        private bool hasObservedNetworkStop;
 
         public event Action Stopping;
+        public event Action<ulong> ClientDisconnected;
 
         public SteamLobbyNetworkFacade(bool useAdditiveClientSynchronization)
         {
             this.useAdditiveClientSynchronization = useAdditiveClientSynchronization;
-        }
-
-        public bool SubscribeClientDisconnect(Action<ulong> callback)
-        {
-            var networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
-            {
-                return false;
-            }
-
-            networkManager.OnClientDisconnectCallback += callback;
-            return true;
-        }
-
-        public void UnsubscribeClientDisconnect(Action<ulong> callback)
-        {
-            var networkManager = NetworkManager.Singleton;
-            if (networkManager != null)
-            {
-                networkManager.OnClientDisconnectCallback -= callback;
-            }
         }
 
         public bool TryStartHost()
@@ -49,11 +32,14 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            EnsureStopEventSubscription(networkManager);
+
             if (networkManager.IsListening)
             {
                 return networkManager.IsHost;
             }
 
+            hasObservedNetworkStop = false;
             var started = networkManager.StartHost();
             if (!started)
             {
@@ -73,6 +59,8 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            EnsureStopEventSubscription(networkManager);
+
             if (networkManager.IsListening)
             {
                 return networkManager.IsServer && !networkManager.IsClient;
@@ -80,6 +68,7 @@ namespace Koiusa.SteamMultiRuntime
 
             // Start server without the server itself being a player
             // Set server to not be part of the connected clients count
+            hasObservedNetworkStop = false;
             if (!networkManager.StartServer())
             {
                 return false;
@@ -98,6 +87,8 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            EnsureStopEventSubscription(networkManager);
+
             var transport = networkManager.GetComponent<FacepunchTransport>();
             if (transport == null)
             {
@@ -111,37 +102,64 @@ namespace Koiusa.SteamMultiRuntime
 
             transport.targetSteamId = hostSteamId;
             ConfigureClientSceneProtection(networkManager);
+            hasObservedNetworkStop = false;
             return networkManager.StartClient();
         }
 
         public Task StopAsync()
         {
             var networkManager = NetworkManager.Singleton;
-            if (networkManager == null || !networkManager.IsListening)
+            if (networkManager == null || !networkManager.IsListening || hasObservedNetworkStop)
             {
                 return Task.CompletedTask;
             }
 
+            EnsureStopEventSubscription(networkManager);
             Stopping?.Invoke();
-            var completion = new TaskCompletionSource<bool>();
-            var wasServer = networkManager.IsServer;
-
-            void OnStopped(bool _)
-            {
-                if (wasServer)
-                    networkManager.OnServerStopped -= OnStopped;
-                else
-                    networkManager.OnClientStopped -= OnStopped;
-                completion.TrySetResult(true);
-            }
-
-            if (wasServer)
-                networkManager.OnServerStopped += OnStopped;
-            else
-                networkManager.OnClientStopped += OnStopped;
+            stopCompletion = new TaskCompletionSource<bool>();
 
             networkManager.Shutdown(discardMessageQueue: true);
-            return completion.Task;
+
+            // When the remote host has already disappeared, NGO can complete the
+            // client stop synchronously before/while Shutdown is called without
+            // delivering another OnClientStopped callback to this subscriber.
+            if (!networkManager.IsListening)
+            {
+                stopCompletion.TrySetResult(true);
+            }
+
+            return stopCompletion.Task;
+        }
+
+        private void EnsureStopEventSubscription(NetworkManager networkManager)
+        {
+            if (stopEventSource == networkManager)
+            {
+                return;
+            }
+
+            if (stopEventSource != null)
+            {
+                stopEventSource.OnClientStopped -= OnNetworkStopped;
+                stopEventSource.OnServerStopped -= OnNetworkStopped;
+                stopEventSource.OnClientDisconnectCallback -= OnClientDisconnected;
+            }
+
+            stopEventSource = networkManager;
+            stopEventSource.OnClientStopped += OnNetworkStopped;
+            stopEventSource.OnServerStopped += OnNetworkStopped;
+            stopEventSource.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+
+        private void OnNetworkStopped(bool _)
+        {
+            hasObservedNetworkStop = true;
+            stopCompletion?.TrySetResult(true);
+        }
+
+        private void OnClientDisconnected(ulong clientId)
+        {
+            ClientDisconnected?.Invoke(clientId);
         }
 
         public async Task<bool> SwitchStageSceneAsync(string targetSceneReference, string previousSceneReference)

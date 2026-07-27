@@ -6,6 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     internal interface INetworkSessionController
     {
         event Action Stopping;
+        event Action<ulong> ClientDisconnected;
 
         bool TryActivateBootstrapScene(string excludedPresentationSceneReference);
         bool TryStartHost();

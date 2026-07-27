@@ -275,7 +275,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private async Task LoadDefaultSceneAsync()
         {
-            await ExecuteWithLoadingScopeAsync(LoadDefaultSceneCoreAsync);
+            await ExecuteWithLoadingScopeAsync(() => LoadDefaultSceneCoreAsync());
         }
 
         private async Task LoadDefaultSceneCoreAsync()
@@ -300,23 +300,6 @@ namespace Koiusa.SteamMultiRuntime
         public Task HandleLobbyLeftAsync(string sceneNameToUnload)
         {
             return HandleLobbyLeftAsyncInternal(sceneNameToUnload);
-        }
-
-        public async Task PrepareForLobbyExitAsync()
-        {
-            if (isApplicationQuitting || string.IsNullOrWhiteSpace(sceneCatalog.defaultSceneName))
-            {
-                return;
-            }
-
-            var defaultScene = SceneUtilityEx.GetLoadedScene(sceneCatalog.defaultSceneName);
-            if (defaultScene.IsValid() && defaultScene.isLoaded)
-            {
-                SceneLoadUtility.ActivatePresentationScene(defaultScene);
-                return;
-            }
-
-            await ExecuteWithLoadingScopeAsync(LoadDefaultSceneCoreAsync);
         }
 
         private async Task HandleLobbyLeftAsyncInternal(string sceneNameToUnload)

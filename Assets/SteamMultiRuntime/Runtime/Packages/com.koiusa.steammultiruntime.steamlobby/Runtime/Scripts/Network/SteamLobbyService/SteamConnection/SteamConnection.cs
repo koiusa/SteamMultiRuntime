@@ -1,3 +1,4 @@
+using System;
 using Steamworks;
 using UnityEngine;
 
@@ -10,6 +11,9 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private bool logoutOnDestroy = false;
 
         public bool IsInitialized => SteamClient.IsValid;
+        public event Action Initialized;
+
+        private bool hasPublishedInitialized;
 
         private void Awake()
         {
@@ -46,6 +50,11 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (SteamClient.IsValid)
             {
+                if (!hasPublishedInitialized)
+                {
+                    hasPublishedInitialized = true;
+                    Initialized?.Invoke();
+                }
                 Debug.Log($"Steam session detected: {SteamClient.Name} ({SteamClient.SteamId})");
                 return true;
             }

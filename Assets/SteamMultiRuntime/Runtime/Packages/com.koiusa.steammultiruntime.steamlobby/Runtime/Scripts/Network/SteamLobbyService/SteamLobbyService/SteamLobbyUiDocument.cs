@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Steamworks;
@@ -17,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
     public class SteamLobbyUiDocument : MonoBehaviour
     {
         [SerializeField] private SteamLobbyService lobbyService;
+        [SerializeField] private SteamConnection steamConnection;
         [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
         [SerializeField] private SteamLobbyUiAssets uiAssets;
 
@@ -26,7 +26,6 @@ namespace Koiusa.SteamMultiRuntime
         private UIDocument uiDocument;
         private LobbyView view;
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
-        private Coroutine waitForSteamCoroutine;
         private bool isRefreshing;
         private string lobbyNameSearch = string.Empty;
         private InputActionBinding previousSectionBinding;
@@ -47,6 +46,11 @@ namespace Koiusa.SteamMultiRuntime
             if (lobbyService == null)
             {
                 lobbyService = FindFirstObjectByType<SteamLobbyService>();
+            }
+
+            if (steamConnection == null)
+            {
+                steamConnection = FindFirstObjectByType<SteamConnection>(FindObjectsInactive.Include);
             }
 
             if (SceneLoader == null)
@@ -91,7 +95,20 @@ namespace Koiusa.SteamMultiRuntime
                 uiAssets.SubscribeSteamMatchmakingEvents();
             }
 
-            waitForSteamCoroutine = StartCoroutine(WaitForSteamAndRefresh());
+            if (steamConnection != null)
+            {
+                steamConnection.Initialized += OnSteamInitialized;
+            }
+
+            Render();
+            if (SteamClient.IsValid)
+            {
+                OnSteamInitialized();
+            }
+            else
+            {
+                view.SetWaitingConnection();
+            }
         }
 
         private void OnDisable()
@@ -101,10 +118,9 @@ namespace Koiusa.SteamMultiRuntime
             nextSectionBinding?.Dispose();
             nextSectionBinding = null;
 
-            if (waitForSteamCoroutine != null)
+            if (steamConnection != null)
             {
-                StopCoroutine(waitForSteamCoroutine);
-                waitForSteamCoroutine = null;
+                steamConnection.Initialized -= OnSteamInitialized;
             }
 
             if (lobbyService != null)
@@ -309,25 +325,16 @@ namespace Koiusa.SteamMultiRuntime
             _ = RefreshAsync();
         }
 
-        private IEnumerator WaitForSteamAndRefresh()
+        private void OnSteamInitialized()
         {
-            Render();
-
-            while (isActiveAndEnabled && !SteamClient.IsValid)
-            {
-                view.SetWaitingConnection();
-                yield return null;
-            }
-
             if (!isActiveAndEnabled)
             {
-                yield break;
+                return;
             }
 
             Render();
             view.SetInfo("Ready");
             _ = RefreshAsync();
-            waitForSteamCoroutine = null;
         }
 
         private void OnSceneLoadingFinished()
