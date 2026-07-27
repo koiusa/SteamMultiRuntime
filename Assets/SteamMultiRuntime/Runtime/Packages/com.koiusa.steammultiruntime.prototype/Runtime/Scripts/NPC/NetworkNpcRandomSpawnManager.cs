@@ -44,8 +44,9 @@ namespace Koiusa.SteamMultiRuntime
                     return null;
                 }
 
-                return InstantiateInScene(prefab, anchor.transform, position, rotation)
-                    .GetComponent<NetworkObject>();
+                var instance = InstantiateInScene(prefab, anchor.transform, position, rotation);
+                anchor.ConfigureDebugDisplay(instance);
+                return instance.GetComponent<NetworkObject>();
             }
 
             public override void Destroy(NetworkObject networkObject)
@@ -88,15 +89,23 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0.1f)] private float fallbackNavMeshSampleRadius = 24f;
         [SerializeField, Min(1)] private int fallbackMaxAttemptsPerNpc = 12;
 
+        [Header("Debug")]
+        [SerializeField] private bool showNpcDestinationMarkers;
+        [SerializeField] private bool showCharacterDebugUi;
+
         private bool hasSpawned;
         private bool hasSubscribedServerStarted;
         private bool isWaitingForActiveScene;
         private bool isWaitingForNavMeshUpdate;
         private bool isWaitingForNetworkSceneLoad;
         private NetworkSceneManager subscribedSceneManager;
+        private Transform debugDisplayRoot;
+        private readonly CharacterDebugDisplayState characterDebugDisplayState = new();
 
         private void Awake()
         {
+            characterDebugDisplayState.IsVisible = showCharacterDebugUi;
+            EnsureDebugDisplayRoot();
             if (!SpawnAnchors.Contains(this))
             {
                 SpawnAnchors.Add(this);
@@ -200,6 +209,27 @@ namespace Koiusa.SteamMultiRuntime
         public void SpawnNow()
         {
             TrySpawnOrSubscribe();
+        }
+
+        public void SetNpcDestinationMarkersVisible(bool visible)
+        {
+            showNpcDestinationMarkers = visible;
+            EnsureDebugDisplayRoot().gameObject.SetActive(visible);
+        }
+
+        public void SetCharacterDebugUiVisible(bool visible)
+        {
+            showCharacterDebugUi = visible;
+            characterDebugDisplayState.IsVisible = visible;
+        }
+
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                SetNpcDestinationMarkersVisible(showNpcDestinationMarkers);
+                SetCharacterDebugUiVisible(showCharacterDebugUi);
+            }
         }
 
         private void TrySpawnOrSubscribe()
@@ -357,6 +387,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 var spawnerScene = gameObject.scene;
                 var instance = InstantiateInScene(prefab, transform, finalSpawnPosition, Quaternion.identity);
+                ConfigureDebugDisplay(instance);
 
                 var networkObject = instance.GetComponent<NetworkObject>();
 
@@ -402,6 +433,38 @@ namespace Koiusa.SteamMultiRuntime
         private GameObject SelectNpcPrefab(bool useNetworkSpawn)
         {
             return useNetworkSpawn ? networkNpcPrefab : localNpcPrefab;
+        }
+
+        private void ConfigureDebugDisplay(GameObject instance)
+        {
+            var markerParent = EnsureDebugDisplayRoot();
+            var markers = instance.GetComponentsInChildren<NpcDestinationDebugMarker>(includeInactive: true);
+            for (var i = 0; i < markers.Length; i++)
+            {
+                markers[i].SetMarkerParent(markerParent);
+            }
+
+            var scope = instance.GetComponent<CharacterDebugDisplayScope>();
+            if (scope == null)
+            {
+                scope = instance.AddComponent<CharacterDebugDisplayScope>();
+            }
+
+            scope.Bind(characterDebugDisplayState);
+        }
+
+        private Transform EnsureDebugDisplayRoot()
+        {
+            if (debugDisplayRoot != null)
+            {
+                return debugDisplayRoot;
+            }
+
+            var root = new GameObject("NpcDebugDisplay");
+            root.transform.SetParent(transform, worldPositionStays: false);
+            root.SetActive(showNpcDestinationMarkers);
+            debugDisplayRoot = root.transform;
+            return debugDisplayRoot;
         }
 
         private void RegisterNetworkPrefabHandler()

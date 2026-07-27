@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
         private GameObject _marker;
         private Vector3 _currentDestination;
         private bool _hasDestination;
+        private Transform _markerParent;
         private System.Action<Vector3> _destinationProvider;
 
         private void Awake()
@@ -114,6 +115,15 @@ namespace Koiusa.SteamMultiRuntime
             DestroyMarker();
         }
 
+        public void SetMarkerParent(Transform markerParent)
+        {
+            _markerParent = markerParent;
+            if (_marker != null)
+            {
+                _marker.transform.SetParent(_markerParent, worldPositionStays: true);
+            }
+        }
+
         private void OnDestinationSet(Vector3 destination)
         {
             SetDestination(destination);
@@ -128,8 +138,11 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             // 親を指定したInstantiateで、Active SceneではなくNPCと同じSceneへ直接生成する。
-            var marker = Instantiate(markerPrefab, _currentDestination, Quaternion.identity, transform);
-            marker.transform.SetParent(null, true);
+            var marker = Instantiate(markerPrefab, _currentDestination, Quaternion.identity, _markerParent ?? transform);
+            if (_markerParent == null)
+            {
+                marker.transform.SetParent(null, worldPositionStays: true);
+            }
             marker.transform.localScale = Vector3.one * Mathf.Max(0.01f, markerScale);
             marker.name = $"{gameObject.name}_DestinationMarker";
             return marker;

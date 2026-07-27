@@ -32,6 +32,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private IPlayerController playerController;
         private NetworkBehaviour targetNetworkBehaviour;
+        private CharacterDebugDisplayScope displayScope;
         private Rect windowRect;
         private Vector2 scrollPosition;
         private bool isVisible;
@@ -66,6 +67,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnGUI()
         {
+            if (!IsDisplayAllowed())
+            {
+                return;
+            }
+
             if (!isVisible)
             {
                 DrawLauncherButtonIfNeeded();
@@ -110,6 +116,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             var root = targetRoot != null ? targetRoot : FindPlayerRoot();
 
+            displayScope = GetComponentInParent<CharacterDebugDisplayScope>();
             playerController = root.GetComponent<IPlayerController>();
             targetNetworkBehaviour = root.GetComponent<NetworkBehaviour>();
 
@@ -180,7 +187,26 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool IsPrimaryRenderer()
         {
-            return ActiveInstances.Count > 0 && ReferenceEquals(ActiveInstances[0], this);
+            for (var i = 0; i < ActiveInstances.Count; i++)
+            {
+                var candidate = ActiveInstances[i];
+                if (candidate != null && candidate.IsDisplayAllowed())
+                {
+                    return ReferenceEquals(candidate, this);
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsDisplayAllowed()
+        {
+            if (displayScope == null)
+            {
+                displayScope = GetComponentInParent<CharacterDebugDisplayScope>();
+            }
+
+            return displayScope == null || displayScope.IsVisible;
         }
 
         private void DrawAggregateWindow(int windowId)
@@ -545,6 +571,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var candidate = ActiveInstances[i];
                 if (candidate == null)
+                {
+                    continue;
+                }
+
+                if (!candidate.IsDisplayAllowed())
                 {
                     continue;
                 }
