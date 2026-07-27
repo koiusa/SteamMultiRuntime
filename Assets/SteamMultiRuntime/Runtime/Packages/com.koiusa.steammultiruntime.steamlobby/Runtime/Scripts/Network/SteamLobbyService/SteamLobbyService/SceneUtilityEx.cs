@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace Koiusa.SteamMultiRuntime
@@ -30,6 +31,20 @@ namespace Koiusa.SteamMultiRuntime
                 return Task.CompletedTask;
             }
 
+            return completionSource.Task;
+        }
+
+        internal static Task WaitForFrameRenderedAsync()
+        {
+            var completionSource = new TaskCompletionSource<bool>();
+
+            void OnEndFrameRendering(ScriptableRenderContext _, Camera[] __)
+            {
+                RenderPipelineManager.endFrameRendering -= OnEndFrameRendering;
+                completionSource.TrySetResult(true);
+            }
+
+            RenderPipelineManager.endFrameRendering += OnEndFrameRendering;
             return completionSource.Task;
         }
 

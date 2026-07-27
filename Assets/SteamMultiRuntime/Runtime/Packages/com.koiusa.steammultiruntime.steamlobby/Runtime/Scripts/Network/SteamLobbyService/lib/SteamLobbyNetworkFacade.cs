@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Netcode.Transports.Facepunch;
 using Unity.Collections;
@@ -10,6 +11,9 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal sealed class SteamLobbyNetworkFacade : INetworkSessionController
     {
+        private const string SessionEndingMessageName = "Koiusa.SteamMultiRuntime.SessionEnding";
+        private const string SessionEndingAcknowledgedMessageName = "Koiusa.SteamMultiRuntime.SessionEndingAcknowledged";
+
         private readonly bool useAdditiveClientSynchronization;
         private int? protectedClientSceneHandle;
         private NetworkManager stopEventSource;
@@ -17,9 +21,13 @@ namespace Koiusa.SteamMultiRuntime
         private bool observesClientUnitySceneLoads;
         private TaskCompletionSource<bool> stopCompletion;
         private bool hasObservedNetworkStop;
+        private bool isSessionEndingHandlerRegistered;
+        private readonly HashSet<ulong> pendingSessionEndingAcknowledgements = new();
+        private TaskCompletionSource<bool> sessionEndingAcknowledgements;
 
         public event Action Stopping;
         public event Action<ulong> ClientDisconnected;
+        public event Action RemoteSessionEnding;
 
         public SteamLobbyNetworkFacade(bool useAdditiveClientSynchronization)
         {
@@ -38,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (networkManager.IsListening)
             {
+                RegisterSessionEndingHandlers(networkManager);
                 return networkManager.IsHost;
             }
 
@@ -48,6 +57,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            RegisterSessionEndingHandlers(networkManager);
             ConfigureServerSynchronizationMode(networkManager);
             EnableActiveSceneSynchronization(networkManager);
             return true;
@@ -65,6 +75,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (networkManager.IsListening)
             {
+                RegisterSessionEndingHandlers(networkManager);
                 return networkManager.IsServer && !networkManager.IsClient;
             }
 
@@ -76,6 +87,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
+            RegisterSessionEndingHandlers(networkManager);
             ConfigureServerSynchronizationMode(networkManager);
             EnableActiveSceneSynchronization(networkManager);
             return true;
@@ -101,13 +113,62 @@ namespace Koiusa.SteamMultiRuntime
 
             if (networkManager.IsListening)
             {
+                RegisterSessionEndingHandlers(networkManager);
                 return networkManager.IsClient && !networkManager.IsServer;
             }
 
             transport.targetSteamId = hostSteamId;
             ConfigureClientSceneProtection(networkManager);
             hasObservedNetworkStop = false;
-            return networkManager.StartClient();
+            var started = networkManager.StartClient();
+            if (started)
+            {
+                // NGO initializes CustomMessagingManager as part of StartClient.
+                // Registering before this call can be discarded by that reset.
+                RegisterSessionEndingHandlers(networkManager);
+            }
+
+            return started;
+        }
+
+        public async Task NotifyClientsSessionEndingAsync()
+        {
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null
+                || !networkManager.IsListening
+                || !networkManager.IsServer
+                || networkManager.CustomMessagingManager == null)
+            {
+                return;
+            }
+
+            pendingSessionEndingAcknowledgements.Clear();
+            foreach (var clientId in networkManager.ConnectedClientsIds)
+            {
+                if (clientId != NetworkManager.ServerClientId)
+                {
+                    pendingSessionEndingAcknowledgements.Add(clientId);
+                }
+            }
+
+            if (pendingSessionEndingAcknowledgements.Count == 0)
+            {
+                return;
+            }
+
+            sessionEndingAcknowledgements = new TaskCompletionSource<bool>();
+            var acknowledgementTask = sessionEndingAcknowledgements.Task;
+            using var writer = new FastBufferWriter(sizeof(byte), Allocator.Temp);
+            writer.WriteValueSafe((byte)1);
+            TrySendNamedMessageToAllClients(
+                SessionEndingMessageName,
+                writer,
+                NetworkDelivery.ReliableSequenced);
+
+            // ACK is the normal completion path. The timeout is only a fail-safe so
+            // a broken/disappearing peer can never block host exit indefinitely.
+            await Task.WhenAny(acknowledgementTask, Task.Delay(1000));
+            CompleteSessionEndingAcknowledgements();
         }
 
         public Task StopAsync()
@@ -165,6 +226,75 @@ namespace Koiusa.SteamMultiRuntime
                 SceneManager.sceneLoaded -= OnClientUnitySceneLoaded;
                 observesClientUnitySceneLoads = false;
             }
+
+            CompleteSessionEndingAcknowledgements();
+            UnregisterSessionEndingHandlers();
+        }
+
+        private void RegisterSessionEndingHandlers(NetworkManager networkManager)
+        {
+            if (isSessionEndingHandlerRegistered || networkManager.CustomMessagingManager == null)
+            {
+                return;
+            }
+
+            networkManager.CustomMessagingManager.RegisterNamedMessageHandler(
+                SessionEndingMessageName,
+                OnSessionEndingMessage);
+            networkManager.CustomMessagingManager.RegisterNamedMessageHandler(
+                SessionEndingAcknowledgedMessageName,
+                OnSessionEndingAcknowledgedMessage);
+            isSessionEndingHandlerRegistered = true;
+        }
+
+        private void UnregisterSessionEndingHandlers()
+        {
+            if (!isSessionEndingHandlerRegistered)
+            {
+                return;
+            }
+
+            var networkManager = stopEventSource;
+            networkManager?.CustomMessagingManager?.UnregisterNamedMessageHandler(SessionEndingMessageName);
+            networkManager?.CustomMessagingManager?.UnregisterNamedMessageHandler(SessionEndingAcknowledgedMessageName);
+            isSessionEndingHandlerRegistered = false;
+        }
+
+        private void OnSessionEndingMessage(ulong senderClientId, FastBufferReader _)
+        {
+            RemoteSessionEnding?.Invoke();
+
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager?.CustomMessagingManager == null || !networkManager.IsClient)
+            {
+                return;
+            }
+
+            using var writer = new FastBufferWriter(sizeof(byte), Allocator.Temp);
+            writer.WriteValueSafe((byte)1);
+            networkManager.CustomMessagingManager.SendNamedMessage(
+                SessionEndingAcknowledgedMessageName,
+                senderClientId,
+                writer,
+                NetworkDelivery.ReliableSequenced);
+        }
+
+        private void OnSessionEndingAcknowledgedMessage(ulong senderClientId, FastBufferReader _)
+        {
+            if (!pendingSessionEndingAcknowledgements.Remove(senderClientId)
+                || pendingSessionEndingAcknowledgements.Count != 0)
+            {
+                return;
+            }
+
+            sessionEndingAcknowledgements?.TrySetResult(true);
+        }
+
+        private void CompleteSessionEndingAcknowledgements()
+        {
+            pendingSessionEndingAcknowledgements.Clear();
+            sessionEndingAcknowledgements?.TrySetResult(true);
+            sessionEndingAcknowledgements = null;
         }
 
         private void EnsureClientSceneActivationSubscription(NetworkManager networkManager)
@@ -221,6 +351,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnClientDisconnected(ulong clientId)
         {
+            if (pendingSessionEndingAcknowledgements.Remove(clientId)
+                && pendingSessionEndingAcknowledgements.Count == 0)
+            {
+                sessionEndingAcknowledgements?.TrySetResult(true);
+            }
+
             ClientDisconnected?.Invoke(clientId);
         }
 
@@ -431,19 +567,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             return false;
-        }
-
-        public bool TryGetLocalClientId(out ulong localClientId)
-        {
-            var networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
-            {
-                localClientId = 0;
-                return false;
-            }
-
-            localClientId = networkManager.LocalClientId;
-            return true;
         }
 
         private void ConfigureServerSynchronizationMode(NetworkManager networkManager)

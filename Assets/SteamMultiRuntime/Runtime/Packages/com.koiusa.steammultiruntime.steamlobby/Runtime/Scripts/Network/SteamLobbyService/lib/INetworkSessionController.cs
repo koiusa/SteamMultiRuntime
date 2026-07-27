@@ -7,11 +7,13 @@ namespace Koiusa.SteamMultiRuntime
     {
         event Action Stopping;
         event Action<ulong> ClientDisconnected;
+        event Action RemoteSessionEnding;
 
         bool TryActivateBootstrapScene(string excludedPresentationSceneReference);
         bool TryStartHost();
         bool TryStartServer();
         bool TryStartClient(ulong hostSteamId);
+        Task NotifyClientsSessionEndingAsync();
         Task<bool> SwitchStageSceneAsync(string targetSceneReference, string previousSceneReference);
         Task<bool> WaitForClientStageSceneAsync(string sceneReference);
         Task<bool> UnloadStageSceneAsync(string sceneReference);

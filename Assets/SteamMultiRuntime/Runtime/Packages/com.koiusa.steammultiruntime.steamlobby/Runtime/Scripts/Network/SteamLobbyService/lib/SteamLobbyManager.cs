@@ -300,12 +300,14 @@ namespace Koiusa.SteamMultiRuntime
         public async Task LeaveCurrentLobbyAsync()
         {
             await lobbyTransitionGate.WaitAsync();
+            transitionScope?.BeginLobbyTransitionScope();
             try
             {
                 await LeaveCurrentLobbyInternalAsync(shutdownNetwork: true, refreshLobbies: true);
             }
             finally
             {
+                transitionScope?.EndLobbyTransitionScope();
                 lobbyTransitionGate.Release();
             }
         }
@@ -511,8 +513,27 @@ namespace Koiusa.SteamMultiRuntime
                 hasLeftSteamLobby = true;
             }
 
+            // Notify clients before Netcode unloads their synchronized scene. This
+            // gives them a deterministic event to show transition UI first.
+            if (wasHost && currentLobby.HasValue)
+            {
+                if (networkSession != null)
+                {
+                    await networkSession.NotifyClientsSessionEndingAsync();
+                }
+                CloseLobby(currentLobby.Value);
+            }
+
             try
             {
+                // On clients, NetworkManager shutdown can unload synchronized scenes.
+                // Make the local default scene active before shutdown so there is no
+                // frame where the lobby scene is gone but its replacement is absent.
+                if (!wasHost && !preserveScene && sceneTransitionController != null)
+                {
+                    await sceneTransitionController.PrepareForLobbyExitAsync();
+                }
+
                 if (shutdownNetwork && networkSession != null)
                 {
                     if (wasHost && !string.IsNullOrWhiteSpace(previousLobbySceneName))
@@ -536,11 +557,6 @@ namespace Koiusa.SteamMultiRuntime
             finally
             {
                 onLobbyLeft?.Invoke();
-
-                if (wasHost && currentLobby.HasValue)
-                {
-                    CloseLobby(currentLobby.Value);
-                }
 
                 if (!hasLeftSteamLobby && currentLobby.HasValue)
                 {

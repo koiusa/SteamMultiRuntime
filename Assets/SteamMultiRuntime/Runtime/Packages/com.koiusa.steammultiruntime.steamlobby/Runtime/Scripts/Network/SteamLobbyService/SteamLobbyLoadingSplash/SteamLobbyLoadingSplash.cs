@@ -17,6 +17,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool isSubscribed;
         private ISteamLobbySceneLoader subscribedSceneLoader;
+        private Network.ILobbyExitEventSource subscribedExitEventSource;
+        private bool isLobbyExitInProgress;
 
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
         private GameObject splashUiObject;
@@ -25,12 +27,14 @@ namespace Koiusa.SteamMultiRuntime
         private VisualElement splashOverlayElement;
         private VisualElement splashImageElement;
         private Label splashMessageElement;
-        private int splashVisibilityVersion;
 
         private void Awake()
         {
             ResolveSceneLoader();
             ResolveNetworkManager();
+            EnsureSplashUi();
+            RefreshSplashUi();
+            HideSplashUi();
         }
 
         private void OnEnable()
@@ -38,20 +42,22 @@ namespace Koiusa.SteamMultiRuntime
             ResolveSceneLoader();
             ResolveNetworkManager();
             SubscribeLoaderEvents();
+            SubscribeExitEvents();
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void OnDisable()
         {
-            splashVisibilityVersion++;
             SceneManager.sceneLoaded -= OnSceneLoaded;
             UnsubscribeLoaderEvents();
+            UnsubscribeExitEvents();
             HideSplashUi();
         }
 
         private void OnDestroy()
         {
             UnsubscribeLoaderEvents();
+            UnsubscribeExitEvents();
 
             if (splashUiObject != null)
             {
@@ -135,11 +141,64 @@ namespace Koiusa.SteamMultiRuntime
             subscribedSceneLoader = null;
         }
 
+        private void SubscribeExitEvents()
+        {
+            var source = GetComponentInParent<Network.ILobbyExitEventSource>()
+                ?? FindFirstObjectByType<SteamLobbyService>(FindObjectsInactive.Include) as Network.ILobbyExitEventSource;
+            if (source == null || subscribedExitEventSource == source)
+            {
+                return;
+            }
+
+            UnsubscribeExitEvents();
+            source.LobbyExitStarted += OnLobbyExitStarted;
+            source.LobbyExitFinished += OnLobbyExitFinished;
+            subscribedExitEventSource = source;
+
+            // An exit can begin before this component subscribes or while scenes are
+            // replacing UI documents. Recover the current state after subscribing so
+            // the start notification cannot be lost.
+            if (source.IsLobbyExitInProgress)
+            {
+                OnLobbyExitStarted();
+            }
+            else
+            {
+                isLobbyExitInProgress = false;
+            }
+        }
+
+        private void UnsubscribeExitEvents()
+        {
+            if (subscribedExitEventSource == null)
+            {
+                return;
+            }
+
+            subscribedExitEventSource.LobbyExitStarted -= OnLobbyExitStarted;
+            subscribedExitEventSource.LobbyExitFinished -= OnLobbyExitFinished;
+            subscribedExitEventSource = null;
+            isLobbyExitInProgress = false;
+        }
+
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             ResolveSceneLoader();
             ResolveNetworkManager();
             SubscribeLoaderEvents();
+            SubscribeExitEvents();
+        }
+
+        private void OnLobbyExitStarted()
+        {
+            isLobbyExitInProgress = true;
+            OnLoadingStarted();
+        }
+
+        private void OnLobbyExitFinished()
+        {
+            isLobbyExitInProgress = false;
+            OnLoadingFinished();
         }
 
         private void OnLoadingStarted()
@@ -149,7 +208,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            splashVisibilityVersion++;
             EnsureSplashUi();
             RefreshSplashUi();
             ShowSplashUi();
@@ -157,7 +215,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnLoadingFinished()
         {
-            if (!showSplashDuringSceneLoad)
+            if (!showSplashDuringSceneLoad || isLobbyExitInProgress)
             {
                 return;
             }

@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbyService : MonoBehaviour
+    public class SteamLobbyService : MonoBehaviour, Network.ILobbyExitEventSource
     {
         [SerializeField] private SteamConnection steamConnection;
         [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
@@ -25,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private SteamLobbyNetworkFacade networkFacade;
         private bool isSubscribedToLobbyEvents;
         private bool hasPerformedExitCleanup;
+        private bool isLeavingLobby;
 
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
 
@@ -62,10 +63,13 @@ namespace Koiusa.SteamMultiRuntime
         public event Action<Lobby> LobbySessionClosed;
         public event Action<Lobby> LobbyHostChanged;
         public event Action<string> ErrorOccurred;
+        public event Action LobbyExitStarted;
+        public event Action LobbyExitFinished;
 
         public bool IsReady => SteamClient.IsValid;
         public bool IsInLobby => lobbyManager?.IsInLobby ?? false;
         public bool IsHost => lobbyManager?.IsHost ?? false;
+        public bool IsLobbyExitInProgress => isLeavingLobby;
         public string LocalPlayerName => IsReady ? SteamClient.Name : "Not Connected";
         public ulong CurrentLobbyId => lobbyManager?.CurrentLobbyId ?? 0;
         public IReadOnlyList<Lobby> LobbyCache => lobbyManager?.LobbyCache ?? new List<Lobby>();
@@ -110,6 +114,7 @@ namespace Koiusa.SteamMultiRuntime
 
             networkFacade = new SteamLobbyNetworkFacade(useAdditiveClientSynchronization);
             networkFacade.ClientDisconnected += OnClientDisconnected;
+            networkFacade.RemoteSessionEnding += OnRemoteSessionEnding;
 
             lobbyManager = new SteamLobbyManager(steamConnection, SceneLoader, networkFacade);
             lobbyManager.SetDefaultMaxPlayers(defaultMaxPlayers);
@@ -117,13 +122,13 @@ namespace Koiusa.SteamMultiRuntime
                 NotifyStateChanged,
                 lobby => LobbyCreated?.Invoke(lobby),
                 lobby => LobbyJoined?.Invoke(lobby),
-                () => LobbyLeft?.Invoke(),
+                OnLobbyLeft,
                 lobbies => LobbiesRefreshed?.Invoke(lobbies),
                 lobby => LobbyDataChanged?.Invoke(lobby),
                 (lobby, friend) => LobbyMemberJoined?.Invoke(lobby, friend),
                 (lobby, friend) => LobbyMemberLeft?.Invoke(lobby, friend),
-                lobby => LobbySessionClosed?.Invoke(lobby),
-                lobby => LobbyHostChanged?.Invoke(lobby),
+                OnLobbySessionClosed,
+                OnLobbyHostChanged,
                 EnsureReady,
                 TryLoadLobbySceneOnEnterAsync);
 
@@ -158,6 +163,7 @@ namespace Koiusa.SteamMultiRuntime
             if (networkFacade != null)
             {
                 networkFacade.ClientDisconnected -= OnClientDisconnected;
+                networkFacade.RemoteSessionEnding -= OnRemoteSessionEnding;
             }
             PerformExitCleanup();
         }
@@ -268,12 +274,13 @@ namespace Koiusa.SteamMultiRuntime
 
         public void LeaveLobby()
         {
-            if (!IsInLobby || lobbyManager == null)
+            if (!IsInLobby || lobbyManager == null || isLeavingLobby)
             {
                 Log("LeaveLobby ignored: not in lobby");
                 return;
             }
 
+            BeginLobbyExit();
             Log("Leaving lobby...");
             _ = LeaveLobbyAsync();
         }
@@ -287,6 +294,10 @@ namespace Koiusa.SteamMultiRuntime
             catch (Exception exception)
             {
                 LogError($"Failed to leave lobby: {exception}");
+            }
+            finally
+            {
+                EndLobbyExit();
             }
         }
 
@@ -418,31 +429,31 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnClientDisconnected(ulong clientId)
         {
-            if (!IsInLobby)
+            if (!IsInLobby || IsHost)
             {
                 return;
             }
 
-            if (networkFacade == null || !networkFacade.TryGetLocalClientId(out var localClientId))
-            {
-                return;
-            }
-
-            var isLocalDisconnect = clientId == localClientId;
-            var isServerDisconnect = clientId == NetworkManager.ServerClientId;
-
-            if (!isLocalDisconnect && !isServerDisconnect)
-            {
-                return;
-            }
-
+            // On a client, NGO can reset LocalClientId before publishing the
+            // disconnect callback. Treat any disconnect observed by the client as
+            // loss of its server session; hosts still ignore peer disconnects above.
+            BeginLobbyExit();
             ClientDisconnected?.Invoke(clientId);
             Log("Client disconnected from server, recovering from host loss");
             _ = RecoverFromHostLossAsync();
         }
 
+        private void OnRemoteSessionEnding()
+        {
+            if (IsInLobby && !IsHost)
+            {
+                BeginLobbyExit();
+            }
+        }
+
         private async Task RecoverFromHostLossAsync()
         {
+            BeginLobbyExit();
             try
             {
                 await lobbyManager.RecoverFromHostLossAsync();
@@ -451,6 +462,52 @@ namespace Koiusa.SteamMultiRuntime
             {
                 LogError($"Failed to recover from host loss: {exception}");
             }
+            finally
+            {
+                EndLobbyExit();
+            }
+        }
+
+        private void OnLobbySessionClosed(Lobby lobby)
+        {
+            BeginLobbyExit();
+            LobbySessionClosed?.Invoke(lobby);
+        }
+
+        private void OnLobbyLeft()
+        {
+            // Scene/network recovery is complete at this point. Lobby list refresh
+            // may still be waiting on Steam, but it must not keep the splash visible.
+            EndLobbyExit();
+            LobbyLeft?.Invoke();
+        }
+
+        private void OnLobbyHostChanged(Lobby lobby)
+        {
+            BeginLobbyExit();
+            LobbyHostChanged?.Invoke(lobby);
+        }
+
+        private void BeginLobbyExit()
+        {
+            if (isLeavingLobby)
+            {
+                return;
+            }
+
+            isLeavingLobby = true;
+            LobbyExitStarted?.Invoke();
+        }
+
+        private void EndLobbyExit()
+        {
+            if (!isLeavingLobby)
+            {
+                return;
+            }
+
+            isLeavingLobby = false;
+            LobbyExitFinished?.Invoke();
         }
 
         private void OnLobbyDataChanged(Lobby lobby)
