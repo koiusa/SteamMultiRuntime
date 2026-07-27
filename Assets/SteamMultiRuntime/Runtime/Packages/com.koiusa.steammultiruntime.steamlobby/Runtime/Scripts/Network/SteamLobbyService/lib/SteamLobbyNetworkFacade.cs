@@ -24,6 +24,8 @@ namespace Koiusa.SteamMultiRuntime
         private bool isSessionEndingHandlerRegistered;
         private readonly HashSet<ulong> pendingSessionEndingAcknowledgements = new();
         private TaskCompletionSource<bool> sessionEndingAcknowledgements;
+        private Rigidbody suspendedHostPlayerBody;
+        private bool suspendedHostPlayerWasKinematic;
 
         public event Action Stopping;
         public event Action<ulong> ClientDisconnected;
@@ -60,6 +62,7 @@ namespace Koiusa.SteamMultiRuntime
             RegisterSessionEndingHandlers(networkManager);
             ConfigureServerSynchronizationMode(networkManager);
             EnableActiveSceneSynchronization(networkManager);
+            SuspendInitialHostPlayerPhysics(networkManager);
             return true;
         }
 
@@ -220,6 +223,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             hasObservedNetworkStop = true;
             stopCompletion?.TrySetResult(true);
+            suspendedHostPlayerBody = null;
 
             if (observesClientUnitySceneLoads)
             {
@@ -396,6 +400,7 @@ namespace Koiusa.SteamMultiRuntime
 
             DisableStageSceneCameras(targetScene);
             SceneManager.SetActiveScene(targetScene);
+            ResumeInitialHostPlayerPhysics();
 
             var previousScene = SceneUtilityEx.GetLoadedScene(previousSceneReference);
             if (previousScene.IsValid()
@@ -413,6 +418,37 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             return true;
+        }
+
+        private void SuspendInitialHostPlayerPhysics(NetworkManager networkManager)
+        {
+            // StartHost spawns its PlayerPrefab synchronously in the bootstrap scene.
+            // The stage load starts immediately afterwards, so allowing the body to
+            // simulate here can make it fall before the stage (and its ground) exists.
+            var playerObject = networkManager.LocalClient?.PlayerObject;
+            var body = playerObject != null ? playerObject.GetComponent<Rigidbody>() : null;
+            if (body == null)
+            {
+                return;
+            }
+
+            suspendedHostPlayerBody = body;
+            suspendedHostPlayerWasKinematic = body.isKinematic;
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+            body.isKinematic = true;
+        }
+
+        private void ResumeInitialHostPlayerPhysics()
+        {
+            if (suspendedHostPlayerBody == null)
+            {
+                return;
+            }
+
+            suspendedHostPlayerBody.isKinematic = suspendedHostPlayerWasKinematic;
+            suspendedHostPlayerBody.WakeUp();
+            suspendedHostPlayerBody = null;
         }
 
         public async Task<bool> UnloadStageSceneAsync(string sceneReference)
