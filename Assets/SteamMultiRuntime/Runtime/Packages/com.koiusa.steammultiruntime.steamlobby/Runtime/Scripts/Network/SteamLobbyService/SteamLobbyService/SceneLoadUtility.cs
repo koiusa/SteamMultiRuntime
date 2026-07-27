@@ -135,6 +135,11 @@ namespace Koiusa.SteamMultiRuntime
                         camera.gameObject.SetActive(false);
                     }
                 }
+
+                foreach (var listener in rootGameObject.GetComponentsInChildren<AudioListener>(true))
+                {
+                    listener.enabled = false;
+                }
             }
 
             // sceneLoaded通知より後にCameraを無効化する経路でも、次の描画を待たず

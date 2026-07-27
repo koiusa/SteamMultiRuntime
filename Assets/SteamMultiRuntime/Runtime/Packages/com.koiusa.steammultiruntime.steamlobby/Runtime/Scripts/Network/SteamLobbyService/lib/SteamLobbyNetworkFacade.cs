@@ -14,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         private int? protectedClientSceneHandle;
         private NetworkManager stopEventSource;
         private NetworkManager clientSceneEventSource;
+        private bool observesClientUnitySceneLoads;
         private TaskCompletionSource<bool> stopCompletion;
         private bool hasObservedNetworkStop;
 
@@ -158,10 +159,25 @@ namespace Koiusa.SteamMultiRuntime
         {
             hasObservedNetworkStop = true;
             stopCompletion?.TrySetResult(true);
+
+            if (observesClientUnitySceneLoads)
+            {
+                SceneManager.sceneLoaded -= OnClientUnitySceneLoaded;
+                observesClientUnitySceneLoads = false;
+            }
         }
 
         private void EnsureClientSceneActivationSubscription(NetworkManager networkManager)
         {
+            if (!observesClientUnitySceneLoads)
+            {
+                // NGOのLoadCompleteより早いUnity側の通知で、シーン配置Cameraを
+                // Awake後・Start前に止める。後から同一ロビー内で切り替えた場合も
+                // Camera側の初期化に再有効化される余地を残さない。
+                SceneManager.sceneLoaded += OnClientUnitySceneLoaded;
+                observesClientUnitySceneLoads = true;
+            }
+
             if (clientSceneEventSource == networkManager || networkManager.SceneManager == null)
             {
                 return;
@@ -174,6 +190,17 @@ namespace Koiusa.SteamMultiRuntime
 
             clientSceneEventSource = networkManager;
             clientSceneEventSource.SceneManager.OnSceneEvent += OnClientSceneEvent;
+        }
+
+        private void OnClientUnitySceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+        {
+            if (loadSceneMode != LoadSceneMode.Additive
+                || scene.handle == protectedClientSceneHandle)
+            {
+                return;
+            }
+
+            DisableStageSceneCameras(scene);
         }
 
         private void OnClientSceneEvent(SceneEvent sceneEvent)
