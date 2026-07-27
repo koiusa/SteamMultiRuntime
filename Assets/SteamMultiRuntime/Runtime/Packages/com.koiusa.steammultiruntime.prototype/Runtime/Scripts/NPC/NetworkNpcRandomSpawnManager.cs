@@ -8,7 +8,7 @@ using Koiusa.SteamMultiRuntime.Network;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class NetworkNpcRandomSpawner : MonoBehaviour
+    public class NetworkNpcRandomSpawnManager : MonoBehaviour
     {
         private struct NpcSpawnSceneData : INetworkSerializable
         {
@@ -39,7 +39,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (anchor == null)
                 {
                     Debug.LogError(
-                        $"[NetworkNpcRandomSpawner] Scene buildIndex={instantiationData.SceneBuildIndex} " +
+                        $"[NetworkNpcRandomSpawnManager] Scene buildIndex={instantiationData.SceneBuildIndex} " +
                         "のNPC生成先が見つかりません。クライアントのScene LoadComplete前にSpawnされています。");
                     return null;
                 }
@@ -57,7 +57,9 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private static readonly List<NetworkNpcRandomSpawner> SpawnAnchors = new();
+        private static readonly List<NetworkNpcRandomSpawnManager> SpawnAnchors = new();
+
+        private readonly SpawnedObjectCollection spawnedNpcs = new();
 
         [Header("NPC Prefab")]
         [SerializeField] private GameObject networkNpcPrefab;
@@ -102,6 +104,7 @@ namespace Koiusa.SteamMultiRuntime
 
             // SceneのLoadComplete直後にSpawnを受信しても間に合うよう、可能ならAwakeで登録する。
             RegisterNetworkPrefabHandler();
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
         }
 
         private void Start()
@@ -147,6 +150,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            spawnedNpcs.DestroyAll();
             SpawnAnchors.Remove(this);
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             NavMesh.onPreUpdate -= OnNavMeshPreUpdate;
@@ -156,13 +160,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSceneChanged(Scene previous, Scene next)
         {
+            if (previous == gameObject.scene && next != previous)
+            {
+                spawnedNpcs.DestroyAll();
+            }
+
             if (!isWaitingForActiveScene || !IsOwnSceneActive())
             {
                 return;
             }
 
             isWaitingForActiveScene = false;
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             WaitForNavMeshUpdate();
         }
 
@@ -210,7 +218,6 @@ namespace Koiusa.SteamMultiRuntime
                 if (!isWaitingForActiveScene)
                 {
                     isWaitingForActiveScene = true;
-                    SceneManager.activeSceneChanged += OnActiveSceneChanged;
                 }
                 return;
             }
@@ -310,8 +317,8 @@ namespace Koiusa.SteamMultiRuntime
             if (prefab == null)
             {
                 Debug.LogError(useNetworkSpawn
-                    ? "[NetworkNpcRandomSpawner] networkNpcPrefab is not assigned."
-                    : "[NetworkNpcRandomSpawner] localNpcPrefab is not assigned.", this);
+                    ? "[NetworkNpcRandomSpawnManager] networkNpcPrefab is not assigned."
+                    : "[NetworkNpcRandomSpawnManager] localNpcPrefab is not assigned.", this);
                 return;
             }
 
@@ -328,7 +335,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (!NavMesh.SamplePosition(center, out _, fallbackNavMeshSampleRadius, check))
                 {
                     Debug.LogWarning(
-                        $"[NetworkNpcRandomSpawner] agentTypeID={sampleAgentTypeId} に対応する NavMesh 面が見つかりません。" +
+                        $"[NetworkNpcRandomSpawnManager] agentTypeID={sampleAgentTypeId} に対応する NavMesh 面が見つかりません。" +
                         "Prefab の NavMeshAgent.AgentType と NavMesh のベイク設定が一致しているか確認してください。",
                         this);
                 }
@@ -370,7 +377,7 @@ namespace Koiusa.SteamMultiRuntime
                 }
                 else if (networkObject == null && useNetworkSpawn)
                 {
-                    Debug.LogWarning("[NetworkNpcRandomSpawner] Spawned network NPC prefab does not have NetworkObject. Spawned as local instance.", instance);
+                    Debug.LogWarning("[NetworkNpcRandomSpawnManager] Spawned network NPC prefab does not have NetworkObject. Spawned as local instance.", instance);
                 }
 
                 if (!useNetworkSpawn)
@@ -378,6 +385,7 @@ namespace Koiusa.SteamMultiRuntime
                     ApplyLocalModelSync(instance);
                 }
 
+                spawnedNpcs.Add(instance);
                 usedSpawnPositions.Add(spawnPosition);
                 spawnedCount++;
             }
@@ -388,7 +396,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            Debug.LogWarning($"[NetworkNpcRandomSpawner] NPC spawn failed (no valid spawn point). agentTypeId={sampleAgentTypeId}, sampleRadius={navMeshSampleRadius}, fallback={fallbackToAnyAgentType}", this);
+            Debug.LogWarning($"[NetworkNpcRandomSpawnManager] NPC spawn failed (no valid spawn point). agentTypeId={sampleAgentTypeId}, sampleRadius={navMeshSampleRadius}, fallback={fallbackToAnyAgentType}", this);
         }
 
         private GameObject SelectNpcPrefab(bool useNetworkSpawn)
@@ -409,7 +417,7 @@ namespace Koiusa.SteamMultiRuntime
                 new NpcScenePrefabHandler(networkNpcPrefab));
         }
 
-        private static NetworkNpcRandomSpawner FindSpawnAnchor(int sceneBuildIndex, GameObject prefab)
+        private static NetworkNpcRandomSpawnManager FindSpawnAnchor(int sceneBuildIndex, GameObject prefab)
         {
             for (var i = SpawnAnchors.Count - 1; i >= 0; i--)
             {
