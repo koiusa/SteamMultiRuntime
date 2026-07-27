@@ -35,7 +35,6 @@
 .lobby-row:focus {
     color: rgba(255, 255, 255, 255);
     background-color: rgba(18, 105, 140, 255);
-    scale: 1.02 1.02;
     border-top-color: rgba(108, 230, 255, 255);
     border-bottom-color: rgba(108, 230, 255, 255);
     border-left-color: rgba(108, 230, 255, 255);

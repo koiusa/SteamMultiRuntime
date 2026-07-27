@@ -386,6 +386,8 @@ namespace Koiusa.SteamMultiRuntime
             AddCreateControl(lobbyNameField);
             AddCreateControl(stageSceneField);
             AddCreateControl(createButton);
+            AddCreateControl(refreshButton);
+            AddCreateControl(leaveButton);
             lastCreateControl = stageSceneField;
 
             searchControls.Clear();
@@ -393,8 +395,6 @@ namespace Koiusa.SteamMultiRuntime
             AddSearchControl(joinByIdButton);
             AddSearchControl(lobbyNameSearchField);
             AddSearchControl(searchByNameButton);
-            AddSearchControl(refreshButton);
-            AddSearchControl(leaveButton);
 
             SetActiveFocusSection(FocusSection.Create);
         }

@@ -3,6 +3,6 @@
     <ui:Style src="../Styles/SteamLobbyListPanel.uss" />
     <ui:VisualElement class="section-panel list-panel">
         <ui:Label text="Lobbies" class="section-title" />
-        <ui:ScrollView name="lobby-list-view" class="lobby-list" />
+        <ui:ScrollView name="lobby-list-view" mode="Vertical" class="lobby-list" />
     </ui:VisualElement>
 </ui:UXML>

@@ -64,7 +64,6 @@
     color: rgba(255, 255, 255, 255);
     background-color: rgba(22, 65, 96, 255);
     -unity-font-style: bold;
-    scale: 1.03 1.03;
     border-top-color: rgba(108, 230, 255, 255);
     border-bottom-color: rgba(108, 230, 255, 255);
     border-left-color: rgba(108, 230, 255, 255);
@@ -91,7 +90,6 @@
     color: rgba(255, 255, 255, 255);
     background-color: rgba(18, 105, 140, 255);
     -unity-font-style: bold;
-    scale: 1.06 1.06;
     border-top-color: rgba(108, 230, 255, 255);
     border-bottom-color: rgba(108, 230, 255, 255);
     border-left-color: rgba(108, 230, 255, 255);

@@ -4,6 +4,6 @@
     <ui:VisualElement class="section-panel online-members-panel">
         <ui:Label text="Online Members" class="section-title" />
         <ui:Label name="member-connection-strength-label" class="member-connection-strength muted" />
-        <ui:ScrollView name="online-member-list-view" class="online-member-list" />
+        <ui:ScrollView name="online-member-list-view" mode="Vertical" class="online-member-list" />
     </ui:VisualElement>
 </ui:UXML>

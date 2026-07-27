@@ -27,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         private LobbyView view;
         private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
         private bool isRefreshing;
+        private bool refreshRequested;
         private string lobbyNameSearch = string.Empty;
         private InputActionBinding previousSectionBinding;
         private InputActionBinding nextSectionBinding;
@@ -245,13 +246,19 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isRefreshing)
             {
+                refreshRequested = true;
                 return;
             }
 
             isRefreshing = true;
             try
             {
-                await lobbyService.RefreshLobbiesAsync();
+                do
+                {
+                    refreshRequested = false;
+                    await lobbyService.RefreshLobbiesAsync();
+                }
+                while (refreshRequested && isActiveAndEnabled);
             }
             finally
             {

@@ -378,14 +378,22 @@ namespace Koiusa.SteamMultiRuntime
             try
             {
                 var snapshot = new List<Lobby>();
-                if (onEnsureReady != null && onEnsureReady.Invoke())
+                if (onEnsureReady == null || !onEnsureReady.Invoke())
                 {
-                    var lobbies = await SteamMatchmaking.LobbyList.RequestAsync();
-                    if (lobbies != null)
-                    {
-                        snapshot.AddRange(lobbies);
-                    }
+                    PublishLobbyCache();
+                    return;
                 }
+
+                var lobbies = await SteamMatchmaking.LobbyList.RequestAsync();
+                if (lobbies == null)
+                {
+                    // A transient Steam query failure must not erase the last valid
+                    // result and make every lobby disappear from the UI.
+                    PublishLobbyCache();
+                    return;
+                }
+
+                snapshot.AddRange(lobbies);
 
                 // A newly public lobby can take time to enter Steam's search index. The
                 // current lobby is authoritative local state, so never make its display

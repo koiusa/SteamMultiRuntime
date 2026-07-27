@@ -58,7 +58,6 @@
     color: rgba(255, 255, 255, 255);
     background-color: rgba(22, 65, 96, 255);
     -unity-font-style: bold;
-    scale: 1.04 1.04;
     border-top-color: rgba(108, 230, 255, 255);
     border-bottom-color: rgba(108, 230, 255, 255);
     border-left-color: rgba(108, 230, 255, 255);

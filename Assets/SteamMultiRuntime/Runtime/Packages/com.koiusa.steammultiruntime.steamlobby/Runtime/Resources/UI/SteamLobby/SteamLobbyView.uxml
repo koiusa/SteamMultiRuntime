@@ -10,8 +10,9 @@
                     <ui:VisualElement name="status-panel-host" />
                     <ui:VisualElement name="online-members-panel-host" />
                     <ui:VisualElement name="create-focus-group" class="lobby-focus-group lobby-create-focus-group">
-                        <ui:Label text="シーン選択・ロビー作成  [LB: 一覧 / RB: 検索]" class="focus-group-title" />
+                        <ui:Label text="シーン選択・ロビー管理  [LB: 一覧 / RB: 検索]" class="focus-group-title" />
                         <ui:VisualElement name="create-panel-host" />
+                        <ui:VisualElement name="actions-panel-host" />
                     </ui:VisualElement>
                 </ui:VisualElement>
 
@@ -20,7 +21,6 @@
                         <ui:Label text="ロビー検索・直接参加  [LB: 作成 / RB: 一覧]" class="focus-group-title" />
                         <ui:VisualElement name="join-panel-host" />
                         <ui:VisualElement name="search-panel-host" />
-                        <ui:VisualElement name="actions-panel-host" />
                     </ui:VisualElement>
                     <ui:VisualElement name="list-focus-group" class="lobby-focus-group lobby-list-focus-group">
                         <ui:Label text="ロビーを選択して決定  [↑↓ 選択 / 決定で参加 / LB: 検索 / RB: 作成]" class="focus-group-title" />
