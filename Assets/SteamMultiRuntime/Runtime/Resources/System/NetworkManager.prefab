@@ -68,6 +68,7 @@ GameObject:
   - component: {fileID: 2835344246036045877}
   - component: {fileID: 384021173469697096}
   - component: {fileID: 1153032176003777050}
+  - component: {fileID: 6204422161348992741}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -150,6 +151,18 @@ MonoBehaviour:
   steamAppId: 480
   targetSteamId: 0
   userSteamId: 0
+--- !u!114 &6204422161348992741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5337043238702301571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7aeb06920084d03899454313824d124, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Integration.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerSpawnCoordinator
 --- !u!1001 &5810708328502798835
 PrefabInstance:
   m_ObjectHideFlags: 0

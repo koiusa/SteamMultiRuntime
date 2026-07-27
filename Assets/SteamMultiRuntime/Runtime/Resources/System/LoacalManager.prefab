@@ -49,9 +49,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.LocalManager
   playerPrefab: {fileID: 3003735386717007390, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
-  spawnPosition: {x: 0, y: 0, z: 0}
-  spawnRotation: {x: 0, y: 0, z: 0, w: 1}
-  respawnOnActiveSceneChanged: 1
 --- !u!114 &3387406875687767959
 MonoBehaviour:
   m_ObjectHideFlags: 0

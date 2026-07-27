@@ -18,12 +18,6 @@ namespace Koiusa.SteamMultiRuntime
         [Tooltip("ローカルプレイヤーとしてインスタンス化するPrefab")]
         [SerializeField] private GameObject playerPrefab;
 
-        [Header("Spawn Settings")]
-        [SerializeField] private Vector3 spawnPosition;
-        [SerializeField] private Quaternion spawnRotation = Quaternion.identity;
-        [Tooltip("アクティブシーンが変わった時にPlayerを再スポーンする")]
-        [SerializeField] private bool respawnOnActiveSceneChanged = true;
-
         /// <summary>
         /// インスタンス化済みのローカルプレイヤーオブジェクト。
         /// NetworkManager.LocalClient.PlayerObject に相当する。
@@ -66,17 +60,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSceneChanged(Scene previousScene, Scene newScene)
         {
-            if (!respawnOnActiveSceneChanged)
-            {
-                return;
-            }
-
             if (!newScene.IsValid())
             {
                 return;
             }
 
-            SpawnLocalPlayer();
+            SpawnLocalPlayer(newScene);
         }
 
         /// <summary>
@@ -84,9 +73,19 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public void SpawnLocalPlayer()
         {
+            SpawnLocalPlayer(SceneManager.GetActiveScene());
+        }
+
+        private void SpawnLocalPlayer(Scene scene)
+        {
             if (playerPrefab == null)
             {
                 Debug.LogWarning($"[{nameof(LocalManager)}] playerPrefab is not set.");
+                return;
+            }
+
+            if (!PlayerSpawnService.TryResolvePose(scene, 0, out var spawnPosition, out var spawnRotation))
+            {
                 return;
             }
 
@@ -99,7 +98,11 @@ namespace Koiusa.SteamMultiRuntime
                 LocalPlayerObject = null;
             }
 
-            LocalPlayerObject = Instantiate(playerPrefab, spawnPosition, spawnRotation);
+            LocalPlayerObject = Instantiate(
+                playerPrefab,
+                spawnPosition,
+                spawnRotation);
+            PlayerSpawnService.Place(LocalPlayerObject, spawnPosition, spawnRotation);
             PlayerSpawned?.Invoke(LocalPlayerObject);
         }
     }
