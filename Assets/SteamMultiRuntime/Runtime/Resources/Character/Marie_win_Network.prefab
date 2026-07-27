@@ -4532,7 +4532,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4422059915226684}
-  - component: {fileID: -9147819903119060174}
   - component: {fileID: 95539797725731816}
   - component: {fileID: -3302680468342298301}
   - component: {fileID: 114048248925627932}
@@ -4569,34 +4568,6 @@ Transform:
   - {fileID: 8987330731852199522}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-9147819903119060174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1918851180674940}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bcf7d8c603e71e4a8f7856e706d0474, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.CharacterDebugOverlay
-  showOnStart: 0
-  autoShowInPlayMode: 1
-  onlyLocalOwnedCharacter: 1
-  aggregateFromAllInstances: 1
-  includeNonOwnedCharactersInAggregate: 1
-  showLauncherButtonWhenHidden: 1
-  windowWidth: 360
-  windowHeight: 520
-  windowPosition: {x: 12, y: 12}
-  launcherButtonSize: {x: 140, y: 28}
-  panelSettings: {fileID: 0}
-  styleSheet: {fileID: 0}
-  targetRoot: {fileID: 0}
-  targetRigidbody: {fileID: 0}
-  targetAnimator: {fileID: 95539797725731816}
-  targetFaceAnimator: {fileID: 95539797725731816}
 --- !u!95 &95539797725731816
 Animator:
   serializedVersion: 7

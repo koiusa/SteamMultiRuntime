@@ -7,6 +7,7 @@
         "Unity.InputSystem",
         "Unity.Netcode.Runtime",
         "Facepunch Transport for Netcode for GameObjects",
+        "Koiusa.UI.Common.Runtime",
         "Koiusa.SteamMultiRuntime.Locomoter.Runtime"
     ],
     "includePlatforms": [],

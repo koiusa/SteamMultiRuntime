@@ -8,8 +8,6 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal sealed class CharacterSelectView
     {
-        private const string CommonScrollStyleSheetPath = "UI/Common/SteamMultiRuntimeScrollView";
-        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
         private static readonly Color NormalColor = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color SelectedColor = new Color(0.18f, 0.48f, 0.78f, 1f);
 
@@ -41,13 +39,6 @@ namespace Koiusa.SteamMultiRuntime
 
             if (styleSheet != null && !root.styleSheets.Contains(styleSheet))
                 root.styleSheets.Add(styleSheet);
-            var commonScrollStyle = Resources.Load<StyleSheet>(CommonScrollStyleSheetPath);
-            if (commonScrollStyle != null && !root.styleSheets.Contains(commonScrollStyle))
-                root.styleSheets.Add(commonScrollStyle);
-            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
-            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
-                root.styleSheets.Add(commonThemeStyle);
-            root.AddToClassList("smr-theme");
 
             if (layoutAsset != null)
             {

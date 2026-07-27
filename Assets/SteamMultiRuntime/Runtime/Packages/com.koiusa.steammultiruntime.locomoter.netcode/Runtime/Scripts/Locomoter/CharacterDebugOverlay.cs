@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.UI.Common;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,8 +13,6 @@ namespace Koiusa.SteamMultiRuntime
         private const string PreferredFaceLayerName = "face";
         private const string DefaultPanelSettingsPath = "UI/CharacterSelect/CharacterSelect Panel Settings";
         private const string DefaultStyleSheetPath = "UI/CharacterDebug/CharacterDebugOverlay";
-        private const string CommonScrollStyleSheetPath = "UI/Common/SteamMultiRuntimeScrollView";
-        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
         private const float RefreshInterval = 0.1f;
 
         [Header("Display")]
@@ -157,13 +156,7 @@ namespace Koiusa.SteamMultiRuntime
             styleSheet ??= Resources.Load<StyleSheet>(DefaultStyleSheetPath);
             if (styleSheet != null && !root.styleSheets.Contains(styleSheet))
                 root.styleSheets.Add(styleSheet);
-            var commonScrollStyle = Resources.Load<StyleSheet>(CommonScrollStyleSheetPath);
-            if (commonScrollStyle != null && !root.styleSheets.Contains(commonScrollStyle))
-                root.styleSheets.Add(commonScrollStyle);
-            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
-            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
-                root.styleSheets.Add(commonThemeStyle);
-            root.AddToClassList("smr-theme");
+            CommonUiTheme.Apply(root);
             root.style.position = Position.Absolute;
             root.style.left = 0;
             root.style.top = 0;

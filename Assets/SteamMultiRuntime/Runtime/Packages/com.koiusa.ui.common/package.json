@@ -1,0 +1,15 @@
+{
+  "name": "com.koiusa.ui.common",
+  "displayName": "Koiusa UI Common",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Shared runtime UI Toolkit theme, controls, and styling utilities.",
+  "author": {
+    "name": "koiusa"
+  },
+  "keywords": [
+    "ui-toolkit",
+    "theme",
+    "runtime"
+  ]
+}

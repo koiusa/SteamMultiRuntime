@@ -1,6 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
     <ui:Style src="InputGuideOverlay.uss" />
-    <ui:VisualElement name="input-guide-overlay" class="input-guide-screen" picking-mode="Ignore">
+    <ui:Template name="InputGuideKeyboard" src="InputGuideKeyboard.uxml" />
+    <ui:Template name="InputGuideMouse" src="InputGuideMouse.uxml" />
+    <ui:Template name="InputGuideGamepad" src="InputGuideGamepad.uxml" />
+    <ui:VisualElement name="input-guide-overlay" class="smr-theme input-guide-screen" picking-mode="Ignore">
         <ui:VisualElement class="input-guide-panel">
             <ui:VisualElement class="input-guide-header">
                 <ui:VisualElement class="input-guide-accent" />
@@ -13,9 +17,15 @@
             </ui:VisualElement>
             <ui:VisualElement class="input-guide-divider" />
             <ui:VisualElement name="device-layout" class="input-device-layout">
-                <ui:VisualElement name="keyboard-layout-host" />
-                <ui:VisualElement name="mouse-layout-host" />
-                <ui:VisualElement name="gamepad-layout-host" />
+                <ui:VisualElement name="keyboard-layout-host">
+                    <ui:Instance template="InputGuideKeyboard" />
+                </ui:VisualElement>
+                <ui:VisualElement name="mouse-layout-host">
+                    <ui:Instance template="InputGuideMouse" />
+                </ui:VisualElement>
+                <ui:VisualElement name="gamepad-layout-host">
+                    <ui:Instance template="InputGuideGamepad" />
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label text="LIVE INPUT MONITOR" class="input-guide-footer" />
         </ui:VisualElement>

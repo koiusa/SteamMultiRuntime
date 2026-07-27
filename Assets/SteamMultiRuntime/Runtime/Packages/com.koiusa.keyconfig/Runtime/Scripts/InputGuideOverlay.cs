@@ -16,7 +16,6 @@ namespace Koiusa.Keyconfig.Runtime
         private const string KeyboardLayoutPath = "UI/InputGuide/InputGuideKeyboard";
         private const string MouseLayoutPath = "UI/InputGuide/InputGuideMouse";
         private const string GamepadLayoutPath = "UI/InputGuide/InputGuideGamepad";
-        private const string CommonThemeStyleSheetPath = "UI/Common/SteamMultiRuntimeTheme";
 
         [Header("Input")]
         [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
@@ -222,12 +221,6 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var root = uiDocument.rootVisualElement;
             root.Clear();
-            var commonThemeStyle = Resources.Load<StyleSheet>(CommonThemeStyleSheetPath);
-            if (commonThemeStyle != null && !root.styleSheets.Contains(commonThemeStyle))
-            {
-                root.styleSheets.Add(commonThemeStyle);
-            }
-            root.AddToClassList("smr-theme");
             rows.Clear();
 
             var layout = layoutAsset != null
@@ -308,7 +301,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void CloneDeviceLayout(VisualElement root, string hostName, string resourcePath)
         {
             var host = root.Q<VisualElement>(hostName);
-            if (host == null)
+            if (host == null || host.childCount > 0)
             {
                 return;
             }

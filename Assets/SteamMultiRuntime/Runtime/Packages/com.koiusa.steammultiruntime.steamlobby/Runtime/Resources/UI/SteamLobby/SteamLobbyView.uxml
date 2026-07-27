@@ -1,7 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
+    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeScrollView.uss" />
     <ui:Style src="Styles/SteamLobbyCommon.uss" />
     <ui:Style src="Styles/SteamLobbyBase.uss" />
-    <ui:VisualElement class="root">
+    <ui:VisualElement class="smr-theme root">
         <ui:VisualElement class="panel main-panel">
             <ui:Label text="Steam Lobby" class="title" />
 

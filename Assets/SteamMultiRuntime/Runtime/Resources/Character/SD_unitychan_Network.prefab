@@ -5507,7 +5507,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 400264}
-  - component: {fileID: 3632195355970530909}
   - component: {fileID: 9500000}
   - component: {fileID: 1772512430224808364}
   - component: {fileID: 11400084}
@@ -5543,34 +5542,6 @@ Transform:
   - {fileID: 6755609445687385846}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3632195355970530909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100264}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bcf7d8c603e71e4a8f7856e706d0474, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterDebugOverlay
-  showOnStart: 0
-  autoShowInPlayMode: 1
-  onlyLocalOwnedCharacter: 1
-  aggregateFromAllInstances: 1
-  includeNonOwnedCharactersInAggregate: 1
-  showLauncherButtonWhenHidden: 1
-  windowWidth: 360
-  windowHeight: 520
-  windowPosition: {x: 12, y: 12}
-  launcherButtonSize: {x: 140, y: 28}
-  panelSettings: {fileID: 0}
-  styleSheet: {fileID: 0}
-  targetRoot: {fileID: 0}
-  targetRigidbody: {fileID: 0}
-  targetAnimator: {fileID: 9500000}
-  targetFaceAnimator: {fileID: 9500000}
 --- !u!95 &9500000
 Animator:
   serializedVersion: 7
