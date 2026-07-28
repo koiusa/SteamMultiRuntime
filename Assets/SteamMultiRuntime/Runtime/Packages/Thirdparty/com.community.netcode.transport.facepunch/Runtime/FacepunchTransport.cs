@@ -127,8 +127,20 @@ namespace Netcode.Transports.Facepunch
                 Debug.LogWarning($"[{nameof(FacepunchTransport)}] - Failed to disconnect remote client with ID {clientId}, client not connected.");
         }
 
-        public override unsafe ulong GetCurrentRtt(ulong clientId)
+        public override ulong GetCurrentRtt(ulong clientId)
         {
+            if (clientId == ServerClientId && connectionManager != null)
+            {
+                var ping = connectionManager.Connection.QuickStatus().Ping;
+                return ping > 0 ? (ulong)ping : 0;
+            }
+
+            if (connectedClients != null && connectedClients.TryGetValue(clientId, out var client))
+            {
+                var ping = client.connection.QuickStatus().Ping;
+                return ping > 0 ? (ulong)ping : 0;
+            }
+
             return 0;
         }
 

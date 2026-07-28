@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Steamworks;
 using Steamworks.Data;
+using Unity.Netcode;
 using UnityEngine;
 using Koiusa.SteamMultiRuntime.Localization;
 
@@ -39,7 +40,7 @@ namespace Koiusa.SteamMultiRuntime
             memberPingBySteamId.Clear();
         }
 
-        public string GetConnectionStrengthText(bool isInLobby, bool isHost, ulong hostSteamId)
+        public string GetConnectionStrengthText(bool isInLobby, bool isHost)
         {
             if (!isInLobby)
             {
@@ -51,7 +52,7 @@ namespace Koiusa.SteamMultiRuntime
                 return GameLocalization.Get("lobby.connection_host");
             }
 
-            if (TryEstimatePingToSteamId(hostSteamId, out var pingMs))
+            if (TryGetHostPing(out var pingMs))
             {
                 var strength = BuildConnectionStrength(pingMs);
                 return GameLocalization.Get("lobby.connection_strength", strength, pingMs);
@@ -126,11 +127,6 @@ namespace Koiusa.SteamMultiRuntime
                 {
                     pingMs = 0;
                 }
-                else if (TryEstimatePingToSteamId(member.Id, out var estimatedPingMs))
-                {
-                    pingMs = estimatedPingMs;
-                }
-
                 entries.Add(new SteamLobbyMemberQualityEntry(member.Id, pingMs));
             }
 
@@ -152,13 +148,29 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private static bool TryEstimatePingToSteamId(ulong steamId, out int pingMs)
+        private static bool TryGetHostPing(out int pingMs)
         {
             pingMs = -1;
-            // Facepunch exposes EstimatePingTo(NetPingLocation), not a SteamId overload.
-            // A lobby member's remote ping location is unavailable here, so do not guess
-            // an API by name. Connection-level latency must be supplied by the transport.
-            return false;
+            var networkManager = NetworkManager.Singleton;
+            if (networkManager == null || !networkManager.IsListening || networkManager.IsServer)
+            {
+                return false;
+            }
+
+            var transport = networkManager.NetworkConfig?.NetworkTransport;
+            if (transport == null)
+            {
+                return false;
+            }
+
+            var currentRtt = transport.GetCurrentRtt(NetworkManager.ServerClientId);
+            if (currentRtt == 0 || currentRtt > int.MaxValue)
+            {
+                return false;
+            }
+
+            pingMs = (int)currentRtt;
+            return true;
         }
     }
 }

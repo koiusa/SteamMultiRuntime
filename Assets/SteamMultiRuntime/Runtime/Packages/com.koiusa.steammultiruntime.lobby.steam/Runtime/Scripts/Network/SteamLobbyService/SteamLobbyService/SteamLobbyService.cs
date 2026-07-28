@@ -359,7 +359,7 @@ namespace Koiusa.SteamMultiRuntime
                 return string.Empty;
             }
 
-            return connectionStatus.GetConnectionStrengthText(IsInLobby, lobbyManager.IsHost, lobbyManager.GetHostSteamId());
+            return connectionStatus.GetConnectionStrengthText(IsInLobby, lobbyManager.IsHost);
         }
 
         private bool EnsureReady()

@@ -9,9 +9,6 @@ namespace Koiusa.SteamMultiRuntime
         [Tooltip("Optional Animator to use. If null, Animator will be auto-detected from loaded VRM or current hierarchy.")]
         public Animator TargetAnimator;
 
-        [Tooltip("Optional reference to a component (e.g. ThirdPersonController) to copy GroundLayers from.")]
-        public Component ControllerComponent;
-
         [Tooltip("Radius of spawned sphere trigger collider (m)")]
         public float ColliderRadius = 0.08f;
 
@@ -149,11 +146,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 _hasGroundedState = false;
                 _pendingLandFromTransition = false;
-            }
-
-            if (GroundLayers == 0 && ControllerComponent is IGroundLayerProvider groundLayerProvider)
-            {
-                GroundLayers = groundLayerProvider.GroundLayers;
             }
 
             MinInterval = Mathf.Max(MinInterval, 0.01f);

@@ -803,7 +803,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Audio.Runtime::Koiusa.SteamMultiRuntime.FootstepColliderSpawner
   TargetAnimator: {fileID: 95902892598462830}
-  ControllerComponent: {fileID: 4058200767122284}
   ColliderRadius: 0.08
   LocalOffset: {x: 0, y: 0, z: 0}
   MinInterval: 0.2
