@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UIElements;
+using Koiusa.UI.Common;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -51,6 +52,7 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction debugToggleAction;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
+        private LocalizedVisualTree localizedTree;
 
         private sealed class GuideRow
         {
@@ -79,6 +81,8 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnDisable()
         {
             ReleaseDebugToggleInput();
+            localizedTree?.Dispose();
+            localizedTree = null;
         }
 
         private void Update()
@@ -256,10 +260,13 @@ namespace Koiusa.Keyconfig.Runtime
             rightStickVisual = root.Q<VisualElement>("control-rightstick");
             var deviceLayout = root.Q<VisualElement>("device-layout");
             var mapLabel = root.Q<Label>("map-label");
+            localizedTree?.Dispose();
+            localizedTree = LocalizedVisualTree.Bind(root, deviceLabel, mapLabel, gamepadFaceWestLabel,
+                gamepadFaceNorthLabel, gamepadFaceEastLabel, gamepadFaceSouthLabel);
 
             if (inputActionAsset == null || deviceLayout == null)
             {
-                mapLabel.text = "INPUT ASSET NOT SET";
+                GameLocalization.Set(mapLabel, "INPUT ASSET NOT SET");
                 return;
             }
 
@@ -268,7 +275,7 @@ namespace Koiusa.Keyconfig.Runtime
                 : inputActionAsset.FindActionMap(actionMapName, false);
             if (map == null)
             {
-                mapLabel.text = "ACTION MAP NOT FOUND";
+                GameLocalization.Set(mapLabel, "ACTION MAP NOT FOUND");
                 return;
             }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using Koiusa.UI.Common;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -35,6 +36,7 @@ namespace Koiusa.Keyconfig.Runtime
         private Action<int> cachedOnReset;
         private string selectedMapName;
         private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
+        private LocalizedVisualTree localizedTree;
 
         private sealed class InputStateRow
         {
@@ -96,10 +98,14 @@ namespace Koiusa.Keyconfig.Runtime
                 saveButton = root.Q<Button>("save-button");
                 resetAllButton = root.Q<Button>("reset-all-button");
                 closeButton = root.Q<Button>("close-button");
+                localizedTree?.Dispose();
+                localizedTree = LocalizedVisualTree.Bind(root, statusLabel, inputMonitorStatus);
                 return;
             }
 
             BuildFallbackUi(root);
+            localizedTree?.Dispose();
+            localizedTree = LocalizedVisualTree.Bind(root, statusLabel, inputMonitorStatus);
         }
 
         public void BindActions(Action onLoadCallback, Action onSaveCallback, Action onResetAllCallback, Action onCloseCallback, Action<string> onBindingGroupChangedCallback)
@@ -142,7 +148,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (statusLabel != null)
             {
-                statusLabel.text = string.IsNullOrWhiteSpace(status) ? string.Empty : status;
+                statusLabel.text = string.IsNullOrWhiteSpace(status) ? string.Empty : GameLocalization.Get(status);
             }
         }
 
@@ -203,7 +209,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (entries == null || entries.Count == 0)
             {
                 selectedMapName = null;
-                var emptyLabel = new Label("対象バインドがありません。");
+                var emptyLabel = new Label(GameLocalization.Get("対象バインドがありません。"));
                 emptyLabel.AddToClassList("keyconfig-binding");
                 bindingListView.Add(emptyLabel);
                 return;
@@ -321,7 +327,7 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
 
-                var inputStateLabel = new Label("● 入力中");
+                var inputStateLabel = new Label(GameLocalization.Get("● 入力中"));
                 inputStateLabel.AddToClassList("keyconfig-input-state");
                 inputStateLabel.style.display = DisplayStyle.None;
                 bindingCell.Add(inputStateLabel);
@@ -331,12 +337,12 @@ namespace Koiusa.Keyconfig.Runtime
                 var buttonCell = new VisualElement();
                 buttonCell.AddToClassList("keyconfig-cell-buttons");
 
-                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = "変更" };
+                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = GameLocalization.Get("変更") };
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 rebindButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(rebindButton);
 
-                var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = "戻す" };
+                var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = GameLocalization.Get("戻す") };
                 resetButton.AddToClassList("keyconfig-reset-button");
                 resetButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(resetButton);

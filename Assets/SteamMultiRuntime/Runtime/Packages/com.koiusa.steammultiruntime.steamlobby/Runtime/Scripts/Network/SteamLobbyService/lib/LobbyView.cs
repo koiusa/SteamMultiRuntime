@@ -1,6 +1,7 @@
 using Steamworks.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -35,6 +36,7 @@ namespace Koiusa.SteamMultiRuntime
         private LobbyViewPresenter presenter;
         private LobbyViewNavigationController navigation;
         private LobbyGamepadTextInputController gamepadTextInput;
+        private LocalizedVisualTree localizedTree;
 
         public LobbyView(UIDocument uiDocument)
         {
@@ -117,6 +119,8 @@ namespace Koiusa.SteamMultiRuntime
             gamepadTextInput = new LobbyGamepadTextInputController(lobbyNameField, lobbyIdField, lobbyNameSearchField);
             navigation = new LobbyViewNavigationController(context);
             presenter = new LobbyViewPresenter(context, navigation);
+            localizedTree?.Dispose();
+            localizedTree = LocalizedVisualTree.Bind(root, connectionLabel, currentLobbyLabel, infoLabel, memberConnectionStrengthLabel);
             navigation.FocusInitialControl();
         }
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using Koiusa.UI.Common;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -268,22 +269,22 @@ namespace Koiusa.Keyconfig.Runtime
         private string BuildReadyStatus()
         {
             return usingBindingGroupFallback
-                ? $"Ready（'{bindingGroup}' に一致するバインドがないため全表示中）"
-                : "Ready";
+                ? GameLocalization.Get("Ready（'{0}' に一致するバインドがないため全表示中）", bindingGroup)
+                : GameLocalization.Get("Ready");
         }
 
         private string BuildLoadedStatus()
         {
             return usingBindingGroupFallback
-                ? $"設定を読み込みました。('{bindingGroup}' に一致するバインドがないため全表示中)"
-                : "設定を読み込みました。";
+                ? GameLocalization.Get("設定を読み込みました。('{0}' に一致するバインドがないため全表示中)", bindingGroup)
+                : GameLocalization.Get("設定を読み込みました。");
         }
 
         private string BuildRebindCompletedStatus(string displayName)
         {
             return usingBindingGroupFallback
-                ? $"変更しました: {displayName}（全表示中）"
-                : $"変更しました: {displayName}";
+                ? GameLocalization.Get("変更しました: {0}（全表示中）", displayName)
+                : GameLocalization.Get("変更しました: {0}", displayName);
         }
 
         private string BuildRebindCanceledStatus()
@@ -304,12 +305,12 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (string.IsNullOrWhiteSpace(bindingGroup))
             {
-                return "BindingGroup: すべて";
+                return GameLocalization.Get("BindingGroup: すべて");
             }
 
             return usingBindingGroupFallback
-                ? $"BindingGroup: {bindingGroup}（一致なしのため全表示）"
-                : $"BindingGroup: {bindingGroup}";
+                ? GameLocalization.Get("BindingGroup: {0}（一致なしのため全表示）", bindingGroup)
+                : GameLocalization.Get("BindingGroup: {0}", bindingGroup);
         }
     }
 }

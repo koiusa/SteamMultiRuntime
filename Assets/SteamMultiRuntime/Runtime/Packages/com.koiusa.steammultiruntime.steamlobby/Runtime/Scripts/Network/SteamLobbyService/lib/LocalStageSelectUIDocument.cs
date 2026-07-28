@@ -4,6 +4,7 @@ using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -21,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         private UIDocument uiDocument;
         private StageSelectUI stageSelectUI;
         private bool isLoading;
+        private LocalizedVisualTree localizedTree;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -103,6 +105,8 @@ namespace Koiusa.SteamMultiRuntime
 
             // Themeを適用
             uiAssets.ApplyToDocument(uiDocument);
+            localizedTree?.Dispose();
+            localizedTree = LocalizedVisualTree.Bind(uiDocument.rootVisualElement);
 
             // StageSelectUIを初期化
             stageSelectUI = new StageSelectUI(uiDocument);
@@ -124,6 +128,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void UnbindUI()
         {
+            localizedTree?.Dispose();
+            localizedTree = null;
             if (stageSelectUI != null)
             {
                 stageSelectUI.StageSelected -= OnStageSelected;

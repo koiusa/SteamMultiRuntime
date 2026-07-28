@@ -7,6 +7,9 @@
         "GUID:1491147abca9d7d4bb7105af628b223e",
         "GUID:396cb2e6738cacb419764ec8bde868fe",
         "GUID:46da3a9a58231e243a7f87bd6c0be0c0"
+        ,"Unity.Localization.Editor"
+        ,"Unity.Localization"
+        ,"Unity.ResourceManager"
     ],
     "includePlatforms": [
         "Editor"

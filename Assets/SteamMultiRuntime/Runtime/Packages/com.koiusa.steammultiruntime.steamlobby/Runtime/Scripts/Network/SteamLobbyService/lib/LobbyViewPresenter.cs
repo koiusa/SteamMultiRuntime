@@ -1,5 +1,6 @@
 using Steamworks.Data;
 using UnityEngine.UIElements;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -19,29 +20,29 @@ namespace Koiusa.SteamMultiRuntime
 
         public void RenderServiceMissing()
         {
-            context.ConnectionLabel.text = "Steam: SteamLobbyService not found";
-            context.CurrentLobbyLabel.text = "Current Lobby: none";
+            GameLocalization.Set(context.ConnectionLabel, "Steam: SteamLobbyService not found");
+            GameLocalization.Set(context.CurrentLobbyLabel, "Current Lobby: none");
             context.LobbyListView.Clear();
             SetButtonsEnabled(false);
         }
 
         public void RenderStatus(bool isReady, string localPlayerName, bool isInLobby, ulong currentLobbyId)
         {
-            context.ConnectionLabel.text = isReady ? $"Steam: {localPlayerName}" : "Steam: not connected";
-            context.CurrentLobbyLabel.text = isInLobby ? $"Current Lobby: {currentLobbyId}" : "Current Lobby: none";
+            context.ConnectionLabel.text = isReady ? GameLocalization.Get("Steam: {0}", localPlayerName) : GameLocalization.Get("Steam: not connected");
+            context.CurrentLobbyLabel.text = isInLobby ? GameLocalization.Get("Current Lobby: {0}", currentLobbyId) : GameLocalization.Get("Current Lobby: none");
             context.LobbyListView.Clear();
         }
 
         public void SetWaitingConnection()
         {
             if (context.ConnectionLabel != null)
-                context.ConnectionLabel.text = "Steam: waiting for NetworkManager/FacepunchTransport...";
+                GameLocalization.Set(context.ConnectionLabel, "Steam: waiting for NetworkManager/FacepunchTransport...");
         }
 
         public void SetInfo(string text)
         {
             if (context.InfoLabel != null)
-                context.InfoLabel.text = text;
+                context.InfoLabel.text = GameLocalization.Get(text);
         }
 
         public void SetButtonsEnabled(bool enabled)
@@ -57,7 +58,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             context.LobbyListView.Clear();
             navigation.ClearLobbyRows();
-            var emptyLabel = new Label(message);
+            var emptyLabel = new Label(GameLocalization.Get(message));
             emptyLabel.AddToClassList("muted");
             context.LobbyListView.Add(emptyLabel);
         }
@@ -95,13 +96,13 @@ namespace Koiusa.SteamMultiRuntime
                 var actions = new VisualElement();
                 actions.AddToClassList("lobby-row-actions");
                 if (isLocalHostLobby)
-                    AddLobbyBadge(actions, "HOST", "host-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("HOST"), "host-badge");
                 if (isCurrentLobby)
-                    AddLobbyBadge(actions, "JOINED", "joined-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("JOINED"), "joined-badge");
                 else if (isFullLobby)
-                    AddLobbyBadge(actions, "FULL", "full-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("FULL"), "full-badge");
 
-                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { text = "Join", focusable = false };
+                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { text = GameLocalization.Get("Join"), focusable = false };
                 joinButton.AddToClassList("join-button");
                 joinButton.SetEnabled(canJoinLobby);
                 actions.Add(joinButton);
@@ -167,7 +168,7 @@ namespace Koiusa.SteamMultiRuntime
             context.OnlineMemberListView.Clear();
             if (!isInLobby || memberNames == null || memberNames.Count == 0)
             {
-                var emptyLabel = new Label(isInLobby ? "メンバー情報なし" : "ロビー未参加");
+                var emptyLabel = new Label(GameLocalization.Get(isInLobby ? "メンバー情報なし" : "ロビー未参加"));
                 emptyLabel.AddToClassList("muted");
                 context.OnlineMemberListView.Add(emptyLabel);
                 return;
@@ -175,7 +176,7 @@ namespace Koiusa.SteamMultiRuntime
 
             foreach (var memberName in memberNames)
             {
-                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? "Unknown" : memberName);
+                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? GameLocalization.Get("Unknown") : memberName);
                 memberLabel.AddToClassList("online-member-name");
                 context.OnlineMemberListView.Add(memberLabel);
             }

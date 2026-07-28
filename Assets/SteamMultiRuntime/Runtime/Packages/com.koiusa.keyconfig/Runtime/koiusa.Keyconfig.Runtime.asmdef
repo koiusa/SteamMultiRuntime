@@ -2,7 +2,8 @@
     "name": "koiusa.Keyconfig.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:75469ad4d38634e559750d17036d5f7c"
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "Koiusa.UI.Common.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

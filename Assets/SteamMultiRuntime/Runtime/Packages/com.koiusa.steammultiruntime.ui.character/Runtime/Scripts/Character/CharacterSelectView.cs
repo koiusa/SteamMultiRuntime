@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -22,6 +23,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private Action<int> onSelect;
         private Action onConfirm;
+        private LocalizedVisualTree localizedTree;
 
         public CharacterSelectView(UIDocument uiDocument, VisualTreeAsset layoutAsset, StyleSheet styleSheet)
         {
@@ -54,7 +56,10 @@ namespace Koiusa.SteamMultiRuntime
             PopulateCharacterList(modelIdList != null ? modelIdList.modelIds : null);
 
             if (selectedNameLabel != null)
-                selectedNameLabel.text = "選択中: なし";
+                GameLocalization.Set(selectedNameLabel, "選択中: なし");
+
+            localizedTree?.Dispose();
+            localizedTree = LocalizedVisualTree.Bind(root, selectedNameLabel);
 
         }
 
@@ -82,10 +87,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var displayName = (modelIds != null && index >= 0 && index < modelIds.Length)
                 ? modelIds[index]
-                : "なし";
+                : GameLocalization.Get("なし");
 
             if (selectedNameLabel != null)
-                selectedNameLabel.text = $"選択中: {displayName}";
+                GameLocalization.Set(selectedNameLabel, "選択中: {0}", displayName);
 
         }
 

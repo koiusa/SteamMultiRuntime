@@ -11,5 +11,8 @@
     "ui-toolkit",
     "theme",
     "runtime"
-  ]
+  ],
+  "dependencies": {
+    "com.unity.localization": "1.5.9"
+  }
 }

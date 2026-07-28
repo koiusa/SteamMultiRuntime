@@ -8,6 +8,7 @@
         "TNRD.SerializableInterface",
         "Unity.Netcode.Runtime",
         "Unity.InputSystem"
+        ,"Koiusa.UI.Common.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

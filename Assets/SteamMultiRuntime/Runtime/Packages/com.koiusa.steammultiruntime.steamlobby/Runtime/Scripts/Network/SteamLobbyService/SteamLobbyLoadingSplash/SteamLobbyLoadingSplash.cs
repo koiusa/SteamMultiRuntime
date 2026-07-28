@@ -4,6 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -44,11 +45,13 @@ namespace Koiusa.SteamMultiRuntime
             SubscribeLoaderEvents();
             SubscribeExitEvents();
             SceneManager.sceneLoaded += OnSceneLoaded;
+            GameLocalization.LocaleChanged += RefreshSplashUi;
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            GameLocalization.LocaleChanged -= RefreshSplashUi;
             UnsubscribeLoaderEvents();
             UnsubscribeExitEvents();
             HideSplashUi();
@@ -306,7 +309,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var messageText = splashSettings != null ? splashSettings.SplashMessage : "Loading...";
-            splashMessageElement.text = string.IsNullOrWhiteSpace(messageText) ? "Loading..." : messageText;
+            splashMessageElement.text = GameLocalization.Get(string.IsNullOrWhiteSpace(messageText) ? "Loading..." : messageText);
             splashMessageElement.style.display = string.IsNullOrWhiteSpace(messageText)
                 ? DisplayStyle.None
                 : DisplayStyle.Flex;
