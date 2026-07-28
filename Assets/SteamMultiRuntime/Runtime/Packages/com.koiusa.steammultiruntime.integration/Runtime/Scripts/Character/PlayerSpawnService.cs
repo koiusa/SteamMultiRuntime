@@ -59,9 +59,12 @@ namespace Koiusa.SteamMultiRuntime
                     body.rotation = rotation;
                 }
 
-                body.linearVelocity = Vector3.zero;
-                body.angularVelocity = Vector3.zero;
-                body.WakeUp();
+                if (!body.isKinematic)
+                {
+                    body.linearVelocity = Vector3.zero;
+                    body.angularVelocity = Vector3.zero;
+                    body.WakeUp();
+                }
             }
 
             Physics.SyncTransforms();
