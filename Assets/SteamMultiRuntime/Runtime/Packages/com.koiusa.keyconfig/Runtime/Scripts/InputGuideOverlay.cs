@@ -246,7 +246,7 @@ namespace Koiusa.Keyconfig.Runtime
             deviceLabel = root.Q<Label>("device-label");
             if (deviceLabel != null)
             {
-                deviceLabel.tooltip = "Click to switch keyboard / gamepad layout";
+                deviceLabel.tooltip = GameLocalization.Get("keyconfig.switch_device_tooltip");
                 deviceLabel.AddManipulator(new Clickable(ToggleDeviceLayout));
             }
             keyboardLayout = root.Q<VisualElement>("keyboard-layout");

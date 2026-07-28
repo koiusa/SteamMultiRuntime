@@ -9,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime.Localization
     [RequireComponent(typeof(UIDocument))]
     public sealed class LocaleSelector : MonoBehaviour
     {
+        private static readonly string[] LocaleCodes = { "ja", "en" };
         [SerializeField] private string dropdownName = "locale-dropdown";
         private DropdownField dropdown;
 
@@ -35,22 +36,32 @@ namespace Koiusa.SteamMultiRuntime.Localization
         {
             dropdown = GetComponent<UIDocument>().rootVisualElement.Q<DropdownField>(dropdownName);
             if (dropdown == null) return;
-            dropdown.choices = new List<string> { "日本語", "English" };
             dropdown.UnregisterValueChangedCallback(OnDropdownChanged);
             dropdown.RegisterValueChangedCallback(OnDropdownChanged);
-            RefreshValue();
+            RefreshChoicesAndValue();
         }
 
-        private void OnDropdownChanged(ChangeEvent<string> evt) =>
-            GameLocalization.SelectLocale(evt.newValue == "English" ? "en" : "ja");
+        private void OnDropdownChanged(ChangeEvent<string> evt)
+        {
+            var index = dropdown?.choices?.IndexOf(evt.newValue) ?? -1;
+            if (index >= 0 && index < LocaleCodes.Length)
+                GameLocalization.SelectLocale(LocaleCodes[index]);
+        }
 
-        private void OnLocaleChanged(UnityEngine.Localization.Locale _) => RefreshValue();
+        private void OnLocaleChanged(UnityEngine.Localization.Locale _) => RefreshChoicesAndValue();
 
-        private void RefreshValue()
+        private void RefreshChoicesAndValue()
         {
             if (dropdown == null) return;
-            var value = LocalizationSettings.SelectedLocale?.Identifier.Code == "en" ? "English" : "日本語";
-            dropdown.SetValueWithoutNotify(value);
+            dropdown.label = GameLocalization.Get("locale.label");
+            dropdown.choices = new List<string>
+            {
+                GameLocalization.Get("locale.japanese"),
+                GameLocalization.Get("locale.english")
+            };
+            var selectedCode = LocalizationSettings.SelectedLocale?.Identifier.Code;
+            var index = System.Array.IndexOf(LocaleCodes, selectedCode);
+            dropdown.SetValueWithoutNotify(dropdown.choices[index >= 0 ? index : 0]);
         }
     }
 }

@@ -501,6 +501,22 @@ MonoBehaviour:
     m_Localized: "\u2606"
     m_Metadata:
       m_Items: []
+  - m_Id: 13141520932864
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487296
+    m_Localized: Japanese
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487297
+    m_Localized: English
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487298
+    m_Localized: Click to switch keyboard/gamepad layout
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

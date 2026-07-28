@@ -495,6 +495,22 @@ MonoBehaviour:
     m_Key: lobby.connection_symbol_empty
     m_Metadata:
       m_Items: []
+  - m_Id: 13141520932864
+    m_Key: locale.label
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487296
+    m_Key: locale.japanese
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487297
+    m_Key: locale.english
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13141554487298
+    m_Key: keyconfig.switch_device_tooltip
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
