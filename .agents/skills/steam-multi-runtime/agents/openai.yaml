@@ -1,0 +1,4 @@
+interface:
+  display_name: "SteamMultiRuntime"
+  short_description: "Maintain SteamMultiRuntime with typed package boundaries"
+  default_prompt: "Use $steam-multi-runtime to implement or review this project change while preserving Local/Network behavior, serialized Unity assets, package dependency direction, and the no-reflection policy."

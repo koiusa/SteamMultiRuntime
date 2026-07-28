@@ -54,7 +54,7 @@ Loading
 | `SteamLobbyConnectionStatus` | Memberごとの接続品質を公開する |
 | `SteamLobbyUiDocument` / `LobbyView` | Lobby一覧と操作UIを表示する |
 
-接続品質は`NetworkTransport.GetCurrentRtt()`から取得します。Facepunch Transportは`Connection.QuickStatus().Ping`を標準Transport APIへ公開し、Lobby側はFacepunch内部型やReflectionへ依存しません。Steam IDだけからPingを推定する処理は持ちません。
+接続品質は`NetworkTransport.GetCurrentRtt()`から取得します。Facepunch Transportは`Connection.QuickStatus().Ping`を標準Transport APIへ公開し、Lobby側はFacepunch内部型やReflectionへ依存しません。Steam IDだけからPingを推定する処理は持ちません。この型付きアダプター方針は[Package Architecture](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
 
 ## Scene遷移
 

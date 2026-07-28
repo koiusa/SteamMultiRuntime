@@ -109,9 +109,16 @@ steammultiruntime.targetingsystem ─> targetingsystem
 feature packages ───────────> input.core / core / localization as required
 ```
 
-## ドメイン間の接続方法
+## ドメイン間の接続方法とリフレクション方針
 
 直接参照が不自然になる場合は、型名文字列やリフレクションで回避せず、所有者が明確な小さな契約を下位パッケージへ置きます。
+
+接続方法は次の順で検討します。
+
+1. 直接の型付き呼び出しまたはジェネリック
+2. 下位パッケージが所有する小さなインターフェースまたはイベント
+3. `integration`など上位パッケージに置く明示的なアダプター
+4. Inspectorで割り当てるシリアライズ済みUnity参照
 
 例:
 
@@ -126,7 +133,26 @@ FootstepCollider
   -> FootstepColliderSpawner
 ```
 
-実行時コードで`Type.GetType`、`GetMethod`、`SendMessage`をパッケージ境界の代用にしません。Unityの内部API調査など、Editor専用ツールで用途が限定される場合のみ例外とします。
+### 原則
+
+自作のRuntimeコードへReflection、`dynamic`、`SendMessage`、メンバー名探索、型名文字列による解決を追加しません。特に、次の問題を回避する目的では使用しません。
+
+- asmdefの依存方向や循環参照
+- オプショナルパッケージの分離
+- Local／Network所有権の判定
+- APIの可視性やコンパイルエラー
+
+これらは契約の所有先、アダプター、パッケージ境界を修正して解決します。
+
+### 例外
+
+例外は、Unityの動的機構または非公開APIを調査するEditor専用ツールと、隔離されたThirdpartyコードに限定します。例外を追加・変更する場合は、公開された型付きAPIでは実現できない理由をコードまたは対応文書に残し、対象メンバーが存在しない場合も安全に失敗させ、Gameplayの実行経路へ持ち込みません。
+
+`AnimationEventReceiverVisualizerWindow`のReceiver列挙は、Animation Event自体がメソッド名でReceiverを解決するため既知の例外です。この例外をRuntimeの動的ディスパッチへ一般化しません。
+
+`Runtime/Packages/Thirdparty`はvendorコードとして扱い、既存のReflectionを無関係な変更で書き換えません。連携方法を変える場合は、自作側に型付きアダプターを設けます。
+
+レビューでは変更した自作C#を対象に、`System.Reflection`、`BindingFlags`、`GetMethod`、`GetField`、`GetProperty`、`Type.GetType`、`Activator`、`MethodInfo`、`FieldInfo`、`PropertyInfo`、`dynamic`、`SendMessage`を確認します。delegateの`Invoke`や通常の`object.GetType()`はReflection利用と区別します。
 
 ## 依存ルール
 

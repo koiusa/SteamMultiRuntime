@@ -93,4 +93,4 @@ Network表示名はNetworkBehaviour側で同期し、Overlayは表示処理だ�
 3. Model SyncはPrefab解決をLoaderへ委譲する
 4. LocalとNetworkでProfile／Sync実装を分け、Loader契約は共有する
 5. 表示名Overlayはゲーム状態を所有しない
-6. Local Playerの探索は`ILocalPlayerProvider`を使用し、`LocalManager`の型名やプロパティ名をReflectionで探索しない
+6. Local Playerの探索は`ILocalPlayerProvider`を使用し、`LocalManager`の型名やプロパティ名をReflectionで探索しない。全体方針は[Package Architecture](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従う

@@ -1,6 +1,6 @@
 # Current Class Structure
 
-PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArchitecture.md](PlayerGameplayArchitecture.md)を参照してください。
+PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArchitecture.md](PlayerGameplayArchitecture.md)を参照してください。パッケージ境界、ドメイン間の型付き接続、リフレクション方針は[PackageArchitecture.md](PackageArchitecture.md)を正本とします。
 
 この文書は、現在のSteamMultiRuntime固有Runtime実装について、クラスの配置、責務、所有関係、処理の流れをまとめたものです。
 
@@ -47,7 +47,7 @@ SoloLockTargetSwitchInput
   → LockOnTargetGroupBinder
 ```
 
-ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。
+ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。例外条件とレビュー方法は[Package Architectureのリフレクション方針](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
 
 Local専用UIは`ILocalPlayerOwnership`を通じて所有状態を参照します。Local実装は常に解決済みOwnerを返し、Network実装は`NetworkObject`のSpawn／Owner状態を型付き契約へ変換します。UI側はNetcode型やReflectionへ依存しません。
 
