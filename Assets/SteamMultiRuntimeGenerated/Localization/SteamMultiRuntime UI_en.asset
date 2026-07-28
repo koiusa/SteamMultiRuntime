@@ -1,0 +1,394 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: SteamMultiRuntime UI_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: b7fd789890b08df4f982e4857144920d, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1001381888
+    m_Localized: Character Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1039130624
+    m_Localized: 'Selected: None'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324928
+    m_Localized: 'Selected: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324929
+    m_Localized: None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324930
+    m_Localized: Ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324931
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324932
+    m_Localized: Unknown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324933
+    m_Localized: Loading...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324934
+    m_Localized: Stage Selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324935
+    m_Localized: Key Configuration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324936
+    m_Localized: Press a key or button to highlight its action in real time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324937
+    m_Localized: INPUT MONITOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324938
+    m_Localized: WAITING FOR INPUT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324939
+    m_Localized: Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324940
+    m_Localized: Key / Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324941
+    m_Localized: Load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324942
+    m_Localized: Save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324943
+    m_Localized: Reset All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324944
+    m_Localized: No bindings are available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324945
+    m_Localized: "\u25CF ACTIVE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324946
+    m_Localized: Change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324947
+    m_Localized: Reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324948
+    m_Localized: CONTROLS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324949
+    m_Localized: LIVE INPUT MONITOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324950
+    m_Localized: OPERATIONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324951
+    m_Localized: INPUT ASSET NOT SET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324952
+    m_Localized: ACTION MAP NOT FOUND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324953
+    m_Localized: Ready (showing all; no bindings match '{0}')
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324954
+    m_Localized: Settings loaded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324955
+    m_Localized: Settings loaded. (showing all; no bindings match '{0}')
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324956
+    m_Localized: 'Changed: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324957
+    m_Localized: 'Changed: {0} (showing all)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324958
+    m_Localized: 'Binding group: All'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324959
+    m_Localized: 'Binding group: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324960
+    m_Localized: 'Binding group: {0} (no match; showing all)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324961
+    m_Localized: 'No saved settings.
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324962
+    m_Localized: Settings saved.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324963
+    m_Localized: All key settings were reset.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324964
+    m_Localized: Could not start rebinding.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324965
+    m_Localized: Could not find the action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324966
+    m_Localized: Binding reset.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324967
+    m_Localized: Press a new key (Esc to cancel)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324968
+    m_Localized: Rebinding canceled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324969
+    m_Localized: Rebinding canceled. (showing all)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324970
+    m_Localized: Rebinding failed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324971
+    m_Localized: Rebinding failed. (showing all)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324972
+    m_Localized: KeyConfigInputActionsConfig or InputActionAsset is not assigned.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324973
+    m_Localized: Steam Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324974
+    m_Localized: 'Scene and lobby management  [LB: List / RB: Search]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324975
+    m_Localized: 'Search or join directly  [LB: Create / RB: List]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324976
+    m_Localized: 'Choose a lobby  [Up/Down: Select / Confirm: Join / LB: Search /
+      RB: Create]'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324977
+    m_Localized: Create Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324978
+    m_Localized: Refresh
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324979
+    m_Localized: Leave Lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324980
+    m_Localized: Join by ID
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324981
+    m_Localized: Join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324982
+    m_Localized: HOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324983
+    m_Localized: JOINED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324984
+    m_Localized: FULL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324985
+    m_Localized: Lobbies
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324986
+    m_Localized: Online Members
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324987
+    m_Localized: Search
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324988
+    m_Localized: 'Steam: connecting...'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324989
+    m_Localized: 'Current Lobby: none'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324990
+    m_Localized: Waiting for NetworkManager/FacepunchTransport
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324991
+    m_Localized: No member information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324992
+    m_Localized: Not in a lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324993
+    m_Localized: No lobbies found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324994
+    m_Localized: 'Steam: SteamLobbyService not found'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324995
+    m_Localized: 'Steam: not connected'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324996
+    m_Localized: 'Steam: waiting for NetworkManager/FacepunchTransport...'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324997
+    m_Localized: 'Current Lobby: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324998
+    m_Localized: 'Steam: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324999
+    m_Localized: Stage changed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325000
+    m_Localized: Stage change failed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325001
+    m_Localized: Lobby created.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325002
+    m_Localized: Lobby create failed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325003
+    m_Localized: The lobby ID is invalid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325004
+    m_Localized: Lobby joined.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325005
+    m_Localized: Lobby join failed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325006
+    m_Localized: No matching lobby name was found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045925244928
+    m_Localized: Stage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799360
+    m_Localized: 1 INPUT DETECTED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799361
+    m_Localized: '{0} INPUTS DETECTED'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799362
+    m_Localized: Lobby ID
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799363
+    m_Localized: Lobby Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306284236800
+    m_Localized: Binding Group
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179840
+    m_Localized: All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179841
+    m_Localized: MOVEMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179842
+    m_Localized: COMBAT / TARGETING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179843
+    m_Localized: GRAPPLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179844
+    m_Localized: CAMERA / INTERACTION
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

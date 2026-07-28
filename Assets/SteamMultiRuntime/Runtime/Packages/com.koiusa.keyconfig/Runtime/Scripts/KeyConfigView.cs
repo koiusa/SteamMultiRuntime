@@ -41,6 +41,8 @@ namespace Koiusa.Keyconfig.Runtime
         private LocalizedTextBinding inputMonitorBinding;
         private readonly List<LocalizedTextBinding> rowBindings = new List<LocalizedTextBinding>();
         private int lastActiveInputCount = int.MinValue;
+        private IReadOnlyList<string> cachedBindingGroups;
+        private string cachedSelectedBindingGroup;
 
         private sealed class InputStateRow
         {
@@ -55,6 +57,7 @@ namespace Koiusa.Keyconfig.Runtime
             this.uiDocument = uiDocument;
             this.layoutAsset = layoutAsset;
             this.styleSheet = styleSheet;
+            GameLocalization.LocaleChanged += RefreshBindingGroupChoices;
         }
 
         public bool IsRenderable => statusLabel != null && bindingListView != null;
@@ -158,6 +161,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Dispose()
         {
+            GameLocalization.LocaleChanged -= RefreshBindingGroupChoices;
             localizedTree?.Dispose();
             localizedTree = null;
             statusBinding?.Dispose();
@@ -188,22 +192,31 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void SetBindingGroupChoices(IReadOnlyList<string> groups, string selectedGroup)
         {
+            cachedBindingGroups = groups;
+            cachedSelectedBindingGroup = selectedGroup;
+            RefreshBindingGroupChoices();
+        }
+
+        private void RefreshBindingGroupChoices()
+        {
             if (bindingGroupDropdown == null)
             {
                 return;
             }
 
-            var choices = new List<string> { "すべて" };
-            if (groups != null)
+            bindingGroupDropdown.label = GameLocalization.Get("keyconfig.binding_group");
+            var allLabel = GameLocalization.Get("keyconfig.all");
+            var choices = new List<string> { allLabel };
+            if (cachedBindingGroups != null)
             {
-                choices.AddRange(groups);
+                choices.AddRange(cachedBindingGroups);
             }
 
             bindingGroupDropdown.choices = choices;
-            var value = string.IsNullOrWhiteSpace(selectedGroup) ? "すべて" : selectedGroup;
+            var value = string.IsNullOrWhiteSpace(cachedSelectedBindingGroup) ? allLabel : cachedSelectedBindingGroup;
             if (!choices.Contains(value))
             {
-                value = "すべて";
+                value = allLabel;
             }
 
             bindingGroupDropdown.SetValueWithoutNotify(value);
@@ -534,9 +547,10 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var group = string.Equals(evt.newValue, "すべて", StringComparison.Ordinal)
+            var group = string.Equals(evt.newValue, GameLocalization.Get("keyconfig.all"), StringComparison.Ordinal)
                 ? string.Empty
                 : evt.newValue;
+            cachedSelectedBindingGroup = group;
             onBindingGroupChanged.Invoke(group);
         }
     }

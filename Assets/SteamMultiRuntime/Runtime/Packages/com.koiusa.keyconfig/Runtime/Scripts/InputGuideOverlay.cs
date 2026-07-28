@@ -73,6 +73,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
+            GameLocalization.LocaleChanged += RefreshOperationSectionTitles;
             AcquireDebugToggleInput();
             Build();
             SetVisible(startVisible);
@@ -80,6 +81,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
+            GameLocalization.LocaleChanged -= RefreshOperationSectionTitles;
             ReleaseDebugToggleInput();
             localizedTree?.Dispose();
             localizedTree = null;
@@ -362,6 +364,17 @@ namespace Koiusa.Keyconfig.Runtime
             BuildOperationSections(map, gamepadOperationList, true);
         }
 
+        private void RefreshOperationSectionTitles()
+        {
+            if (inputActionAsset == null)
+                return;
+            var map = string.IsNullOrWhiteSpace(actionMapName)
+                ? (inputActionAsset.actionMaps.Count > 0 ? inputActionAsset.actionMaps[0] : null)
+                : inputActionAsset.FindActionMap(actionMapName, false);
+            if (map != null)
+                BuildOperationLists(map);
+        }
+
         private void BuildOperationSections(InputActionMap map, VisualElement target, bool gamepad)
         {
             for (var sectionIndex = 0; sectionIndex < 4; sectionIndex++)
@@ -438,10 +451,10 @@ namespace Koiusa.Keyconfig.Runtime
         {
             return sectionIndex switch
             {
-                0 => "MOVEMENT",
-                1 => "COMBAT / TARGETING",
-                2 => "GRAPPLE",
-                _ => "CAMERA / INTERACTION"
+                0 => GameLocalization.Get("keyconfig.section_movement"),
+                1 => GameLocalization.Get("keyconfig.section_combat"),
+                2 => GameLocalization.Get("keyconfig.section_grapple"),
+                _ => GameLocalization.Get("keyconfig.section_camera")
             };
         }
 

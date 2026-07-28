@@ -33,6 +33,7 @@ EditorBuildSettings:
     path: Assets/SteamMultiRuntime/Samples/Common/ServerScene.unity
     guid: e050ced7b67192b418ee482cf3fe6036
   m_configObjects:
-    com.unity.addressableassets: {fileID: 11400000, guid: c99c9c0ae8f6190439a44478dbaa4a76, type: 2}
+    com.unity.addressableassets: {fileID: 11400000, guid: 6f6c3fff31728d745b397ae4df14d516, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.localization.settings: {fileID: 11400000, guid: d779c174d935abb4a80cd64db76ef857, type: 2}
   m_UseUCBPForAssetBundles: 0

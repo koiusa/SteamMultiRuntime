@@ -1,0 +1,396 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: SteamMultiRuntime UI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: SteamMultiRuntime UI
+  m_TableCollectionNameGuidString: b7fd789890b08df4f982e4857144920d
+  m_Entries:
+  - m_Id: 1001381888
+    m_Key: character.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1039130624
+    m_Key: character.selected_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324928
+    m_Key: character.selected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324929
+    m_Key: common.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324930
+    m_Key: common.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324931
+    m_Key: common.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324932
+    m_Key: common.unknown
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324933
+    m_Key: loading.default
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324934
+    m_Key: stage.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324935
+    m_Key: keyconfig.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324936
+    m_Key: keyconfig.help
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324937
+    m_Key: keyconfig.input_monitor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324938
+    m_Key: keyconfig.waiting_input
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324939
+    m_Key: keyconfig.action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324940
+    m_Key: keyconfig.binding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324941
+    m_Key: keyconfig.load
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324942
+    m_Key: keyconfig.save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324943
+    m_Key: keyconfig.reset_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324944
+    m_Key: keyconfig.no_bindings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324945
+    m_Key: keyconfig.input_active
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324946
+    m_Key: keyconfig.change
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324947
+    m_Key: keyconfig.reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324948
+    m_Key: keyconfig.controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324949
+    m_Key: keyconfig.live_monitor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324950
+    m_Key: keyconfig.operations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324951
+    m_Key: keyconfig.input_asset_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324952
+    m_Key: keyconfig.action_map_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324953
+    m_Key: keyconfig.ready_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324954
+    m_Key: keyconfig.loaded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324955
+    m_Key: keyconfig.loaded_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324956
+    m_Key: keyconfig.changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324957
+    m_Key: keyconfig.changed_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324958
+    m_Key: keyconfig.group_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324959
+    m_Key: keyconfig.group
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324960
+    m_Key: keyconfig.group_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324961
+    m_Key: keyconfig.no_saved_settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324962
+    m_Key: keyconfig.saved
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324963
+    m_Key: keyconfig.reset_all_done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324964
+    m_Key: keyconfig.rebind_start_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324965
+    m_Key: keyconfig.action_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324966
+    m_Key: keyconfig.binding_reset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324967
+    m_Key: keyconfig.enter_new_key
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324968
+    m_Key: keyconfig.rebind_canceled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324969
+    m_Key: keyconfig.rebind_canceled_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324970
+    m_Key: keyconfig.rebind_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324971
+    m_Key: keyconfig.rebind_failed_fallback
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324972
+    m_Key: keyconfig.config_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324973
+    m_Key: lobby.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324974
+    m_Key: lobby.group_create
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324975
+    m_Key: lobby.group_search
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324976
+    m_Key: lobby.group_list
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324977
+    m_Key: lobby.create
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324978
+    m_Key: lobby.refresh
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324979
+    m_Key: lobby.leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324980
+    m_Key: lobby.join_by_id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324981
+    m_Key: lobby.join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324982
+    m_Key: lobby.host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324983
+    m_Key: lobby.joined
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324984
+    m_Key: lobby.full
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324985
+    m_Key: lobby.list
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324986
+    m_Key: lobby.online_members
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324987
+    m_Key: lobby.search
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324988
+    m_Key: lobby.steam_connecting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324989
+    m_Key: lobby.current_none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324990
+    m_Key: lobby.transport_waiting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324991
+    m_Key: lobby.no_member_info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324992
+    m_Key: lobby.not_joined
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324993
+    m_Key: lobby.not_found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324994
+    m_Key: lobby.service_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324995
+    m_Key: lobby.not_connected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324996
+    m_Key: lobby.steam_waiting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324997
+    m_Key: lobby.current
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324998
+    m_Key: lobby.steam_user
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043324999
+    m_Key: lobby.stage_changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325000
+    m_Key: lobby.stage_change_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325001
+    m_Key: lobby.created
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325002
+    m_Key: lobby.create_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325003
+    m_Key: lobby.invalid_id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325004
+    m_Key: lobby.join_success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325005
+    m_Key: lobby.join_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1043325006
+    m_Key: lobby.name_not_found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045925244928
+    m_Key: stage.field
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799360
+    m_Key: keyconfig.input_detected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799361
+    m_Key: keyconfig.inputs_detected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799362
+    m_Key: lobby.id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4045958799363
+    m_Key: lobby.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306284236800
+    m_Key: keyconfig.binding_group
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179840
+    m_Key: keyconfig.all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179841
+    m_Key: keyconfig.section_movement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179842
+    m_Key: keyconfig.section_combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179843
+    m_Key: keyconfig.section_grapple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5306326179844
+    m_Key: keyconfig.section_camera
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 783396075955814524
+  references:
+    version: 2
+    RefIds:
+    - rid: 783396075955814524
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1785213853835
