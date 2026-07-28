@@ -12,6 +12,14 @@ namespace Koiusa.Keyconfig.Runtime
     [DisallowMultipleComponent]
     public sealed class InputGuideOverlay : MonoBehaviour
     {
+        public enum OverlayDisplayMode
+        {
+            Both,
+            DeviceOnly,
+            OperationsOnly,
+            Hidden
+        }
+
         private const string DefaultLayoutPath = "UI/InputGuide/InputGuideOverlay";
         private const string KeyboardLayoutPath = "UI/InputGuide/InputGuideKeyboard";
         private const string MouseLayoutPath = "UI/InputGuide/InputGuideMouse";
@@ -39,6 +47,8 @@ namespace Koiusa.Keyconfig.Runtime
         private UIDocument uiDocument;
         private VisualElement overlay;
         private VisualElement devicePanel;
+        private VisualElement operationPanel;
+        private VisualElement mouseLayoutHost;
         private Label deviceLabel;
         private Label inputModeLabel;
         private VisualElement keyboardLayout;
@@ -61,6 +71,7 @@ namespace Koiusa.Keyconfig.Runtime
         private float lastGamepadActivityTime;
         private float lastPrimaryDeviceSwitchTime = float.NegativeInfinity;
         private bool primaryDeviceIsGamepad;
+        private OverlayDisplayMode displayMode = OverlayDisplayMode.Hidden;
         private LocalizedVisualTree localizedTree;
 
         private sealed class GuideRow
@@ -73,7 +84,8 @@ namespace Koiusa.Keyconfig.Runtime
             public float ActiveUntil;
         }
 
-        public bool IsVisible => overlay != null && overlay.style.display != DisplayStyle.None;
+        public bool IsVisible => displayMode != OverlayDisplayMode.Hidden;
+        public OverlayDisplayMode DisplayMode => displayMode;
 
         private void Awake()
         {
@@ -86,7 +98,7 @@ namespace Koiusa.Keyconfig.Runtime
             KeyConfigLocalization.LocaleChanged += RefreshLocalizedUi;
             AcquireDebugToggleInput();
             Build();
-            SetVisible(startVisible);
+            SetDisplayMode(startVisible ? OverlayDisplayMode.Both : OverlayDisplayMode.Hidden);
         }
 
         private void OnDisable()
@@ -170,15 +182,49 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void SetVisible(bool visible)
         {
-            if (overlay != null)
-            {
-                overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            }
+            SetDisplayMode(visible ? OverlayDisplayMode.Both : OverlayDisplayMode.Hidden);
         }
 
         public void ToggleVisible()
         {
-            SetVisible(!IsVisible);
+            CycleDisplayMode();
+        }
+
+        public void CycleDisplayMode()
+        {
+            var next = displayMode switch
+            {
+                OverlayDisplayMode.Both => OverlayDisplayMode.DeviceOnly,
+                OverlayDisplayMode.DeviceOnly => OverlayDisplayMode.OperationsOnly,
+                OverlayDisplayMode.OperationsOnly => OverlayDisplayMode.Hidden,
+                _ => OverlayDisplayMode.Both
+            };
+            SetDisplayMode(next);
+        }
+
+        public void SetDisplayMode(OverlayDisplayMode mode)
+        {
+            displayMode = mode;
+            if (overlay == null)
+            {
+                return;
+            }
+
+            var showDevices = mode is OverlayDisplayMode.Both or OverlayDisplayMode.DeviceOnly;
+            var showOperations = mode is OverlayDisplayMode.Both or OverlayDisplayMode.OperationsOnly;
+            overlay.style.display = mode == OverlayDisplayMode.Hidden ? DisplayStyle.None : DisplayStyle.Flex;
+            if (devicePanel != null)
+            {
+                devicePanel.style.display = showDevices ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (mouseLayoutHost != null)
+            {
+                mouseLayoutHost.style.display = showDevices ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (operationPanel != null)
+            {
+                operationPanel.style.display = showOperations ? DisplayStyle.Flex : DisplayStyle.None;
+            }
         }
 
         public void ShowKeyboardLayout()
@@ -203,10 +249,12 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Refresh()
         {
+            var previousMode = displayMode;
             ReleaseDebugToggleInput();
             inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
             AcquireDebugToggleInput();
             Build();
+            SetDisplayMode(previousMode);
         }
 
         private void AcquireDebugToggleInput()
@@ -259,6 +307,8 @@ namespace Koiusa.Keyconfig.Runtime
             CloneDeviceLayout(root, "gamepad-layout-host", GamepadLayoutPath);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             devicePanel = root.Q<VisualElement>(className: "input-guide-panel");
+            operationPanel = root.Q<VisualElement>(className: "input-operation-panel");
+            mouseLayoutHost = root.Q<VisualElement>("mouse-layout-host");
             deviceLabel = root.Q<Label>("device-label");
             inputModeLabel = root.Q<Label>("input-mode-label");
             if (deviceLabel != null)
@@ -422,9 +472,9 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void RefreshLocalizedUi()
         {
-            var wasVisible = IsVisible;
+            var previousMode = displayMode;
             Build();
-            SetVisible(wasVisible);
+            SetDisplayMode(previousMode);
         }
 
         private void BuildOperationSections(InputActionMap map, VisualElement target, bool gamepad)
