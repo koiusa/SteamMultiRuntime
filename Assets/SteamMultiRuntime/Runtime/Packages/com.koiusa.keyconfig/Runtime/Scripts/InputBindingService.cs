@@ -261,6 +261,11 @@ namespace Koiusa.Keyconfig.Runtime
 
             foreach (var action in inputActionAsset)
             {
+                if (action != targetAction)
+                {
+                    continue;
+                }
+
                 for (var i = 0; i < action.bindings.Count; i++)
                 {
                     if (action == targetAction && i == targetBindingIndex)
