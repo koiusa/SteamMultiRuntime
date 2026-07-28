@@ -2,6 +2,9 @@
 
 サンプルは目的別に配置します。
 
+Package Managerから利用する場合のImport、Build Profile設定、バージョン更新手順は
+[`Documentation~/Samples.md`](../Documentation~/Samples.md)を参照してください。
+
 ```text
 Samples/
 ├─ Features/                     # 1機能を単独で確認するサンプル

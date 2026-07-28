@@ -16,16 +16,10 @@ Install
 Usage
 -----
 
-サンプルシーンをビルド対象に追加します。  
-1. Unityエディタのメニューから `File > Build Profiles` を表示してビルドプロファイルを作成。
-2. Build Profileを開き、以下のサンプルシーンを追加：
-   - ゲーム用Stageを追加
-     - `Assets/SteamMultiRuntime/Samples/Gameplay/Stages/<シーン名>.unity`
-   - 必要に応じて起動用Sceneを追加
-     - `Assets/SteamMultiRuntime/Samples/Gameplay/Startup/<シーン名>.unity`
-   - ゲームシーン: 以下のいずれかを選択
-     - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
-3. Unityエディタでサンプルシーンをプレイ。  
+Package Managerから必要なサンプルをImportし、使用するBuild ProfileへSceneを追加します。
+パッケージ使用側では、Sceneは通常`Assets/Samples/Steam Multi Runtime/<version>/`へコピーされます。
+
+[サンプルのImport・Build Profile設定・更新手順](Assets/SteamMultiRuntime/Documentation~/Samples.md)
 
 機能単位のサンプルは`Assets/SteamMultiRuntime/Samples/Features/<機能名>/`にあります。
 一覧と追加規約は[Samples README](Assets/SteamMultiRuntime/Samples/README.md)を参照してください。
@@ -52,6 +46,7 @@ Documentation
 - [Keyconfig](Documentation/Keyconfig.md)
 - [TargetingSystem](Documentation/TargetingSystem.md)
 - [Input Bindings](Documentation/InputBindings.md)
+- [Sample Setup](Assets/SteamMultiRuntime/Documentation~/Samples.md)
 
 Development Notes
 -----------------

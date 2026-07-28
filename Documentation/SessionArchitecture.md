@@ -71,6 +71,10 @@ Lobby UI / Stage Select UI / Startup Loader
 - Dedicated ServerはUIを経由せず起動対象Stageを決定する
 - Scene参照の一覧は`StageSceneList`へ集約する
 
+パッケージ使用側ではSample SceneをImportしただけではBuild Settingsへ追加されません。
+Build Profile固有のScene一覧、パッケージ更新時の旧Sample削除、Presetの再適用については
+[サンプルの導入とBuild Profile設定](../Assets/SteamMultiRuntime/Documentation~/Samples.md)を参照してください。
+
 ## Loading Splash
 
 `LocalLoadingSplash`は`ILoadingSplashEventSource`を購読し、共通の`LoadingSplashPresenter`を利用します。`SteamLobbyLoadingSplash`はNetwork Scene遷移とPlayer Model準備を監視して表示を制御します。
