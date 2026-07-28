@@ -15,7 +15,6 @@ Package Managerで`Steam Multi Runtime`を選び、用途に応じて次のサ�
 | `Targeting System - Production Input` | 本番Input Actionsを使用するTargeting確認Scene |
 | `Steam Multiplayer - Quarter View` | Quarter View用Lobby／Local Scene |
 | `Steam Multiplayer - Server` | Dedicated Server用Lobby Scene |
-| `Build Profile Scene Preset` | Build Profile編集Tool検証用の補助Preset |
 
 一覧は主な利用頻度が高い順です。Third Personサンプルを実行する場合は、上位2サンプルを
 Importしてください。Scene登録はUnity標準のBuild Profile画面から手動で行います。
@@ -42,10 +41,6 @@ Unity 6では、Build Profileが固有のScene一覧を使用している場合�
    - `Gameplay Sample/Startup/WelcomeScene.unity`
    - 使用する`Gameplay Sample/Stages/<Stage>.unity`
 4. 各Sceneが有効になっていることと、旧バージョンのパスがないことを確認します。
-
-`Build Profile Scene Preset`と`Tools > SteamMultiRuntime > Build > Build Profile Scenes`は
-補助的なEditor Toolです。現在は完全な構成を保証しないため、標準セットアップには使用せず、
-UnityのBuild Profile画面でSceneを手動登録してください。
 
 ## パッケージ更新時
 

@@ -72,7 +72,7 @@ Lobby UI / Stage Select UI / Startup Loader
 - Scene参照の一覧は`StageSceneList`へ集約する
 
 パッケージ使用側ではSample SceneをImportしただけではBuild Settingsへ追加されません。
-Build Profile固有のScene一覧、パッケージ更新時の旧Sample削除、Presetの再適用については
+Build Profile固有のScene一覧と、パッケージ更新時の旧Sample削除については
 [サンプルの導入とBuild Profile設定](../Assets/SteamMultiRuntime/Documentation~/Samples.md)を参照してください。
 
 ## Loading Splash

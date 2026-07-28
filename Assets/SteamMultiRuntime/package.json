@@ -74,11 +74,6 @@
       "displayName": "Steam Multiplayer - Server",
       "description": "Dedicated server lobby and session sample.",
       "path": "Samples/SteamMultiPlayer_Server"
-    },
-    {
-      "displayName": "Build Profile Scene Preset",
-      "description": "Optional preset for testing the Build Profile scene editor tool. Manual scene registration is recommended.",
-      "path": "Samples/BuildPreset"
     }
   ]
 }
