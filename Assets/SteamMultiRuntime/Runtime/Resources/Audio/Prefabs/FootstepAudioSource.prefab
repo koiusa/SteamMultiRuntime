@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1575278543013238670}
   - component: {fileID: 8993553658751375416}
   m_Layer: 0
-  m_Name: FootstepAudioSuece
+  m_Name: FootstepAudioSource
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

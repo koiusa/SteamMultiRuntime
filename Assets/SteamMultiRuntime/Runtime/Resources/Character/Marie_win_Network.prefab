@@ -5257,7 +5257,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 180006058783374374, guid: 1621c97ef4c1d42429c19c2dd0c3a0b8, type: 3}
       propertyPath: m_Name
-      value: LandingAudioSuece
+      value: LandingAudioSource
       objectReference: {fileID: 0}
     - target: {fileID: 2603612354673623732, guid: 1621c97ef4c1d42429c19c2dd0c3a0b8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5364,7 +5364,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1734972909649358918, guid: 56f510b96f53b2d4a813574947a1fdac, type: 3}
       propertyPath: m_Name
-      value: FootstepAudioSuece
+      value: FootstepAudioSource
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

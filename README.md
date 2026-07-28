@@ -21,7 +21,6 @@ Usage
 1. Package Managerから次のサンプルをImportします。
    - `Gameplay Sample`
    - `Steam Multiplayer - Third Person`
-   - `Shared Sample Assets`
 2. `File > Build Profiles`から使用するBuild Profileを作成または選択します。
 3. Build ProfileのScene Listへ、Projectウィンドウから次のSceneをドラッグして追加します。
    - `Steam Multiplayer - Third Person/SampleLobbyScene_ThirdPersonView_Traversal.unity`

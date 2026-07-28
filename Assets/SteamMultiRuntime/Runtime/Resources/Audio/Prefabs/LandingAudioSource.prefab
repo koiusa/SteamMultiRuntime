@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2603612354673623732}
   - component: {fileID: 3562028119774360739}
   m_Layer: 0
-  m_Name: LandingAudioSuece
+  m_Name: LandingAudioSource
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

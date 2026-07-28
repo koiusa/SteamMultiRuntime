@@ -47,18 +47,13 @@
   "samples": [
     {
       "displayName": "Gameplay Sample",
-      "description": "Main gameplay sample with playable stages plus the Unity logo and welcome startup flow. Also import Shared Sample Assets.",
+      "description": "Main gameplay sample with playable stages plus the Unity logo and welcome startup flow.",
       "path": "Samples/Gameplay"
     },
     {
       "displayName": "Steam Multiplayer - Third Person",
-      "description": "Primary multiplayer sample with third-person traversal, local play, and Steam lobby flows. Also import Shared Sample Assets and Gameplay Sample.",
+      "description": "Primary multiplayer sample with third-person traversal, local play, and Steam lobby flows. Also import Gameplay Sample.",
       "path": "Samples/SteamMultiPlayer_ThirdPersonView"
-    },
-    {
-      "displayName": "Shared Sample Assets",
-      "description": "Required settings and assets shared by the gameplay and multiplayer samples.",
-      "path": "Samples/Common"
     },
     {
       "displayName": "Keyconfig - Production Input",

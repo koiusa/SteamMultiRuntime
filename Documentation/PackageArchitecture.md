@@ -141,6 +141,14 @@ FootstepCollider
 9. Thirdparty変更は互換対応など必要最小限にし、上流との差分理由を残す。
 10. 新しい共有型は「複数箇所で使う」だけでCoreへ移さず、Steam Multi Runtime全体が所有すべき契約かで判断する。
 
+## Asset配置ルール
+
+- RuntimeのPrefabや設定から参照されるAssetは`Runtime`を正本とし、`Samples`へ置かない。
+- `Resources`には`Resources.Load`で動的解決するAssetだけを置く。GUIDで直接参照するPrefabやAnimationは`Runtime/Prefabs`、`Runtime/Animations`、`Runtime/Configs`へ置く。
+- Stage固有のTerrain、NavMesh、演出Assetは対象の`Samples/Gameplay`配下へ置く。
+- Sample SceneからRuntime Assetを参照してよいが、Runtime AssetからSample Assetを参照しない。
+- 汎用パッケージの単体Sample用Input Actionsは、そのパッケージの`Samples/Basic`で所有する。
+
 ## 関連文書
 
 - [CurrentClassStructure.md](CurrentClassStructure.md)
