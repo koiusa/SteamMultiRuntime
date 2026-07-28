@@ -42,11 +42,26 @@
 .keyconfig-input-monitor {
 	flex-direction: row;
 	align-items: center;
-	height: 34px;
+	min-height: 36px;
 	margin-top: 3px;
 	margin-bottom: 8px;
 	padding-left: 10px;
 	padding-right: 10px;
+	background-color: rgba(10, 20, 34, 0.72);
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-left-color: rgb(42, 61, 83);
+	border-right-color: rgb(42, 61, 83);
+	border-top-color: rgb(42, 61, 83);
+	border-bottom-color: rgb(42, 61, 83);
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	flex-shrink: 0;
+	overflow: hidden;
 }
 
 .keyconfig-input-monitor-dot {
@@ -64,6 +79,11 @@
 	-unity-font-style: bold;
 	letter-spacing: 1px;
 	color: rgb(175, 195, 225);
+	flex-shrink: 1;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .keyconfig-input-monitor-spacer {
@@ -73,7 +93,14 @@
 .keyconfig-input-monitor-status {
 	font-size: 10px;
 	-unity-font-style: bold;
+	-unity-text-align: middle-right;
 	color: rgb(95, 225, 170);
+	max-width: 48%;
+	flex-shrink: 1;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 /* ---------- タブ / ドロップダウン ---------- */
