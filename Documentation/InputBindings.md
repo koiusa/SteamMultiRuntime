@@ -25,6 +25,8 @@
 | ストライフ切替 | Left Ctrl | LT / L2 |
 | グラップル射出 | 左クリック | RT / R2 |
 
+グラップル入力を保持して照準している間はCamera操作を停止します。Wire接続後はグラップル入力を保持したままCameraを操作でき、入力を解放するとWireを切断します。
+
 `Drag`、`CameraZoom`、`AimCursorDelta`、`AimCursorPosition`、`AimCursorMove` は物理デバイスの特性に応じた入力です。全デバイスへ同じBindingを設ける対象にはしません。
 
 ## UI

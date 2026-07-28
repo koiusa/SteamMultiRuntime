@@ -209,6 +209,8 @@ Wire機能全体の中心コンポーネントであり、接続状態とロー�
 - `Valid`と`Obstructed`の候補を、それぞれの実際のRaycast命中点へ接続する
 - アタッチとデタッチを実行する
 
+Grapple入力を保持している間、Wire未接続時は照準操作を優先するためCamera入力を停止します。`WireAttachAction`によって接続が成立するとCamera入力を再開し、Grapple入力を保持して接続を維持したまま視点を操作できます。Grapple入力を解放するとWireを切断し、Cameraは通常入力を継続します。Camera側の詳細は[CameraArchitecture.md](CameraArchitecture.md#camera入力)を参照してください。
+
 ### WireSwingAction
 
 - 空中Swing中の接線方向加速を処理する

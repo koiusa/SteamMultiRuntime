@@ -21,7 +21,7 @@ Focus Marker
 └─ FocusMarkerUtility
 ```
 
-`CameraMixerWeightControllerBase`が共通処理を持ち、派生クラスは利用する`IFocusMarkerContext`の解決だけを担当します。
+`CameraMixerWeightControllerBase`が共通処理を持ち、派生クラスは利用する`IFocusMarkerContext`の解決だけを担当します。Contextは`IsActive`に加えて、Cameraが追従するローカル`PlayerObject`を公開します。Camera入力の制御では、このPlayerObjectから`IPlayerTraversalCoordinator`を解決し、対象プレイヤー自身のWire接続状態を参照します。
 
 ## Camera切替
 
@@ -43,7 +43,15 @@ Orbit Scale                 ← Player/CameraZoom
 Grapple判定                  ← Player/Grapple
 ```
 
-Grapple入力中は照準操作との競合を避けるため、Cameraの`CinemachineInputAxisController`を一時的に無効化します。Wire接続が成立した後はGrapple入力を保持していてもCamera入力を再度有効化し、接続中に視点を操作できます。生成したAction ReferenceはDestroy時に破棄します。
+Camera入力の有効状態は次の条件で切り替えます。
+
+| 状態 | Camera入力 | 目的 |
+|---|---|---|
+| Grapple未入力 | 有効 | 通常の視点操作 |
+| Grapple入力中、Wire未接続 | 無効 | Wire照準と視点操作の競合を防止 |
+| Grapple入力中、Wire接続済み | 有効 | Wire接続を維持したまま視点操作 |
+
+Wire接続判定には追従対象PlayerObjectの`IPlayerTraversalCoordinator.IsWireAttached`を使用します。このため、Lobby内の別プレイヤーがWire接続してもローカルCamera入力には影響しません。生成したAction ReferenceはDestroy時に破棄します。
 
 ## 障害物回避
 
