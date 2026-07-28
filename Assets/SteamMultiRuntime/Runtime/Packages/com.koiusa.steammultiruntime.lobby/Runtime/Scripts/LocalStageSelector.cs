@@ -32,7 +32,10 @@ namespace Koiusa.SteamMultiRuntime
 
             if (SceneLoader != null && SceneLoader.CreatableStageSceneNames.Count > 0)
             {
-                selectedStageName = SceneLoader.CreatableStageSceneNames[0];
+                var preferredStageName = StageSelectionPreferences.SelectedStageName;
+                selectedStageName = SceneLoader.CreatableStageSceneNames.Contains(preferredStageName)
+                    ? preferredStageName
+                    : SceneLoader.CreatableStageSceneNames[0];
             }
         }
 
@@ -75,6 +78,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             selectedStageName = stageName;
+            StageSelectionPreferences.Save(stageName);
             StageSelected?.Invoke(stageName);
             return true;
         }

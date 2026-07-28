@@ -82,9 +82,14 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSceneField.SetEnabled(true);
-            if (string.IsNullOrWhiteSpace(stageSceneField.value) || !stageSceneField.choices.Contains(stageSceneField.value))
+            var preferredStageName = StageSelectionPreferences.SelectedStageName;
+            if (stageSceneField.choices.Contains(preferredStageName))
             {
-                stageSceneField.value = stageSceneField.choices[0];
+                stageSceneField.SetValueWithoutNotify(preferredStageName);
+            }
+            else if (string.IsNullOrWhiteSpace(stageSceneField.value) || !stageSceneField.choices.Contains(stageSceneField.value))
+            {
+                stageSceneField.SetValueWithoutNotify(stageSceneField.choices[0]);
             }
         }
 
@@ -163,6 +168,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnStageSceneChanged(ChangeEvent<string> evt)
         {
+            StageSelectionPreferences.Save(evt.newValue);
             StageSelected?.Invoke(evt.newValue);
         }
 

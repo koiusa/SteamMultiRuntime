@@ -166,9 +166,11 @@ namespace Koiusa.SteamMultiRuntime
             var hasScenes = context.StageSceneField.choices.Count > 0;
             context.StageSceneField.SetEnabled(hasScenes);
             if (!hasScenes)
-                context.StageSceneField.value = string.Empty;
+                context.StageSceneField.SetValueWithoutNotify(string.Empty);
+            else if (context.StageSceneField.choices.Contains(StageSelectionPreferences.SelectedStageName))
+                context.StageSceneField.SetValueWithoutNotify(StageSelectionPreferences.SelectedStageName);
             else if (string.IsNullOrWhiteSpace(context.StageSceneField.value) || !context.StageSceneField.choices.Contains(context.StageSceneField.value))
-                context.StageSceneField.value = context.StageSceneField.choices[0];
+                context.StageSceneField.SetValueWithoutNotify(context.StageSceneField.choices[0]);
         }
 
         public void ShowOnlineMembers(System.Collections.Generic.IReadOnlyList<string> memberNames, bool isInLobby, string connectionStrengthText)

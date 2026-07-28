@@ -104,6 +104,7 @@ namespace Koiusa.SteamMultiRuntime
             onlineMemberListView = root.Q<ScrollView>("online-member-list-view");
             lobbyNameField = root.Q<TextField>("lobby-name-field");
             stageSceneField = root.Q<DropdownField>("stage-scene-field");
+            stageSceneField?.RegisterValueChangedCallback(OnStageSceneChanged);
             lobbyIdField = root.Q<TextField>("lobby-id-field");
             lobbyNameSearchField = root.Q<TextField>("lobby-name-search-field");
             lobbyListView = root.Q<ScrollView>("lobby-list-view");
@@ -313,6 +314,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void DisposeControllers()
         {
+            stageSceneField?.UnregisterValueChangedCallback(OnStageSceneChanged);
             gamepadTextInput?.Dispose();
             gamepadTextInput = null;
             presenter?.Dispose();
@@ -321,6 +323,11 @@ namespace Koiusa.SteamMultiRuntime
             localizedTree = null;
             navigation = null;
             context = null;
+        }
+
+        private static void OnStageSceneChanged(ChangeEvent<string> evt)
+        {
+            StageSelectionPreferences.Save(evt.newValue);
         }
 
         private void ClearReferences()
