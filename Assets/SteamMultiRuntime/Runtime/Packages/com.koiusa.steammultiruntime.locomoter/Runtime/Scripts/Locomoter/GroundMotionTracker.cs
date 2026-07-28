@@ -97,6 +97,17 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var sampleTime = Time.fixedTime;
+            if (bestGroundContact.MotionSource is IGroundMotionSnapshotSource snapshotSource)
+            {
+                snapshotSource.GetGroundMotion(
+                    samplePoint,
+                    Time.fixedDeltaTime,
+                    out groundVelocity,
+                    out groundDisplacement,
+                    out groundRotationDelta);
+                return true;
+            }
+
             groundVelocity = GetPointVelocity(bestGroundContact, samplePoint, sampleTime);
             groundDisplacement = GetPointDisplacement(bestGroundContact, samplePoint, Time.fixedDeltaTime, sampleTime);
             groundRotationDelta = GetRotationDelta(bestGroundContact, Time.fixedDeltaTime, sampleTime);

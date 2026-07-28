@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource
+    public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource, IGroundMotionSnapshotSource
     {
         private static readonly Vector3 UnitScale = Vector3.one;
 
@@ -55,7 +55,11 @@ namespace Koiusa.SteamMultiRuntime
         private Quaternion currentObservedRotation;
         private float lastObservedSampleTime = -1f;
         private Matrix4x4 previousPhysicsMatrix;
+        private Matrix4x4 previousPhysicsInverseMatrix;
         private Matrix4x4 currentPhysicsMatrix;
+        private Quaternion physicsRotationDelta = Quaternion.identity;
+        private float localMotionStartFixedTime;
+        private float lastPhysicsSampleTime = float.NegativeInfinity;
 
         private void Awake()
         {
@@ -68,14 +72,18 @@ namespace Koiusa.SteamMultiRuntime
             currentObservedPosition = cachedTransform.position;
             currentObservedRotation = cachedTransform.rotation;
             previousPhysicsMatrix = Matrix4x4.TRS(cachedTransform.position, cachedTransform.rotation, UnitScale);
+            previousPhysicsInverseMatrix = previousPhysicsMatrix.inverse;
             currentPhysicsMatrix = previousPhysicsMatrix;
+            localMotionStartFixedTime = Time.fixedTime;
         }
 
         public override void OnNetworkSpawn()
         {
+            localMotionStartFixedTime = Time.fixedTime;
+            lastPhysicsSampleTime = float.NegativeInfinity;
             if (IsServer && motionStartServerTime.Value <= 0d && NetworkManager != null)
             {
-                motionStartServerTime.Value = NetworkManager.ServerTime.FixedTime;
+                motionStartServerTime.Value = NetworkManager.ServerTime.Time;
             }
         }
 
@@ -86,8 +94,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            previousPhysicsMatrix = currentPhysicsMatrix;
-            currentPhysicsMatrix = GetMotionMatrix(GetMotionTime());
+            EnsurePhysicsSample();
             ApplyMotionMatrix(currentPhysicsMatrix);
         }
 
@@ -107,14 +114,35 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 GetPointVelocity(Vector3 samplePoint)
         {
             var deltaTime = Time.fixedDeltaTime;
-            return deltaTime > 0f ? GetPointDisplacement(samplePoint, deltaTime) / deltaTime : Vector3.zero;
+            GetGroundMotion(samplePoint, deltaTime, out var velocity, out _, out _);
+            return velocity;
         }
 
         public Vector3 GetPointDisplacement(Vector3 samplePoint, float deltaTime)
         {
+            GetGroundMotion(samplePoint, deltaTime, out _, out var displacement, out _);
+            return displacement;
+        }
+
+        public Quaternion GetRotationDelta(float deltaTime)
+        {
+            GetGroundMotion(cachedTransform.position, deltaTime, out _, out _, out var rotationDelta);
+            return rotationDelta;
+        }
+
+        public void GetGroundMotion(
+            Vector3 samplePoint,
+            float deltaTime,
+            out Vector3 pointVelocity,
+            out Vector3 pointDisplacement,
+            out Quaternion rotationDelta)
+        {
             if (deltaTime <= 0f)
             {
-                return Vector3.zero;
+                pointVelocity = Vector3.zero;
+                pointDisplacement = Vector3.zero;
+                rotationDelta = Quaternion.identity;
+                return;
             }
 
             if (ShouldUseObservedTransformMotion())
@@ -122,34 +150,31 @@ namespace Koiusa.SteamMultiRuntime
                 UpdateObservedMotion();
                 var observedLocalPoint = Quaternion.Inverse(previousObservedRotation) * (samplePoint - previousObservedPosition);
                 var observedMovedPoint = currentObservedPosition + currentObservedRotation * observedLocalPoint;
-                return observedMovedPoint - samplePoint;
+                pointDisplacement = observedMovedPoint - samplePoint;
+                pointVelocity = pointDisplacement / deltaTime;
+                rotationDelta = currentObservedRotation * Quaternion.Inverse(previousObservedRotation);
+                return;
             }
 
-            var currentTime = GetMotionTime();
-            var previousMatrix = GetMotionMatrix(currentTime - deltaTime);
-            var currentMatrix = GetMotionMatrix(currentTime);
-            var localPoint = previousMatrix.inverse.MultiplyPoint3x4(samplePoint);
-            var movedPoint = currentMatrix.MultiplyPoint3x4(localPoint);
-            return movedPoint - samplePoint;
+            EnsurePhysicsSample();
+            var localPoint = previousPhysicsInverseMatrix.MultiplyPoint3x4(samplePoint);
+            var movedPoint = currentPhysicsMatrix.MultiplyPoint3x4(localPoint);
+            pointDisplacement = movedPoint - samplePoint;
+            pointVelocity = pointDisplacement / deltaTime;
+            rotationDelta = physicsRotationDelta;
         }
 
-        public Quaternion GetRotationDelta(float deltaTime)
+        private void EnsurePhysicsSample()
         {
-            if (deltaTime <= 0f)
-            {
-                return Quaternion.identity;
-            }
+            var sampleTime = Time.fixedTime;
+            if (lastPhysicsSampleTime == sampleTime) return;
 
-            if (ShouldUseObservedTransformMotion())
-            {
-                UpdateObservedMotion();
-                return currentObservedRotation * Quaternion.Inverse(previousObservedRotation);
-            }
-
-            var currentTime = GetMotionTime();
-            var previousRotation = GetWorldRotation(currentTime - deltaTime);
-            var currentRotation = GetWorldRotation(currentTime);
-            return currentRotation * Quaternion.Inverse(previousRotation);
+            var motionTime = GetMotionTime();
+            previousPhysicsMatrix = GetMotionMatrix(motionTime - Time.fixedDeltaTime);
+            previousPhysicsInverseMatrix = previousPhysicsMatrix.inverse;
+            currentPhysicsMatrix = GetMotionMatrix(motionTime);
+            physicsRotationDelta = currentPhysicsMatrix.rotation * Quaternion.Inverse(previousPhysicsMatrix.rotation);
+            lastPhysicsSampleTime = sampleTime;
         }
 
         private bool ShouldApplyMotionLocally()
@@ -164,14 +189,15 @@ namespace Koiusa.SteamMultiRuntime
 
         private float GetMotionTime()
         {
-            if (!IsSpawned || NetworkManager == null || motionStartServerTime.Value <= 0d)
+            if (!IsSpawned || NetworkManager == null)
             {
                 return Time.fixedTime;
             }
 
-            // FixedTime advances once per network/physics tick. Using render-frame
-            // Time here can repeat or skip poses when Unity runs multiple fixed steps.
-            return (float)(NetworkManager.ServerTime.FixedTime - motionStartServerTime.Value);
+            // The authority moves physics at Unity's fixed rate. NetworkTime.FixedTime
+            // advances at the network tick rate (often 30 Hz), which is lower than the
+            // 50 Hz physics rate and therefore repeats platform poses.
+            return Time.fixedTime - localMotionStartFixedTime;
         }
 
         private void ApplyMotionMatrix(Matrix4x4 motionMatrix)
