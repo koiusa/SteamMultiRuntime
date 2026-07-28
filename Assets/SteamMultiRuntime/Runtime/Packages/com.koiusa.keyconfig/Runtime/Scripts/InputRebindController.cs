@@ -65,7 +65,7 @@ namespace Koiusa.Keyconfig.Runtime
                     {
                         if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
                         {
-                            activeAction.ApplyBindingOverride(activeBindingIndex, previousOverride);
+                            RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
                             RebindFailed?.Invoke("Duplicate binding detected.");
                             return;
                         }
@@ -82,7 +82,7 @@ namespace Koiusa.Keyconfig.Runtime
                 {
                     try
                     {
-                        activeAction.ApplyBindingOverride(activeBindingIndex, previousOverride);
+                        RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
                         RebindCanceled?.Invoke();
                     }
                     finally
@@ -105,6 +105,17 @@ namespace Koiusa.Keyconfig.Runtime
         {
             CleanupAfterRebind();
             GC.SuppressFinalize(this);
+        }
+
+        private static void RestoreBindingOverride(InputAction action, int bindingIndex, string previousOverride)
+        {
+            if (string.IsNullOrEmpty(previousOverride))
+            {
+                action.RemoveBindingOverride(bindingIndex);
+                return;
+            }
+
+            action.ApplyBindingOverride(bindingIndex, previousOverride);
         }
 
         private void CleanupAfterRebind()
