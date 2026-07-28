@@ -35,6 +35,7 @@ Samples/
 | `Gameplay/Stages/ServerScene.unity` | NPCとNetwork物理Objectを含むServer向けStage |
 
 `Gameplay/Startup`にはゲーム起動フローで使用するLogoとWelcome Sceneを配置します。
+Package Managerでは`Gameplay`フォルダー全体を1つの「Gameplay Sample」としてインポートします。
 
 ## 新しい機能サンプルの追加規約
 

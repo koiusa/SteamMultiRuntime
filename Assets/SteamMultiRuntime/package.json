@@ -61,14 +61,9 @@
       "path": "Samples/Features/TargetingSystem"
     },
     {
-      "displayName": "Gameplay Stages",
-      "description": "Playable stages for locomotion, network physics, NPC spawning, and server gameplay.",
-      "path": "Samples/Gameplay/Stages"
-    },
-    {
-      "displayName": "Gameplay - Startup Scenes",
-      "description": "Unity logo and welcome scenes used by the gameplay sample startup flow.",
-      "path": "Samples/Gameplay/Startup"
+      "displayName": "Gameplay Sample",
+      "description": "Gameplay stages plus the Unity logo and welcome scenes used by the sample startup flow.",
+      "path": "Samples/Gameplay"
     },
     {
       "displayName": "Steam Multiplayer - Server",
@@ -87,7 +82,7 @@
     },
     {
       "displayName": "Build Profile Scene Preset",
-      "description": "Scene preset for configuring a Unity Build Profile. Import the Common Assets and Third Person View samples first.",
+      "description": "Scene preset for configuring a Unity Build Profile. Import Shared Sample Assets, Gameplay Sample, and Steam Multiplayer - Third Person first.",
       "path": "Samples/BuildPreset"
     }
   ]
