@@ -56,6 +56,8 @@ Loading
 
 接続品質は`NetworkTransport.GetCurrentRtt()`から取得します。Facepunch Transportは`Connection.QuickStatus().Ping`を標準Transport APIへ公開し、Lobby側はFacepunch内部型やReflectionへ依存しません。Steam IDだけからPingを推定する処理は持ちません。この型付きアダプター方針は[Package Architecture](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
 
+Lobby一覧の再検索・再描画では、選択中のLobby IDが引き続き一覧に存在して参加可能な場合、その行のフォーカスとハイライトを復元します。
+
 ## Scene遷移
 
 ```text

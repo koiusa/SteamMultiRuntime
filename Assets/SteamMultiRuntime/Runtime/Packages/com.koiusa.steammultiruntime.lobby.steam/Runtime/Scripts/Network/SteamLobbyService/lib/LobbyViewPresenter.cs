@@ -94,6 +94,7 @@ namespace Koiusa.SteamMultiRuntime
 
             foreach (var lobby in lobbies)
             {
+                ulong lobbyId = lobby.Id;
                 var row = new VisualElement();
                 row.AddToClassList("lobby-row");
                 var isLocalHostLobby = isHostedByLocalPlayer != null && isHostedByLocalPlayer(lobby);
@@ -104,7 +105,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 row.focusable = canJoinLobby;
                 row.tabIndex = canJoinLobby ? 0 : -1;
-                row.userData = lobby.Id;
+                row.userData = lobbyId;
                 var label = new Label($"{getLobbyDisplayName(lobby)}  {memberCount}/{maxMembers}  [{lobby.Id}]");
                 label.AddToClassList("lobby-row-label");
                 row.Add(label);
@@ -129,9 +130,8 @@ namespace Koiusa.SteamMultiRuntime
                 if (!canJoinLobby)
                     continue;
 
-                var lobbyId = lobby.Id;
                 navigation.RegisterLobbyRow(row, lobbyId, onJoinLobby);
-                if (lobby.Id == rememberedLobbyId)
+                if (lobbyId == rememberedLobbyId)
                     // Registration order already preserves this row for focus restoration.
                     navigation.SetRememberedLobbyRow(row);
             }
