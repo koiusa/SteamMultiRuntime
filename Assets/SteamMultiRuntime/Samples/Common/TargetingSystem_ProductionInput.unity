@@ -699,18 +699,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3573248697702278429, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
-      propertyPath: inputActionsConfig
-      value:
-      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
-    - target: {fileID: 976978346296359161, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
-      propertyPath: inputActionsConfig
-      value:
-      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
-    - target: {fileID: 2841924098193030622, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
-      propertyPath: inputActionsConfig
-      value:
-      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
     - target: {fileID: 444221610194528811, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: Target.LookAtTarget
       value: 
@@ -719,6 +707,26 @@ PrefabInstance:
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 469465553}
+    - target: {fileID: 976978346296359161, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: inputActionsConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
+    - target: {fileID: 2716485112333981870, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2716485112333981870, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5035291
+      objectReference: {fileID: 0}
+    - target: {fileID: 2716485112333981870, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -4.7685847
+      objectReference: {fileID: 0}
+    - target: {fileID: 2841924098193030622, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: inputActionsConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
     - target: {fileID: 3453830149944114400, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: Target.LookAtTarget
       value: 
@@ -727,6 +735,10 @@ PrefabInstance:
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 1297866345}
+    - target: {fileID: 3573248697702278429, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: inputActionsConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
     - target: {fileID: 4245522739729437241, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: ScanRecursively
       value: 0
@@ -735,6 +747,18 @@ PrefabInstance:
       propertyPath: cinemachineTargetGroup
       value: 
       objectReference: {fileID: 102838640}
+    - target: {fileID: 4551706146397750336, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551706146397750336, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5035291
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551706146397750336, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -4.7685847
+      objectReference: {fileID: 0}
     - target: {fileID: 4946852752456973584, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: registry
       value: 
@@ -743,6 +767,18 @@ PrefabInstance:
       propertyPath: targetCamera
       value: 
       objectReference: {fileID: 1918024173}
+    - target: {fileID: 5918954508520053332, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5918954508520053332, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.5035291
+      objectReference: {fileID: 0}
+    - target: {fileID: 5918954508520053332, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -4.7685847
+      objectReference: {fileID: 0}
     - target: {fileID: 6122697369128797024, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: m_Name
       value: TargetingCameraRig
@@ -753,15 +789,15 @@ PrefabInstance:
       objectReference: {fileID: 1297866345}
     - target: {fileID: 8270057045020049742, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.36268
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8270057045020049742, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00612
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8270057045020049742, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.49797
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8270057045020049742, guid: a24840e964f43964985a831c36fe5dcc, type: 3}
       propertyPath: m_LocalRotation.w
