@@ -85,16 +85,24 @@
 .keyconfig-map-tabs {
 	flex-direction: row;
 	flex-wrap: nowrap;
-	margin-bottom: 0;
+	align-items: flex-end;
+	min-height: 40px;
+	padding-top: 4px;
+	padding-bottom: 2px;
+	margin-bottom: 2px;
+	flex-shrink: 0;
+	overflow: visible;
 }
 
 .keyconfig-map-tab-button {
-	height: 32px;
+	height: 34px;
+	min-height: 34px;
 	margin-right: 4px;
 	margin-bottom: 0;
 	padding-left: 14px;
 	padding-right: 14px;
 	font-size: 13px;
+	flex-shrink: 0;
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 }
@@ -103,6 +111,7 @@
 
 .keyconfig-table-header {
 	flex-direction: row;
+	flex-shrink: 0;
 	align-items: center;
 	padding-left: 8px;
 	padding-right: 8px;
