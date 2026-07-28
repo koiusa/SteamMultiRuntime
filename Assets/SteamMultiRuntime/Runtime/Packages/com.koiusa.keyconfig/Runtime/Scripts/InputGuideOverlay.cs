@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UIElements;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -266,7 +266,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             if (inputActionAsset == null || deviceLayout == null)
             {
-                GameLocalization.Set(mapLabel, "INPUT ASSET NOT SET");
+                GameLocalization.Set(mapLabel, "keyconfig.input_asset_missing");
                 return;
             }
 
@@ -275,7 +275,7 @@ namespace Koiusa.Keyconfig.Runtime
                 : inputActionAsset.FindActionMap(actionMapName, false);
             if (map == null)
             {
-                GameLocalization.Set(mapLabel, "ACTION MAP NOT FOUND");
+                GameLocalization.Set(mapLabel, "keyconfig.action_map_missing");
                 return;
             }
 

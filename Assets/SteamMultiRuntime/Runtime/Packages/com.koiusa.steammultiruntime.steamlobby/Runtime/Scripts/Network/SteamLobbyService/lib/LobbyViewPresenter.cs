@@ -1,18 +1,24 @@
 using Steamworks.Data;
 using UnityEngine.UIElements;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal sealed class LobbyViewPresenter
+    internal sealed class LobbyViewPresenter : System.IDisposable
     {
         private readonly LobbyViewContext context;
         private readonly LobbyViewNavigationController navigation;
+        private readonly LocalizedTextBinding connectionBinding;
+        private readonly LocalizedTextBinding currentLobbyBinding;
+        private readonly LocalizedTextBinding infoBinding;
 
         public LobbyViewPresenter(LobbyViewContext context, LobbyViewNavigationController navigation)
         {
             this.context = context;
             this.navigation = navigation;
+            connectionBinding = new LocalizedTextBinding(context.ConnectionLabel);
+            currentLobbyBinding = new LocalizedTextBinding(context.CurrentLobbyLabel);
+            infoBinding = new LocalizedTextBinding(context.InfoLabel);
         }
 
         public bool IsRenderable => context.ConnectionLabel != null && context.CurrentLobbyLabel != null &&
@@ -20,29 +26,31 @@ namespace Koiusa.SteamMultiRuntime
 
         public void RenderServiceMissing()
         {
-            GameLocalization.Set(context.ConnectionLabel, "Steam: SteamLobbyService not found");
-            GameLocalization.Set(context.CurrentLobbyLabel, "Current Lobby: none");
+            connectionBinding.Set("lobby.service_missing");
+            currentLobbyBinding.Set("lobby.current_none");
             context.LobbyListView.Clear();
             SetButtonsEnabled(false);
         }
 
         public void RenderStatus(bool isReady, string localPlayerName, bool isInLobby, ulong currentLobbyId)
         {
-            context.ConnectionLabel.text = isReady ? GameLocalization.Get("Steam: {0}", localPlayerName) : GameLocalization.Get("Steam: not connected");
-            context.CurrentLobbyLabel.text = isInLobby ? GameLocalization.Get("Current Lobby: {0}", currentLobbyId) : GameLocalization.Get("Current Lobby: none");
+            if (isReady) connectionBinding.Set("lobby.steam_user", localPlayerName);
+            else connectionBinding.Set("lobby.not_connected");
+            if (isInLobby) currentLobbyBinding.Set("lobby.current", currentLobbyId);
+            else currentLobbyBinding.Set("lobby.current_none");
             context.LobbyListView.Clear();
         }
 
         public void SetWaitingConnection()
         {
             if (context.ConnectionLabel != null)
-                GameLocalization.Set(context.ConnectionLabel, "Steam: waiting for NetworkManager/FacepunchTransport...");
+                connectionBinding.Set("lobby.steam_waiting");
         }
 
         public void SetInfo(string text)
         {
             if (context.InfoLabel != null)
-                context.InfoLabel.text = GameLocalization.Get(text);
+                infoBinding.Set(text);
         }
 
         public void SetButtonsEnabled(bool enabled)
@@ -54,11 +62,11 @@ namespace Koiusa.SteamMultiRuntime
             context.LeaveButton?.SetEnabled(enabled);
         }
 
-        public void ShowNoLobbies(string message = "Lobby が見つかりませんでした。")
+        public void ShowNoLobbies(string messageKey = "lobby.not_found")
         {
             context.LobbyListView.Clear();
             navigation.ClearLobbyRows();
-            var emptyLabel = new Label(GameLocalization.Get(message));
+            var emptyLabel = new Label(GameLocalization.Get(messageKey));
             emptyLabel.AddToClassList("muted");
             context.LobbyListView.Add(emptyLabel);
         }
@@ -96,13 +104,13 @@ namespace Koiusa.SteamMultiRuntime
                 var actions = new VisualElement();
                 actions.AddToClassList("lobby-row-actions");
                 if (isLocalHostLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("HOST"), "host-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("lobby.host"), "host-badge");
                 if (isCurrentLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("JOINED"), "joined-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("lobby.joined"), "joined-badge");
                 else if (isFullLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("FULL"), "full-badge");
+                    AddLobbyBadge(actions, GameLocalization.Get("lobby.full"), "full-badge");
 
-                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { text = GameLocalization.Get("Join"), focusable = false };
+                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { text = GameLocalization.Get("lobby.join"), focusable = false };
                 joinButton.AddToClassList("join-button");
                 joinButton.SetEnabled(canJoinLobby);
                 actions.Add(joinButton);
@@ -168,7 +176,7 @@ namespace Koiusa.SteamMultiRuntime
             context.OnlineMemberListView.Clear();
             if (!isInLobby || memberNames == null || memberNames.Count == 0)
             {
-                var emptyLabel = new Label(GameLocalization.Get(isInLobby ? "メンバー情報なし" : "ロビー未参加"));
+                var emptyLabel = new Label(GameLocalization.Get(isInLobby ? "lobby.no_member_info" : "lobby.not_joined"));
                 emptyLabel.AddToClassList("muted");
                 context.OnlineMemberListView.Add(emptyLabel);
                 return;
@@ -176,10 +184,17 @@ namespace Koiusa.SteamMultiRuntime
 
             foreach (var memberName in memberNames)
             {
-                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? GameLocalization.Get("Unknown") : memberName);
+                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? GameLocalization.Get("common.unknown") : memberName);
                 memberLabel.AddToClassList("online-member-name");
                 context.OnlineMemberListView.Add(memberLabel);
             }
+        }
+
+        public void Dispose()
+        {
+            connectionBinding.Dispose();
+            currentLobbyBinding.Dispose();
+            infoBinding.Dispose();
         }
     }
 }

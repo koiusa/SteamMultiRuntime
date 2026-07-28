@@ -1,0 +1,152 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Koiusa.SteamMultiRuntime.Localization;
+using UnityEditor;
+using UnityEditor.Localization;
+using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.Tables;
+
+namespace Koiusa.SteamMultiRuntime.Editor
+{
+    public static class LocalizationTableInstaller
+    {
+        // Generated into the consuming project. UPM package contents can be read-only.
+        private const string Root = "Assets/SteamMultiRuntimeGenerated/Localization";
+        private const string TableName = GameLocalization.TableName;
+
+        [MenuItem("Tools/SteamMultiRuntime/Localization/Install or Update Japanese-English Tables")]
+        public static void Install()
+        {
+            if (!ValidateCatalog(out var error))
+            {
+                Debug.LogError("Localization catalog is invalid: " + error);
+                return;
+            }
+
+            EnsureAssetFolder(Root);
+            EnsureLocalizationSettings();
+            var japanese = GetOrCreateLocale("ja", "Japanese");
+            var english = GetOrCreateLocale("en", "English");
+            var collection = LocalizationEditorSettings.GetStringTableCollection(TableName) ??
+                             LocalizationEditorSettings.CreateStringTableCollection(TableName, Root);
+
+            UpdateTable(collection, japanese, useJapanese: true);
+            UpdateTable(collection, english, useJapanese: false);
+            AssetDatabase.SaveAssets();
+
+            Debug.Log(
+                $"Localization: installed {UiLocalizationCatalog.Entries.Count} stable UI keys for Japanese and English. " +
+                "Addressables entries were updated without replacing the consuming project's settings.");
+        }
+
+        [MenuItem("Tools/SteamMultiRuntime/Localization/Validate Installation")]
+        public static void ValidateInstallation()
+        {
+            if (!ValidateCatalog(out var error))
+            {
+                Debug.LogError("Localization catalog is invalid: " + error);
+                return;
+            }
+
+            var settings = LocalizationEditorSettings.ActiveLocalizationSettings;
+            var collection = LocalizationEditorSettings.GetStringTableCollection(TableName);
+            var japanese = LocalizationEditorSettings.GetLocale("ja");
+            var english = LocalizationEditorSettings.GetLocale("en");
+            var missing = new List<string>();
+
+            if (settings == null) missing.Add("active Localization Settings");
+            if (japanese == null) missing.Add("ja locale");
+            if (english == null) missing.Add("en locale");
+            if (collection == null) missing.Add($"'{TableName}' string table collection");
+
+            if (collection != null)
+            {
+                ValidateTable(collection.GetTable("ja") as StringTable, "ja", missing);
+                ValidateTable(collection.GetTable("en") as StringTable, "en", missing);
+            }
+
+            if (missing.Count == 0)
+                Debug.Log("Localization installation is valid.");
+            else
+                Debug.LogError("Localization installation is incomplete:\n- " + string.Join("\n- ", missing));
+        }
+
+        private static void EnsureLocalizationSettings()
+        {
+            if (LocalizationEditorSettings.ActiveLocalizationSettings != null) return;
+            var settings = ScriptableObject.CreateInstance<LocalizationSettings>();
+            settings.name = "SteamMultiRuntime Localization Settings";
+            AssetDatabase.CreateAsset(settings, Root + "/LocalizationSettings.asset");
+            LocalizationEditorSettings.ActiveLocalizationSettings = settings;
+        }
+
+        private static Locale GetOrCreateLocale(string code, string displayName)
+        {
+            var locale = LocalizationEditorSettings.GetLocale(code);
+            if (locale != null) return locale;
+            locale = Locale.CreateLocale(code);
+            locale.name = displayName + " (" + code + ")";
+            AssetDatabase.CreateAsset(locale, $"{Root}/{code}.asset");
+            LocalizationEditorSettings.AddLocale(locale);
+            return locale;
+        }
+
+        private static void UpdateTable(StringTableCollection collection, Locale locale, bool useJapanese)
+        {
+            var table = collection.GetTable(locale.Identifier) as StringTable;
+            if (table == null)
+                table = collection.AddNewTable(locale.Identifier) as StringTable;
+
+            foreach (var entry in UiLocalizationCatalog.Entries)
+                table.AddEntry(entry.Key, useJapanese ? entry.Japanese : entry.English);
+
+            LocalizationEditorSettings.SetPreloadTableFlag(table, true);
+            EditorUtility.SetDirty(table);
+            EditorUtility.SetDirty(collection.SharedData);
+        }
+
+        private static bool ValidateCatalog(out string error)
+        {
+            var keys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var entry in UiLocalizationCatalog.Entries)
+            {
+                if (string.IsNullOrWhiteSpace(entry.Key) || !keys.Add(entry.Key))
+                {
+                    error = $"Empty or duplicate key '{entry.Key}'.";
+                    return false;
+                }
+                if (string.IsNullOrEmpty(entry.Japanese) || string.IsNullOrEmpty(entry.English))
+                {
+                    error = $"Key '{entry.Key}' has an empty translation.";
+                    return false;
+                }
+            }
+            error = string.Empty;
+            return true;
+        }
+
+        private static void ValidateTable(StringTable table, string localeCode, ICollection<string> missing)
+        {
+            if (table == null)
+            {
+                missing.Add($"{localeCode} UI table");
+                return;
+            }
+            foreach (var entry in UiLocalizationCatalog.Entries)
+            {
+                if (table.GetEntry(entry.Key) == null)
+                    missing.Add($"{localeCode}:{entry.Key}");
+            }
+        }
+
+        private static void EnsureAssetFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path)) return;
+            Directory.CreateDirectory(path);
+            AssetDatabase.Refresh();
+        }
+    }
+}

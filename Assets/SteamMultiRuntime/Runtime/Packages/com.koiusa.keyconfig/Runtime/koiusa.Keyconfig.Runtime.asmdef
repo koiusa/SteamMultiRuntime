@@ -3,7 +3,7 @@
     "rootNamespace": "",
     "references": [
         "GUID:75469ad4d38634e559750d17036d5f7c",
-        "Koiusa.UI.Common.Runtime"
+        "Koiusa.SteamMultiRuntime.Localization.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

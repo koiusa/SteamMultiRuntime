@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -24,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime
         private Action<int> onSelect;
         private Action onConfirm;
         private LocalizedVisualTree localizedTree;
+        private LocalizedTextBinding selectedNameBinding;
 
         public CharacterSelectView(UIDocument uiDocument, VisualTreeAsset layoutAsset, StyleSheet styleSheet)
         {
@@ -55,8 +56,9 @@ namespace Koiusa.SteamMultiRuntime
 
             PopulateCharacterList(modelIdList != null ? modelIdList.modelIds : null);
 
-            if (selectedNameLabel != null)
-                GameLocalization.Set(selectedNameLabel, "選択中: なし");
+            selectedNameBinding?.Dispose();
+            selectedNameBinding = selectedNameLabel == null ? null : new LocalizedTextBinding(selectedNameLabel);
+            selectedNameBinding?.Set("character.selected_none");
 
             localizedTree?.Dispose();
             localizedTree = LocalizedVisualTree.Bind(root, selectedNameLabel);
@@ -75,6 +77,14 @@ namespace Koiusa.SteamMultiRuntime
             onConfirm = null;
         }
 
+        public void Dispose()
+        {
+            localizedTree?.Dispose();
+            localizedTree = null;
+            selectedNameBinding?.Dispose();
+            selectedNameBinding = null;
+        }
+
         public void SetSelectedIndex(int index, string[] modelIds)
         {
             if (selectedIndex >= 0 && selectedIndex < characterButtons.Count)
@@ -87,10 +97,9 @@ namespace Koiusa.SteamMultiRuntime
 
             var displayName = (modelIds != null && index >= 0 && index < modelIds.Length)
                 ? modelIds[index]
-                : GameLocalization.Get("なし");
+                : GameLocalization.Get("common.none");
 
-            if (selectedNameLabel != null)
-                GameLocalization.Set(selectedNameLabel, "選択中: {0}", displayName);
+            selectedNameBinding?.Set("character.selected", displayName);
 
         }
 

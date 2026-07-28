@@ -4,7 +4,7 @@ using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {

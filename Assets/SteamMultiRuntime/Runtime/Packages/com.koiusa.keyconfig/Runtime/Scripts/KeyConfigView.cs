@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -37,6 +37,7 @@ namespace Koiusa.Keyconfig.Runtime
         private string selectedMapName;
         private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
         private LocalizedVisualTree localizedTree;
+        private LocalizedTextBinding statusBinding;
 
         private sealed class InputStateRow
         {
@@ -69,6 +70,8 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 layoutAsset.CloneTree(root);
                 statusLabel = root.Q<Label>("status-label");
+                statusBinding?.Dispose();
+                statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
                 inputMonitorDot = root.Q<Label>("input-monitor-dot");
                 inputMonitorStatus = root.Q<Label>("input-monitor-status");
                 bindingListView = root.Q<ScrollView>("binding-list-view");
@@ -104,6 +107,8 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             BuildFallbackUi(root);
+            statusBinding?.Dispose();
+            statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
             localizedTree?.Dispose();
             localizedTree = LocalizedVisualTree.Bind(root, statusLabel, inputMonitorStatus);
         }
@@ -144,11 +149,22 @@ namespace Koiusa.Keyconfig.Runtime
             onBindingGroupChanged = null;
         }
 
+        public void Dispose()
+        {
+            localizedTree?.Dispose();
+            localizedTree = null;
+            statusBinding?.Dispose();
+            statusBinding = null;
+        }
+
+        public void SetLocalizedStatus(string key, params object[] arguments) => statusBinding?.Set(key, arguments);
+
         public void SetStatus(string status)
         {
             if (statusLabel != null)
             {
-                statusLabel.text = string.IsNullOrWhiteSpace(status) ? string.Empty : GameLocalization.Get(status);
+                statusBinding?.Clear();
+                statusLabel.text = string.IsNullOrWhiteSpace(status) ? string.Empty : status;
             }
         }
 
@@ -209,7 +225,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (entries == null || entries.Count == 0)
             {
                 selectedMapName = null;
-                var emptyLabel = new Label(GameLocalization.Get("対象バインドがありません。"));
+                var emptyLabel = new Label(GameLocalization.Get("keyconfig.no_bindings"));
                 emptyLabel.AddToClassList("keyconfig-binding");
                 bindingListView.Add(emptyLabel);
                 return;
@@ -327,7 +343,7 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
 
-                var inputStateLabel = new Label(GameLocalization.Get("● 入力中"));
+                var inputStateLabel = new Label(GameLocalization.Get("keyconfig.input_active"));
                 inputStateLabel.AddToClassList("keyconfig-input-state");
                 inputStateLabel.style.display = DisplayStyle.None;
                 bindingCell.Add(inputStateLabel);
@@ -337,12 +353,12 @@ namespace Koiusa.Keyconfig.Runtime
                 var buttonCell = new VisualElement();
                 buttonCell.AddToClassList("keyconfig-cell-buttons");
 
-                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = GameLocalization.Get("変更") };
+                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = GameLocalization.Get("keyconfig.change") };
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 rebindButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(rebindButton);
 
-                var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = GameLocalization.Get("戻す") };
+                var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = GameLocalization.Get("keyconfig.reset") };
                 resetButton.AddToClassList("keyconfig-reset-button");
                 resetButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(resetButton);

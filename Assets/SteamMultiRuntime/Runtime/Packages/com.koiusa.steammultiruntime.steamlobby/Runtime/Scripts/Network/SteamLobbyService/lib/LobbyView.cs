@@ -1,7 +1,7 @@
 using Steamworks.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -130,7 +130,7 @@ namespace Koiusa.SteamMultiRuntime
         public void SetWaitingConnection() => presenter?.SetWaitingConnection();
         public void SetInfo(string text) => presenter?.SetInfo(text);
         public void SetButtonsEnabled(bool enabled) => presenter?.SetButtonsEnabled(enabled);
-        public void ShowNoLobbies(string message = "Lobby が見つかりませんでした。") => presenter?.ShowNoLobbies(message);
+        public void ShowNoLobbies(string messageKey = "lobby.not_found") => presenter?.ShowNoLobbies(messageKey);
         public void ShowLobbies(
             System.Collections.Generic.IReadOnlyList<Lobby> lobbies,
             bool canJoin,
@@ -314,7 +314,10 @@ namespace Koiusa.SteamMultiRuntime
         {
             gamepadTextInput?.Dispose();
             gamepadTextInput = null;
+            presenter?.Dispose();
             presenter = null;
+            localizedTree?.Dispose();
+            localizedTree = null;
             navigation = null;
             context = null;
         }

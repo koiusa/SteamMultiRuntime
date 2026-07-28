@@ -81,6 +81,7 @@ namespace Koiusa.SteamMultiRuntime
             registeredRoot?.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
             registeredRoot = null;
             view?.UnbindActions();
+            view?.Dispose();
         }
 
         private CharacterModelIdList ResolveModelIdList()

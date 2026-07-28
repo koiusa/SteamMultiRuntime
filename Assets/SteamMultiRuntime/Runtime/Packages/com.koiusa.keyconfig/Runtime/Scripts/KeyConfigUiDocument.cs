@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
-using Koiusa.UI.Common;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -58,7 +57,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (bindingService == null)
             {
                 view.SetInteractive(false);
-                view.SetStatus("KeyConfigInputActionsConfig が未設定、またはInputActionAssetが未設定です。");
+                view.SetLocalizedStatus("keyconfig.config_missing");
                 view.SetBindingGroupChoices(null, bindingGroup);
                 view.RenderBindingEntries(currentEntries, null, null);
                 return;
@@ -68,12 +67,13 @@ namespace Koiusa.Keyconfig.Runtime
 
             _ = bindingService.TryLoadOverrides(userId);
             RebuildBindingList();
-            view.SetStatus(BuildReadyStatus());
+            ApplyReadyStatus();
         }
 
         private void OnDisable()
         {
             view.UnbindActions();
+            view.Dispose();
             rebindController?.CancelRebind();
         }
 
@@ -96,7 +96,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             view.SetBindingGroupChoices(bindingService.GetBindingGroups(), bindingGroup);
             RebuildBindingList();
-            view.SetStatus(BuildBindingGroupChangedStatus());
+            ApplyBindingGroupChangedStatus();
         }
 
         public void ClearBindingGroupFilter()
@@ -153,7 +153,8 @@ namespace Koiusa.Keyconfig.Runtime
 
             var loaded = bindingService.TryLoadOverrides(userId);
             RebuildBindingList();
-            view.SetStatus(loaded ? BuildLoadedStatus() : "保存済み設定がありません。\n");
+            if (loaded) ApplyLoadedStatus();
+            else view.SetLocalizedStatus("keyconfig.no_saved_settings");
         }
 
         private void OnSaveClicked()
@@ -164,7 +165,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             bindingService.SaveOverrides(userId);
-            view.SetStatus("設定を保存しました。");
+            view.SetLocalizedStatus("keyconfig.saved");
         }
 
         private void OnResetAllClicked()
@@ -176,7 +177,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             bindingService.ResetAllOverrides(userId);
             RebuildBindingList();
-            view.SetStatus("すべてのキー設定をリセットしました。");
+            view.SetLocalizedStatus("keyconfig.reset_all_done");
         }
 
         private void OnCloseClicked()
@@ -206,7 +207,7 @@ namespace Koiusa.Keyconfig.Runtime
             var started = rebindController.StartRebind(entry.ActionId, entry.BindingIndex, effectiveBindingGroup);
             if (!started)
             {
-                view.SetStatus("リバインドを開始できませんでした。");
+                view.SetLocalizedStatus("keyconfig.rebind_start_failed");
             }
         }
 
@@ -225,40 +226,43 @@ namespace Koiusa.Keyconfig.Runtime
             var entry = currentEntries[index];
             if (!bindingService.TryFindAction(entry.ActionId, out var action))
             {
-                view.SetStatus("Action の取得に失敗しました。");
+                view.SetLocalizedStatus("keyconfig.action_missing");
                 return;
             }
 
             bindingService.ResetBinding(action, entry.BindingIndex);
             RebuildBindingList();
-            view.SetStatus("バインドをリセットしました。");
+            view.SetLocalizedStatus("keyconfig.binding_reset");
         }
 
         private void OnRebindStarted()
         {
             view.SetInteractive(false);
-            view.SetStatus("新しいキーを入力してください（Escでキャンセル）");
+            view.SetLocalizedStatus("keyconfig.enter_new_key");
         }
 
         private void OnRebindCompleted(string displayName)
         {
             RebuildBindingList();
             view.SetInteractive(true);
-            view.SetStatus(BuildRebindCompletedStatus(displayName));
+            view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
         }
 
         private void OnRebindCanceled()
         {
             RebuildBindingList();
             view.SetInteractive(true);
-            view.SetStatus(BuildRebindCanceledStatus());
+            view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
         }
 
         private void OnRebindFailed(string message)
         {
             RebuildBindingList();
             view.SetInteractive(true);
-            view.SetStatus(string.IsNullOrWhiteSpace(message) ? BuildRebindFailedStatus() : message);
+            if (string.IsNullOrWhiteSpace(message))
+                view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_failed_fallback" : "keyconfig.rebind_failed");
+            else
+                view.SetStatus(message);
         }
 
         private InputActionAsset ResolveInputActionAsset()
@@ -266,51 +270,27 @@ namespace Koiusa.Keyconfig.Runtime
             return inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
         }
 
-        private string BuildReadyStatus()
+        private void ApplyReadyStatus()
         {
-            return usingBindingGroupFallback
-                ? GameLocalization.Get("Ready（'{0}' に一致するバインドがないため全表示中）", bindingGroup)
-                : GameLocalization.Get("Ready");
+            if (usingBindingGroupFallback) view.SetLocalizedStatus("keyconfig.ready_fallback", bindingGroup);
+            else view.SetLocalizedStatus("common.ready");
         }
 
-        private string BuildLoadedStatus()
+        private void ApplyLoadedStatus()
         {
-            return usingBindingGroupFallback
-                ? GameLocalization.Get("設定を読み込みました。('{0}' に一致するバインドがないため全表示中)", bindingGroup)
-                : GameLocalization.Get("設定を読み込みました。");
+            if (usingBindingGroupFallback) view.SetLocalizedStatus("keyconfig.loaded_fallback", bindingGroup);
+            else view.SetLocalizedStatus("keyconfig.loaded");
         }
 
-        private string BuildRebindCompletedStatus(string displayName)
-        {
-            return usingBindingGroupFallback
-                ? GameLocalization.Get("変更しました: {0}（全表示中）", displayName)
-                : GameLocalization.Get("変更しました: {0}", displayName);
-        }
-
-        private string BuildRebindCanceledStatus()
-        {
-            return usingBindingGroupFallback
-                ? "リバインドをキャンセルしました。（全表示中）"
-                : "リバインドをキャンセルしました。";
-        }
-
-        private string BuildRebindFailedStatus()
-        {
-            return usingBindingGroupFallback
-                ? "リバインドに失敗しました。（全表示中）"
-                : "リバインドに失敗しました。";
-        }
-
-        private string BuildBindingGroupChangedStatus()
+        private void ApplyBindingGroupChangedStatus()
         {
             if (string.IsNullOrWhiteSpace(bindingGroup))
             {
-                return GameLocalization.Get("BindingGroup: すべて");
+                view.SetLocalizedStatus("keyconfig.group_all");
+                return;
             }
 
-            return usingBindingGroupFallback
-                ? GameLocalization.Get("BindingGroup: {0}（一致なしのため全表示）", bindingGroup)
-                : GameLocalization.Get("BindingGroup: {0}", bindingGroup);
+            view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.group_fallback" : "keyconfig.group", bindingGroup);
         }
     }
 }

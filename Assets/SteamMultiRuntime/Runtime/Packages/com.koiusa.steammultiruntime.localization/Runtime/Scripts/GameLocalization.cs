@@ -5,12 +5,12 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UIElements;
 
-namespace Koiusa.UI.Common
+namespace Koiusa.SteamMultiRuntime.Localization
 {
     /// <summary>Shared access point for the project's "UI" string table.</summary>
     public static class GameLocalization
     {
-        public const string TableName = "UI";
+        public const string TableName = "SteamMultiRuntime UI";
         public const string PlayerPrefsKey = "game.locale";
 
         public static event Action LocaleChanged;
@@ -83,9 +83,10 @@ namespace Koiusa.UI.Common
 
         private static string FormatFallback(string key, object[] arguments)
         {
-            if (arguments == null || arguments.Length == 0) return key;
-            try { return string.Format(key, arguments); }
-            catch (FormatException) { return key; }
+            var fallback = UiLocalizationCatalog.GetJapaneseFallback(key);
+            if (arguments == null || arguments.Length == 0) return fallback;
+            try { return string.Format(fallback, arguments); }
+            catch (FormatException) { return fallback; }
         }
 
         private static void OnSelectedLocaleChanged(Locale locale)
@@ -99,6 +100,42 @@ namespace Koiusa.UI.Common
         }
     }
 
+    /// <summary>Keeps a dynamic UI Toolkit text property synchronized with locale changes.</summary>
+    public sealed class LocalizedTextBinding : IDisposable
+    {
+        private readonly TextElement element;
+        private string key;
+        private object[] arguments = Array.Empty<object>();
+
+        public LocalizedTextBinding(TextElement element)
+        {
+            this.element = element;
+            GameLocalization.LocaleChanged += Refresh;
+        }
+
+        public void Set(string localizationKey, params object[] formatArguments)
+        {
+            key = localizationKey;
+            arguments = formatArguments ?? Array.Empty<object>();
+            Refresh();
+        }
+
+        public void Clear()
+        {
+            key = string.Empty;
+            arguments = Array.Empty<object>();
+            if (element != null) element.text = string.Empty;
+        }
+
+        public void Refresh()
+        {
+            if (element != null && !string.IsNullOrEmpty(key))
+                element.text = GameLocalization.Get(key, arguments);
+        }
+
+        public void Dispose() => GameLocalization.LocaleChanged -= Refresh;
+    }
+
     /// <summary>Localizes static Label/Button text in a UI Toolkit tree and refreshes it on locale changes.</summary>
     public sealed class LocalizedVisualTree : IDisposable
     {
@@ -110,7 +147,7 @@ namespace Koiusa.UI.Common
             foreach (var element in root.Query<TextElement>().ToList())
             {
                 if (!string.IsNullOrWhiteSpace(element.text) && (excludedSet == null || !excludedSet.Contains(element)))
-                    entries.Add((element, element.text));
+                    entries.Add((element, UiLocalizationCatalog.ResolveKey(element.text)));
             }
             GameLocalization.LocaleChanged += Refresh;
             Refresh();

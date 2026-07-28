@@ -1,0 +1,15 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Localization.Editor",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Localization.Editor",
+  "references": [
+    "Koiusa.SteamMultiRuntime.Localization.Runtime",
+    "Unity.Localization.Editor",
+    "Unity.Localization",
+    "Unity.ResourceManager"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

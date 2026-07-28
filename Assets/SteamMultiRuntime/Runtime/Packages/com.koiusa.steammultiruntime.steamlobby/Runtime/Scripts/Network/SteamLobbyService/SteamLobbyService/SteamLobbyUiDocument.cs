@@ -212,12 +212,12 @@ namespace Koiusa.SteamMultiRuntime
             if (lobbyService.IsInLobby && lobbyService.IsHost)
             {
                 var changed = await lobbyService.ChangeStageAsync(view.SelectedStageSceneName);
-                view.SetInfo(changed ? "Stage changed." : "Stage change failed.");
+                view.SetInfo(changed ? "lobby.stage_changed" : "lobby.stage_change_failed");
                 return;
             }
 
             var created = await lobbyService.CreateLobbyAsync(view.LobbyName, view.SelectedStageSceneName);
-            view.SetInfo(created ? "Lobby created." : "Lobby create failed.");
+            view.SetInfo(created ? "lobby.created" : "lobby.create_failed");
         }
 
         private async Task JoinByIdAsync()
@@ -229,12 +229,12 @@ namespace Koiusa.SteamMultiRuntime
 
             if (!ulong.TryParse(view.LobbyIdRaw, out var lobbyId))
             {
-                view.SetInfo("Lobby ID が不正です。");
+                view.SetInfo("lobby.invalid_id");
                 return;
             }
 
             var joined = await lobbyService.JoinLobbyAsync(lobbyId);
-            view.SetInfo(joined ? "Lobby joined." : "Lobby join failed.");
+            view.SetInfo(joined ? "lobby.join_success" : "lobby.join_failed");
         }
 
         private async Task RefreshAsync()
@@ -290,7 +290,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (!isReady)
             {
-                view.SetInfo("NetworkManager/FacepunchTransport の初期化待ち");
+                view.SetInfo("lobby.transport_waiting");
             }
 
             view.SetButtonsEnabled(isReady);
@@ -304,7 +304,7 @@ namespace Koiusa.SteamMultiRuntime
             var filteredLobbies = FilterLobbiesByName(lobbyService.LobbyCache);
             if (filteredLobbies.Count == 0)
             {
-                view.ShowNoLobbies("該当するロビー名が見つかりませんでした。");
+                view.ShowNoLobbies("lobby.name_not_found");
                 return;
             }
 
@@ -341,7 +341,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             Render();
-            view.SetInfo("Ready");
+            view.SetInfo("common.ready");
             _ = RefreshAsync();
         }
 

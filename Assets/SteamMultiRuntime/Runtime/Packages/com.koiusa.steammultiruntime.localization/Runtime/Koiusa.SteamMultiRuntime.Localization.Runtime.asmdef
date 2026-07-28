@@ -1,0 +1,10 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Localization.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Localization",
+  "references": [
+    "Unity.Localization",
+    "Unity.ResourceManager"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

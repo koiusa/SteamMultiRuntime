@@ -1,10 +1,7 @@
 {
   "name": "Koiusa.UI.Common.Runtime",
   "rootNamespace": "Koiusa.UI.Common",
-  "references": [
-    "Unity.Localization",
-    "Unity.ResourceManager"
-  ],
+  "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

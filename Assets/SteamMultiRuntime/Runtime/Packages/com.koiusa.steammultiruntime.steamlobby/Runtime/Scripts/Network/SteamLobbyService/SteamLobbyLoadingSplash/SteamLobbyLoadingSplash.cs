@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
-using Koiusa.UI.Common;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -309,7 +309,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var messageText = splashSettings != null ? splashSettings.SplashMessage : "Loading...";
-            splashMessageElement.text = GameLocalization.Get(string.IsNullOrWhiteSpace(messageText) ? "Loading..." : messageText);
+            splashMessageElement.text = GameLocalization.Get(string.IsNullOrWhiteSpace(messageText) ? "loading.default" : messageText);
             splashMessageElement.style.display = string.IsNullOrWhiteSpace(messageText)
                 ? DisplayStyle.None
                 : DisplayStyle.Flex;

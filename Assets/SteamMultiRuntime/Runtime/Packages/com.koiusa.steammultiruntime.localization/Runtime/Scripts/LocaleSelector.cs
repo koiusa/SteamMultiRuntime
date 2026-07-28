@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UIElements;
 
-namespace Koiusa.UI.Common
+namespace Koiusa.SteamMultiRuntime.Localization
 {
     /// <summary>Optional UI Toolkit language selector. Add a DropdownField named "locale-dropdown".</summary>
     [RequireComponent(typeof(UIDocument))]
