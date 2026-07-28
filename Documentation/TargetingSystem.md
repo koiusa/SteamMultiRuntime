@@ -29,7 +29,7 @@ Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.in
 |---|---|---|
 | 移動 | WASD | 左スティック |
 | 視点 | マウス移動 | 右スティック |
-| Solo Lock-On開始 | 中クリック | LT / L2 |
+| Solo Lock-On開始 | 中クリック | Y / △ |
 | 前のターゲット | 1 | D-pad左 |
 | 次のターゲット | 2 | D-pad右 |
 

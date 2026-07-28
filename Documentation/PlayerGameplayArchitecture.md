@@ -20,7 +20,7 @@ com.koiusa.steammultiruntime.player.netcode
 
 ## 現在の実装状況
 
-`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Player/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定する実装ですが、Combat機能はPlay Modeを含む動作確認が未完了です。
+`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Combat/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定する実装ですが、Combat機能はPlay Modeを含む動作確認が未完了です。
 
 ### 実装済み
 
@@ -61,8 +61,8 @@ Player Action Mapには以下のSkill入力を定義しています。
 
 | Action | Keyboard／Mouse | Gamepad |
 |---|---|---|
-| `Player/Attack` | Left Click | Button West |
-| `Player/Dash` | Left Alt | Right Trigger |
+| `Combat/Attack` | Left Click | Button West |
+| `Player/Dash` | Left Alt | Right Stick Press (R3) |
 | `Player/Guard` | G | Left Shoulder |
 | `Player/Heal` | H | D-pad Down |
 

@@ -36,6 +36,7 @@ namespace Koiusa.Keyconfig.Runtime
         private UIDocument uiDocument;
         private VisualElement overlay;
         private Label deviceLabel;
+        private Label inputModeLabel;
         private VisualElement keyboardLayout;
         private VisualElement mouseLayout;
         private VisualElement gamepadLayout;
@@ -149,6 +150,8 @@ namespace Koiusa.Keyconfig.Runtime
                 deviceLabel.text = GetCurrentDeviceName(lastActiveDevice);
             }
 
+            UpdateInputModeLabel();
+
             UpdateStickVisuals(lastActiveDevice as Gamepad ?? Gamepad.current);
         }
 
@@ -243,6 +246,7 @@ namespace Koiusa.Keyconfig.Runtime
             CloneDeviceLayout(root, "gamepad-layout-host", GamepadLayoutPath);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             deviceLabel = root.Q<Label>("device-label");
+            inputModeLabel = root.Q<Label>("input-mode-label");
             if (deviceLabel != null)
             {
                 deviceLabel.tooltip = KeyConfigLocalization.Get("keyconfig.switch_device_tooltip");
@@ -281,6 +285,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             mapLabel.text = Nicify(map.name);
+            UpdateInputModeLabel();
             SetGamepadLayout(IsGamepadLike(lastActiveDevice));
             UpdateGamepadFaceLabels(lastActiveDevice);
             foreach (var action in map.actions)
@@ -626,6 +631,46 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var device = lastDevice ?? Keyboard.current as InputDevice ?? Gamepad.current;
             return device != null ? device.displayName.ToUpperInvariant() : "NO DEVICE";
+        }
+
+        private void UpdateInputModeLabel()
+        {
+            if (inputModeLabel == null)
+            {
+                return;
+            }
+
+            if (inputActionAsset == null)
+            {
+                inputModeLabel.text = "MODE: NO INPUT ASSET";
+                return;
+            }
+
+            var activeModes = new List<string>();
+            AddEnabledMode(activeModes, "Adventure");
+            AddEnabledMode(activeModes, "Combat");
+            AddEnabledMode(activeModes, "UI");
+            inputModeLabel.text = activeModes.Count > 0
+                ? $"MODE: {string.Join(" + ", activeModes)}"
+                : "MODE: NONE";
+        }
+
+        private void AddEnabledMode(List<string> activeModes, string mapName)
+        {
+            var map = inputActionAsset.FindActionMap(mapName, false);
+            if (map == null)
+            {
+                return;
+            }
+
+            foreach (var action in map.actions)
+            {
+                if (action.enabled)
+                {
+                    activeModes.Add(mapName.ToUpperInvariant());
+                    return;
+                }
+            }
         }
 
         private static string Nicify(string value)

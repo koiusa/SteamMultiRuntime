@@ -13,6 +13,7 @@
                     <ui:Label name="map-label" text="GAMEPLAY" class="input-guide-map" />
                 </ui:VisualElement>
                 <ui:VisualElement class="input-guide-spacer" />
+                <ui:Label name="input-mode-label" text="MODE: NONE" class="input-guide-device" />
                 <ui:Label name="device-label" text="KEYBOARD" class="input-guide-device" />
             </ui:VisualElement>
             <ui:VisualElement class="input-guide-divider" />

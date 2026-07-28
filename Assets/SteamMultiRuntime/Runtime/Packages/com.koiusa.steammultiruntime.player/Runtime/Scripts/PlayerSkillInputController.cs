@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class PlayerSkillInputController : MonoBehaviour
     {
         [SerializeField] private InputActionsConfig inputActionsConfig;
-        [SerializeField] private string attackActionPath = "Player/Attack";
+        [SerializeField] private string attackActionPath = "Combat/Attack";
         [SerializeField] private string dashActionPath = "Player/Dash";
         [SerializeField] private string guardActionPath = "Player/Guard";
         [SerializeField] private string healActionPath = "Player/Heal";

@@ -10,20 +10,20 @@
 |---|---|---|
 | 移動 | WASD / 矢印キー | 左スティック |
 | カメラ | マウス移動 | 右スティック |
-| 攻撃 | 左クリック | X / □ |
-| ダッシュ | Left Alt | RT / R2 |
+| 攻撃（Combat） | 左クリック | X / □ |
+| ダッシュ | Left Alt | 右スティック押し込み（R3） |
 | ガード | G | LB / L1 |
 | 回復 | H | D-pad 下 |
-| インタラクト | E | Y / △ |
-| しゃがみ | C | B / ○ |
+| インタラクト（Adventure） | E | X / □ |
+| しゃがみ | C | D-pad 上 |
 | ジャンプ | Space | A / × |
 | 前／次のターゲット | 1 / 2 | D-pad 左／右 |
 | スプリント | Left Shift | 左スティック押し込み |
-| ロックオン | 中クリック | LT / L2 |
+| ロックオン | 中クリック | Y / △ |
 | グラップル | 右クリック | RB / R1 |
 | リールイン／アウト | ホイール、Q / E | 右スティック上下 |
-| ストライフ切替 | Left Ctrl | D-pad 上 |
-| グラップル射出 | 左クリック | 右スティック押し込み |
+| ストライフ切替 | Left Ctrl | LT / L2 |
+| グラップル射出 | 左クリック | RT / R2 |
 
 `Drag`、`CameraZoom`、`AimCursorDelta`、`AimCursorPosition`、`AimCursorMove` は物理デバイスの特性に応じた入力です。全デバイスへ同じBindingを設ける対象にはしません。
 
@@ -32,7 +32,7 @@
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
 | ナビゲーション | WASD / 矢印キー | 左スティック / D-pad |
-| 決定／キャンセル | Enter / Escape | A / B |
+| 決定／キャンセル | Enter / Escape | A / B、× / ○ |
 | メニュー | Tab | Start / Options |
 | キャラクターメニュー | Backquote / C | Select / Share |
 | 前／次のセクション | Q / E | LB / RB |
