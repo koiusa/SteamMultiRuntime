@@ -8,6 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         private readonly Dictionary<int, float> incomingDamageScales = new Dictionary<int, float>();
         private PlayerHitDetectionFeature hitDetection;
+        private GuardShieldVisual guardShieldVisual;
         public IPlayerHealthFeature Health { get; private set; }
         public float IncomingDamageScale { get; private set; } = 1f;
 
@@ -18,11 +19,14 @@ namespace Koiusa.SteamMultiRuntime
         {
             Health = GetComponent<IPlayerHealthFeature>();
             hitDetection = GetComponent<PlayerHitDetectionFeature>();
+            guardShieldVisual = GetComponent<GuardShieldVisual>();
         }
 
         public float ReceiveDamage(PlayerDamageRequest request)
         {
             if (!isActiveAndEnabled || Health == null) return 0f;
+            if (guardShieldVisual == null) guardShieldVisual = GetComponent<GuardShieldVisual>();
+            if (IncomingDamageScale < 1f) guardShieldVisual?.PlayAttackImpact(request.Point);
             var scaled = new PlayerDamageRequest(request.Source, request.Amount * IncomingDamageScale, request.Point, request.Direction);
             return Health.ApplyDamage(scaled);
         }

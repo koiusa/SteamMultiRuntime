@@ -18,6 +18,8 @@ Shader "Koiusa/Effects/GuardShield"
         _ImpactRadius ("Impact Radius", Range(0.01, 5)) = 0.65
         _ImpactWidth ("Impact Ring Width", Range(0.01, 1)) = 0.12
         _ImpactStrength ("Impact Strength", Range(0, 5)) = 0
+        _IntersectionDistance ("Environment Intersection Distance", Range(0.001, 1)) = 0.18
+        _IntersectionIntensity ("Environment Intersection Intensity", Range(0, 8)) = 3
     }
 
     SubShader
@@ -46,6 +48,7 @@ Shader "Koiusa/Effects/GuardShield"
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             struct Attributes
             {
@@ -83,6 +86,8 @@ Shader "Koiusa/Effects/GuardShield"
                 half _ImpactRadius;
                 half _ImpactWidth;
                 half _ImpactStrength;
+                half _IntersectionDistance;
+                half _IntersectionIntensity;
             CBUFFER_END
 
             // Returns distance to the nearest edge of a pointy-top hexagonal grid.
@@ -135,13 +140,22 @@ Shader "Koiusa/Effects/GuardShield"
                     abs(impactDistance - _ImpactRadius));
                 impactRing *= _ImpactStrength;
 
+                float2 screenUv = GetNormalizedScreenSpaceUV(input.positionCS);
+                float rawSceneDepth = SampleSceneDepth(screenUv);
+                float sceneEyeDepth = LinearEyeDepth(rawSceneDepth, _ZBufferParams);
+                float shieldEyeDepth = -TransformWorldToView(input.positionWS).z;
+                float depthSeparation = max(sceneEyeDepth - shieldEyeDepth, 0.0);
+                half contact = 1.0h - smoothstep(0.0h, _IntersectionDistance, depthSeparation);
+                contact *= _IntersectionIntensity * (0.85h + 0.15h * sin(_Time.y * 12.0h));
+
                 half energy = rim * _RimIntensity
                     + hex * _HexIntensity
                     + pulse * _PulseIntensity
-                    + impactRing;
+                    + impactRing
+                    + contact;
                 half3 color = _BaseColor.rgb + _EdgeColor.rgb * energy;
-                color = lerp(color, _ImpactColor.rgb, saturate(impactRing));
-                half alpha = saturate(_BaseColor.a + rim + hex * 0.35h + impactRing) * _Opacity;
+                color = lerp(color, _ImpactColor.rgb, saturate(impactRing + contact));
+                half alpha = saturate(_BaseColor.a + rim + hex * 0.35h + impactRing + contact) * _Opacity;
                 return half4(color, alpha);
             }
             ENDHLSL

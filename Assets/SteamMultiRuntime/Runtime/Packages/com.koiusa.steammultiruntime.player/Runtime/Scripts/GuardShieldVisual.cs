@@ -8,6 +8,9 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class GuardShieldVisual : MonoBehaviour
     {
         private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
+        private static readonly int ImpactPositionId = Shader.PropertyToID("_ImpactPosition");
+        private static readonly int ImpactRadiusId = Shader.PropertyToID("_ImpactRadius");
+        private static readonly int ImpactStrengthId = Shader.PropertyToID("_ImpactStrength");
         private static Mesh sharedIcosphere;
 
         [SerializeField] private Vector3 fallbackLocalCenter = new Vector3(0f, 1f, 0f);
@@ -15,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0.01f)] private float fadeInDuration = 0.08f;
         [SerializeField, Min(0.01f)] private float fadeOutDuration = 0.16f;
         [SerializeField, Range(0f, 1f)] private float visibleOpacity = 0.65f;
+        [SerializeField, Min(0.01f)] private float attackImpactDuration = 0.35f;
 
         private Renderer shieldRenderer;
         private Transform shieldTransform;
@@ -22,6 +26,8 @@ namespace Koiusa.SteamMultiRuntime
         private float opacity;
         private float expansion;
         private bool isGuarding;
+        private float attackImpactEndsAt;
+        private Vector3 attackImpactPosition;
 
         public bool IsGuarding => isGuarding;
 
@@ -36,6 +42,7 @@ namespace Koiusa.SteamMultiRuntime
             var easedExpansion = expansion * expansion * (3f - 2f * expansion);
             if (shieldTransform != null)
                 shieldTransform.localScale = Vector3.one * (radius * easedExpansion);
+            UpdateAttackImpact();
             ApplyOpacity();
 
             if (shieldRenderer != null)
@@ -87,6 +94,13 @@ namespace Koiusa.SteamMultiRuntime
             propertyBlock = new MaterialPropertyBlock();
         }
 
+        public void PlayAttackImpact(Vector3 worldPosition)
+        {
+            if (!isGuarding) return;
+            attackImpactPosition = worldPosition;
+            attackImpactEndsAt = Time.time + attackImpactDuration;
+        }
+
         private Vector3 ResolveCharacterCenter()
         {
             var renderers = GetComponentsInChildren<Renderer>(true);
@@ -117,7 +131,19 @@ namespace Koiusa.SteamMultiRuntime
             if (shieldRenderer == null) return;
             shieldRenderer.GetPropertyBlock(propertyBlock);
             propertyBlock.SetFloat(OpacityId, opacity);
+            var impactProgress = attackImpactDuration > 0f
+                ? Mathf.Clamp01(1f - (attackImpactEndsAt - Time.time) / attackImpactDuration)
+                : 1f;
+            var impactStrength = Time.time < attackImpactEndsAt ? 1f - impactProgress : 0f;
+            propertyBlock.SetVector(ImpactPositionId, attackImpactPosition);
+            propertyBlock.SetFloat(ImpactRadiusId, Mathf.Lerp(0.05f, radius * 0.9f, impactProgress));
+            propertyBlock.SetFloat(ImpactStrengthId, impactStrength * 4f);
             shieldRenderer.SetPropertyBlock(propertyBlock);
+        }
+
+        private void UpdateAttackImpact()
+        {
+            if (!isGuarding) attackImpactEndsAt = 0f;
         }
 
         private void OnDisable()
@@ -125,6 +151,7 @@ namespace Koiusa.SteamMultiRuntime
             isGuarding = false;
             opacity = 0f;
             expansion = 0f;
+            attackImpactEndsAt = 0f;
             if (shieldTransform != null) shieldTransform.localScale = Vector3.zero;
             ApplyOpacity();
             if (shieldRenderer != null) shieldRenderer.enabled = false;
