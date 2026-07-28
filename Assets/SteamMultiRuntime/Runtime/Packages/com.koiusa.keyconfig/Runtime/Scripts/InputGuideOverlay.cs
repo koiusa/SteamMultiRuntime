@@ -66,6 +66,7 @@ namespace Koiusa.Keyconfig.Runtime
         private sealed class GuideRow
         {
             public VisualElement Element;
+            public VisualElement SecondaryElement;
             public InputControl Control;
             public string BindingPath;
             public float ReleaseDelay;
@@ -106,6 +107,7 @@ namespace Koiusa.Keyconfig.Runtime
             for (var i = 0; i < rows.Count; i++)
             {
                 rows[i].Element.RemoveFromClassList("active");
+                rows[i].SecondaryElement?.RemoveFromClassList("active");
             }
 
             InputDevice frameActiveDevice = null;
@@ -128,6 +130,7 @@ namespace Koiusa.Keyconfig.Runtime
                 if (active)
                 {
                     row.Element.AddToClassList("active");
+                    row.SecondaryElement?.AddToClassList("active");
                 }
 
                 if (inputDetected && row.Control?.device != null)
@@ -731,16 +734,23 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
+            var isMouseScroll = path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase);
+            var isMiddleClick = path.Equals("<Mouse>/middleButton", StringComparison.OrdinalIgnoreCase);
+            var actionLabelHost = isMouseScroll
+                ? root.Q<VisualElement>("control-scrollcaption") ?? controlElement
+                : isMiddleClick
+                    ? root.Q<VisualElement>("control-middlecaption") ?? controlElement
+                    : controlElement;
             var localizedActionName = KeyConfigLocalization.Get(action.name);
             var actionName = binding.isPartOfComposite
                 ? $"{localizedActionName} · {KeyConfigLocalization.Get(Nicify(binding.name))}"
                 : localizedActionName;
-            var actionLabel = controlElement.Q<Label>("control-action-label");
+            var actionLabel = actionLabelHost.Q<Label>("control-action-label");
             if (actionLabel == null)
             {
                 actionLabel = new Label(actionName) { name = "control-action-label" };
                 actionLabel.AddToClassList("input-device-action");
-                controlElement.Add(actionLabel);
+                actionLabelHost.Add(actionLabel);
             }
             else if (!actionLabel.text.Contains(actionName, StringComparison.Ordinal))
             {
@@ -757,6 +767,7 @@ namespace Koiusa.Keyconfig.Runtime
             rows.Add(new GuideRow
             {
                 Element = controlElement,
+                SecondaryElement = isMouseScroll || isMiddleClick ? actionLabelHost : null,
                 Control = InputControlActivity.Resolve(path),
                 BindingPath = path,
                 // Pointer delta and scroll return to zero between input events. A short
