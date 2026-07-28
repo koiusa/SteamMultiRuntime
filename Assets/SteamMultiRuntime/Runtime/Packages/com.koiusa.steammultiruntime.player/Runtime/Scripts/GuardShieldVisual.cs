@@ -53,7 +53,11 @@ namespace Koiusa.SteamMultiRuntime
         {
             EnsureShield();
             isGuarding = value;
-            if (value && shieldRenderer != null) shieldRenderer.enabled = true;
+            if (value && shieldRenderer != null)
+            {
+                RefreshShieldCenter();
+                shieldRenderer.enabled = true;
+            }
         }
 
         private void EnsureShield()
@@ -96,6 +100,17 @@ namespace Koiusa.SteamMultiRuntime
             propertyBlock = new MaterialPropertyBlock();
         }
 
+        private void RefreshShieldCenter()
+        {
+            if (shieldTransform == null) return;
+
+            var visualParent = shieldTransform.parent;
+            var characterCenter = ResolveCharacterCenterWorld();
+            shieldTransform.localPosition = visualParent != null
+                ? visualParent.InverseTransformPoint(characterCenter)
+                : characterCenter;
+        }
+
         public void PlayAttackImpact(Vector3 worldPosition)
         {
             if (!isGuarding) return;
@@ -111,7 +126,8 @@ namespace Koiusa.SteamMultiRuntime
             for (var i = 0; i < renderers.Length; i++)
             {
                 var candidate = renderers[i];
-                if (candidate == null || candidate is ParticleSystemRenderer || candidate is TrailRenderer || candidate is LineRenderer)
+                if (candidate == null || candidate == shieldRenderer ||
+                    candidate is ParticleSystemRenderer || candidate is TrailRenderer || candidate is LineRenderer)
                     continue;
 
                 if (!hasBounds)
