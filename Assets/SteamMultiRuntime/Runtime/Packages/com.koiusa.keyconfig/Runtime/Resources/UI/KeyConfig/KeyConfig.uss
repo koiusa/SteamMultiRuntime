@@ -224,7 +224,8 @@
 }
 
 .keyconfig-row.input-active {
-	border-left-width: 3px;
+	border-left-width: 2px;
+	border-left-color: rgba(70, 235, 165, 0.7);
 }
 
 .keyconfig-cell-action {
@@ -263,9 +264,8 @@
 
 .keyconfig-input-state {
 	margin-left: 8px;
-	font-size: 11px;
-	-unity-font-style: bold;
-	color: rgb(85, 245, 175);
+	font-size: 9px;
+	color: rgba(85, 245, 175, 0.8);
 	white-space: nowrap;
 }
 
@@ -349,6 +349,23 @@
 	border-right-color: rgb(70, 78, 94);
 	border-top-color: rgb(70, 78, 94);
 	border-bottom-color: rgb(70, 78, 94);
+}
+
+.keyconfig-row.focused {
+	background-color: rgba(35, 150, 112, 0.24);
+	border-left-width: 3px;
+	border-left-color: rgb(83, 245, 181);
+}
+
+.keyconfig-map-tab-button:focus,
+.keyconfig-row-button:focus,
+.keyconfig-button:focus {
+	color: rgb(245, 255, 251);
+	background-color: rgb(35, 150, 112);
+	border-left-color: rgb(83, 245, 181);
+	border-right-color: rgb(83, 245, 181);
+	border-top-color: rgb(83, 245, 181);
+	border-bottom-color: rgb(83, 245, 181);
 }
 
 /* ---------- ボトムボタン ---------- */

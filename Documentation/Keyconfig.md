@@ -30,6 +30,10 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - `Reset`で行単位、`Reset All`で全体を初期化します。
 - `Save`／`Load`でユーザー設定を保存／復元します。
 - Player、System、UIタブでAction Mapを切り替えます。
+- キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
+- UI Action Mapは入力状態を確認できるよう一覧へ表示しますが、Keyconfig自身の操作を失わないようChange／Resetの対象外です。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
+- LB／RB（`UI/PreviousSection`／`UI/NextSection`）でAction Mapタブを循環切り替えします。左右はBinding Group／Load／Save／Reset All／Closeのフォーカスを循環します。通常のD-padまたは左スティック上下はフォーカスを移動せずリストをスクロールし、Binding Groupにフォーカス中だけDropdownの選択操作へ渡します。
+- Action MapタブでSubmitすると、そのMap内の最初に変更可能な行へ入ります。リスト内では上下で行、左右でChange／Resetを選び、CancelでAction Mapタブへ戻ります。
 
 保存先は`Application.persistentDataPath/InputBindings`です。
 
@@ -37,7 +41,8 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 
 1. `UIDocument`を持つGameObjectへ`KeyConfigUiDocument`を追加します。
 2. `Input Actions Config`へ`GameplayKeyConfigInputActionsConfig.asset`を割り当てます。
-3. KeyconfigのUXML、USS、必要に応じて`InputBindingIconResolver`を設定します。
+3. UI操作など固定するAction Mapを`Non Rebindable Action Maps`へ設定します。
+4. KeyconfigのUXML、USS、必要に応じて`InputBindingIconResolver`を設定します。
 
 操作ガイドだけを表示する場合は`Runtime/Resources/System/InputGuideOverlay.prefab`を使用できます。
 

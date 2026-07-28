@@ -9,10 +9,12 @@ namespace Koiusa.Keyconfig.Runtime
     internal sealed class KeyConfigView
     {
         private const string DropdownPopupStyleSheetPath = "UI/KeyConfig/KeyConfigDropdownPopup";
+        private const float NavigationScrollStep = 72f;
 
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
         private readonly StyleSheet styleSheet;
+        private VisualElement root;
         private InputBindingIconResolver iconResolver;
         private StyleSheet dropdownPopupStyleSheet;
         private VisualElement dropdownPopupStyleHost;
@@ -47,6 +49,10 @@ namespace Koiusa.Keyconfig.Runtime
         private int lastActiveInputCount = int.MinValue;
         private IReadOnlyList<string> cachedBindingGroups;
         private string cachedSelectedBindingGroup;
+        private bool isInteractive = true;
+        private readonly List<string> mapNames = new List<string>();
+        private readonly List<Button> mapTabButtons = new List<Button>();
+        private readonly List<BindingRowNavigation> bindingRows = new List<BindingRowNavigation>();
 
         private sealed class InputStateRow
         {
@@ -68,7 +74,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Build()
         {
-            var root = uiDocument.rootVisualElement;
+            root = uiDocument.rootVisualElement;
             root.Clear();
             ApplyDropdownPopupStyle(root);
 
@@ -144,6 +150,8 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 bindingGroupDropdown.RegisterValueChangedCallback(OnBindingGroupDropdownValueChanged);
             }
+            root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
+            root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
         }
 
         public void UnbindActions()
@@ -156,6 +164,8 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 bindingGroupDropdown.UnregisterValueChangedCallback(OnBindingGroupDropdownValueChanged);
             }
+            root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
+            root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
 
             onLoad = null;
             onSave = null;
@@ -175,6 +185,13 @@ namespace Koiusa.Keyconfig.Runtime
             inputMonitorBinding?.Dispose();
             inputMonitorBinding = null;
             ClearRowBindings();
+        }
+
+        private sealed class BindingRowNavigation
+        {
+            public VisualElement Row;
+            public Button RebindButton;
+            public Button ResetButton;
         }
 
         private void ApplyDropdownPopupStyle(VisualElement root)
@@ -237,10 +254,32 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void SetInteractive(bool enabled)
         {
-            loadButton?.SetEnabled(enabled);
-            saveButton?.SetEnabled(enabled);
-            resetAllButton?.SetEnabled(enabled);
+            isInteractive = enabled;
             bindingGroupDropdown?.SetEnabled(enabled);
+            root?.Query<Button>().ForEach(button => button.SetEnabled(button == closeButton || enabled));
+        }
+
+        public void FocusDefault()
+        {
+            root?.schedule.Execute(() =>
+            {
+                if (!isInteractive || root.panel == null)
+                {
+                    return;
+                }
+
+                if (loadButton != null && loadButton.enabledInHierarchy)
+                {
+                    loadButton.Focus();
+                    return;
+                }
+
+                var firstButton = root.Q<Button>();
+                if (firstButton != null && firstButton.enabledInHierarchy)
+                {
+                    firstButton.Focus();
+                }
+            });
         }
 
         public void SetBindingGroupChoices(IReadOnlyList<string> groups, string selectedGroup)
@@ -280,6 +319,27 @@ namespace Koiusa.Keyconfig.Runtime
             iconResolver = resolver;
         }
 
+        public void SelectAdjacentMap(int direction)
+        {
+            if (!isInteractive || mapNames.Count == 0 || direction == 0)
+            {
+                return;
+            }
+
+            var currentIndex = mapNames.IndexOf(selectedMapName);
+            if (currentIndex < 0) currentIndex = 0;
+            var nextIndex = (currentIndex + Math.Sign(direction) + mapNames.Count) % mapNames.Count;
+            selectedMapName = mapNames[nextIndex];
+            RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
+            root?.schedule.Execute(() =>
+            {
+                if (nextIndex < mapTabButtons.Count && mapTabButtons[nextIndex].enabledInHierarchy)
+                {
+                    mapTabButtons[nextIndex].Focus();
+                }
+            });
+        }
+
         public void RenderBindingEntries(
             IReadOnlyList<InputBindingService.BindingEntry> entries,
             Action<int> onRebind,
@@ -298,6 +358,9 @@ namespace Koiusa.Keyconfig.Runtime
             bindingListView.Clear();
             mapTabBar?.Clear();
             inputStateRows.Clear();
+            mapNames.Clear();
+            mapTabButtons.Clear();
+            bindingRows.Clear();
 
             if (entries == null || entries.Count == 0)
             {
@@ -309,7 +372,6 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var mapNames = new List<string>();
             for (var i = 0; i < entries.Count; i++)
             {
                 var mapName = entries[i].ActionMapName;
@@ -335,6 +397,7 @@ namespace Koiusa.Keyconfig.Runtime
                     {
                         selectedMapName = mapName;
                         RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
+                        EnterBindingList();
                     })
                     {
                         text = mapName
@@ -342,7 +405,9 @@ namespace Koiusa.Keyconfig.Runtime
 
                     tabButton.AddToClassList("keyconfig-map-tab-button");
                     tabButton.EnableInClassList("active", string.Equals(mapName, selectedMapName, StringComparison.Ordinal));
+                    tabButton.SetEnabled(isInteractive);
                     mapTabBar.Add(tabButton);
+                    mapTabButtons.Add(tabButton);
                 }
             }
 
@@ -392,6 +457,8 @@ namespace Koiusa.Keyconfig.Runtime
                 var row = new VisualElement();
                 row.AddToClassList("keyconfig-row");
                 row.AddToClassList(rowCounter % 2 == 0 ? "even" : "odd");
+                row.RegisterCallback<FocusInEvent>(OnBindingRowFocusIn);
+                row.RegisterCallback<FocusOutEvent>(OnBindingRowFocusOut);
                 rowCounter++;
 
                 // アクション名セル（アクション初出のみ表示）
@@ -426,8 +493,7 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
 
-                var inputStateLabel = new Label();
-                BindRow(inputStateLabel, "keyconfig.input_active");
+                var inputStateLabel = new Label("●");
                 inputStateLabel.AddToClassList("keyconfig-input-state");
                 inputStateLabel.style.display = DisplayStyle.None;
                 bindingCell.Add(inputStateLabel);
@@ -441,15 +507,25 @@ namespace Koiusa.Keyconfig.Runtime
                 BindRow(rebindButton, "keyconfig.change");
                 rebindButton.AddToClassList("keyconfig-row-button");
                 rebindButton.AddToClassList("keyconfig-rebind-button");
-                rebindButton.SetEnabled(!entry.IsComposite);
+                rebindButton.SetEnabled(isInteractive && !entry.IsComposite && entry.IsRebindable);
                 buttonCell.Add(rebindButton);
 
                 var resetButton = new Button(() => onReset?.Invoke(rowIndex));
                 BindRow(resetButton, "keyconfig.reset");
                 resetButton.AddToClassList("keyconfig-row-button");
                 resetButton.AddToClassList("keyconfig-reset-button");
-                resetButton.SetEnabled(!entry.IsComposite);
+                resetButton.SetEnabled(isInteractive && !entry.IsComposite && entry.IsRebindable);
                 buttonCell.Add(resetButton);
+
+                if (!entry.IsComposite && entry.IsRebindable)
+                {
+                    bindingRows.Add(new BindingRowNavigation
+                    {
+                        Row = row,
+                        RebindButton = rebindButton,
+                        ResetButton = resetButton
+                    });
+                }
 
                 row.Add(buttonCell);
                 bindingListView.Add(row);
@@ -612,6 +688,187 @@ namespace Koiusa.Keyconfig.Runtime
                 : evt.newValue;
             cachedSelectedBindingGroup = group;
             onBindingGroupChanged.Invoke(group);
+        }
+
+        private void OnNavigationCancel(NavigationCancelEvent evt)
+        {
+            if (!isInteractive || onClose == null)
+            {
+                return;
+            }
+
+            if (TryGetFocusedBindingRow(out _, out _))
+            {
+                FocusSelectedMapTab();
+                root?.focusController?.IgnoreEvent(evt);
+                evt.StopImmediatePropagation();
+                return;
+            }
+
+            evt.StopImmediatePropagation();
+            onClose.Invoke();
+        }
+
+        private static void OnBindingRowFocusIn(FocusInEvent evt)
+        {
+            if (evt.currentTarget is VisualElement row)
+            {
+                row.AddToClassList("focused");
+            }
+        }
+
+        private static void OnBindingRowFocusOut(FocusOutEvent evt)
+        {
+            if (evt.currentTarget is not VisualElement row)
+            {
+                return;
+            }
+
+            row.schedule.Execute(() =>
+            {
+                var focusedElement = row.panel?.focusController?.focusedElement as VisualElement;
+                row.EnableInClassList("focused", focusedElement != null && row.Contains(focusedElement));
+            });
+        }
+
+        private void OnNavigationMove(NavigationMoveEvent evt)
+        {
+            if (TryGetFocusedBindingRow(out var focusedRowIndex, out var resetColumn))
+            {
+                if (evt.direction == NavigationMoveEvent.Direction.Left ||
+                    evt.direction == NavigationMoveEvent.Direction.Right)
+                {
+                    var target = evt.direction == NavigationMoveEvent.Direction.Left
+                        ? bindingRows[focusedRowIndex].RebindButton
+                        : bindingRows[focusedRowIndex].ResetButton;
+                    target.Focus();
+                    ConsumeNavigationMove(evt);
+                    return;
+                }
+
+                if (evt.direction == NavigationMoveEvent.Direction.Up ||
+                    evt.direction == NavigationMoveEvent.Direction.Down)
+                {
+                    var delta = evt.direction == NavigationMoveEvent.Direction.Up ? -1 : 1;
+                    var targetIndex = Mathf.Clamp(focusedRowIndex + delta, 0, bindingRows.Count - 1);
+                    var targetRow = bindingRows[targetIndex];
+                    var target = resetColumn ? targetRow.ResetButton : targetRow.RebindButton;
+                    target.Focus();
+                    bindingListView?.ScrollTo(targetRow.Row);
+                    ConsumeNavigationMove(evt);
+                    return;
+                }
+            }
+
+            if (evt.direction == NavigationMoveEvent.Direction.Left ||
+                evt.direction == NavigationMoveEvent.Direction.Right)
+            {
+                FocusAdjacentFunctionButton(evt.direction == NavigationMoveEvent.Direction.Left ? -1 : 1);
+                root?.focusController?.IgnoreEvent(evt);
+                evt.StopImmediatePropagation();
+                return;
+            }
+
+            var focusedElement = root?.focusController?.focusedElement as VisualElement;
+            if (bindingGroupDropdown != null && focusedElement != null &&
+                (focusedElement == bindingGroupDropdown || bindingGroupDropdown.Contains(focusedElement)))
+            {
+                return;
+            }
+
+            if (bindingListView == null ||
+                (evt.direction != NavigationMoveEvent.Direction.Up &&
+                 evt.direction != NavigationMoveEvent.Direction.Down))
+            {
+                return;
+            }
+
+            var direction = evt.direction == NavigationMoveEvent.Direction.Up ? -1f : 1f;
+            var currentOffset = bindingListView.scrollOffset;
+            var contentHeight = bindingListView.contentContainer.layout.height;
+            var viewportHeight = bindingListView.contentViewport.layout.height;
+            var hasResolvedLayout = !float.IsNaN(contentHeight) && !float.IsNaN(viewportHeight);
+            var maxOffset = hasResolvedLayout ? Mathf.Max(0f, contentHeight - viewportHeight) : 0f;
+            bindingListView.scrollOffset = new Vector2(
+                currentOffset.x,
+                Mathf.Clamp(currentOffset.y + direction * NavigationScrollStep, 0f, maxOffset));
+            root?.focusController?.IgnoreEvent(evt);
+            evt.StopImmediatePropagation();
+        }
+
+        private void EnterBindingList()
+        {
+            root?.schedule.Execute(() =>
+            {
+                if (bindingRows.Count == 0)
+                {
+                    return;
+                }
+
+                var firstRow = bindingRows[0];
+                firstRow.RebindButton.Focus();
+                bindingListView?.ScrollTo(firstRow.Row);
+            });
+        }
+
+        private void FocusSelectedMapTab()
+        {
+            var index = mapNames.IndexOf(selectedMapName);
+            if (index >= 0 && index < mapTabButtons.Count)
+            {
+                mapTabButtons[index].Focus();
+            }
+        }
+
+        private bool TryGetFocusedBindingRow(out int rowIndex, out bool resetColumn)
+        {
+            var focusedElement = root?.focusController?.focusedElement as VisualElement;
+            for (var i = 0; i < bindingRows.Count; i++)
+            {
+                if (focusedElement == bindingRows[i].RebindButton)
+                {
+                    rowIndex = i;
+                    resetColumn = false;
+                    return true;
+                }
+
+                if (focusedElement == bindingRows[i].ResetButton)
+                {
+                    rowIndex = i;
+                    resetColumn = true;
+                    return true;
+                }
+            }
+
+            rowIndex = -1;
+            resetColumn = false;
+            return false;
+        }
+
+        private void ConsumeNavigationMove(NavigationMoveEvent evt)
+        {
+            root?.focusController?.IgnoreEvent(evt);
+            evt.StopImmediatePropagation();
+        }
+
+        private void FocusAdjacentFunctionButton(int direction)
+        {
+            VisualElement[] controls = { bindingGroupDropdown, loadButton, saveButton, resetAllButton, closeButton };
+            var focusedElement = root?.focusController?.focusedElement as VisualElement;
+            var currentIndex = Array.IndexOf(controls, focusedElement);
+
+            for (var offset = 1; offset <= controls.Length; offset++)
+            {
+                var index = currentIndex < 0
+                    ? (direction > 0 ? offset - 1 : controls.Length - offset)
+                    : (currentIndex + direction * offset + controls.Length) % controls.Length;
+                var control = controls[index];
+                if (control != null && control.enabledInHierarchy)
+                {
+                    control.Focus();
+                    return;
+                }
+            }
         }
     }
 }

@@ -13,3 +13,7 @@ MonoBehaviour:
   m_Name: GameplayKeyConfigInputActionsConfig
   m_EditorClassIdentifier: koiusa.Keyconfig.Runtime::Koiusa.Keyconfig.Runtime.KeyConfigInputActionsConfig
   inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  nonRebindableActionMaps:
+  - UI
+  previousSectionActionPath: UI/PreviousSection
+  nextSectionActionPath: UI/NextSection

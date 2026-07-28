@@ -9,7 +9,7 @@ namespace Koiusa.Keyconfig.Runtime
     {
         public readonly struct BindingEntry
         {
-            public BindingEntry(Guid actionId, string actionName, string actionMapName, string schemeName, string profileName, int bindingIndex, Guid bindingId, string displayName, bool isComposite, bool isPartOfComposite, string groups, string bindingPath)
+            public BindingEntry(Guid actionId, string actionName, string actionMapName, string schemeName, string profileName, int bindingIndex, Guid bindingId, string displayName, bool isComposite, bool isPartOfComposite, bool isRebindable, string groups, string bindingPath)
             {
                 ActionId = actionId;
                 ActionName = actionName;
@@ -21,6 +21,7 @@ namespace Koiusa.Keyconfig.Runtime
                 DisplayName = displayName;
                 IsComposite = isComposite;
                 IsPartOfComposite = isPartOfComposite;
+                IsRebindable = isRebindable;
                 Groups = groups;
                 BindingPath = bindingPath;
             }
@@ -35,17 +36,21 @@ namespace Koiusa.Keyconfig.Runtime
             public string DisplayName { get; }
             public bool IsComposite { get; }
             public bool IsPartOfComposite { get; }
+            public bool IsRebindable { get; }
             public string Groups { get; }
             public string BindingPath { get; }
         }
 
         private readonly InputActionAsset inputActionAsset;
         private readonly InputBindingOverridesRepository repository;
+        private readonly HashSet<string> nonRebindableActionMaps;
 
-        public InputBindingService(InputActionAsset inputActionAsset, InputBindingOverridesRepository repository = null)
+        public InputBindingService(InputActionAsset inputActionAsset, InputBindingOverridesRepository repository = null, IEnumerable<string> nonRebindableActionMaps = null)
         {
             this.inputActionAsset = inputActionAsset;
             this.repository = repository ?? new InputBindingOverridesRepository();
+            this.nonRebindableActionMaps = new HashSet<string>(nonRebindableActionMaps ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            RemoveProtectedOverrides();
         }
 
         public InputActionAsset InputActionAsset => inputActionAsset;
@@ -75,6 +80,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             inputActionAsset.LoadBindingOverridesFromJson(json);
+            RemoveProtectedOverrides();
             return true;
         }
 
@@ -157,6 +163,7 @@ namespace Koiusa.Keyconfig.Runtime
                         displayName,
                         binding.isComposite,
                         binding.isPartOfComposite,
+                        IsActionMapRebindable(action.actionMap?.name),
                         binding.groups,
                         string.IsNullOrEmpty(binding.effectivePath) ? binding.path : binding.effectivePath));
                 }
@@ -296,6 +303,33 @@ namespace Koiusa.Keyconfig.Runtime
 
             action = inputActionAsset.FindAction(actionId);
             return action != null;
+        }
+
+        public bool IsActionRebindable(InputAction action) =>
+            action != null && IsActionMapRebindable(action.actionMap?.name);
+
+        private bool IsActionMapRebindable(string actionMapName) =>
+            string.IsNullOrWhiteSpace(actionMapName) || !nonRebindableActionMaps.Contains(actionMapName);
+
+        private void RemoveProtectedOverrides()
+        {
+            if (inputActionAsset == null || nonRebindableActionMaps.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var actionMap in inputActionAsset.actionMaps)
+            {
+                if (!nonRebindableActionMaps.Contains(actionMap.name))
+                {
+                    continue;
+                }
+
+                foreach (var action in actionMap.actions)
+                {
+                    action.RemoveAllBindingOverrides();
+                }
+            }
         }
 
         private static bool IsBindingInGroup(InputBinding binding, string bindingGroup)

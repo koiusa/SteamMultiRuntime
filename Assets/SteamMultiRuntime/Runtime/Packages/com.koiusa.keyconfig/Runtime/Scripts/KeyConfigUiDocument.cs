@@ -28,6 +28,10 @@ namespace Koiusa.Keyconfig.Runtime
         private InputRebindController rebindController;
         private List<InputBindingService.BindingEntry> currentEntries = new List<InputBindingService.BindingEntry>();
         private bool usingBindingGroupFallback;
+        private InputAction previousSectionAction;
+        private InputAction nextSectionAction;
+        private bool enabledPreviousSectionAction;
+        private bool enabledNextSectionAction;
 
         public string BindingGroup => bindingGroup;
         public event Action Closed;
@@ -42,7 +46,9 @@ namespace Koiusa.Keyconfig.Runtime
             var resolvedInputActionAsset = ResolveInputActionAsset();
             if (resolvedInputActionAsset != null)
             {
-                bindingService = new InputBindingService(resolvedInputActionAsset);
+                bindingService = new InputBindingService(
+                    resolvedInputActionAsset,
+                    nonRebindableActionMaps: inputActionsConfig.NonRebindableActionMaps);
                 rebindController = new InputRebindController(bindingService);
                 rebindController.RebindStarted += OnRebindStarted;
                 rebindController.RebindCompleted += OnRebindCompleted;
@@ -55,6 +61,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             view.Build();
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
+            BindSectionNavigation();
 
             if (bindingService == null)
             {
@@ -70,6 +77,7 @@ namespace Koiusa.Keyconfig.Runtime
             _ = bindingService.TryLoadOverrides(userId);
             RebuildBindingList();
             ApplyReadyStatus();
+            view.FocusDefault();
         }
 
         private void OnDisable()
@@ -77,6 +85,7 @@ namespace Koiusa.Keyconfig.Runtime
             view.UnbindActions();
             view.Dispose();
             rebindController?.CancelRebind();
+            UnbindSectionNavigation();
         }
 
         private void Update()
@@ -201,7 +210,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             var entry = currentEntries[index];
-            if (entry.IsComposite)
+            if (entry.IsComposite || !entry.IsRebindable)
             {
                 return;
             }
@@ -233,6 +242,11 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
+            if (!bindingService.IsActionRebindable(action))
+            {
+                return;
+            }
+
             bindingService.ResetBinding(action, entry.BindingIndex);
             RebuildBindingList();
             view.SetLocalizedStatus("keyconfig.binding_reset");
@@ -249,6 +263,7 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
+            view.FocusDefault();
         }
 
         private void OnRebindCanceled()
@@ -256,6 +271,7 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
+            view.FocusDefault();
         }
 
         private void OnRebindFailed(string message)
@@ -266,11 +282,69 @@ namespace Koiusa.Keyconfig.Runtime
                 view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_failed_fallback" : "keyconfig.rebind_failed");
             else
                 view.SetStatus(message);
+            view.FocusDefault();
         }
 
         private InputActionAsset ResolveInputActionAsset()
         {
             return inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
+        }
+
+        private void BindSectionNavigation()
+        {
+            UnbindSectionNavigation();
+            var asset = bindingService?.InputActionAsset;
+            if (asset == null || inputActionsConfig == null)
+            {
+                return;
+            }
+
+            previousSectionAction = asset.FindAction(inputActionsConfig.PreviousSectionActionPath);
+            nextSectionAction = asset.FindAction(inputActionsConfig.NextSectionActionPath);
+
+            if (previousSectionAction != null)
+            {
+                previousSectionAction.performed += OnPreviousSectionPerformed;
+                enabledPreviousSectionAction = !previousSectionAction.enabled;
+                if (enabledPreviousSectionAction) previousSectionAction.Enable();
+            }
+
+            if (nextSectionAction != null)
+            {
+                nextSectionAction.performed += OnNextSectionPerformed;
+                enabledNextSectionAction = !nextSectionAction.enabled;
+                if (enabledNextSectionAction) nextSectionAction.Enable();
+            }
+        }
+
+        private void UnbindSectionNavigation()
+        {
+            if (previousSectionAction != null)
+            {
+                previousSectionAction.performed -= OnPreviousSectionPerformed;
+                if (enabledPreviousSectionAction) previousSectionAction.Disable();
+            }
+
+            if (nextSectionAction != null)
+            {
+                nextSectionAction.performed -= OnNextSectionPerformed;
+                if (enabledNextSectionAction) nextSectionAction.Disable();
+            }
+
+            previousSectionAction = null;
+            nextSectionAction = null;
+            enabledPreviousSectionAction = false;
+            enabledNextSectionAction = false;
+        }
+
+        private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
+        {
+            if (rebindController == null || !rebindController.IsRebinding) view.SelectAdjacentMap(-1);
+        }
+
+        private void OnNextSectionPerformed(InputAction.CallbackContext context)
+        {
+            if (rebindController == null || !rebindController.IsRebinding) view.SelectAdjacentMap(1);
         }
 
         private void ApplyReadyStatus()

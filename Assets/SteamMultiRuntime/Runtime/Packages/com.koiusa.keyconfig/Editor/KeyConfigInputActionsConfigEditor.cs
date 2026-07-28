@@ -8,10 +8,16 @@ namespace Koiusa.Keyconfig.Editor
     public sealed class KeyConfigInputActionsConfigEditor : UnityEditor.Editor
     {
         private SerializedProperty inputActionAsset;
+        private SerializedProperty nonRebindableActionMaps;
+        private SerializedProperty previousSectionActionPath;
+        private SerializedProperty nextSectionActionPath;
 
         private void OnEnable()
         {
             inputActionAsset = serializedObject.FindProperty("inputActionAsset");
+            nonRebindableActionMaps = serializedObject.FindProperty("nonRebindableActionMaps");
+            previousSectionActionPath = serializedObject.FindProperty("previousSectionActionPath");
+            nextSectionActionPath = serializedObject.FindProperty("nextSectionActionPath");
         }
 
         public override void OnInspectorGUI()
@@ -23,6 +29,9 @@ namespace Koiusa.Keyconfig.Editor
                 MessageType.Info);
 
             EditorGUILayout.PropertyField(inputActionAsset);
+            EditorGUILayout.PropertyField(nonRebindableActionMaps);
+            EditorGUILayout.PropertyField(previousSectionActionPath);
+            EditorGUILayout.PropertyField(nextSectionActionPath);
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space();
