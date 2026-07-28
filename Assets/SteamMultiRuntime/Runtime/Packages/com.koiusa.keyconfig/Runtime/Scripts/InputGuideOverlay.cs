@@ -523,7 +523,7 @@ namespace Koiusa.Keyconfig.Runtime
                     continue;
                 }
 
-                var path = string.IsNullOrWhiteSpace(binding.effectivePath) ? binding.path : binding.effectivePath;
+                var path = binding.overridePath != null ? binding.overridePath : binding.path;
                 if (gamepad ? !IsGamepadBinding(path) : !IsKeyboardMouseBinding(path))
                 {
                     continue;
@@ -774,9 +774,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void BindControl(VisualElement root, InputAction action, int bindingIndex, InputBinding binding)
         {
-            var path = string.IsNullOrWhiteSpace(binding.effectivePath)
-                ? binding.path
-                : binding.effectivePath;
+            var path = binding.overridePath != null ? binding.overridePath : binding.path;
             var controlName = GetControlName(path);
             var controlElement = root.Q<VisualElement>($"control-{controlName}");
             if (controlElement == null)

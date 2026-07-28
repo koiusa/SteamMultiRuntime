@@ -38,6 +38,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - Keyconfig表示中はUI Map以外で有効だったActionを一時停止し、画面を閉じると元の有効状態へ戻します。変更待機中はタブ、ファンクション、スクロールを含むKeyconfig内の移動もロックします。
 - 未接続デバイスのBindingは表示と入力診断だけを行い、Changeを無効化します。変更待機は5秒でタイムアウトして元の行へ戻るため、入力できないデバイスを選んでも操作不能になりません。
 - 同じキーを異なるActionやAction Mapで共有する構成を許可します。重複として拒否するのは、同一Action内の別Bindingへ同じ入力を割り当てた場合だけです。
+- 異なる変更可能Actionとの競合時は確認パネルを表示し、「既存を解除」「両方に設定」「キャンセル」から選択します。保護されたUI Mapとの共有は確認対象外です。
 
 保存先は`Application.persistentDataPath/InputBindings`です。
 

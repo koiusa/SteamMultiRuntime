@@ -368,6 +368,46 @@
 	border-bottom-color: rgb(83, 245, 181);
 }
 
+.keyconfig-conflict-overlay {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(5, 8, 14, 0.78);
+}
+
+.keyconfig-conflict-panel {
+	width: 620px;
+	padding: 24px;
+	background-color: rgb(24, 30, 42);
+	border-left-width: 2px;
+	border-right-width: 2px;
+	border-top-width: 2px;
+	border-bottom-width: 2px;
+	border-left-color: rgb(83, 170, 181);
+	border-right-color: rgb(83, 170, 181);
+	border-top-color: rgb(83, 170, 181);
+	border-bottom-color: rgb(83, 170, 181);
+}
+
+.keyconfig-conflict-message {
+	margin-bottom: 18px;
+	white-space: normal;
+	color: rgb(225, 235, 248);
+}
+
+.keyconfig-conflict-buttons {
+	flex-direction: row;
+	justify-content: flex-end;
+}
+
+.keyconfig-conflict-buttons > .keyconfig-button {
+	margin-left: 8px;
+}
+
 /* ---------- ボトムボタン ---------- */
 
 .keyconfig-buttons-row {

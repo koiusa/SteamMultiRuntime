@@ -56,6 +56,7 @@ namespace Koiusa.Keyconfig.Runtime
                 rebindController = new InputRebindController(bindingService);
                 rebindController.RebindStarted += OnRebindStarted;
                 rebindController.RebindCompleted += OnRebindCompleted;
+                rebindController.RebindConflict += OnRebindConflict;
                 rebindController.RebindCanceled += OnRebindCanceled;
                 rebindController.RebindFailed += OnRebindFailed;
             }
@@ -93,16 +94,17 @@ namespace Koiusa.Keyconfig.Runtime
                 pendingRebindCoroutine = null;
             }
             activeRebindEntryIndex = -1;
+            rebindController?.CancelRebind();
+            view.HideConflict();
             view.UnbindActions();
             view.Dispose();
-            rebindController?.CancelRebind();
             UnbindSectionNavigation();
             RestoreSuspendedActions();
         }
 
         private void Update()
         {
-            if (bindingService != null && !rebindController.IsRebinding)
+            if (bindingService != null && !rebindController.IsBusy)
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
             }
@@ -138,6 +140,7 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 rebindController.RebindStarted -= OnRebindStarted;
                 rebindController.RebindCompleted -= OnRebindCompleted;
+                rebindController.RebindConflict -= OnRebindConflict;
                 rebindController.RebindCanceled -= OnRebindCanceled;
                 rebindController.RebindFailed -= OnRebindFailed;
                 rebindController.Dispose();
@@ -309,6 +312,16 @@ namespace Koiusa.Keyconfig.Runtime
             activeRebindEntryIndex = -1;
         }
 
+        private void OnRebindConflict(string targetAction, string existingAction)
+        {
+            view.ShowConflict(
+                targetAction,
+                existingAction,
+                () => rebindController.ResolveConflict(RebindConflictResolution.ReplaceExisting),
+                () => rebindController.ResolveConflict(RebindConflictResolution.KeepBoth),
+                () => rebindController.ResolveConflict(RebindConflictResolution.Cancel));
+        }
+
         private void OnRebindCanceled()
         {
             RebuildBindingList();
@@ -384,7 +397,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsRebinding))
+            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentMap(-1);
         }
 
@@ -419,7 +432,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsRebinding))
+            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentMap(1);
         }
 

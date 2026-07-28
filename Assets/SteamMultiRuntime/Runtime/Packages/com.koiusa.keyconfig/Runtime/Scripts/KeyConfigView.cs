@@ -30,6 +30,9 @@ namespace Koiusa.Keyconfig.Runtime
         private Button saveButton;
         private Button resetAllButton;
         private Button closeButton;
+        private VisualElement conflictOverlay;
+        private readonly List<Button> conflictButtons = new List<Button>();
+        private Action onConflictCancel;
 
         private Action onLoad;
         private Action onSave;
@@ -246,6 +249,54 @@ namespace Koiusa.Keyconfig.Runtime
         }
 
         public void SetLocalizedStatus(string key, params object[] arguments) => statusBinding?.Set(key, arguments);
+
+        public void ShowConflict(string targetAction, string existingAction, Action replaceExisting, Action keepBoth, Action cancel)
+        {
+            HideConflict();
+            if (root == null) return;
+
+            conflictOverlay = new VisualElement();
+            conflictOverlay.AddToClassList("keyconfig-conflict-overlay");
+            var panel = new VisualElement();
+            panel.AddToClassList("keyconfig-conflict-panel");
+            var message = new Label(KeyConfigLocalization.Get("keyconfig.conflict_message", targetAction, existingAction));
+            message.AddToClassList("keyconfig-conflict-message");
+            panel.Add(message);
+
+            var buttonRow = new VisualElement();
+            buttonRow.AddToClassList("keyconfig-conflict-buttons");
+            AddConflictButton(buttonRow, "keyconfig.conflict_replace", replaceExisting);
+            AddConflictButton(buttonRow, "keyconfig.conflict_keep", keepBoth);
+            AddConflictButton(buttonRow, "keyconfig.conflict_cancel", cancel);
+            panel.Add(buttonRow);
+            conflictOverlay.Add(panel);
+            root.Add(conflictOverlay);
+            onConflictCancel = cancel;
+            conflictOverlay.schedule.Execute(() => conflictButtons[conflictButtons.Count - 1].Focus());
+        }
+
+        public void HideConflict()
+        {
+            conflictOverlay?.RemoveFromHierarchy();
+            conflictOverlay = null;
+            conflictButtons.Clear();
+            onConflictCancel = null;
+        }
+
+        private void AddConflictButton(VisualElement parent, string localizationKey, Action action)
+        {
+            var button = new Button(() =>
+            {
+                HideConflict();
+                action?.Invoke();
+            })
+            {
+                text = KeyConfigLocalization.Get(localizationKey)
+            };
+            button.AddToClassList("keyconfig-button");
+            parent.Add(button);
+            conflictButtons.Add(button);
+        }
 
         public void SetStatus(string status)
         {
@@ -704,6 +755,16 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationCancel(NavigationCancelEvent evt)
         {
+            if (conflictOverlay != null)
+            {
+                var cancel = onConflictCancel;
+                HideConflict();
+                root?.focusController?.IgnoreEvent(evt);
+                evt.StopImmediatePropagation();
+                cancel?.Invoke();
+                return;
+            }
+
             if (!isInteractive || onClose == null)
             {
                 return;
@@ -745,6 +806,20 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationMove(NavigationMoveEvent evt)
         {
+            if (conflictOverlay != null)
+            {
+                if (evt.direction == NavigationMoveEvent.Direction.Left || evt.direction == NavigationMoveEvent.Direction.Right)
+                {
+                    var focused = root?.focusController?.focusedElement as Button;
+                    var index = conflictButtons.IndexOf(focused);
+                    var delta = evt.direction == NavigationMoveEvent.Direction.Left ? -1 : 1;
+                    index = index < 0 ? conflictButtons.Count - 1 : (index + delta + conflictButtons.Count) % conflictButtons.Count;
+                    conflictButtons[index].Focus();
+                }
+                ConsumeNavigationMove(evt);
+                return;
+            }
+
             if (!isInteractive)
             {
                 ConsumeNavigationMove(evt);

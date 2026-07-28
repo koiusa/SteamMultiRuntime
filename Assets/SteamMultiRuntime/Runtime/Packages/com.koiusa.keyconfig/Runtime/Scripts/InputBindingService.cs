@@ -152,12 +152,13 @@ namespace Koiusa.Keyconfig.Runtime
                     }
 
                     var displayName = action.GetBindingDisplayString(i);
+                    var resolvedBindingPath = binding.overridePath != null ? binding.overridePath : binding.path;
                     entries.Add(new BindingEntry(
                         action.id,
                         action.name,
                         action.actionMap?.name ?? "(No Map)",
                         ExtractPrimaryGroupName(binding.groups),
-                        ExtractDeviceProfileName(binding.effectivePath, binding.path),
+                        ExtractDeviceProfileName(resolvedBindingPath, binding.path),
                         i,
                         binding.id,
                         displayName,
@@ -165,7 +166,7 @@ namespace Koiusa.Keyconfig.Runtime
                         binding.isPartOfComposite,
                         IsActionMapRebindable(action.actionMap?.name),
                         binding.groups,
-                        string.IsNullOrEmpty(binding.effectivePath) ? binding.path : binding.effectivePath));
+                        resolvedBindingPath));
                 }
             }
 
@@ -296,6 +297,58 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             return false;
+        }
+
+        public bool TryFindConflictingBinding(InputAction targetAction, int targetBindingIndex, string bindingGroup, out InputAction conflictAction, out int conflictBindingIndex)
+        {
+            conflictAction = null;
+            conflictBindingIndex = -1;
+            if (targetAction == null || targetBindingIndex < 0 || targetBindingIndex >= targetAction.bindings.Count)
+            {
+                return false;
+            }
+
+            var targetPath = targetAction.bindings[targetBindingIndex].effectivePath;
+            if (string.IsNullOrEmpty(targetPath) || inputActionAsset == null)
+            {
+                return false;
+            }
+
+            foreach (var action in inputActionAsset)
+            {
+                if (action == targetAction || !IsActionMapRebindable(action.actionMap?.name))
+                {
+                    continue;
+                }
+
+                for (var i = 0; i < action.bindings.Count; i++)
+                {
+                    var candidate = action.bindings[i];
+                    if (candidate.isComposite || !IsBindingInGroup(candidate, bindingGroup))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(candidate.effectivePath, targetPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        conflictAction = action;
+                        conflictBindingIndex = i;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static void DisableBinding(InputAction action, int bindingIndex)
+        {
+            if (action == null || bindingIndex < 0 || bindingIndex >= action.bindings.Count)
+            {
+                return;
+            }
+
+            action.ApplyBindingOverride(bindingIndex, string.Empty);
         }
 
         public bool TryFindAction(Guid actionId, out InputAction action)

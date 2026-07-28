@@ -3,6 +3,13 @@ using UnityEngine.InputSystem;
 
 namespace Koiusa.Keyconfig.Runtime
 {
+    public enum RebindConflictResolution
+    {
+        ReplaceExisting,
+        KeepBoth,
+        Cancel
+    }
+
     public sealed class InputRebindController : IDisposable
     {
         private const float RebindTimeoutSeconds = 5f;
@@ -12,6 +19,12 @@ namespace Koiusa.Keyconfig.Runtime
         private int activeBindingIndex = -1;
         private string activeBindingGroup;
         private bool activeActionWasEnabled;
+        private InputAction pendingTargetAction;
+        private int pendingTargetBindingIndex = -1;
+        private string pendingTargetPreviousOverride;
+        private InputAction pendingConflictAction;
+        private int pendingConflictBindingIndex = -1;
+        private string pendingDisplayString;
 
         public InputRebindController(InputBindingService bindingService)
         {
@@ -19,9 +32,12 @@ namespace Koiusa.Keyconfig.Runtime
         }
 
         public bool IsRebinding => operation != null;
+        public bool HasPendingConflict => pendingTargetAction != null;
+        public bool IsBusy => IsRebinding || HasPendingConflict;
 
         public event Action RebindStarted;
         public event Action<string> RebindCompleted;
+        public event Action<string, string> RebindConflict;
         public event Action RebindCanceled;
         public event Action<string> RebindFailed;
 
@@ -66,6 +82,7 @@ namespace Koiusa.Keyconfig.Runtime
                 {
                     var displayString = string.Empty;
                     var errorMessage = string.Empty;
+                    var hasConflict = false;
                     try
                     {
                         if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
@@ -76,6 +93,16 @@ namespace Koiusa.Keyconfig.Runtime
                         else
                         {
                             displayString = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
+                            if (bindingService.TryFindConflictingBinding(activeAction, activeBindingIndex, activeBindingGroup, out var conflictAction, out var conflictBindingIndex))
+                            {
+                                pendingTargetAction = activeAction;
+                                pendingTargetBindingIndex = activeBindingIndex;
+                                pendingTargetPreviousOverride = previousOverride;
+                                pendingConflictAction = conflictAction;
+                                pendingConflictBindingIndex = conflictBindingIndex;
+                                pendingDisplayString = displayString;
+                                hasConflict = true;
+                            }
                         }
                     }
                     finally
@@ -83,7 +110,8 @@ namespace Koiusa.Keyconfig.Runtime
                         CleanupAfterRebind();
                     }
 
-                    if (string.IsNullOrEmpty(errorMessage)) RebindCompleted?.Invoke(displayString);
+                    if (hasConflict) RebindConflict?.Invoke(pendingTargetAction.name, pendingConflictAction.name);
+                    else if (string.IsNullOrEmpty(errorMessage)) RebindCompleted?.Invoke(displayString);
                     else RebindFailed?.Invoke(errorMessage);
                 })
                 .OnCancel(op =>
@@ -107,11 +135,42 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void CancelRebind()
         {
-            operation?.Cancel();
+            if (operation != null) operation.Cancel();
+            else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel);
+        }
+
+        public void ResolveConflict(RebindConflictResolution resolution)
+        {
+            if (!HasPendingConflict)
+            {
+                return;
+            }
+
+            var displayString = pendingDisplayString;
+            if (resolution == RebindConflictResolution.Cancel)
+            {
+                RestoreBindingOverride(pendingTargetAction, pendingTargetBindingIndex, pendingTargetPreviousOverride);
+                ClearPendingConflict();
+                RebindCanceled?.Invoke();
+                return;
+            }
+
+            if (resolution == RebindConflictResolution.ReplaceExisting)
+            {
+                InputBindingService.DisableBinding(pendingConflictAction, pendingConflictBindingIndex);
+            }
+
+            ClearPendingConflict();
+            RebindCompleted?.Invoke(displayString);
         }
 
         public void Dispose()
         {
+            if (HasPendingConflict)
+            {
+                RestoreBindingOverride(pendingTargetAction, pendingTargetBindingIndex, pendingTargetPreviousOverride);
+                ClearPendingConflict();
+            }
             CleanupAfterRebind();
             GC.SuppressFinalize(this);
         }
@@ -144,6 +203,16 @@ namespace Koiusa.Keyconfig.Runtime
             activeBindingIndex = -1;
             activeBindingGroup = null;
             activeActionWasEnabled = false;
+        }
+
+        private void ClearPendingConflict()
+        {
+            pendingTargetAction = null;
+            pendingTargetBindingIndex = -1;
+            pendingTargetPreviousOverride = null;
+            pendingConflictAction = null;
+            pendingConflictBindingIndex = -1;
+            pendingDisplayString = null;
         }
     }
 }
