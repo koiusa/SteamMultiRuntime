@@ -147,6 +147,11 @@ namespace Koiusa.Keyconfig.Runtime
             { "start", "T_Steam_Options_Light" },
             { "select", "T_Steam_View_Light" },
             { "guide", "T_Steam_Guide_Light" },
+            { "systembutton", "T_Steam_Guide_Light" },
+            { "touchpadbutton", "T_Steam_View_Light" },
+            { "stick", "T_Steam_L_2D_Light" },
+            { "trigger", "T_Steam_R2_Light" },
+            { "{hatswitch}", "T_Steam_Dpad_Light" },
         };
 
         private readonly Dictionary<string, Texture2D> cache = new Dictionary<string, Texture2D>();
@@ -263,6 +268,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var deviceType = ExtractDeviceType(bindingPath);
             var control = ExtractControlName(bindingPath);
+            var controlPath = ExtractControlPath(bindingPath).ToLowerInvariant();
 
             if (string.IsNullOrEmpty(control))
             {
@@ -286,6 +292,11 @@ namespace Koiusa.Keyconfig.Runtime
             }
             else if (IsMouse(deviceType))
             {
+                if (controlPath.StartsWith("scroll/", StringComparison.Ordinal))
+                {
+                    return Resources.Load<Texture2D>(KbmIconBasePath + MouseIconMap["scroll"]);
+                }
+
                 if (MouseIconMap.TryGetValue(lowerControl, out var mouseName))
                 {
                     return Resources.Load<Texture2D>(KbmIconBasePath + mouseName);
@@ -293,6 +304,22 @@ namespace Koiusa.Keyconfig.Runtime
             }
             else if (IsGamepad(deviceType))
             {
+                if (controlPath.StartsWith("leftstick/", StringComparison.Ordinal))
+                {
+                    return Resources.Load<Texture2D>(GamepadIconBasePath + GamepadIconMap["leftstick"]);
+                }
+
+                if (controlPath.StartsWith("rightstick/", StringComparison.Ordinal))
+                {
+                    return Resources.Load<Texture2D>(GamepadIconBasePath + GamepadIconMap["rightstick"]);
+                }
+
+                if (controlPath.StartsWith("dpad/", StringComparison.Ordinal) &&
+                    GamepadIconMap.TryGetValue(lowerControl, out var dpadName))
+                {
+                    return Resources.Load<Texture2D>(GamepadIconBasePath + dpadName);
+                }
+
                 if (GamepadIconMap.TryGetValue(lowerControl, out var gpName))
                 {
                     return Resources.Load<Texture2D>(GamepadIconBasePath + gpName);
@@ -346,6 +373,22 @@ namespace Koiusa.Keyconfig.Runtime
             return bindingPath.Substring(slashIndex + 1);
         }
 
+        private static string ExtractControlPath(string bindingPath)
+        {
+            if (string.IsNullOrEmpty(bindingPath))
+            {
+                return string.Empty;
+            }
+
+            var slashIndex = bindingPath.IndexOf('/');
+            if (slashIndex < 0 || slashIndex >= bindingPath.Length - 1)
+            {
+                return string.Empty;
+            }
+
+            return bindingPath.Substring(slashIndex + 1);
+        }
+
         private static bool IsKeyboard(string deviceType)
         {
             if (string.IsNullOrEmpty(deviceType))
@@ -363,7 +406,8 @@ namespace Koiusa.Keyconfig.Runtime
                 return false;
             }
 
-            return deviceType.ToLowerInvariant().Contains("mouse");
+            var lower = deviceType.ToLowerInvariant();
+            return lower.Contains("mouse") || lower == "pointer";
         }
 
         private static bool IsGamepad(string deviceType)
