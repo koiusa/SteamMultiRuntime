@@ -106,9 +106,14 @@ namespace Koiusa.SteamMultiRuntime
             var horizontalSpeed = playerController != null ? playerController.HorizontalVelocity : Vector3.ProjectOnPlane(velocity, upAxis).magnitude;
             var verticalSpeed = playerController != null ? playerController.VerticalVelocity : Vector3.Dot(velocity, upAxis);
             var isGrounded = playerController != null ? playerController.IsGrounded : true;
+            // Gameplay keeps HorizontalVelocity planar, but grounded locomotion
+            // animation should follow the distance actually travelled along a slope.
+            var animationMoveSpeed = isGrounded
+                ? Mathf.Sqrt(horizontalSpeed * horizontalSpeed + verticalSpeed * verticalSpeed)
+                : horizontalSpeed;
             var motionSpeed = playerController != null && playerController.MaxMoveSpeed > Mathf.Epsilon
-                ? horizontalSpeed / playerController.MaxMoveSpeed * motionSpeedMultiplier
-                : horizontalSpeed * motionSpeedMultiplier;
+                ? animationMoveSpeed / playerController.MaxMoveSpeed * motionSpeedMultiplier
+                : animationMoveSpeed * motionSpeedMultiplier;
             var isJumping = playerController != null && playerController.IsJumping;
             var isFreefall = playerController != null && playerController.IsFreefall;
             var isFallingAfterJump = playerController != null && playerController.IsFallingAfterJump;
@@ -162,7 +167,7 @@ namespace Koiusa.SteamMultiRuntime
                     : PlayerAirAnimationState.None;
             var animationVerticalSpeed = isLadder ? ladderSpeed : verticalSpeed;
 
-            SetFloat(horizontalSpeedParameter, horizontalSpeed, speedDampTime);
+            SetFloat(horizontalSpeedParameter, animationMoveSpeed, speedDampTime);
             SetFloat(verticalSpeedParameter, animationVerticalSpeed);
             SetFloat(motionSpeedParameter, motionSpeed);
             SetInt(locomotionModeParameter, (int)locomotionMode);
