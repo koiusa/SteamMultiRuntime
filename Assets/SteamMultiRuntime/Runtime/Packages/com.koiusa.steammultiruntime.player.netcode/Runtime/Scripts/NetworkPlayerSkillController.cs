@@ -37,6 +37,7 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionLease guardLease;
         private InputActionLease healLease;
         private bool guardStartedByInput;
+        private GuardShieldVisual guardShieldVisual;
 
         public int ActiveSkillIndex => activeSkillIndex.Value;
         public uint ActivationSequence => activationSequence.Value;
@@ -44,12 +45,16 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             coordinator = GetComponent<PlayerCharacterCoordinator>();
+            guardShieldVisual = GetComponent<GuardShieldVisual>();
+            if (guardShieldVisual == null) guardShieldVisual = gameObject.AddComponent<GuardShieldVisual>();
             ResolveInput();
         }
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            activeSkillIndex.OnValueChanged += OnActiveSkillIndexChanged;
+            guardShieldVisual?.SetGuarding(activeSkillIndex.Value == 2);
             if (IsServer && coordinator?.Skills != null)
             {
                 coordinator.Skills.SkillStarted += OnServerSkillStarted;
@@ -60,6 +65,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public override void OnNetworkDespawn()
         {
+            activeSkillIndex.OnValueChanged -= OnActiveSkillIndexChanged;
+            guardShieldVisual?.SetGuarding(false);
             ReleaseInput();
             if (coordinator?.Skills != null)
             {
@@ -67,6 +74,11 @@ namespace Koiusa.SteamMultiRuntime
                 coordinator.Skills.SkillEnded -= OnServerSkillEnded;
             }
             base.OnNetworkDespawn();
+        }
+
+        private void OnActiveSkillIndexChanged(int previousValue, int newValue)
+        {
+            guardShieldVisual?.SetGuarding(newValue == 2);
         }
 
         private void OnEnable()
