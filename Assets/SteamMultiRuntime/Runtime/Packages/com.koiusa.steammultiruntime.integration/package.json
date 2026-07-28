@@ -6,6 +6,7 @@
   "description": "Integration components that compose Steam Multi Runtime feature packages.",
   "author": { "name": "koiusa" },
   "dependencies": {
+    "com.koiusa.steammultiruntime.core": "0.1.0",
     "com.koiusa.steammultiruntime.character": "0.1.0",
     "com.unity.netcode.gameobjects": "2.11.2",
     "com.koiusa.steammultiruntime.locomoter": "0.1.0",

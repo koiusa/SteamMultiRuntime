@@ -16,6 +16,39 @@ PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArc
 
 Unity、Netcode for GameObjects、Input Systemなどの外部実装、Editor専用クラス、Sample、Thirdpartyの詳細は対象外です。
 
+## ドメインと所有パッケージ
+
+| ドメイン | 非Network | Network／Backend | UI／表示 |
+|---|---|---|---|
+| Character | `character`, `resourceloader` | `player.netcode`のModel Sync | `character.ui` |
+| Player | `player` | `player.netcode` | `player.ui` |
+| Locomotion／Traversal | `locomoter` | `locomoter.netcode` | `animationdriver` |
+| Lobby／Scene Flow | `lobby` | `lobby.netcode`, `lobby.steam` | 各Lobbyパッケージ内の対応UI |
+| NPC | `prototype` | `prototype` | Debug表示も`prototype` |
+| Localization | `localization` | なし | 各UIから共通APIを利用 |
+| Audio | `audio` | Network状態を所有しない | `IFootstepReceiver`で接続 |
+
+複数ドメインを組み立てる`LocalManager`、`LocalRuntimeUserProfile`、Spawn Coordinatorなどは`integration`が所有します。共通契約の配置規則は[PackageArchitecture.md](PackageArchitecture.md)を参照してください。
+
+## ドメイン間ブリッジ
+
+```text
+LocalManager : ILocalPlayerProvider
+  → LocalPlayerProviderRegistry（core）
+  → LocalLoadingSplash（lobby）
+  → LoadingSplashPresenter（resourceloader）
+
+FootstepCollider
+  → IFootstepReceiver
+  → FootstepColliderSpawner
+
+SoloLockTargetSwitchInput
+  → ILockOnTargetBinder
+  → LockOnTargetGroupBinder
+```
+
+ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。
+
 ## 全体構成
 
 ```text

@@ -16,17 +16,21 @@ Install
 Usage
 -----
 
-ローカライズを使用する場合は、パッケージを参照する側のプロジェクトで初期設定が必要です。  
-[日本語・英語ローカライズの導入手順](Documentation/LOCALIZATION.md)
-
 サンプルシーンをビルド対象に追加します。  
-1. Unityエディタのメニューから `File > BuildProfiles` を表示してビルドプロファイルを作成。
-2. BuildProfiles ファイルを開き、以下のサンプルシーンを追加：
+1. Unityエディタのメニューから `File > Build Profiles` を表示してビルドプロファイルを作成。
+2. Build Profileを開き、以下のサンプルシーンを追加：
    - 配下のシーンをすべて追加
      - `Assets/SteamMultiRuntime/Samples/Common/<シーン名>.unity`
    - ゲームシーン: 以下のいずれかを選択
      - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
 3. Unityエディタでサンプルシーンをプレイ。  
+
+Localization Setup
+------------------
+
+ローカライズを使用する場合は、パッケージを参照する側のプロジェクトで初期設定が必要です。
+
+[日本語・英語ローカライズの導入手順](Assets/SteamMultiRuntime/Documentation~/Localization.md)
 
 Documentation
 -------------
@@ -39,7 +43,6 @@ Documentation
 - [Character Architecture](Documentation/CharacterArchitecture.md)
 - [Session Architecture](Documentation/SessionArchitecture.md)
 - [Editor Specification](Documentation/EditorSpecification.md)
-- [ローカライズ導入手順](Documentation/LOCALIZATION.md)
 - [Package Architecture](Documentation/PackageArchitecture.md)
 
 Development Notes

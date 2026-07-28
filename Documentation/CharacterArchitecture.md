@@ -4,6 +4,18 @@
 
 ## クラス構成
 
+### 所有パッケージ
+
+| パッケージ | 所有するもの |
+|---|---|
+| `com.koiusa.steammultiruntime.character` | モデルID、ProfileとModel Syncの契約 |
+| `com.koiusa.steammultiruntime.resourceloader` | Prefab解決・生成、Local Model Sync、Loading Splash Presenter |
+| `com.koiusa.steammultiruntime.character.ui` | Character選択UI |
+| `com.koiusa.steammultiruntime.player` | Local表示名と表示名契約 |
+| `com.koiusa.steammultiruntime.player.netcode` | Network Profile、Network Model Sync、Network表示名 |
+| `com.koiusa.steammultiruntime.player.ui` | Player Name Overlay |
+| `com.koiusa.steammultiruntime.integration` | LocalManagerとLocal Profileの合成 |
+
 ```text
 IRuntimeUserProfileModelSource
 └─ PlayerModelProfileBase
@@ -17,6 +29,10 @@ IPlayerModelSync
 ICharacterPrefabLoader
 └─ CharacterPrefabLoader
    └─ CharacterModelIdList : ScriptableObject
+
+ILocalPlayerProvider
+└─ LocalManager
+   └─ LocalPlayerProviderRegistry
 
 Character UI
 ├─ CharacterSelectUiDocument
@@ -77,3 +93,4 @@ Network表示名はNetworkBehaviour側で同期し、Overlayは表示処理だ�
 3. Model SyncはPrefab解決をLoaderへ委譲する
 4. LocalとNetworkでProfile／Sync実装を分け、Loader契約は共有する
 5. 表示名Overlayはゲーム状態を所有しない
+6. Local Playerの探索は`ILocalPlayerProvider`を使用し、`LocalManager`の型名やプロパティ名をReflectionで探索しない
