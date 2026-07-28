@@ -2,6 +2,7 @@
   "name": "Koiusa.SteamMultiRuntime.Lobby.Runtime",
   "rootNamespace": "Koiusa.SteamMultiRuntime.Lobby",
   "references": [
+    "Koiusa.SteamMultiRuntime.Core.Runtime",
     "Koiusa.Input.Core.Runtime",
     "Unity.InputSystem",
     "GUID:1491147abca9d7d4bb7105af628b223e",

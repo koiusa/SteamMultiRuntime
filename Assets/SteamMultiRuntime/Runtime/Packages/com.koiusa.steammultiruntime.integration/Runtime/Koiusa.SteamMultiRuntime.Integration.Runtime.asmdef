@@ -2,6 +2,7 @@
 	"name": "Koiusa.SteamMultiRuntime.Integration.Runtime",
 	"rootNamespace": "",
 	"references": [
+		"Koiusa.SteamMultiRuntime.Core.Runtime",
 		"Koiusa.SteamMultiRuntime.Character.Runtime",
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
 		"Koiusa.SteamMultiRuntime.Locomoter.Runtime",

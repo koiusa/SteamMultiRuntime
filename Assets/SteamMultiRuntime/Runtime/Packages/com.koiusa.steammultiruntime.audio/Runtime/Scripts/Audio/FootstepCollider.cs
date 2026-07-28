@@ -1,4 +1,4 @@
-using System.Reflection;
+using Koiusa.SteamMultiRuntime;
 using UnityEngine;
 
 public class FootstepCollider : MonoBehaviour
@@ -19,17 +19,12 @@ public class FootstepCollider : MonoBehaviour
     public bool UseTriggerStay = false;
 
     private float _lastPlayTime = -1f;
-    private Component _playReceiverReflection;
-    private MethodInfo _playMethod;
-    private MethodInfo _playReceiverMethod;
-    private MethodInfo _landMethod;
-    private MethodInfo _playReceiverLandMethod;
+    private IFootstepReceiver _receiver;
 
     private void Awake()
     {
         EnsureDetectionOnlyCollider();
-        CacheFallbackReceiver();
-        CacheDirectReceiverMethod();
+        CacheReceiver();
     }
 
     private void OnValidate()
@@ -68,28 +63,14 @@ public class FootstepCollider : MonoBehaviour
 
         if (isEnter)
         {
-            TryInvokeLand(pos);
+            ResolveReceiver()?.PlayLand(pos);
         }
 
         if (Time.time - _lastPlayTime < MinInterval) return;
 
         _lastPlayTime = Time.time;
 
-        if (TryInvokeDirectReceiver(pos)) return;
-
-        if (_playReceiverReflection != null && _playMethod != null)
-        {
-            try
-            {
-                _playMethod.Invoke(_playReceiverReflection, new object[] { pos });
-                return;
-            }
-            catch
-            {
-            }
-        }
-
-        gameObject.SendMessageUpwards("PlayFootstep", pos, SendMessageOptions.DontRequireReceiver);
+        ResolveReceiver()?.PlayFootstep(pos);
     }
 
     private bool IsValidGround(Collider other)
@@ -99,91 +80,30 @@ public class FootstepCollider : MonoBehaviour
         return (GroundLayers.value & (1 << other.gameObject.layer)) != 0;
     }
 
-    private void CacheFallbackReceiver()
+    private void CacheReceiver()
     {
-        var comps = GetComponentsInParent<MonoBehaviour>(true);
-        foreach (var c in comps)
+        _receiver = PlayReceiver as IFootstepReceiver;
+        if (_receiver != null)
         {
-            if (c == null) continue;
-            var footstepMi = c.GetType().GetMethod("PlayFootstep", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(Vector3) }, null);
-            var landMi = c.GetType().GetMethod("PlayLand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(Vector3) }, null);
-            if (footstepMi != null || landMi != null)
+            return;
+        }
+        foreach (var component in GetComponentsInParent<MonoBehaviour>(true))
+        {
+            if (component is IFootstepReceiver receiver)
             {
-                _playReceiverReflection = c;
-                _playMethod = footstepMi;
-                _landMethod = landMi;
-                break;
+                _receiver = receiver;
+                return;
             }
         }
     }
 
-    private void CacheDirectReceiverMethod()
+    private IFootstepReceiver ResolveReceiver()
     {
-        _playReceiverMethod = null;
-        _playReceiverLandMethod = null;
-        if (PlayReceiver == null) return;
-
-        _playReceiverMethod = PlayReceiver.GetType().GetMethod("PlayFootstep", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(Vector3) }, null);
-        _playReceiverLandMethod = PlayReceiver.GetType().GetMethod("PlayLand", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(Vector3) }, null);
-    }
-
-    private bool TryInvokeLand(Vector3 pos)
-    {
-        if (PlayReceiver != null)
+        if (_receiver == null)
         {
-            if (_playReceiverLandMethod == null)
-            {
-                CacheDirectReceiverMethod();
-            }
-
-            if (_playReceiverLandMethod != null)
-            {
-                try
-                {
-                    _playReceiverLandMethod.Invoke(PlayReceiver, new object[] { pos });
-                    return true;
-                }
-                catch
-                {
-                }
-            }
+            CacheReceiver();
         }
 
-        if (_playReceiverReflection != null && _landMethod != null)
-        {
-            try
-            {
-                _landMethod.Invoke(_playReceiverReflection, new object[] { pos });
-                return true;
-            }
-            catch
-            {
-            }
-        }
-
-        gameObject.SendMessageUpwards("PlayLand", pos, SendMessageOptions.DontRequireReceiver);
-        return false;
-    }
-
-    private bool TryInvokeDirectReceiver(Vector3 pos)
-    {
-        if (PlayReceiver == null) return false;
-
-        if (_playReceiverMethod == null)
-        {
-            CacheDirectReceiverMethod();
-        }
-
-        if (_playReceiverMethod == null) return false;
-
-        try
-        {
-            _playReceiverMethod.Invoke(PlayReceiver, new object[] { pos });
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        return _receiver;
     }
 }

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Koiusa.SteamMultiRuntime.Core;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -96,35 +97,11 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public async Task WaitForLocalCharacterReadyAsync(object localManagerOrPlayerObject, int visibilityVersion, System.Func<int> getVisibilityVersion)
+        public async Task WaitForLocalCharacterReadyAsync(ILocalPlayerProvider localPlayerProvider, int visibilityVersion, System.Func<int> getVisibilityVersion)
         {
-            GameObject playerObject = null;
-
-            // Attempt to get LocalPlayerObject from localManagerOrPlayerObject
-            // This avoids direct type reference to LocalManager
-            if (localManagerOrPlayerObject != null)
-            {
-                var localPlayerObjectProperty = localManagerOrPlayerObject.GetType().GetProperty("LocalPlayerObject");
-                if (localPlayerObjectProperty != null)
-                {
-                    playerObject = localPlayerObjectProperty.GetValue(localManagerOrPlayerObject) as GameObject;
-                }
-                else if (localManagerOrPlayerObject is GameObject go)
-                {
-                    playerObject = go;
-                }
-            }
-
             while (owner != null && owner.isActiveAndEnabled && visibilityVersion == getVisibilityVersion())
             {
-                if (playerObject == null && localManagerOrPlayerObject != null)
-                {
-                    var localPlayerObjectProperty = localManagerOrPlayerObject.GetType().GetProperty("LocalPlayerObject");
-                    if (localPlayerObjectProperty != null)
-                    {
-                        playerObject = localPlayerObjectProperty.GetValue(localManagerOrPlayerObject) as GameObject;
-                    }
-                }
+                var playerObject = localPlayerProvider?.LocalPlayerObject;
 
                 if (playerObject == null)
                 {

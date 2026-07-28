@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Koiusa.SteamMultiRuntime.Core;
 using Koiusa.SteamMultiRuntime.Network;
 using TNRD;
 using UnityEngine;
@@ -126,19 +127,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private async Task WaitForCharacterReadyAsync(int visibilityVersion)
         {
-            // Get LocalManager singleton via reflection to avoid direct asmdef reference
-            var localManagerType = System.Type.GetType("Koiusa.SteamMultiRuntime.LocalManager, Koiusa.SteamMultiRuntime.Integration.Runtime");
-            if (localManagerType != null)
+            var localPlayerProvider = LocalPlayerProviderRegistry.Current;
+            if (localPlayerProvider != null)
             {
-                var singletonProperty = localManagerType.GetProperty("Singleton");
-                if (singletonProperty != null)
-                {
-                    var localManager = singletonProperty.GetValue(null);
-                    if (localManager != null)
-                    {
-                        await splashPresenter.WaitForLocalCharacterReadyAsync(localManager, visibilityVersion, () => splashVisibilityVersion);
-                    }
-                }
+                await splashPresenter.WaitForLocalCharacterReadyAsync(
+                    localPlayerProvider,
+                    visibilityVersion,
+                    () => splashVisibilityVersion);
             }
         }
 

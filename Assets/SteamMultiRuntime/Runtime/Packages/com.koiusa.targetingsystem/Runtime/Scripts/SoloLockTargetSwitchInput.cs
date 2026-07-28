@@ -52,7 +52,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            binderObject.SendMessage("ToggleClosestVisibleTarget", SendMessageOptions.DontRequireReceiver);
+            binderObject.GetComponent<ILockOnTargetBinder>()?.ToggleClosestVisibleTarget();
         }
 
         private InputActionBinding targetSwitchBinding;

@@ -1,4 +1,5 @@
 using System;
+using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
     /// LocalPlayerObject として他のコンポーネントから参照できるようにする。
     /// </summary>
     [DisallowMultipleComponent]
-    public class LocalManager : MonoBehaviour
+    public class LocalManager : MonoBehaviour, ILocalPlayerProvider
     {
         public static LocalManager Singleton { get; private set; }
 
@@ -38,6 +39,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             Singleton = this;
+            LocalPlayerProviderRegistry.Register(this);
         }
 
         private void OnEnable()
@@ -56,6 +58,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 Singleton = null;
             }
+
+            LocalPlayerProviderRegistry.Unregister(this);
         }
 
         private void OnActiveSceneChanged(Scene previousScene, Scene newScene)

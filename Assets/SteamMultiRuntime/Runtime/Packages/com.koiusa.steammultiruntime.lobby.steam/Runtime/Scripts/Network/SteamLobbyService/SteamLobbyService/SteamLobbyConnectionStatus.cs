@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Steamworks;
 using Steamworks.Data;
@@ -156,64 +155,9 @@ namespace Koiusa.SteamMultiRuntime
         private static bool TryEstimatePingToSteamId(ulong steamId, out int pingMs)
         {
             pingMs = -1;
-            if (steamId == 0)
-            {
-                return false;
-            }
-
-            try
-            {
-                var steamAssembly = typeof(SteamClient).Assembly;
-                var networkingUtilsType = steamAssembly.GetType("Steamworks.SteamNetworkingUtils");
-                if (networkingUtilsType == null)
-                {
-                    return false;
-                }
-
-                var methods = networkingUtilsType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-                foreach (var method in methods)
-                {
-                    if (!string.Equals(method.Name, "EstimatePingTo", StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    var parameters = method.GetParameters();
-                    if (parameters.Length != 1)
-                    {
-                        continue;
-                    }
-
-                    object argument;
-                    var parameterType = parameters[0].ParameterType;
-                    if (parameterType == typeof(SteamId))
-                    {
-                        argument = (SteamId)steamId;
-                    }
-                    else if (parameterType == typeof(ulong))
-                    {
-                        argument = steamId;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    var result = method.Invoke(null, new[] { argument });
-                    if (result == null)
-                    {
-                        continue;
-                    }
-
-                    pingMs = Convert.ToInt32(result);
-                    return pingMs >= 0;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-
+            // Facepunch exposes EstimatePingTo(NetPingLocation), not a SteamId overload.
+            // A lobby member's remote ping location is unavailable here, so do not guess
+            // an API by name. Connection-level latency must be supplied by the transport.
             return false;
         }
     }

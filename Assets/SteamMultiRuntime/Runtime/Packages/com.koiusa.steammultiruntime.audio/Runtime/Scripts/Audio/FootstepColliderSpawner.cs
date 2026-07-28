@@ -1,12 +1,10 @@
-using System;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Serialization;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public class FootstepColliderSpawner : MonoBehaviour
+    public class FootstepColliderSpawner : MonoBehaviour, IFootstepReceiver
     {
         [Tooltip("Optional Animator to use. If null, Animator will be auto-detected from loaded VRM or current hierarchy.")]
         public Animator TargetAnimator;
@@ -87,9 +85,6 @@ namespace Koiusa.SteamMultiRuntime
         [Tooltip("AudioSource used for landing sounds. If null, a new one will be created.")]
         public AudioSource LandingAudioSource;
 
-        private MonoBehaviour _runtimeLoader;
-        private EventInfo _runtimeLoaderOnLoaded;
-
         [Range(0f, 1f)]
         public float FootstepAudioVolume = 1f;
 
@@ -104,52 +99,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            BindRuntimeLoader();
             TrySetupFromCurrentHierarchy();
         }
 
         private void Update()
         {
             UpdateGroundedTransitionState();
-        }
-
-        private void OnDisable()
-        {
-            UnbindRuntimeLoader();
-        }
-
-        private void BindRuntimeLoader()
-        {
-            var components = GetComponents<MonoBehaviour>();
-            foreach (var comp in components)
-            {
-                if (comp == null) continue;
-                var t = comp.GetType();
-                var ev = t.GetEvent("OnLoaded", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                if (ev == null) continue;
-
-                var handler = Delegate.CreateDelegate(ev.EventHandlerType, this, nameof(OnCharacterLoaded), false);
-                if (handler == null) continue;
-
-                ev.AddEventHandler(comp, handler);
-                _runtimeLoader = comp;
-                _runtimeLoaderOnLoaded = ev;
-                break;
-            }
-        }
-
-        private void UnbindRuntimeLoader()
-        {
-            if (_runtimeLoader == null || _runtimeLoaderOnLoaded == null) return;
-
-            var handler = Delegate.CreateDelegate(_runtimeLoaderOnLoaded.EventHandlerType, this, nameof(OnCharacterLoaded), false);
-            if (handler != null)
-            {
-                _runtimeLoaderOnLoaded.RemoveEventHandler(_runtimeLoader, handler);
-            }
-
-            _runtimeLoader = null;
-            _runtimeLoaderOnLoaded = null;
         }
 
         private void TrySetupFromCurrentHierarchy()
@@ -159,7 +114,7 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         // Called when a character model is loaded by the system
-        private void OnCharacterLoaded(GameObject characterRoot)
+        public void SetCharacterRoot(GameObject characterRoot)
         {
             if (characterRoot == null) return;
 
@@ -196,18 +151,9 @@ namespace Koiusa.SteamMultiRuntime
                 _pendingLandFromTransition = false;
             }
 
-            if (ControllerComponent != null)
+            if (GroundLayers == 0 && ControllerComponent is IGroundLayerProvider groundLayerProvider)
             {
-                var t = ControllerComponent.GetType();
-                var field = t.GetField("GroundLayers");
-                if (field != null && GroundLayers == 0)
-                {
-                    var val = field.GetValue(ControllerComponent);
-                    if (val is LayerMask lm)
-                    {
-                        GroundLayers = lm;
-                    }
-                }
+                GroundLayers = groundLayerProvider.GroundLayers;
             }
 
             MinInterval = Mathf.Max(MinInterval, 0.01f);
