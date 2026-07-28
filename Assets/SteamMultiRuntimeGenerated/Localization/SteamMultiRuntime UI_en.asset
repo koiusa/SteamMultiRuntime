@@ -477,6 +477,22 @@ MonoBehaviour:
     m_Localized: Right
     m_Metadata:
       m_Items: []
+  - m_Id: 10929877016576
+    m_Localized: 'Connection: HOST'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376704
+    m_Localized: 'Connection: {0} ({1} ms)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376705
+    m_Localized: 'Connection: measuring'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376706
+    m_Localized: '{0} (HOST)'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

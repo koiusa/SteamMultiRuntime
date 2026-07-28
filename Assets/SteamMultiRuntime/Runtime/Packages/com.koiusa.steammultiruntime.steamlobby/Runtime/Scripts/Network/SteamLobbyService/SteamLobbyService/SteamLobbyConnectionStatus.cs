@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Steamworks;
 using Steamworks.Data;
 using UnityEngine;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -41,7 +42,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isHost)
             {
-                return "通信強度: HOST";
+                return GameLocalization.Get("lobby.connection_host");
             }
 
             if (TryEstimatePingToSteamId(hostSteamId, out var pingMs))
@@ -55,17 +56,17 @@ namespace Koiusa.SteamMultiRuntime
                             : pingMs <= 220
                                 ? "★★☆☆☆"
                                 : "★☆☆☆☆";
-                return $"通信強度: {strength} ({pingMs} ms)";
+                return GameLocalization.Get("lobby.connection_strength", strength, pingMs);
             }
 
-            return "通信強度: 測定中";
+            return GameLocalization.Get("lobby.connection_measuring");
         }
 
         public string BuildMemberDisplayName(string memberName, ulong memberSteamId, bool isInLobby, bool isHost)
         {
             if (string.IsNullOrWhiteSpace(memberName))
             {
-                memberName = "Unknown";
+                memberName = GameLocalization.Get("common.unknown");
             }
 
             if (!isInLobby)
@@ -75,7 +76,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (isHost && SteamClient.IsValid && memberSteamId == SteamClient.SteamId)
             {
-                return $"{memberName} (HOST)";
+                return GameLocalization.Get("lobby.member_host", memberName);
             }
 
             if (memberPingBySteamId.TryGetValue(memberSteamId, out var pingMs) && pingMs >= 0)

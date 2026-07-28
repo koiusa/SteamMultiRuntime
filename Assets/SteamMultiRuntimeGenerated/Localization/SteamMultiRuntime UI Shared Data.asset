@@ -471,6 +471,22 @@ MonoBehaviour:
     m_Key: input.part.right
     m_Metadata:
       m_Items: []
+  - m_Id: 10929877016576
+    m_Key: lobby.connection_host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376704
+    m_Key: lobby.connection_strength
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376705
+    m_Key: lobby.connection_measuring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376706
+    m_Key: lobby.member_host
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -8,6 +8,7 @@ using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.InputSystem;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -73,6 +74,7 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             BuildUi();
+            GameLocalization.LocaleChanged += Render;
             previousSectionBinding = InputActionBinding.Bind(
                 inputActionsConfig?.FindAction("UI/PreviousSection"),
                 OnPreviousSectionPerformed);
@@ -114,6 +116,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            GameLocalization.LocaleChanged -= Render;
             view?.Dispose();
             previousSectionBinding?.Dispose();
             previousSectionBinding = null;

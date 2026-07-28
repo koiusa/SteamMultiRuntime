@@ -478,6 +478,22 @@ MonoBehaviour:
     m_Localized: "\u53F3"
     m_Metadata:
       m_Items: []
+  - m_Id: 10929877016576
+    m_Localized: "\u901A\u4FE1\u5F37\u5EA6: HOST"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376704
+    m_Localized: "\u901A\u4FE1\u5F37\u5EA6: {0} ({1} ms)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376705
+    m_Localized: "\u901A\u4FE1\u5F37\u5EA6: \u6E2C\u5B9A\u4E2D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10929906376706
+    m_Localized: "{0}\uFF08\u30DB\u30B9\u30C8\uFF09"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

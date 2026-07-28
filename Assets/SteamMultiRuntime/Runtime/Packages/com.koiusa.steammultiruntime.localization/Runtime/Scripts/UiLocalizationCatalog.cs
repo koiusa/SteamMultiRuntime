@@ -139,7 +139,11 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("lobby.invalid_id", "Lobby ID が不正です。", "The lobby ID is invalid."),
             E("lobby.join_success", "ロビーに参加しました。", "Lobby joined.", "Lobby joined."),
             E("lobby.join_failed", "ロビーへの参加に失敗しました。", "Lobby join failed.", "Lobby join failed."),
-            E("lobby.name_not_found", "該当するロビー名が見つかりませんでした。", "No matching lobby name was found.")
+            E("lobby.name_not_found", "該当するロビー名が見つかりませんでした。", "No matching lobby name was found."),
+            E("lobby.connection_host", "通信強度: HOST", "Connection: HOST"),
+            E("lobby.connection_strength", "通信強度: {0} ({1} ms)", "Connection: {0} ({1} ms)"),
+            E("lobby.connection_measuring", "通信強度: 測定中", "Connection: measuring"),
+            E("lobby.member_host", "{0}（ホスト）", "{0} (HOST)")
         };
 
         private static readonly Dictionary<string, Entry> ByKey = BuildKeyMap();
