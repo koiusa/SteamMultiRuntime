@@ -34,6 +34,8 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - UI Action Mapは入力状態を確認できるよう一覧へ表示しますが、Keyconfig自身の操作を失わないようChange／Resetの対象外です。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
 - LB／RB（`UI/PreviousSection`／`UI/NextSection`）でAction Mapタブを循環切り替えします。左右はBinding Group／Load／Save／Reset All／Closeのフォーカスを循環します。通常のD-padまたは左スティック上下はフォーカスを移動せずリストをスクロールし、Binding Groupにフォーカス中だけDropdownの選択操作へ渡します。
 - Action MapタブでSubmitすると、そのMap内の最初に変更可能な行へ入ります。リスト内では上下で行、左右でChange／Resetを選び、CancelでAction Mapタブへ戻ります。
+- Changeの完了／キャンセル／失敗、および行単位Resetの後も対象行へフォーカスを戻し、リスト内の操作を継続します。
+- Keyconfig表示中はUI Map以外で有効だったActionを一時停止し、画面を閉じると元の有効状態へ戻します。変更待機中はタブ、ファンクション、スクロールを含むKeyconfig内の移動もロックします。
 
 保存先は`Application.persistentDataPath/InputBindings`です。
 

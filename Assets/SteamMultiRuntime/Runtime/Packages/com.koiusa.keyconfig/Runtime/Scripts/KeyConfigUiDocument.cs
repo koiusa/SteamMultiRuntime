@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -32,6 +33,9 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction nextSectionAction;
         private bool enabledPreviousSectionAction;
         private bool enabledNextSectionAction;
+        private Coroutine pendingRebindCoroutine;
+        private int activeRebindEntryIndex = -1;
+        private readonly List<InputAction> suspendedActions = new List<InputAction>();
 
         public string BindingGroup => bindingGroup;
         public event Action Closed;
@@ -62,10 +66,11 @@ namespace Koiusa.Keyconfig.Runtime
             view.Build();
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
             BindSectionNavigation();
+            SuspendNonUiActions();
 
             if (bindingService == null)
             {
-                view.SetInteractive(false);
+                view.SetInteractive(false, allowCloseWhenDisabled: true);
                 view.SetLocalizedStatus("keyconfig.config_missing");
                 view.SetBindingGroupChoices(null, bindingGroup);
                 view.RenderBindingEntries(currentEntries, null, null);
@@ -82,10 +87,17 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
+            if (pendingRebindCoroutine != null)
+            {
+                StopCoroutine(pendingRebindCoroutine);
+                pendingRebindCoroutine = null;
+            }
+            activeRebindEntryIndex = -1;
             view.UnbindActions();
             view.Dispose();
             rebindController?.CancelRebind();
             UnbindSectionNavigation();
+            RestoreSuspendedActions();
         }
 
         private void Update()
@@ -199,7 +211,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindRequested(int index)
         {
-            if (rebindController == null)
+            if (rebindController == null || pendingRebindCoroutine != null)
             {
                 return;
             }
@@ -216,9 +228,38 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             var effectiveBindingGroup = usingBindingGroupFallback ? null : bindingGroup;
-            var started = rebindController.StartRebind(entry.ActionId, entry.BindingIndex, effectiveBindingGroup);
+            activeRebindEntryIndex = index;
+            view.SetInteractive(false);
+            var submitAction = bindingService.InputActionAsset.FindAction(inputActionsConfig.SubmitActionPath);
+            if (submitAction != null && submitAction.IsPressed())
+            {
+                pendingRebindCoroutine = StartCoroutine(StartRebindNextFrame(
+                    entry.ActionId,
+                    entry.BindingIndex,
+                    effectiveBindingGroup));
+                return;
+            }
+
+            StartRebind(entry.ActionId, entry.BindingIndex, effectiveBindingGroup);
+        }
+
+        private IEnumerator StartRebindNextFrame(
+            Guid actionId,
+            int bindingIndex,
+            string effectiveBindingGroup)
+        {
+            yield return null;
+            pendingRebindCoroutine = null;
+            StartRebind(actionId, bindingIndex, effectiveBindingGroup);
+        }
+
+        private void StartRebind(Guid actionId, int bindingIndex, string effectiveBindingGroup)
+        {
+            var started = rebindController.StartRebind(actionId, bindingIndex, effectiveBindingGroup);
             if (!started)
             {
+                activeRebindEntryIndex = -1;
+                view.SetInteractive(true);
                 view.SetLocalizedStatus("keyconfig.rebind_start_failed");
             }
         }
@@ -250,6 +291,7 @@ namespace Koiusa.Keyconfig.Runtime
             bindingService.ResetBinding(action, entry.BindingIndex);
             RebuildBindingList();
             view.SetLocalizedStatus("keyconfig.binding_reset");
+            view.FocusBindingEntry(index);
         }
 
         private void OnRebindStarted()
@@ -263,7 +305,8 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
-            view.FocusDefault();
+            view.FocusBindingEntry(activeRebindEntryIndex);
+            activeRebindEntryIndex = -1;
         }
 
         private void OnRebindCanceled()
@@ -271,7 +314,8 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
-            view.FocusDefault();
+            view.FocusBindingEntry(activeRebindEntryIndex);
+            activeRebindEntryIndex = -1;
         }
 
         private void OnRebindFailed(string message)
@@ -282,7 +326,8 @@ namespace Koiusa.Keyconfig.Runtime
                 view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_failed_fallback" : "keyconfig.rebind_failed");
             else
                 view.SetStatus(message);
-            view.FocusDefault();
+            view.FocusBindingEntry(activeRebindEntryIndex);
+            activeRebindEntryIndex = -1;
         }
 
         private InputActionAsset ResolveInputActionAsset()
@@ -339,12 +384,43 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
-            if (rebindController == null || !rebindController.IsRebinding) view.SelectAdjacentMap(-1);
+            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsRebinding))
+                view.SelectAdjacentMap(-1);
+        }
+
+        private void SuspendNonUiActions()
+        {
+            RestoreSuspendedActions();
+            var asset = bindingService?.InputActionAsset;
+            var uiMap = asset?.FindAction(inputActionsConfig?.SubmitActionPath)?.actionMap;
+            if (asset == null)
+            {
+                return;
+            }
+
+            foreach (var action in asset)
+            {
+                if (action.enabled && action.actionMap != uiMap)
+                {
+                    suspendedActions.Add(action);
+                    action.Disable();
+                }
+            }
+        }
+
+        private void RestoreSuspendedActions()
+        {
+            for (var i = 0; i < suspendedActions.Count; i++)
+            {
+                suspendedActions[i]?.Enable();
+            }
+            suspendedActions.Clear();
         }
 
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
-            if (rebindController == null || !rebindController.IsRebinding) view.SelectAdjacentMap(1);
+            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsRebinding))
+                view.SelectAdjacentMap(1);
         }
 
         private void ApplyReadyStatus()

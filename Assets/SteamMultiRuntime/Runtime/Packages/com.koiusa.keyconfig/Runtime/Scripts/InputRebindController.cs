@@ -10,6 +10,7 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction activeAction;
         private int activeBindingIndex = -1;
         private string activeBindingGroup;
+        private bool activeActionWasEnabled;
 
         public InputRebindController(InputBindingService bindingService)
         {
@@ -52,6 +53,7 @@ namespace Koiusa.Keyconfig.Runtime
             activeAction = action;
             activeBindingIndex = bindingIndex;
             activeBindingGroup = bindingGroup;
+            activeActionWasEnabled = action.enabled;
 
             var previousOverride = binding.overridePath;
 
@@ -61,34 +63,39 @@ namespace Koiusa.Keyconfig.Runtime
                 .OnComplete(op =>
                 {
                     var displayString = string.Empty;
+                    var errorMessage = string.Empty;
                     try
                     {
                         if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
                         {
                             RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
-                            RebindFailed?.Invoke("Duplicate binding detected.");
-                            return;
+                            errorMessage = "Duplicate binding detected.";
                         }
-
-                        displayString = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
-                        RebindCompleted?.Invoke(displayString);
+                        else
+                        {
+                            displayString = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
+                        }
                     }
                     finally
                     {
                         CleanupAfterRebind();
                     }
+
+                    if (string.IsNullOrEmpty(errorMessage)) RebindCompleted?.Invoke(displayString);
+                    else RebindFailed?.Invoke(errorMessage);
                 })
                 .OnCancel(op =>
                 {
                     try
                     {
                         RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
-                        RebindCanceled?.Invoke();
                     }
                     finally
                     {
                         CleanupAfterRebind();
                     }
+
+                    RebindCanceled?.Invoke();
                 });
 
             RebindStarted?.Invoke();
@@ -126,7 +133,7 @@ namespace Koiusa.Keyconfig.Runtime
                 operation = null;
             }
 
-            if (activeAction != null)
+            if (activeAction != null && activeActionWasEnabled)
             {
                 activeAction.Enable();
             }
@@ -134,6 +141,7 @@ namespace Koiusa.Keyconfig.Runtime
             activeAction = null;
             activeBindingIndex = -1;
             activeBindingGroup = null;
+            activeActionWasEnabled = false;
         }
     }
 }

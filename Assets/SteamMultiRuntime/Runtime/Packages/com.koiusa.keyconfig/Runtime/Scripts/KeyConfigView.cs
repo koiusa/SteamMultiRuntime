@@ -152,6 +152,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
             root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
             root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+            root?.RegisterCallback<FocusInEvent>(OnRootFocusIn);
         }
 
         public void UnbindActions()
@@ -166,6 +167,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
             root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
             root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+            root?.UnregisterCallback<FocusInEvent>(OnRootFocusIn);
 
             onLoad = null;
             onSave = null;
@@ -189,6 +191,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private sealed class BindingRowNavigation
         {
+            public int EntryIndex;
             public VisualElement Row;
             public Button RebindButton;
             public Button ResetButton;
@@ -252,11 +255,11 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
-        public void SetInteractive(bool enabled)
+        public void SetInteractive(bool enabled, bool allowCloseWhenDisabled = false)
         {
             isInteractive = enabled;
             bindingGroupDropdown?.SetEnabled(enabled);
-            root?.Query<Button>().ForEach(button => button.SetEnabled(button == closeButton || enabled));
+            root?.Query<Button>().ForEach(button => button.SetEnabled(enabled || (allowCloseWhenDisabled && button == closeButton)));
         }
 
         public void FocusDefault()
@@ -404,7 +407,6 @@ namespace Koiusa.Keyconfig.Runtime
                     };
 
                     tabButton.AddToClassList("keyconfig-map-tab-button");
-                    tabButton.EnableInClassList("active", string.Equals(mapName, selectedMapName, StringComparison.Ordinal));
                     tabButton.SetEnabled(isInteractive);
                     mapTabBar.Add(tabButton);
                     mapTabButtons.Add(tabButton);
@@ -521,6 +523,7 @@ namespace Koiusa.Keyconfig.Runtime
                 {
                     bindingRows.Add(new BindingRowNavigation
                     {
+                        EntryIndex = rowIndex,
                         Row = row,
                         RebindButton = rebindButton,
                         ResetButton = resetButton
@@ -733,6 +736,12 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationMove(NavigationMoveEvent evt)
         {
+            if (!isInteractive)
+            {
+                ConsumeNavigationMove(evt);
+                return;
+            }
+
             if (TryGetFocusedBindingRow(out var focusedRowIndex, out var resetColumn))
             {
                 if (evt.direction == NavigationMoveEvent.Direction.Left ||
@@ -808,6 +817,45 @@ namespace Koiusa.Keyconfig.Runtime
                 var firstRow = bindingRows[0];
                 firstRow.RebindButton.Focus();
                 bindingListView?.ScrollTo(firstRow.Row);
+            });
+        }
+
+        private void OnRootFocusIn(FocusInEvent evt)
+        {
+            UpdateMapTabHighlights(evt.target as VisualElement);
+        }
+
+        private void UpdateMapTabHighlights(VisualElement focusedElement)
+        {
+            var showHighlight = focusedElement != null &&
+                ((mapTabBar != null && mapTabBar.Contains(focusedElement)) ||
+                 (bindingListView != null && bindingListView.Contains(focusedElement)));
+
+            for (var i = 0; i < mapTabButtons.Count; i++)
+            {
+                var isSelected = i < mapNames.Count &&
+                    string.Equals(mapNames[i], selectedMapName, StringComparison.Ordinal);
+                mapTabButtons[i].EnableInClassList("active", showHighlight && isSelected);
+            }
+        }
+
+        public void FocusBindingEntry(int entryIndex)
+        {
+            root?.schedule.Execute(() =>
+            {
+                for (var i = 0; i < bindingRows.Count; i++)
+                {
+                    if (bindingRows[i].EntryIndex != entryIndex)
+                    {
+                        continue;
+                    }
+
+                    bindingRows[i].RebindButton.Focus();
+                    bindingListView?.ScrollTo(bindingRows[i].Row);
+                    return;
+                }
+
+                FocusSelectedMapTab();
             });
         }
 

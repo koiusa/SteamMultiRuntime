@@ -15,5 +15,6 @@ MonoBehaviour:
   inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
   nonRebindableActionMaps:
   - UI
+  submitActionPath: UI/Submit
   previousSectionActionPath: UI/PreviousSection
   nextSectionActionPath: UI/NextSection

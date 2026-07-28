@@ -18,10 +18,12 @@ namespace Koiusa.Keyconfig.Runtime
         [SerializeField] private string[] nonRebindableActionMaps = Array.Empty<string>();
 
         [Header("UI Navigation")]
+        [SerializeField] private string submitActionPath = "UI/Submit";
         [SerializeField] private string previousSectionActionPath = "UI/PreviousSection";
         [SerializeField] private string nextSectionActionPath = "UI/NextSection";
 
         public IReadOnlyList<string> NonRebindableActionMaps => nonRebindableActionMaps;
+        public string SubmitActionPath => submitActionPath;
         public string PreviousSectionActionPath => previousSectionActionPath;
         public string NextSectionActionPath => nextSectionActionPath;
 

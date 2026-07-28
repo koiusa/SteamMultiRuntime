@@ -9,6 +9,7 @@ namespace Koiusa.Keyconfig.Editor
     {
         private SerializedProperty inputActionAsset;
         private SerializedProperty nonRebindableActionMaps;
+        private SerializedProperty submitActionPath;
         private SerializedProperty previousSectionActionPath;
         private SerializedProperty nextSectionActionPath;
 
@@ -16,6 +17,7 @@ namespace Koiusa.Keyconfig.Editor
         {
             inputActionAsset = serializedObject.FindProperty("inputActionAsset");
             nonRebindableActionMaps = serializedObject.FindProperty("nonRebindableActionMaps");
+            submitActionPath = serializedObject.FindProperty("submitActionPath");
             previousSectionActionPath = serializedObject.FindProperty("previousSectionActionPath");
             nextSectionActionPath = serializedObject.FindProperty("nextSectionActionPath");
         }
@@ -30,6 +32,7 @@ namespace Koiusa.Keyconfig.Editor
 
             EditorGUILayout.PropertyField(inputActionAsset);
             EditorGUILayout.PropertyField(nonRebindableActionMaps);
+            EditorGUILayout.PropertyField(submitActionPath);
             EditorGUILayout.PropertyField(previousSectionActionPath);
             EditorGUILayout.PropertyField(nextSectionActionPath);
             serializedObject.ApplyModifiedProperties();
