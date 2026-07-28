@@ -45,7 +45,6 @@ namespace Koiusa.SteamMultiRuntime
             row.RegisterCallback<FocusInEvent>(_ => OnLobbyRowFocused(row));
             row.RegisterCallback<NavigationSubmitEvent>(evt =>
             {
-                evt.PreventDefault();
                 evt.StopPropagation();
                 onJoinLobby?.Invoke(lobbyId);
             });
@@ -167,21 +166,18 @@ namespace Koiusa.SteamMultiRuntime
                 createControl != null)
             {
                 FocusAdjacent(createControls, createControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.PreventDefault();
                 evt.StopPropagation();
             }
             else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
                 searchControl != null)
             {
                 FocusAdjacent(searchControls, searchControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.PreventDefault();
                 evt.StopPropagation();
             }
             else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
                      lobbyRow != null)
             {
                 FocusAdjacent(lobbyRows, lobbyRow, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.PreventDefault();
                 evt.StopPropagation();
             }
             else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
@@ -199,7 +195,6 @@ namespace Koiusa.SteamMultiRuntime
 
                 // Keep navigation inside the list even when it has no
                 // joinable rows. Section changes are handled by LB/RB.
-                evt.PreventDefault();
                 evt.StopPropagation();
             }
             else if (evt.direction == NavigationMoveEvent.Direction.Right &&
@@ -208,14 +203,12 @@ namespace Koiusa.SteamMultiRuntime
             {
                 if (FocusLobbySection())
                 {
-                    evt.PreventDefault();
                     evt.StopPropagation();
                 }
             }
             else if (evt.direction == NavigationMoveEvent.Direction.Left && lobbyRow != null)
             {
                 FocusSearchSection();
-                evt.PreventDefault();
                 evt.StopPropagation();
             }
         }

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -38,13 +39,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             var completionSource = new TaskCompletionSource<bool>();
 
-            void OnEndFrameRendering(ScriptableRenderContext _, Camera[] __)
+            void OnEndContextRendering(ScriptableRenderContext _, List<Camera> __)
             {
-                RenderPipelineManager.endFrameRendering -= OnEndFrameRendering;
+                RenderPipelineManager.endContextRendering -= OnEndContextRendering;
                 completionSource.TrySetResult(true);
             }
 
-            RenderPipelineManager.endFrameRendering += OnEndFrameRendering;
+            RenderPipelineManager.endContextRendering += OnEndContextRendering;
             return completionSource.Task;
         }
 

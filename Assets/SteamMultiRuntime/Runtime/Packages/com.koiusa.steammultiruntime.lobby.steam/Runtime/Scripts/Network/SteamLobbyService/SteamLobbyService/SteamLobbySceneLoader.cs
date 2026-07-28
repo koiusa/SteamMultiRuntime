@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
 
             [Tooltip("プロジェクトで管理するScriptableObjectをアサイン")]
             [FormerlySerializedAs("projectStageSceneList")]
-            public StageSceneList stageSceneList;
+            public StageSceneList stageSceneList = null;
         }
 
         [Serializable]
@@ -32,7 +32,7 @@ namespace Koiusa.SteamMultiRuntime
             public bool unloadOnLobbyEntered = true;
 
             [FormerlySerializedAs("loadDefaultSceneOnLeft")]
-            public bool loadOnLobbyLeft;
+            public bool loadOnLobbyLeft = false;
         }
 
         [Serializable]
