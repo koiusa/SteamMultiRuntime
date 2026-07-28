@@ -8,6 +8,7 @@
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
     "com.unity.netcode.gameobjects": "2.11.2",
+    "com.unity.collections": "2.6.2",
     "com.koiusa.input.core": "0.1.0",
     "com.koiusa.steammultiruntime.player": "0.1.0",
     "com.koiusa.steammultiruntime.locomoter.netcode": "0.1.0"

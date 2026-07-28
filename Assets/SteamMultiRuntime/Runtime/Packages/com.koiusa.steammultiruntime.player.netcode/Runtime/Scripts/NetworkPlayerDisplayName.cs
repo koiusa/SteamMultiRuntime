@@ -13,6 +13,9 @@ namespace Koiusa.SteamMultiRuntime
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        public bool IsAvailable => IsSpawned;
+        public ulong? PlayerId => IsSpawned ? OwnerClientId : null;
+
         public string DisplayName
         {
             get

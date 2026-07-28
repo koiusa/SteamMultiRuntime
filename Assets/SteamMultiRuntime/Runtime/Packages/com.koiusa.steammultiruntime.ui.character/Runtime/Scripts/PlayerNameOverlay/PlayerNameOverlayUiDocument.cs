@@ -26,8 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private StyleSheet overlayStyleSheet;
 
         private UIDocument sourceDocument;
-        private IPlayerDisplayNameSource displayNameSource;
-        private bool displayNameSourceResolved;
+        private IPlayerIdentitySource identitySource;
 
         internal float RefreshInterval => Mathf.Max(0.1f, refreshInterval);
         internal float LabelWidth => labelWidth;
@@ -69,78 +68,37 @@ namespace Koiusa.SteamMultiRuntime
 
         internal bool TryGetPlayerName(out string playerName)
         {
-            var source = FindTargetSource();
-            if (source == null)
+            identitySource ??= FindIdentitySource();
+            if (identitySource == null || !identitySource.IsAvailable)
             {
                 playerName = null;
                 return false;
             }
 
-            if (!displayNameSourceResolved)
+            var displayName = identitySource.DisplayName;
+            if (!string.IsNullOrWhiteSpace(displayName))
             {
-                displayNameSource = FindDisplayNameSource(source);
-                displayNameSourceResolved = true;
+                playerName = displayName;
+                return true;
             }
 
-            if (displayNameSource != null)
-            {
-                var displayName = displayNameSource.DisplayName;
-                if (!string.IsNullOrWhiteSpace(displayName))
-                {
-                    playerName = displayName;
-                    return true;
-                }
-            }
-
-            var ownerClientId = TryGetOwnerClientId(source);
-            playerName = ownerClientId.HasValue
-                ? $"Player{ownerClientId.Value}"
-                : $"Player{Mathf.Abs(source.GetInstanceID()) % 1000}";
+            playerName = identitySource.PlayerId is { } playerId
+                ? $"Player{playerId}"
+                : "Player";
             return true;
         }
 
-        private MonoBehaviour FindTargetSource()
+        private IPlayerIdentitySource FindIdentitySource()
         {
             var parents = GetComponentsInParent<MonoBehaviour>(true);
-            MonoBehaviour fallback = null;
-
             for (var i = 0; i < parents.Length; i++)
             {
                 var candidate = parents[i];
-                if (candidate == null || candidate == this || !(candidate is IPlayerController))
-                    continue;
-
-                if (candidate is Unity.Netcode.NetworkBehaviour)
-                    return candidate;
-
-                fallback ??= candidate;
-            }
-
-            return fallback;
-        }
-
-        private static IPlayerDisplayNameSource FindDisplayNameSource(MonoBehaviour source)
-        {
-            var candidates = source.GetComponentsInParent<MonoBehaviour>(true);
-            for (var i = 0; i < candidates.Length; i++)
-            {
-                if (candidates[i] is IPlayerDisplayNameSource nameSource)
-                    return nameSource;
+                if (candidate != null && candidate != this && candidate is IPlayerIdentitySource source)
+                    return source;
             }
 
             return null;
-        }
-
-        private static ulong? TryGetOwnerClientId(MonoBehaviour source)
-        {
-            var sourceType = source.GetType();
-            var isSpawnedProperty = sourceType.GetProperty("IsSpawned");
-            if (isSpawnedProperty?.GetValue(source) is bool isSpawned && !isSpawned)
-                return null;
-
-            return sourceType.GetProperty("OwnerClientId")?.GetValue(source) is ulong ownerClientId
-                ? ownerClientId
-                : null;
         }
     }
 

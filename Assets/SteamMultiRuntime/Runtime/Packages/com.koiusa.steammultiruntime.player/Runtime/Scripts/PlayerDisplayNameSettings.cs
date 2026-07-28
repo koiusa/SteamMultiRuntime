@@ -3,9 +3,15 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public interface IPlayerDisplayNameSource
+    public interface IPlayerIdentitySource
     {
+        bool IsAvailable { get; }
+        ulong? PlayerId { get; }
         string DisplayName { get; }
+    }
+
+    public interface IPlayerDisplayNameSource : IPlayerIdentitySource
+    {
     }
 
     public static class PlayerDisplayNameSettings

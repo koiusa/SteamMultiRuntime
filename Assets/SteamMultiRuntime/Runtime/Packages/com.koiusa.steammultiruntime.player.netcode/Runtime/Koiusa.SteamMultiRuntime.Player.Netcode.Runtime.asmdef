@@ -5,6 +5,7 @@
         "Koiusa.Input.Core.Runtime",
         "Unity.InputSystem",
         "Unity.Netcode.Runtime",
+        "Unity.Collections",
         "Koiusa.SteamMultiRuntime.Player.Runtime"
     ],
     "includePlatforms": [],

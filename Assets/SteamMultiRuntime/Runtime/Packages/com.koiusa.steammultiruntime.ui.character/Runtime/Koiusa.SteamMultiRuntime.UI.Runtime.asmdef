@@ -5,8 +5,8 @@
         "Koiusa.Input.Core.Runtime",
         "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
         "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
+        "Koiusa.SteamMultiRuntime.Player.Runtime",
         "TNRD.SerializableInterface",
-        "Unity.Netcode.Runtime",
         "Unity.InputSystem"
         ,"Koiusa.SteamMultiRuntime.Localization.Runtime"
     ],
