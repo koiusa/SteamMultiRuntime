@@ -18,17 +18,17 @@
             </ui:VisualElement>
             <ui:VisualElement class="input-guide-divider" />
             <ui:VisualElement name="device-layout" class="input-device-layout">
-                <ui:VisualElement name="keyboard-layout-host">
+                <ui:VisualElement name="keyboard-layout-host" class="input-device-host input-keyboard-host">
                     <ui:Instance template="InputGuideKeyboard" />
                 </ui:VisualElement>
-                <ui:VisualElement name="mouse-layout-host">
-                    <ui:Instance template="InputGuideMouse" />
-                </ui:VisualElement>
-                <ui:VisualElement name="gamepad-layout-host">
+                <ui:VisualElement name="gamepad-layout-host" class="input-device-host input-gamepad-host">
                     <ui:Instance template="InputGuideGamepad" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label text="LIVE INPUT MONITOR" class="input-guide-footer" />
+        </ui:VisualElement>
+        <ui:VisualElement name="mouse-layout-host" class="input-mouse-floating-host">
+            <ui:Instance template="InputGuideMouse" />
         </ui:VisualElement>
         <ui:VisualElement class="input-operation-panel">
             <ui:VisualElement class="input-operation-header">

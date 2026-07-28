@@ -62,7 +62,7 @@ Player Action Mapには以下のSkill入力を定義しています。
 | Action | Keyboard／Mouse | Gamepad |
 |---|---|---|
 | `Combat/Attack` | Left Click | Button West |
-| `Player/Dash` | Left Alt | Right Stick Press (R3) |
+| `Player/Dash` | Left Alt | Button East |
 | `Player/Guard` | G | Left Shoulder |
 | `Player/Heal` | H | D-pad Down |
 

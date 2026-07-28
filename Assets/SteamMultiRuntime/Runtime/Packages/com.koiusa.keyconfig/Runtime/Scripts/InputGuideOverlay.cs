@@ -31,10 +31,14 @@ namespace Koiusa.Keyconfig.Runtime
         [SerializeField] private bool autoSwitchDeviceLayout = true;
         [SerializeField, Range(0f, 16f)] private float stickVisualTravel = 8f;
         [SerializeField, Range(0f, 0.5f)] private float stickVisualDeadzone = 0.08f;
+        [SerializeField, Min(0f)] private float deviceIdleDelay = 1.5f;
+        [SerializeField, Min(0.01f)] private float deviceFadeDuration = 0.2f;
+        [SerializeField, Min(0f)] private float primaryDeviceSwitchLock = 0.25f;
 
         private readonly List<GuideRow> rows = new List<GuideRow>();
         private UIDocument uiDocument;
         private VisualElement overlay;
+        private VisualElement devicePanel;
         private Label deviceLabel;
         private Label inputModeLabel;
         private VisualElement keyboardLayout;
@@ -52,6 +56,11 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction debugToggleAction;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
+        private float lastMouseActivityTime;
+        private float lastKeyboardActivityTime;
+        private float lastGamepadActivityTime;
+        private float lastPrimaryDeviceSwitchTime = float.NegativeInfinity;
+        private bool primaryDeviceIsGamepad;
         private LocalizedVisualTree localizedTree;
 
         private sealed class GuideRow
@@ -153,6 +162,7 @@ namespace Koiusa.Keyconfig.Runtime
             UpdateInputModeLabel();
 
             UpdateStickVisuals(lastActiveDevice as Gamepad ?? Gamepad.current);
+            UpdateDeviceVisibility();
         }
 
         public void SetVisible(bool visible)
@@ -245,6 +255,7 @@ namespace Koiusa.Keyconfig.Runtime
             CloneDeviceLayout(root, "mouse-layout-host", MouseLayoutPath);
             CloneDeviceLayout(root, "gamepad-layout-host", GamepadLayoutPath);
             overlay = root.Q<VisualElement>("input-guide-overlay");
+            devicePanel = root.Q<VisualElement>(className: "input-guide-panel");
             deviceLabel = root.Q<Label>("device-label");
             inputModeLabel = root.Q<Label>("input-mode-label");
             if (deviceLabel != null)
@@ -254,7 +265,19 @@ namespace Koiusa.Keyconfig.Runtime
             }
             keyboardLayout = root.Q<VisualElement>("keyboard-layout");
             mouseLayout = root.Q<VisualElement>(className: "input-mouse");
+            if (mouseLayout != null)
+            {
+                mouseLayout.style.display = DisplayStyle.Flex;
+                mouseLayout.style.opacity = 1f;
+                lastMouseActivityTime = Time.unscaledTime;
+            }
             gamepadLayout = root.Q<VisualElement>("gamepad-layout");
+            var now = Time.unscaledTime;
+            lastKeyboardActivityTime = now;
+            lastGamepadActivityTime = now;
+            primaryDeviceIsGamepad = IsGamepadLike(lastActiveDevice)
+                || (Keyboard.current == null && Gamepad.current != null);
+            lastPrimaryDeviceSwitchTime = float.NegativeInfinity;
             keyboardOperationList = root.Q<VisualElement>("keyboard-operation-list");
             gamepadOperationList = root.Q<VisualElement>("gamepad-operation-list");
             gamepadFaceWestLabel = root.Q<Label>("gamepad-face-west-label");
@@ -309,6 +332,33 @@ namespace Koiusa.Keyconfig.Runtime
             BindDebugControl(root, "control-select", "<Gamepad>/select");
             BindDebugControl(root, "control-systembutton", "<DualShockGamepad>/systemButton");
             BindDebugControl(root, "control-touchpadbutton", "<DualShockGamepad>/touchpadButton");
+            BindDebugControl(root, "control-v", "<Keyboard>/v");
+            BindDebugControl(root, "control-f", "<Keyboard>/f");
+            BindDebugControl(root, "control-p", "<Keyboard>/p");
+            BindDebugControl(root, "control-t", "<Keyboard>/t");
+            BindDebugControl(root, "control-z", "<Keyboard>/z");
+            BindDebugControl(root, "control-x", "<Keyboard>/x");
+            BindDebugControl(root, "control-3", "<Keyboard>/3");
+            BindDebugControl(root, "control-4", "<Keyboard>/4");
+            BindDebugControl(root, "control-5", "<Keyboard>/5");
+            BindDebugControl(root, "control-6", "<Keyboard>/6");
+            BindDebugControl(root, "control-7", "<Keyboard>/7");
+            BindDebugControl(root, "control-8", "<Keyboard>/8");
+            BindDebugControl(root, "control-9", "<Keyboard>/9");
+            BindDebugControl(root, "control-0", "<Keyboard>/0");
+            BindDebugControl(root, "control-r", "<Keyboard>/r");
+            BindDebugControl(root, "control-y", "<Keyboard>/y");
+            BindDebugControl(root, "control-u", "<Keyboard>/u");
+            BindDebugControl(root, "control-i", "<Keyboard>/i");
+            BindDebugControl(root, "control-o", "<Keyboard>/o");
+            BindDebugControl(root, "control-j", "<Keyboard>/j");
+            BindDebugControl(root, "control-k", "<Keyboard>/k");
+            BindDebugControl(root, "control-l", "<Keyboard>/l");
+            BindDebugControl(root, "control-b", "<Keyboard>/b");
+            BindDebugControl(root, "control-n", "<Keyboard>/n");
+            BindDebugControl(root, "control-m", "<Keyboard>/m");
+            BindDebugControl(root, "control-tab", "<Keyboard>/tab");
+            BindDebugControl(root, "control-capslock", "<Keyboard>/capsLock");
         }
 
         private void CloneDeviceLayout(VisualElement root, string hostName, string resourcePath)
@@ -348,9 +398,8 @@ namespace Koiusa.Keyconfig.Runtime
         private void SetGamepadLayout(bool showGamepad)
         {
             isGamepadLayoutVisible = showGamepad;
-            if (keyboardLayout != null) keyboardLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
-            if (mouseLayout != null) mouseLayout.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
-            if (gamepadLayout != null) gamepadLayout.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
+            if (keyboardLayout != null) keyboardLayout.style.display = DisplayStyle.Flex;
+            if (gamepadLayout != null) gamepadLayout.style.display = DisplayStyle.Flex;
             if (keyboardOperationList != null) keyboardOperationList.style.display = showGamepad ? DisplayStyle.None : DisplayStyle.Flex;
             if (gamepadOperationList != null) gamepadOperationList.style.display = showGamepad ? DisplayStyle.Flex : DisplayStyle.None;
         }
@@ -510,6 +559,136 @@ namespace Koiusa.Keyconfig.Runtime
             SetStickVisualPosition(rightStickVisual, displayedRight);
         }
 
+        private void UpdateDeviceVisibility()
+        {
+            var now = Time.unscaledTime;
+            var keyboard = Keyboard.current;
+            var hasKeyboardActivity = keyboard != null && keyboard.anyKey.isPressed;
+            if (hasKeyboardActivity)
+            {
+                lastKeyboardActivityTime = now;
+            }
+
+            var gamepad = Gamepad.current;
+            var hasGamepadActivity = HasDeviceActivity(gamepad);
+            if (hasGamepadActivity)
+            {
+                lastGamepadActivityTime = now;
+            }
+
+            // Simultaneous input keeps the current device to avoid rapid oscillation.
+            if (hasKeyboardActivity != hasGamepadActivity)
+            {
+                TrySelectPrimaryDevice(hasGamepadActivity, now);
+            }
+            else if (primaryDeviceIsGamepad && gamepad == null && keyboard != null)
+            {
+                SelectPrimaryDevice(false, now);
+            }
+            else if (!primaryDeviceIsGamepad && keyboard == null && gamepad != null)
+            {
+                SelectPrimaryDevice(true, now);
+            }
+
+            var primaryAvailable = primaryDeviceIsGamepad ? gamepad != null : keyboard != null;
+            var primaryActivityTime = primaryDeviceIsGamepad
+                ? lastGamepadActivityTime
+                : lastKeyboardActivityTime;
+            if (keyboardLayout != null)
+            {
+                keyboardLayout.style.opacity = primaryDeviceIsGamepad ? 0f : 1f;
+            }
+            if (gamepadLayout != null)
+            {
+                gamepadLayout.style.opacity = primaryDeviceIsGamepad ? 1f : 0f;
+            }
+            UpdateDeviceOpacity(
+                devicePanel,
+                primaryAvailable,
+                primaryActivityTime,
+                now);
+
+            if (mouseLayout == null)
+            {
+                return;
+            }
+
+            var mouse = Mouse.current;
+            if (mouse == null)
+            {
+                mouseLayout.style.opacity = 0f;
+                return;
+            }
+
+            var hasActivity = mouse.delta.ReadValue().sqrMagnitude > 0.01f
+                || mouse.scroll.ReadValue().sqrMagnitude > 0.01f
+                || mouse.leftButton.isPressed
+                || mouse.middleButton.isPressed
+                || mouse.rightButton.isPressed;
+            if (hasActivity)
+            {
+                lastMouseActivityTime = now;
+                mouseLayout.style.opacity = 1f;
+                return;
+            }
+
+            UpdateDeviceOpacity(mouseLayout, true, lastMouseActivityTime, now);
+        }
+
+        private void TrySelectPrimaryDevice(bool gamepad, float now)
+        {
+            if (primaryDeviceIsGamepad == gamepad
+                || now - lastPrimaryDeviceSwitchTime < primaryDeviceSwitchLock)
+            {
+                return;
+            }
+
+            SelectPrimaryDevice(gamepad, now);
+        }
+
+        private void SelectPrimaryDevice(bool gamepad, float now)
+        {
+            primaryDeviceIsGamepad = gamepad;
+            lastPrimaryDeviceSwitchTime = now;
+        }
+
+        private void UpdateDeviceOpacity(VisualElement element, bool deviceAvailable, float lastActivityTime, float now)
+        {
+            if (element == null)
+            {
+                return;
+            }
+
+            if (!deviceAvailable)
+            {
+                element.style.opacity = 0f;
+                return;
+            }
+
+            var fadeElapsed = now - lastActivityTime - deviceIdleDelay;
+            element.style.opacity = fadeElapsed <= 0f
+                ? 1f
+                : 1f - Mathf.Clamp01(fadeElapsed / Mathf.Max(0.01f, deviceFadeDuration));
+        }
+
+        private static bool HasDeviceActivity(InputDevice device)
+        {
+            if (device == null)
+            {
+                return false;
+            }
+
+            foreach (var control in device.allControls)
+            {
+                if (control.IsActuated(0.05f))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private Vector2 ApplyStickVisualDeadzone(Vector2 value)
         {
             var magnitude = Mathf.Clamp01(value.magnitude);
@@ -573,16 +752,16 @@ namespace Koiusa.Keyconfig.Runtime
                 ? tooltipEntry
                 : $"{controlElement.tooltip}\n{tooltipEntry}";
 
+            var isTransientPointerInput = string.Equals(controlName, "delta", StringComparison.Ordinal)
+                || path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase);
             rows.Add(new GuideRow
             {
                 Element = controlElement,
                 Control = InputControlActivity.Resolve(path),
                 BindingPath = path,
-                // Pointer delta commonly returns to zero between input events. A short
-                // release delay makes motion read as continuous without delaying onset.
-                ReleaseDelay = string.Equals(controlName, "delta", StringComparison.Ordinal)
-                    ? 0.18f
-                    : 0f
+                // Pointer delta and scroll return to zero between input events. A short
+                // release delay keeps transient activity readable without delaying onset.
+                ReleaseDelay = isTransientPointerInput ? 0.18f : 0f
             });
         }
 
