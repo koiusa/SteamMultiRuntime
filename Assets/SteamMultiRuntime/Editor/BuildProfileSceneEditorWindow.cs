@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -20,9 +19,6 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private const string BuildProfileTypeName = "UnityEditor.Build.Profile.BuildProfile";
         private const string RecentBuildProfileKeyPrefix = "Koiusa.SteamMultiRuntime.BuildProfileSceneEditor.Recent.";
         private const string RecentPresetKeyPrefix = "Koiusa.SteamMultiRuntime.BuildProfileSceneEditor.RecentPreset.";
-
-        private static readonly Type BuildProfileType =
-            typeof(UnityEditor.Editor).Assembly.GetType(BuildProfileTypeName);
 
         [SerializeField] private UnityEngine.Object buildProfile;
         [SerializeField] private BuildProfileScenePreset preset;
@@ -69,37 +65,31 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 "Build Profile のシーン一覧を編集します。変更は選択中のアセットへ直ちに保存されます。",
                 MessageType.Info);
 
-            using (new EditorGUILayout.HorizontalScope())
+            EditorGUI.BeginChangeCheck();
+            var nextProfile = EditorGUILayout.ObjectField(
+                "Build Profile",
+                buildProfile,
+                typeof(UnityEngine.Object),
+                false);
+            if (EditorGUI.EndChangeCheck())
             {
-                EditorGUI.BeginChangeCheck();
-                var nextProfile = EditorGUILayout.ObjectField(
-                    "Build Profile",
-                    buildProfile,
-                    BuildProfileType ?? typeof(UnityEngine.Object),
-                    false);
-                if (EditorGUI.EndChangeCheck())
+                if (nextProfile != null && !IsBuildProfile(nextProfile))
                 {
-                    if (nextProfile != null && !IsBuildProfile(nextProfile))
-                    {
-                        EditorUtility.DisplayDialog("Build Profile Scenes", "BuildProfile アセットを指定してください。", "OK");
-                    }
-                    else
-                    {
-                        buildProfile = nextProfile;
-                        RememberBuildProfile();
-                        RebuildSerializedProfile();
-                    }
+                    EditorUtility.DisplayDialog("Build Profile Scenes", "BuildProfile アセットを指定してください。", "OK");
                 }
-
-                if (GUILayout.Button("Create", GUILayout.Width(72f)))
+                else
                 {
-                    ShowCreateBuildProfileMenu();
+                    buildProfile = nextProfile;
+                    RememberBuildProfile();
+                    RebuildSerializedProfile();
                 }
             }
 
             if (buildProfile == null)
             {
-                EditorGUILayout.HelpBox("BuildProfile アセットを指定するか、Project ウィンドウで選択してください。", MessageType.Warning);
+                EditorGUILayout.HelpBox(
+                    "BuildProfile アセットを指定するか、Project ウィンドウで選択してください。新規作成は File > Build Profiles を使用してください。",
+                    MessageType.Warning);
                 if (GUILayout.Button("Find Build Profiles"))
                 {
                     ShowBuildProfilePicker();
@@ -793,110 +783,5 @@ namespace Koiusa.SteamMultiRuntime.Editor
             EditorGUIUtility.PingObject(profile);
         }
 
-        private void ShowCreateBuildProfileMenu()
-        {
-            var menu = new GenericMenu();
-            menu.AddItem(
-                new GUIContent("Windows/Windows x64"),
-                false,
-                () => CreateAndUseBuildProfile(BuildTarget.StandaloneWindows64, false));
-            menu.AddItem(
-                new GUIContent("macOS/macOS Apple Silicon"),
-                false,
-                () => CreateAndUseBuildProfile(BuildTarget.StandaloneOSX, true));
-            menu.ShowAsContext();
-        }
-
-        private void CreateAndUseBuildProfile(BuildTarget target, bool appleSilicon)
-        {
-            var createdProfile = CreateBuildProfile(target, appleSilicon);
-            if (createdProfile == null)
-            {
-                return;
-            }
-
-            buildProfile = createdProfile;
-            RememberBuildProfile();
-            RebuildSerializedProfile();
-            Repaint();
-        }
-
-        private static UnityEngine.Object CreateBuildProfile(BuildTarget target, bool appleSilicon)
-        {
-            if (BuildProfileType == null)
-            {
-                EditorUtility.DisplayDialog("Build Profile Scenes", "BuildProfile型を取得できませんでした。", "OK");
-                return null;
-            }
-
-            var defaultName = appleSilicon ? "macOS_AppleSilicon" : "Windows_x64";
-            var path = EditorUtility.SaveFilePanelInProject(
-                "Create Build Profile",
-                defaultName,
-                "asset",
-                $"{target} 用のBuildProfileを保存します。",
-                "Assets");
-            if (string.IsNullOrEmpty(path))
-            {
-                return null;
-            }
-
-            var factory = BuildProfileType.GetMethod(
-                "CreateInstance",
-                BindingFlags.Static | BindingFlags.NonPublic,
-                null,
-                new[] { typeof(BuildTarget), typeof(StandaloneBuildSubtarget) },
-                null);
-            if (factory == null)
-            {
-                EditorUtility.DisplayDialog("Build Profile Scenes", "このUnityバージョンではBuildProfileを作成できません。", "OK");
-                return null;
-            }
-
-            try
-            {
-                var profile = factory.Invoke(
-                    null,
-                    new object[] { target, StandaloneBuildSubtarget.Player }) as UnityEngine.Object;
-                if (profile == null)
-                {
-                    throw new InvalidOperationException("BuildProfileの生成結果がnullです。");
-                }
-
-                if (appleSilicon)
-                {
-                    SetAppleSiliconArchitecture(profile);
-                }
-
-                AssetDatabase.CreateAsset(profile, path);
-                AssetDatabase.SaveAssets();
-                SelectAndPing(profile);
-                return profile;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                EditorUtility.DisplayDialog(
-                    "Build Profile Scenes",
-                    $"BuildProfileの作成に失敗しました。\n{exception.GetBaseException().Message}",
-                    "OK");
-                return null;
-            }
-        }
-
-        private static void SetAppleSiliconArchitecture(UnityEngine.Object profile)
-        {
-            var serializedProfile = new SerializedObject(profile);
-            var platformSettings = serializedProfile.FindProperty("m_PlatformBuildProfile");
-            var architecture = platformSettings?.FindPropertyRelative("m_Architecture");
-            if (architecture == null)
-            {
-                throw new InvalidOperationException("macOS BuildProfileのArchitecture設定を取得できませんでした。");
-            }
-
-            // Unity macOS architecture: 0 = Intel, 1 = ARM64, 2 = Universal.
-            architecture.intValue = 1;
-            serializedProfile.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }
