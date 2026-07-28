@@ -8,7 +8,7 @@ Shader "Koiusa/Effects/GuardShield"
         _Opacity ("Opacity", Range(0, 1)) = 0.65
         _RimPower ("Rim Power", Range(0.25, 8)) = 2.5
         _RimIntensity ("Rim Intensity", Range(0, 8)) = 2
-        _HexScale ("Hex Scale", Range(1, 40)) = 12
+        _HexScale ("Hex Scale", Range(1, 40)) = 7
         _HexWidth ("Hex Line Width", Range(0.005, 0.25)) = 0.055
         _HexIntensity ("Hex Intensity", Range(0, 5)) = 1.25
         _FlowSpeed ("Flow Speed", Range(-5, 5)) = 0.6

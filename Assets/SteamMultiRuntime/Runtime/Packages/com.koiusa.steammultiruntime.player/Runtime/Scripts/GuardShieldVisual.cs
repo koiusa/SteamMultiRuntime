@@ -10,15 +10,17 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
         private static Mesh sharedIcosphere;
 
-        [SerializeField] private Vector3 localCenter = new Vector3(0f, 1f, 0f);
-        [SerializeField, Min(0.1f)] private float radius = 1.35f;
+        [SerializeField] private Vector3 fallbackLocalCenter = new Vector3(0f, 1f, 0f);
+        [SerializeField, Min(0.1f)] private float radius = 1.15f;
         [SerializeField, Min(0.01f)] private float fadeInDuration = 0.08f;
         [SerializeField, Min(0.01f)] private float fadeOutDuration = 0.16f;
         [SerializeField, Range(0f, 1f)] private float visibleOpacity = 0.65f;
 
         private Renderer shieldRenderer;
+        private Transform shieldTransform;
         private MaterialPropertyBlock propertyBlock;
         private float opacity;
+        private float expansion;
         private bool isGuarding;
 
         public bool IsGuarding => isGuarding;
@@ -30,6 +32,10 @@ namespace Koiusa.SteamMultiRuntime
             var duration = isGuarding ? fadeInDuration : fadeOutDuration;
             var target = isGuarding ? visibleOpacity : 0f;
             opacity = Mathf.MoveTowards(opacity, target, Time.deltaTime / duration);
+            expansion = Mathf.MoveTowards(expansion, isGuarding ? 1f : 0f, Time.deltaTime / duration);
+            var easedExpansion = expansion * expansion * (3f - 2f * expansion);
+            if (shieldTransform != null)
+                shieldTransform.localScale = Vector3.one * (radius * easedExpansion);
             ApplyOpacity();
 
             if (shieldRenderer != null)
@@ -55,13 +61,15 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            var characterCenter = ResolveCharacterCenter();
             var shield = new GameObject("GuardShieldVisual", typeof(MeshFilter), typeof(MeshRenderer));
             shield.name = "GuardShieldVisual";
             shield.transform.SetParent(transform, false);
-            shield.transform.localPosition = localCenter;
+            shield.transform.localPosition = characterCenter;
             shield.transform.localRotation = Quaternion.identity;
-            shield.transform.localScale = Vector3.one * radius;
+            shield.transform.localScale = Vector3.zero;
             shield.layer = gameObject.layer;
+            shieldTransform = shield.transform;
 
             shield.GetComponent<MeshFilter>().sharedMesh = GetIcosphere();
 
@@ -79,6 +87,31 @@ namespace Koiusa.SteamMultiRuntime
             propertyBlock = new MaterialPropertyBlock();
         }
 
+        private Vector3 ResolveCharacterCenter()
+        {
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            var hasBounds = false;
+            var bounds = new Bounds();
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                var candidate = renderers[i];
+                if (candidate == null || candidate is ParticleSystemRenderer || candidate is TrailRenderer || candidate is LineRenderer)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = candidate.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(candidate.bounds);
+                }
+            }
+
+            return hasBounds ? transform.InverseTransformPoint(bounds.center) : fallbackLocalCenter;
+        }
+
         private void ApplyOpacity()
         {
             if (shieldRenderer == null) return;
@@ -91,6 +124,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             isGuarding = false;
             opacity = 0f;
+            expansion = 0f;
+            if (shieldTransform != null) shieldTransform.localScale = Vector3.zero;
             ApplyOpacity();
             if (shieldRenderer != null) shieldRenderer.enabled = false;
         }
