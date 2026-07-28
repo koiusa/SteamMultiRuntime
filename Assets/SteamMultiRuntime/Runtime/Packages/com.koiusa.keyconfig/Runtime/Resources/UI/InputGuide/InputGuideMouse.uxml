@@ -1,15 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="mouse-layout" class="input-mouse">
-        <ui:VisualElement name="control-middlecaption" class="mouse-middle-caption">
-            <ui:Label text="MIDDLE" class="mouse-scroll-caption-title" />
+        <ui:VisualElement name="control-middlecaption" class="mouse-action-caption mouse-action-caption-top">
+            <ui:Label text="MIDDLE" class="mouse-action-caption-title" />
         </ui:VisualElement>
         <ui:VisualElement class="mouse-buttons">
             <ui:VisualElement name="control-leftbutton" class="mouse-button mouse-left"><ui:Label text="L" class="mouse-label" /></ui:VisualElement>
             <ui:VisualElement name="control-middlebutton" class="mouse-button mouse-middle"><ui:Label text="●" class="mouse-label" /></ui:VisualElement>
             <ui:VisualElement name="control-rightbutton" class="mouse-button mouse-right"><ui:Label text="R" class="mouse-label" /></ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="control-scrollcaption" class="mouse-scroll-caption">
-            <ui:Label text="SCROLL" class="mouse-scroll-caption-title" />
+        <ui:VisualElement name="control-scrollcaption" class="mouse-action-caption">
+            <ui:Label text="SCROLL" class="mouse-action-caption-title" />
         </ui:VisualElement>
         <ui:VisualElement name="control-delta" class="mouse-body"><ui:Label text="MOVE" class="mouse-move-label" /></ui:VisualElement>
     </ui:VisualElement>

@@ -734,13 +734,10 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var isMouseScroll = path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase);
-            var isMiddleClick = path.Equals("<Mouse>/middleButton", StringComparison.OrdinalIgnoreCase);
-            var actionLabelHost = isMouseScroll
-                ? root.Q<VisualElement>("control-scrollcaption") ?? controlElement
-                : isMiddleClick
-                    ? root.Q<VisualElement>("control-middlecaption") ?? controlElement
-                    : controlElement;
+            var externalCaptionName = GetExternalCaptionName(path);
+            var actionLabelHost = string.IsNullOrEmpty(externalCaptionName)
+                ? controlElement
+                : root.Q<VisualElement>(externalCaptionName) ?? controlElement;
             var localizedActionName = KeyConfigLocalization.Get(action.name);
             var actionName = binding.isPartOfComposite
                 ? $"{localizedActionName} · {KeyConfigLocalization.Get(Nicify(binding.name))}"
@@ -762,18 +759,35 @@ namespace Koiusa.Keyconfig.Runtime
                 ? tooltipEntry
                 : $"{controlElement.tooltip}\n{tooltipEntry}";
 
-            var isTransientPointerInput = string.Equals(controlName, "delta", StringComparison.Ordinal)
-                || path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase);
+            var isTransientPointerInput = IsTransientPointerInput(path, controlName);
             rows.Add(new GuideRow
             {
                 Element = controlElement,
-                SecondaryElement = isMouseScroll || isMiddleClick ? actionLabelHost : null,
+                SecondaryElement = actionLabelHost != controlElement ? actionLabelHost : null,
                 Control = InputControlActivity.Resolve(path),
                 BindingPath = path,
                 // Pointer delta and scroll return to zero between input events. A short
                 // release delay keeps transient activity readable without delaying onset.
                 ReleaseDelay = isTransientPointerInput ? 0.18f : 0f
             });
+        }
+
+        private static string GetExternalCaptionName(string path)
+        {
+            if (path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase))
+            {
+                return "control-scrollcaption";
+            }
+
+            return path.Equals("<Mouse>/middleButton", StringComparison.OrdinalIgnoreCase)
+                ? "control-middlecaption"
+                : string.Empty;
+        }
+
+        private static bool IsTransientPointerInput(string path, string controlName)
+        {
+            return string.Equals(controlName, "delta", StringComparison.Ordinal)
+                || path.StartsWith("<Mouse>/scroll", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetControlName(string path)
