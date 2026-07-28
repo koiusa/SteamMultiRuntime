@@ -1,0 +1,101 @@
+using System.IO;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
+
+namespace Koiusa.SteamMultiRuntime
+{
+    public static class SceneUtilityEx
+    {
+        public static Task WaitForOperationAsync(AsyncOperation operation)
+        {
+            if (operation == null || operation.isDone)
+            {
+                return Task.CompletedTask;
+            }
+
+            var completionSource = new TaskCompletionSource<bool>();
+
+            void OnCompleted(AsyncOperation completedOperation)
+            {
+                operation.completed -= OnCompleted;
+                completionSource.TrySetResult(true);
+            }
+
+            operation.completed += OnCompleted;
+
+            if (operation.isDone)
+            {
+                operation.completed -= OnCompleted;
+                return Task.CompletedTask;
+            }
+
+            return completionSource.Task;
+        }
+
+        public static Task WaitForFrameRenderedAsync()
+        {
+            var completionSource = new TaskCompletionSource<bool>();
+
+            void OnEndFrameRendering(ScriptableRenderContext _, Camera[] __)
+            {
+                RenderPipelineManager.endFrameRendering -= OnEndFrameRendering;
+                completionSource.TrySetResult(true);
+            }
+
+            RenderPipelineManager.endFrameRendering += OnEndFrameRendering;
+            return completionSource.Task;
+        }
+
+        public static bool CanLoadScene(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return false;
+            }
+
+            if (IsScenePath(sceneReference))
+            {
+                return SceneUtility.GetBuildIndexByScenePath(sceneReference) >= 0;
+            }
+
+            return Application.CanStreamedLevelBeLoaded(sceneReference);
+        }
+
+        public static Scene GetLoadedScene(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return default;
+            }
+
+            if (IsScenePath(sceneReference))
+            {
+                var byPath = SceneManager.GetSceneByPath(sceneReference);
+                if (byPath.IsValid())
+                {
+                    return byPath;
+                }
+            }
+
+            return SceneManager.GetSceneByName(ToSceneName(sceneReference));
+        }
+
+        public static bool IsScenePath(string sceneReference)
+        {
+            return sceneReference.Contains("/") || sceneReference.EndsWith(".unity", System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string ToSceneName(string sceneReference)
+        {
+            if (string.IsNullOrWhiteSpace(sceneReference))
+            {
+                return string.Empty;
+            }
+
+            var normalized = sceneReference.Replace('\\', '/');
+            return Path.GetFileNameWithoutExtension(normalized);
+        }
+    }
+}

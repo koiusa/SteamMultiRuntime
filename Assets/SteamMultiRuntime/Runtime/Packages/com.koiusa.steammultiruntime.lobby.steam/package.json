@@ -1,0 +1,17 @@
+{
+  "name": "com.koiusa.steammultiruntime.lobby.steam",
+  "displayName": "Steam Multi Runtime Lobby Steam",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Steamworks lobby backend and Steam lobby UI for Steam Multi Runtime.",
+  "author": { "name": "koiusa" },
+  "dependencies": {
+    "com.unity.inputsystem": "1.18.0",
+    "com.unity.netcode.gameobjects": "2.11.2",
+    "com.koiusa.steammultiruntime.lobby": "0.1.0",
+    "com.koiusa.steammultiruntime.lobby.netcode": "0.1.0",
+    "com.koiusa.input.core": "0.1.0",
+    "com.koiusa.steammultiruntime.localization": "0.1.0",
+    "com.koiusa.steammultiruntime.resourceloader": "0.1.0"
+  }
+}

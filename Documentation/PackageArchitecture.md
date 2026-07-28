@@ -17,6 +17,9 @@ Feature packages
 - `com.koiusa.ui.common`: 特定ゲームやLocalization実装に依存しない汎用UI機能。
 - `com.koiusa.steammultiruntime.core`: Steam Multi Runtime内で共有する契約、属性、ゲームプレイ共通基盤。
 - `com.koiusa.steammultiruntime.localization`: Steam Multi Runtime共通のLocalizationランタイム、カタログ、UI Toolkitバインディング、導入ツール。Coreとは独立した横断機能として扱う。
+- `com.koiusa.steammultiruntime.lobby`: バックエンド非依存のLobby契約、シーンフロー、ローカルLobby UI。
+- `com.koiusa.steammultiruntime.lobby.netcode`: Netcode for GameObjectsによるセッションとシーン同期。
+- `com.koiusa.steammultiruntime.lobby.steam`: Steamworks LobbyバックエンドとSteam固有UI。LobbyおよびLobby Netcodeへ一方向に依存する。
 
 ## 依存ルール
 

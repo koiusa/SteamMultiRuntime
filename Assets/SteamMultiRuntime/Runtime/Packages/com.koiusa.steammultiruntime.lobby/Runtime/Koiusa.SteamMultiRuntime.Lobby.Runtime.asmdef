@@ -1,0 +1,14 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Lobby.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Lobby",
+  "references": [
+    "Koiusa.Input.Core.Runtime",
+    "Unity.InputSystem",
+    "GUID:1491147abca9d7d4bb7105af628b223e",
+    "GUID:23eed6c2401dca1419d1ebd180e58c5a",
+    "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
+    "Koiusa.SteamMultiRuntime.Localization.Runtime"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

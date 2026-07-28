@@ -1,0 +1,13 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Lobby.Netcode.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Network.Lobby",
+  "references": [
+    "Koiusa.SteamMultiRuntime.Lobby.Runtime",
+    "Unity.Netcode.Runtime",
+    "Unity.Collections",
+    "GUID:4307f53044263cf4b835bd812fc161a4",
+    "GUID:2aa43b0c797e0d444a7e82e75d4f2082"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

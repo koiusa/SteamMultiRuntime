@@ -1,0 +1,21 @@
+{
+	"name": "Koiusa.SteamMultiRuntime.Lobby.Steam.Editor",
+	"rootNamespace": "",
+	"references": [
+		"Koiusa.SteamMultiRuntime.Lobby.Steam.Runtime",
+		"Koiusa.SteamMultiRuntime.Lobby.Runtime",
+		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
+		"GUID:1491147abca9d7d4bb7105af628b223e"
+	],
+	"includePlatforms": [
+		"Editor"
+	],
+	"excludePlatforms": [],
+	"allowUnsafeCode": false,
+	"overrideReferences": false,
+	"precompiledReferences": [],
+	"autoReferenced": true,
+	"defineConstraints": [],
+	"versionDefines": [],
+	"noEngineReferences": false
+}
