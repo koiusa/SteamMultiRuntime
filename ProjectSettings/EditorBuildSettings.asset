@@ -12,25 +12,25 @@ EditorBuildSettings:
     path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_ThirdPersonView/SampleLobbyScene_ThirdPersonView_Traversal.unity
     guid: f260e861340702c40906e7fa0b340044
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/PlayGroundScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/PlayGroundScene.unity
     guid: 2eb1146ffd007e045b00384444ce1c9a
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/UnityLogo.unity
+    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
     guid: 2b64709540d56cd4a9e0714b6197cc60
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/WelcomScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/WelcomeScene.unity
     guid: 57d22547efc65ce4599bf78aa609c35e
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/SandBoxScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity
     guid: 253d20b74fbe77c4b93d653045227478
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/NPCVilleg.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/NPCVillage.unity
     guid: 0ad083b12f9e5c04abd9318132df160d
   - enabled: 1
     path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_Server/SampleLobbyScene_Server.unity
     guid: b872728e980f8eb409a63cbd22815067
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Common/ServerScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/ServerScene.unity
     guid: e050ced7b67192b418ee482cf3fe6036
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 6f6c3fff31728d745b397ae4df14d516, type: 2}

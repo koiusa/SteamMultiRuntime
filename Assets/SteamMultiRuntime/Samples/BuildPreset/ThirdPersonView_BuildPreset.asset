@@ -18,13 +18,13 @@ MonoBehaviour:
     path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_ThirdPersonView/SampleLobbyScene_ThirdPersonView_Traversal.unity
   - enabled: 1
     guid: 2eb1146ffd007e045b00384444ce1c9a
-    path: Assets/SteamMultiRuntime/Samples/Common/PlayGroundScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/PlayGroundScene.unity
   - enabled: 1
     guid: 253d20b74fbe77c4b93d653045227478
-    path: Assets/SteamMultiRuntime/Samples/Common/SandBoxScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity
   - enabled: 1
     guid: 2b64709540d56cd4a9e0714b6197cc60
-    path: Assets/SteamMultiRuntime/Samples/Common/UnityLogo.unity
+    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
   - enabled: 1
     guid: 0ad083b12f9e5c04abd9318132df160d
-    path: Assets/SteamMultiRuntime/Samples/Common/NPCVilleg.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/NPCVillage.unity

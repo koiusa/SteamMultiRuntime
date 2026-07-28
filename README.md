@@ -19,8 +19,10 @@ Usage
 サンプルシーンをビルド対象に追加します。  
 1. Unityエディタのメニューから `File > Build Profiles` を表示してビルドプロファイルを作成。
 2. Build Profileを開き、以下のサンプルシーンを追加：
-   - 共通シーンを追加
-     - `Assets/SteamMultiRuntime/Samples/Common/<シーン名>.unity`
+   - ゲーム用Stageを追加
+     - `Assets/SteamMultiRuntime/Samples/Gameplay/Stages/<シーン名>.unity`
+   - 必要に応じて起動用Sceneを追加
+     - `Assets/SteamMultiRuntime/Samples/Presentation/Startup/<シーン名>.unity`
    - ゲームシーン: 以下のいずれかを選択
      - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
 3. Unityエディタでサンプルシーンをプレイ。  

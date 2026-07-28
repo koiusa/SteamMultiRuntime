@@ -77,7 +77,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbySceneLoader
   lobbyService: {fileID: 7001024383980304856}
   sceneCatalog:
-    defaultSceneName: WelcomScene
+    defaultSceneName: WelcomeScene
     stageSceneList: {fileID: 11400000, guid: 7ae2856614ff5574a8e2259452ab3c1d, type: 2}
   defaultScenePolicy:
     loadOnStart: 1

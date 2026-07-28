@@ -21,15 +21,15 @@ MonoBehaviour:
   m_OverrideGlobalSceneList: 1
   m_Scenes:
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_WithAnimator/SampleLobbyScene_WithUnityChan.unity
+    m_path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_ThirdPersonView/SampleLobbyScene_ThirdPersonView_Traversal.unity
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Runtime/Scene/PlayGroundScene.unity
+    m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/PlayGroundScene.unity
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Runtime/Scene/SandBoxScene.unity
+    m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_WithAnimator/UnityLogo/UnityLogo.unity
+    m_path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Samples/Common/NPC/NPCVilleg.unity
+    m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/NPCVillage.unity
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
