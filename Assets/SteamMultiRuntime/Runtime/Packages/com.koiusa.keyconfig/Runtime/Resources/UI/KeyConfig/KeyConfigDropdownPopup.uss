@@ -1,0 +1,88 @@
+.unity-base-dropdown__container-outer,
+.unity-base-dropdown__container-inner,
+.unity-base-dropdown .unity-scroll-view__content-viewport,
+.unity-base-dropdown .unity-scroll-view__content-container {
+    background-color: rgb(7, 18, 30);
+}
+
+.unity-base-dropdown__container-outer {
+    min-width: 280px;
+    max-height: 360px;
+    padding: 4px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(112, 137, 145);
+    border-right-color: rgb(112, 137, 145);
+    border-top-color: rgb(126, 153, 161);
+    border-bottom-color: rgb(86, 105, 112);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.unity-base-dropdown__item {
+    min-height: 38px;
+    margin-bottom: 2px;
+    padding-left: 9px;
+    padding-right: 10px;
+    color: rgb(207, 218, 224);
+    background-color: rgb(17, 30, 43);
+    border-left-width: 3px;
+    border-left-color: rgba(120, 145, 153, 128);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(75, 91, 99, 140);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.unity-base-dropdown__label {
+    color: rgb(207, 218, 224);
+    -unity-text-align: middle-left;
+}
+
+.unity-base-dropdown__item:hover {
+    color: rgb(245, 255, 251);
+    background-color: rgb(24, 82, 82);
+    border-left-color: rgb(108, 230, 255);
+}
+
+.unity-base-dropdown__item:checked {
+    color: rgb(207, 235, 225);
+    background-color: rgb(22, 61, 60);
+    border-left-color: rgb(115, 245, 166);
+}
+
+.unity-base-dropdown__item:hover .unity-base-dropdown__label,
+.unity-base-dropdown__item:checked .unity-base-dropdown__label {
+    color: rgb(245, 255, 251);
+}
+
+.unity-base-dropdown__checkmark {
+    width: 10px;
+    min-width: 10px;
+    margin-right: 7px;
+}
+
+.unity-base-dropdown .unity-scroll-view__vertical-scroller {
+    width: 8px;
+    margin-left: 3px;
+    background-color: rgb(18, 31, 43);
+}
+
+.unity-base-dropdown .unity-scroller__slider {
+    min-height: 24px;
+    background-color: rgb(112, 137, 145);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.unity-base-dropdown .unity-scroller__slider:hover {
+    background-color: rgb(108, 230, 255);
+}

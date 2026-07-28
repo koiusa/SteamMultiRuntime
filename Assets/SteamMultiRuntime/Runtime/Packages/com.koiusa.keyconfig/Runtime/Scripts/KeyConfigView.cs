@@ -8,10 +8,15 @@ namespace Koiusa.Keyconfig.Runtime
 {
     internal sealed class KeyConfigView
     {
+        private const string DropdownPopupStyleSheetPath = "UI/KeyConfig/KeyConfigDropdownPopup";
+
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
         private readonly StyleSheet styleSheet;
         private InputBindingIconResolver iconResolver;
+        private StyleSheet dropdownPopupStyleSheet;
+        private VisualElement dropdownPopupStyleHost;
+        private VisualElement pendingPanelRoot;
 
         private Label statusLabel;
         private Label inputMonitorDot;
@@ -65,6 +70,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var root = uiDocument.rootVisualElement;
             root.Clear();
+            ApplyDropdownPopupStyle(root);
 
             if (styleSheet != null && !root.styleSheets.Contains(styleSheet))
             {
@@ -160,6 +166,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Dispose()
         {
+            DetachDropdownPopupStyle();
             KeyConfigLocalization.LocaleChanged -= RefreshBindingGroupChoices;
             localizedTree?.Dispose();
             localizedTree = null;
@@ -168,6 +175,53 @@ namespace Koiusa.Keyconfig.Runtime
             inputMonitorBinding?.Dispose();
             inputMonitorBinding = null;
             ClearRowBindings();
+        }
+
+        private void ApplyDropdownPopupStyle(VisualElement root)
+        {
+            dropdownPopupStyleSheet ??= Resources.Load<StyleSheet>(DropdownPopupStyleSheetPath);
+            if (dropdownPopupStyleSheet == null)
+            {
+                Debug.LogWarning($"KeyConfigView: Dropdown popup stylesheet not found at '{DropdownPopupStyleSheetPath}'.");
+                return;
+            }
+
+            if (root.panel != null)
+            {
+                AttachDropdownPopupStyle(root.panel.visualTree);
+                return;
+            }
+
+            pendingPanelRoot = root;
+            pendingPanelRoot.RegisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+        }
+
+        private void OnRootAttachedToPanel(AttachToPanelEvent evt)
+        {
+            pendingPanelRoot?.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+            pendingPanelRoot = null;
+            if (evt.destinationPanel != null)
+                AttachDropdownPopupStyle(evt.destinationPanel.visualTree);
+        }
+
+        private void AttachDropdownPopupStyle(VisualElement panelRoot)
+        {
+            if (panelRoot == null || dropdownPopupStyleSheet == null) return;
+            if (dropdownPopupStyleHost != null && dropdownPopupStyleHost != panelRoot)
+                dropdownPopupStyleHost.styleSheets.Remove(dropdownPopupStyleSheet);
+
+            dropdownPopupStyleHost = panelRoot;
+            if (!panelRoot.styleSheets.Contains(dropdownPopupStyleSheet))
+                panelRoot.styleSheets.Add(dropdownPopupStyleSheet);
+        }
+
+        private void DetachDropdownPopupStyle()
+        {
+            pendingPanelRoot?.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+            pendingPanelRoot = null;
+            if (dropdownPopupStyleHost != null && dropdownPopupStyleSheet != null)
+                dropdownPopupStyleHost.styleSheets.Remove(dropdownPopupStyleSheet);
+            dropdownPopupStyleHost = null;
         }
 
         public void SetLocalizedStatus(string key, params object[] arguments) => statusBinding?.Set(key, arguments);
