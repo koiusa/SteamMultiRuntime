@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 2331075215400263561}
   - component: {fileID: 8795846172813051235}
   - component: {fileID: 5344976606437911070}
+  - component: {fileID: 955000000000000002}
   - component: {fileID: 7320923782889463785}
   - component: {fileID: 2379218126333780387}
   - component: {fileID: 1393020944998710847}
@@ -1020,3 +1021,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 327ecbedcc38d0a46b88b0a86ac9327e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
+--- !u!114 &955000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481874b64bf84ca6a059a5ecdfc913c4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerCompassHudOwner
