@@ -132,7 +132,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
-            targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+            targetRigidbody.interpolation = RigidbodyInterpolation.None;
 
             presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
             if (presentationSmoother == null)
@@ -168,9 +168,7 @@ namespace Koiusa.SteamMultiRuntime
                 // Physics is server authoritative. Remote and owning clients are
                 // presentation-only; NetworkTransform applies the interpolated pose.
                 targetRigidbody.isKinematic = !IsServer;
-                targetRigidbody.interpolation = IsServer
-                    ? RigidbodyInterpolation.Interpolate
-                    : RigidbodyInterpolation.None;
+                targetRigidbody.interpolation = RigidbodyInterpolation.None;
             }
 
             // Sync motor settings from server on first spawn
@@ -270,12 +268,12 @@ namespace Koiusa.SteamMultiRuntime
                 // NetworkRigidbody also configures the body during spawn. Depending
                 // on component callback order it can overwrite the value set in
                 // OnNetworkSpawn, exposing MovePosition's fixed-tick steps on a host.
-                // Keep interpolation enabled on the physics authority only; remote
-                // clients continue to use NetworkTransform interpolation.
+                // Presentation is smoothed separately; interpolating the Rigidbody
+                // here would apply interpolation twice to the rendered hierarchy.
                 if (targetRigidbody != null &&
-                    targetRigidbody.interpolation != RigidbodyInterpolation.Interpolate)
+                    targetRigidbody.interpolation != RigidbodyInterpolation.None)
                 {
-                    targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+                    targetRigidbody.interpolation = RigidbodyInterpolation.None;
                 }
 
                 TickServerPhysics();

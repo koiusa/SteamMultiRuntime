@@ -73,7 +73,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
-            targetRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+            // Keep the physics root on exact fixed-tick poses. Presentation children
+            // are interpolated once by PhysicsPresentationSmoother.
+            targetRigidbody.interpolation = RigidbodyInterpolation.None;
 
             presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
             if (presentationSmoother == null)

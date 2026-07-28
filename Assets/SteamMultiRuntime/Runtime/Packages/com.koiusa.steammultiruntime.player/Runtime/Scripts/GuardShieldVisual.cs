@@ -68,11 +68,13 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var characterCenter = ResolveCharacterCenter();
+            var characterCenter = ResolveCharacterCenterWorld();
+            var presentationRoot = transform.Find("Presentation");
+            var visualParent = presentationRoot != null ? presentationRoot : transform;
             var shield = new GameObject("GuardShieldVisual", typeof(MeshFilter), typeof(MeshRenderer));
             shield.name = "GuardShieldVisual";
-            shield.transform.SetParent(transform, false);
-            shield.transform.localPosition = characterCenter;
+            shield.transform.SetParent(visualParent, false);
+            shield.transform.localPosition = visualParent.InverseTransformPoint(characterCenter);
             shield.transform.localRotation = Quaternion.identity;
             shield.transform.localScale = Vector3.zero;
             shield.layer = gameObject.layer;
@@ -101,7 +103,7 @@ namespace Koiusa.SteamMultiRuntime
             attackImpactEndsAt = Time.time + attackImpactDuration;
         }
 
-        private Vector3 ResolveCharacterCenter()
+        private Vector3 ResolveCharacterCenterWorld()
         {
             var renderers = GetComponentsInChildren<Renderer>(true);
             var hasBounds = false;
@@ -123,7 +125,7 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            return hasBounds ? transform.InverseTransformPoint(bounds.center) : fallbackLocalCenter;
+            return hasBounds ? bounds.center : transform.TransformPoint(fallbackLocalCenter);
         }
 
         private void ApplyOpacity()

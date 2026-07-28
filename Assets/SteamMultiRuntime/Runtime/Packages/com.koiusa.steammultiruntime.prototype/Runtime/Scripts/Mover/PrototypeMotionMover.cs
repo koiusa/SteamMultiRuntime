@@ -75,7 +75,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (IsServer && motionStartServerTime.Value <= 0d && NetworkManager != null)
             {
-                motionStartServerTime.Value = NetworkManager.ServerTime.Time;
+                motionStartServerTime.Value = NetworkManager.ServerTime.FixedTime;
             }
         }
 
@@ -98,8 +98,6 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            // Match Rigidbody interpolation: render between the previous and latest
-            // physics poses while the collider remains entirely in FixedUpdate.
             var alpha = Mathf.Clamp01((Time.time - Time.fixedTime) / Time.fixedDeltaTime);
             presentationTransform.SetPositionAndRotation(
                 Vector3.Lerp(previousPhysicsMatrix.GetColumn(3), currentPhysicsMatrix.GetColumn(3), alpha),
@@ -171,7 +169,9 @@ namespace Koiusa.SteamMultiRuntime
                 return Time.fixedTime;
             }
 
-            return (float)(NetworkManager.ServerTime.Time - motionStartServerTime.Value);
+            // FixedTime advances once per network/physics tick. Using render-frame
+            // Time here can repeat or skip poses when Unity runs multiple fixed steps.
+            return (float)(NetworkManager.ServerTime.FixedTime - motionStartServerTime.Value);
         }
 
         private void ApplyMotionMatrix(Matrix4x4 motionMatrix)
