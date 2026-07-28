@@ -98,7 +98,6 @@ namespace Koiusa.SteamMultiRuntime
         private bool hasSubscribedServerStarted;
         private bool isWaitingForActiveScene;
         private bool isWaitingForNavMeshUpdate;
-        private bool isWaitingForNetworkSceneLoad;
         private NetworkSceneManager subscribedSceneManager;
         private Transform debugDisplayRoot;
         private readonly CharacterDebugDisplayState characterDebugDisplayState = new();
@@ -106,7 +105,6 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             characterDebugDisplayState.IsVisible = showCharacterDebugUi;
-            EnsureDebugDisplayRoot();
             if (!SpawnAnchors.Contains(this))
             {
                 SpawnAnchors.Add(this);
@@ -119,6 +117,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Start()
         {
+            EnsureDebugDisplayRoot();
             RegisterNetworkPrefabHandler();
 
             if (!spawnOnStart)
@@ -151,10 +150,6 @@ namespace Koiusa.SteamMultiRuntime
             if (IsOwnSceneActive())
             {
                 WaitForNavMeshUpdate();
-            }
-            else
-            {
-                isWaitingForNetworkSceneLoad = true;
             }
         }
 
@@ -226,11 +221,19 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnValidate()
         {
-            if (Application.isPlaying)
+            if (!Application.isPlaying)
             {
-                SetNpcDestinationMarkersVisible(showNpcDestinationMarkers);
-                SetCharacterDebugUiVisible(showCharacterDebugUi);
+                return;
             }
+
+            // OnValidate中のGameObject生成やTransform階層変更はUnityの
+            // SendMessage制約に抵触するため、既存状態の更新だけに限定する。
+            if (debugDisplayRoot != null)
+            {
+                debugDisplayRoot.gameObject.SetActive(showNpcDestinationMarkers);
+            }
+
+            characterDebugDisplayState.IsVisible = showCharacterDebugUi;
         }
 
         private void TrySpawnOrSubscribe()
@@ -282,10 +285,6 @@ namespace Koiusa.SteamMultiRuntime
             {
                 WaitForNavMeshUpdate();
             }
-            else
-            {
-                isWaitingForNetworkSceneLoad = true;
-            }
         }
 
         private void SubscribeServerStarted(NetworkManager networkManager)
@@ -331,7 +330,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             UnsubscribeNetworkSceneEvents();
-            isWaitingForNetworkSceneLoad = false;
             WaitForNavMeshUpdate();
         }
 
