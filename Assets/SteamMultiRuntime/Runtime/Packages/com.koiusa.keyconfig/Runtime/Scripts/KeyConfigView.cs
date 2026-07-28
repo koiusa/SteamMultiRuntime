@@ -53,6 +53,7 @@ namespace Koiusa.Keyconfig.Runtime
         private readonly List<string> mapNames = new List<string>();
         private readonly List<Button> mapTabButtons = new List<Button>();
         private readonly List<BindingRowNavigation> bindingRows = new List<BindingRowNavigation>();
+        private readonly HashSet<Button> unavailableButtons = new HashSet<Button>();
 
         private sealed class InputStateRow
         {
@@ -259,7 +260,9 @@ namespace Koiusa.Keyconfig.Runtime
         {
             isInteractive = enabled;
             bindingGroupDropdown?.SetEnabled(enabled);
-            root?.Query<Button>().ForEach(button => button.SetEnabled(enabled || (allowCloseWhenDisabled && button == closeButton)));
+            root?.Query<Button>().ForEach(button => button.SetEnabled(
+                !unavailableButtons.Contains(button) &&
+                (enabled || (allowCloseWhenDisabled && button == closeButton))));
         }
 
         public void FocusDefault()
@@ -364,6 +367,7 @@ namespace Koiusa.Keyconfig.Runtime
             mapNames.Clear();
             mapTabButtons.Clear();
             bindingRows.Clear();
+            unavailableButtons.Clear();
 
             if (entries == null || entries.Count == 0)
             {
@@ -509,14 +513,19 @@ namespace Koiusa.Keyconfig.Runtime
                 BindRow(rebindButton, "keyconfig.change");
                 rebindButton.AddToClassList("keyconfig-row-button");
                 rebindButton.AddToClassList("keyconfig-rebind-button");
-                rebindButton.SetEnabled(isInteractive && !entry.IsComposite && entry.IsRebindable);
+                var hasConnectedControl = InputControlActivity.IsUsable(InputControlActivity.Resolve(entry.BindingPath));
+                var canRebind = !entry.IsComposite && entry.IsRebindable && hasConnectedControl;
+                if (!canRebind) unavailableButtons.Add(rebindButton);
+                rebindButton.SetEnabled(isInteractive && canRebind);
                 buttonCell.Add(rebindButton);
 
                 var resetButton = new Button(() => onReset?.Invoke(rowIndex));
                 BindRow(resetButton, "keyconfig.reset");
                 resetButton.AddToClassList("keyconfig-row-button");
                 resetButton.AddToClassList("keyconfig-reset-button");
-                resetButton.SetEnabled(isInteractive && !entry.IsComposite && entry.IsRebindable);
+                var canReset = !entry.IsComposite && entry.IsRebindable;
+                if (!canReset) unavailableButtons.Add(resetButton);
+                resetButton.SetEnabled(isInteractive && canReset);
                 buttonCell.Add(resetButton);
 
                 if (!entry.IsComposite && entry.IsRebindable)
@@ -750,7 +759,7 @@ namespace Koiusa.Keyconfig.Runtime
                     var target = evt.direction == NavigationMoveEvent.Direction.Left
                         ? bindingRows[focusedRowIndex].RebindButton
                         : bindingRows[focusedRowIndex].ResetButton;
-                    target.Focus();
+                    if (target.enabledInHierarchy) target.Focus();
                     ConsumeNavigationMove(evt);
                     return;
                 }
@@ -761,8 +770,8 @@ namespace Koiusa.Keyconfig.Runtime
                     var delta = evt.direction == NavigationMoveEvent.Direction.Up ? -1 : 1;
                     var targetIndex = Mathf.Clamp(focusedRowIndex + delta, 0, bindingRows.Count - 1);
                     var targetRow = bindingRows[targetIndex];
-                    var target = resetColumn ? targetRow.ResetButton : targetRow.RebindButton;
-                    target.Focus();
+                    var target = GetAvailableRowButton(targetRow, resetColumn);
+                    target?.Focus();
                     bindingListView?.ScrollTo(targetRow.Row);
                     ConsumeNavigationMove(evt);
                     return;
@@ -815,7 +824,7 @@ namespace Koiusa.Keyconfig.Runtime
                 }
 
                 var firstRow = bindingRows[0];
-                firstRow.RebindButton.Focus();
+                GetAvailableRowButton(firstRow, preferReset: false)?.Focus();
                 bindingListView?.ScrollTo(firstRow.Row);
             });
         }
@@ -850,7 +859,7 @@ namespace Koiusa.Keyconfig.Runtime
                         continue;
                     }
 
-                    bindingRows[i].RebindButton.Focus();
+                    GetAvailableRowButton(bindingRows[i], preferReset: false)?.Focus();
                     bindingListView?.ScrollTo(bindingRows[i].Row);
                     return;
                 }
@@ -891,6 +900,14 @@ namespace Koiusa.Keyconfig.Runtime
             rowIndex = -1;
             resetColumn = false;
             return false;
+        }
+
+        private static Button GetAvailableRowButton(BindingRowNavigation row, bool preferReset)
+        {
+            var preferred = preferReset ? row.ResetButton : row.RebindButton;
+            if (preferred != null && preferred.enabledInHierarchy) return preferred;
+            var fallback = preferReset ? row.RebindButton : row.ResetButton;
+            return fallback != null && fallback.enabledInHierarchy ? fallback : null;
         }
 
         private void ConsumeNavigationMove(NavigationMoveEvent evt)

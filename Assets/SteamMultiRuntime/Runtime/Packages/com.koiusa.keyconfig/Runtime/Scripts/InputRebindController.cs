@@ -5,6 +5,7 @@ namespace Koiusa.Keyconfig.Runtime
 {
     public sealed class InputRebindController : IDisposable
     {
+        private const float RebindTimeoutSeconds = 5f;
         private readonly InputBindingService bindingService;
         private InputActionRebindingExtensions.RebindingOperation operation;
         private InputAction activeAction;
@@ -60,6 +61,7 @@ namespace Koiusa.Keyconfig.Runtime
             action.Disable();
             operation = action.PerformInteractiveRebinding(bindingIndex)
                 .WithCancelingThrough("<Keyboard>/escape")
+                .WithTimeout(RebindTimeoutSeconds)
                 .OnComplete(op =>
                 {
                     var displayString = string.Empty;

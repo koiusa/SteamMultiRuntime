@@ -36,6 +36,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - Action MapタブでSubmitすると、そのMap内の最初に変更可能な行へ入ります。リスト内では上下で行、左右でChange／Resetを選び、CancelでAction Mapタブへ戻ります。
 - Changeの完了／キャンセル／失敗、および行単位Resetの後も対象行へフォーカスを戻し、リスト内の操作を継続します。
 - Keyconfig表示中はUI Map以外で有効だったActionを一時停止し、画面を閉じると元の有効状態へ戻します。変更待機中はタブ、ファンクション、スクロールを含むKeyconfig内の移動もロックします。
+- 未接続デバイスのBindingは表示と入力診断だけを行い、Changeを無効化します。変更待機は5秒でタイムアウトして元の行へ戻るため、入力できないデバイスを選んでも操作不能になりません。
 
 保存先は`Application.persistentDataPath/InputBindings`です。
 
