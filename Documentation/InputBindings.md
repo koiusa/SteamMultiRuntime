@@ -2,6 +2,8 @@
 
 本番用入力の正本は `Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.inputactions` です。
 
+利用方法は[Keyconfig.md](Keyconfig.md)と[TargetingSystem.md](TargetingSystem.md)を参照してください。
+
 ## Gameplay
 
 | 操作 | Keyboard / Mouse | Gamepad |

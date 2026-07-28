@@ -44,6 +44,7 @@ Samples / Prototype / Integration
 
 CoreとLocalizationは異なる関心事です。CoreからLocalizationを参照せず、Localizationから機能ドメインも参照しません。
 KeyconfigとTargetingSystemの汎用実装はプロジェクト汎用パッケージに残し、SteamMultiRuntime固有の接続だけを同名の`com.koiusa.steammultiruntime.*`パッケージへ配置します。
+Keyconfigの導入とテストは[Keyconfig.md](Keyconfig.md)、TargetingSystemは[TargetingSystem.md](TargetingSystem.md)を参照してください。
 
 ### Characterとリソース
 

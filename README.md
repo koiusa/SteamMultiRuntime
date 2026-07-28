@@ -44,6 +44,9 @@ Documentation
 - [Session Architecture](Documentation/SessionArchitecture.md)
 - [Editor Specification](Documentation/EditorSpecification.md)
 - [Package Architecture](Documentation/PackageArchitecture.md)
+- [Keyconfig](Documentation/Keyconfig.md)
+- [TargetingSystem](Documentation/TargetingSystem.md)
+- [Input Bindings](Documentation/InputBindings.md)
 
 Development Notes
 -----------------
