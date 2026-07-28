@@ -1,6 +1,4 @@
-using Koiusa.Input;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -9,28 +7,20 @@ namespace Koiusa.Keyconfig.Runtime
     public sealed class KeyConfigMenuToggle : MonoBehaviour
     {
         [SerializeField] private KeyConfigUiDocument keyConfigUiDocument;
-        [SerializeField] private InputActionsConfig inputActionsConfig;
 
-        private InputActionBinding toggleBinding;
+        public bool IsVisible => keyConfigUiDocument != null && keyConfigUiDocument.gameObject.activeSelf;
 
         private void OnEnable()
         {
-            toggleBinding = InputActionBinding.Bind(
-                inputActionsConfig?.FindAction("UI/MenuToggle"),
-                OnTogglePerformed);
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
             if (keyConfigUiDocument != null) keyConfigUiDocument.Closed += OnUiClosed;
         }
 
         private void OnDisable()
         {
-            toggleBinding?.Dispose();
-            toggleBinding = null;
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             if (keyConfigUiDocument != null) keyConfigUiDocument.Closed -= OnUiClosed;
         }
-
-        private void OnTogglePerformed(InputAction.CallbackContext context) => Toggle();
 
         private void OnActiveSceneChanged(Scene previousScene, Scene nextScene) => Hide();
 

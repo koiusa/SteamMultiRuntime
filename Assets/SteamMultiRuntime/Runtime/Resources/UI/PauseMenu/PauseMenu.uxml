@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="PauseMenu.uss" />
+    <ui:VisualElement class="pause-root">
+        <ui:VisualElement class="pause-panel">
+            <ui:Label text="Pause Menu" class="pause-title" />
+            <ui:Button name="keyconfig-button" text="Key Config" class="pause-button" />
+            <ui:Button name="character-select-button" text="Character Select" class="pause-button" />
+            <ui:Button name="close-button" text="Close" class="pause-button close-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

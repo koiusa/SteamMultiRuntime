@@ -1,0 +1,50 @@
+.pause-root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 145);
+}
+
+.pause-panel {
+    width: 380px;
+    padding: 24px;
+    background-color: rgba(8, 20, 34, 245);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(50, 235, 255);
+    border-right-color: rgb(50, 235, 255);
+    border-top-color: rgb(50, 235, 255);
+    border-bottom-color: rgb(50, 235, 255);
+}
+
+.pause-title {
+    margin-bottom: 20px;
+    color: rgb(153, 248, 255);
+    font-size: 24px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pause-button {
+    height: 46px;
+    margin-bottom: 10px;
+    color: rgb(205, 247, 255);
+    background-color: rgb(20, 42, 72);
+    font-size: 17px;
+}
+
+.pause-button:hover,
+.pause-button:focus {
+    background-color: rgb(28, 96, 122);
+}
+
+.close-button {
+    margin-top: 10px;
+    margin-bottom: 0;
+}

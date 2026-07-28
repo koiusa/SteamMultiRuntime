@@ -16,6 +16,8 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private InputActionBinding toggleBinding;
 
+        public bool IsVisible => characterSelectUiDocument != null && characterSelectUiDocument.gameObject.activeSelf;
+
         private void Awake()
         {
             if (characterSelectUiDocument == null)
