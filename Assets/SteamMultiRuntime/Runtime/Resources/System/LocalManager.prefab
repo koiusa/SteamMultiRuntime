@@ -307,6 +307,7 @@ GameObject:
   - component: {fileID: 7815715364185283209}
   - component: {fileID: 8971830613758992976}
   - component: {fileID: 7720235781508942950}
+  - component: {fileID: 940000000000000001}
   m_Layer: 0
   m_Name: UserRuntimeProfile
   m_TagString: Untagged
@@ -359,6 +360,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.CharacterSelectMenuToggle
   characterSelectUiDocument: {fileID: 4176095736983990773}
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+--- !u!114 &940000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6086978689243857597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d91ee5f52ea41f0bd10b22cc995252d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.Character.UI.CharacterSelectShortcutController
+  userProfile: {fileID: 8971830613758992976}
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
 --- !u!1 &9165860267327548677
 GameObject:
