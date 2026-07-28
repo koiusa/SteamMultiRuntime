@@ -143,6 +143,8 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("lobby.connection_host", "通信強度: HOST", "Connection: HOST"),
             E("lobby.connection_strength", "通信強度: {0} ({1} ms)", "Connection: {0} ({1} ms)"),
             E("lobby.connection_measuring", "通信強度: 測定中", "Connection: measuring"),
+            E("lobby.connection_symbol_filled", "★", "★"),
+            E("lobby.connection_symbol_empty", "☆", "☆"),
             E("lobby.member_host", "{0}（ホスト）", "{0} (HOST)")
         };
 

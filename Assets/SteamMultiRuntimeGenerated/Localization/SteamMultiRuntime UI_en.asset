@@ -493,6 +493,14 @@ MonoBehaviour:
     m_Localized: '{0} (HOST)'
     m_Metadata:
       m_Items: []
+  - m_Id: 11772625936384
+    m_Localized: "\u2605"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11772630130688
+    m_Localized: "\u2606"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

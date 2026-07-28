@@ -487,6 +487,14 @@ MonoBehaviour:
     m_Key: lobby.member_host
     m_Metadata:
       m_Items: []
+  - m_Id: 11772625936384
+    m_Key: lobby.connection_symbol_filled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11772630130688
+    m_Key: lobby.connection_symbol_empty
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
