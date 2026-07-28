@@ -8,7 +8,7 @@ Steam Multi Runtimeの日本語・英語ローカライズは、Unity Localizati
 
 導入先のUnity Editorで、次のメニューを一度実行します。
 
-`Tools > SteamMultiRuntime > Localization > Install or Update Japanese-English Tables`
+`Tools > SteamMultiRuntime > Localization > Install or Update Localization Tables`
 
 パッケージを更新した場合も、このメニューを再実行してください。セットアップ確認は次のメニューから行えます。
 

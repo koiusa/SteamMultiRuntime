@@ -17,7 +17,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private const string Root = "Assets/SteamMultiRuntimeGenerated/Localization";
         private const string TableName = GameLocalization.TableName;
 
-        [MenuItem("Tools/SteamMultiRuntime/Localization/Install or Update Japanese-English Tables")]
+        [MenuItem("Tools/SteamMultiRuntime/Localization/Install or Update Localization Tables")]
         public static void Install()
         {
             if (!ValidateCatalog(out var error))
