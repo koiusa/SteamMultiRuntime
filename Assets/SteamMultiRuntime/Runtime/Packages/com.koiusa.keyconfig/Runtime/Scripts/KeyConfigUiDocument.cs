@@ -36,6 +36,8 @@ namespace Koiusa.Keyconfig.Runtime
         private Coroutine pendingRebindCoroutine;
         private int activeRebindEntryIndex = -1;
         private readonly List<InputAction> suspendedActions = new List<InputAction>();
+        private string sessionOverridesJson;
+        private bool hasActiveEditSession;
 
         public string BindingGroup => bindingGroup;
         public event Action Closed;
@@ -81,6 +83,7 @@ namespace Koiusa.Keyconfig.Runtime
             view.SetBindingGroupChoices(bindingService.GetBindingGroups(), bindingGroup);
 
             _ = bindingService.TryLoadOverrides(userId);
+            BeginEditSession();
             RebuildBindingList();
             ApplyReadyStatus();
             view.FocusDefault();
@@ -95,6 +98,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
+            RestoreUnsavedChanges();
             view.HideConflict();
             view.UnbindActions();
             view.Dispose();
@@ -178,6 +182,10 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             var loaded = bindingService.TryLoadOverrides(userId);
+            if (loaded)
+            {
+                BeginEditSession();
+            }
             RebuildBindingList();
             if (loaded) ApplyLoadedStatus();
             else view.SetLocalizedStatus("keyconfig.no_saved_settings");
@@ -191,6 +199,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             bindingService.SaveOverrides(userId);
+            BeginEditSession();
             view.SetLocalizedStatus("keyconfig.saved");
         }
 
@@ -201,7 +210,7 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            bindingService.ResetAllOverrides(userId);
+            bindingService.ResetAllOverrides();
             RebuildBindingList();
             view.SetLocalizedStatus("keyconfig.reset_all_done");
         }
@@ -210,6 +219,24 @@ namespace Koiusa.Keyconfig.Runtime
         {
             Closed?.Invoke();
             gameObject.SetActive(false);
+        }
+
+        private void BeginEditSession()
+        {
+            sessionOverridesJson = bindingService?.CaptureOverrides();
+            hasActiveEditSession = bindingService != null;
+        }
+
+        private void RestoreUnsavedChanges()
+        {
+            if (!hasActiveEditSession || bindingService == null)
+            {
+                return;
+            }
+
+            bindingService.RestoreOverrides(sessionOverridesJson);
+            sessionOverridesJson = null;
+            hasActiveEditSession = false;
         }
 
         private void OnRebindRequested(int index)

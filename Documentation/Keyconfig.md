@@ -28,7 +28,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - 入力すると該当行が点灯します。
 - `Change`で新しいキー／ボタンを入力します。Escapeでキャンセルします。
 - `Reset`で行単位、`Reset All`で全体を初期化します。
-- `Save`／`Load`でユーザー設定を保存／復元します。
+- `Save`／`Load`でユーザー設定を保存／復元します。Change／Reset／Reset Allは画面内の編集中状態へ即時反映されますが、`Save`せずに閉じた場合は画面を開いた時点の設定へ戻ります。
 - Player、System、UIタブでAction Mapを切り替えます。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
 - UI Action Mapは入力状態を確認できるよう一覧へ表示しますが、Keyconfig自身の操作を失わないようChange／Resetの対象外です。保存データに古いUI Overrideが含まれていてもLoad時に除去します。

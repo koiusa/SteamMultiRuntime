@@ -95,6 +95,31 @@ namespace Koiusa.Keyconfig.Runtime
             repository.Save(userId, json);
         }
 
+        public string CaptureOverrides()
+        {
+            return inputActionAsset != null
+                ? inputActionAsset.SaveBindingOverridesAsJson()
+                : string.Empty;
+        }
+
+        public void RestoreOverrides(string overridesJson)
+        {
+            if (inputActionAsset == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(overridesJson))
+            {
+                inputActionAsset.RemoveAllBindingOverrides();
+            }
+            else
+            {
+                inputActionAsset.LoadBindingOverridesFromJson(overridesJson);
+            }
+            RemoveProtectedOverrides();
+        }
+
         public void ResetAllOverrides(string userId = null)
         {
             if (inputActionAsset != null)
