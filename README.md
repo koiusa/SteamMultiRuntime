@@ -40,6 +40,7 @@ Documentation
 - [Session Architecture](Documentation/SessionArchitecture.md)
 - [Editor Specification](Documentation/EditorSpecification.md)
 - [ローカライズ導入手順](Documentation/LOCALIZATION.md)
+- [Package Architecture](Documentation/PackageArchitecture.md)
 
 Development Notes
 -----------------

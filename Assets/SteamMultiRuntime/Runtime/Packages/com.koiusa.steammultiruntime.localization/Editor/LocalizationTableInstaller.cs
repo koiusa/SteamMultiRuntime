@@ -9,7 +9,7 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 
-namespace Koiusa.SteamMultiRuntime.Editor
+namespace Koiusa.SteamMultiRuntime.Localization.Editor
 {
     public static class LocalizationTableInstaller
     {

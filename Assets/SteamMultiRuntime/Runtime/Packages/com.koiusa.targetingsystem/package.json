@@ -11,7 +11,8 @@
 
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
-    "com.unity.cinemachine": "3.1.6"
+    "com.unity.cinemachine": "3.1.6",
+    "com.koiusa.input.core": "0.1.0"
   },
 
   "keywords": [

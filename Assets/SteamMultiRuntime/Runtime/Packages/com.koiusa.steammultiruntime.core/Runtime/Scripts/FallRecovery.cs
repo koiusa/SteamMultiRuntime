@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Koiusa.Common.System
+namespace Koiusa.SteamMultiRuntime.Core
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]

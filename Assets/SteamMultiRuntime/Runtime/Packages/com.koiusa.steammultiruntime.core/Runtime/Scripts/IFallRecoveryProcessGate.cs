@@ -1,4 +1,4 @@
-namespace Koiusa.Common.System
+namespace Koiusa.SteamMultiRuntime.Core
 {
     public interface IFallRecoveryProcessGate
     {

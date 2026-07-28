@@ -3,7 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Koiusa.Input.Core.Runtime",
-        "Koiusa.System.Core.Runtime",
+        "Koiusa.SteamMultiRuntime.Core.Runtime",
         "Unity.InputSystem",
         "Unity.Netcode.Runtime",
         "Facepunch Transport for Netcode for GameObjects",

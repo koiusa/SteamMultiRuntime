@@ -10,7 +10,8 @@
   },
 
   "dependencies": {
-    "com.unity.inputsystem": "1.18.0"
+    "com.unity.inputsystem": "1.18.0",
+    "com.koiusa.steammultiruntime.localization": "0.1.0"
   },
 
   "keywords": [

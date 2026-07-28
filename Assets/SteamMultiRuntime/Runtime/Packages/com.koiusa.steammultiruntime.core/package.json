@@ -1,0 +1,15 @@
+{
+  "name": "com.koiusa.steammultiruntime.core",
+  "displayName": "Steam Multi Runtime Core",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Shared runtime contracts and core components for Steam Multi Runtime feature packages.",
+  "author": {
+    "name": "koiusa"
+  },
+  "keywords": [
+    "steam-multi-runtime",
+    "core",
+    "shared"
+  ]
+}

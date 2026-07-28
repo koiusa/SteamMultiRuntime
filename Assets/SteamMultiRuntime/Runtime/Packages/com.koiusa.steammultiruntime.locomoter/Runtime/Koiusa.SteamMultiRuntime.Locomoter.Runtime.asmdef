@@ -3,8 +3,7 @@
 	"rootNamespace": "",
 	"references": [
 		"Koiusa.Input.Core.Runtime",
-		"Koiusa.System.Core.Runtime",
-		"Koiusa.SteamMultiRuntime.EditorTools.Runtime",
+		"Koiusa.SteamMultiRuntime.Core.Runtime",
 		"Unity.InputSystem"
 	],
 	"includePlatforms": [],

@@ -3,7 +3,7 @@
   "displayName": "Steam Multi Runtime Localization",
   "version": "0.1.0",
   "unity": "6000.3",
-  "description": "Japanese and English runtime localization plus host-project setup tools for Steam Multi Runtime.",
+  "description": "Shared Japanese and English localization runtime and host-project setup tools for Steam Multi Runtime packages.",
   "author": {
     "name": "koiusa"
   },

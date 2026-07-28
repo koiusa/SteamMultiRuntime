@@ -2,7 +2,7 @@
 
 Steam Multi Runtimeの日本語・英語ローカライズは、Unity LocalizationとAddressablesを使用します。
 
-実装は内部パッケージ `com.koiusa.steammultiruntime.localization` に分離されています。
+実装は共通内部パッケージ `com.koiusa.steammultiruntime.localization` に分離されています。
 
 セットアップはパッケージ本体ではなく、**Steam Multi Runtimeを参照・導入する側のUnityプロジェクト**で行います。詳しい手順は、パッケージ同梱の `Documentation~/Localization.md` を参照してください。
 

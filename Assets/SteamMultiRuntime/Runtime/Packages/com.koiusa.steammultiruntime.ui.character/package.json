@@ -1,0 +1,16 @@
+{
+  "name": "com.koiusa.steammultiruntime.ui.character",
+  "displayName": "Steam Multi Runtime Character UI",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Character selection and player overlay UI for Steam Multi Runtime.",
+  "author": { "name": "koiusa" },
+  "dependencies": {
+    "com.unity.inputsystem": "1.18.0",
+    "com.unity.netcode.gameobjects": "2.11.2",
+    "com.koiusa.input.core": "0.1.0",
+    "com.koiusa.steammultiruntime.localization": "0.1.0",
+    "com.koiusa.steammultiruntime.resourceloader": "0.1.0",
+    "com.koiusa.steammultiruntime.locomoter": "0.1.0"
+  }
+}

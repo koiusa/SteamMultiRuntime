@@ -1,0 +1,12 @@
+{
+  "name": "com.koiusa.steammultiruntime.resourceloader",
+  "displayName": "Steam Multi Runtime Resource Loader",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Character and runtime resource loading components for Steam Multi Runtime.",
+  "author": { "name": "koiusa" },
+  "dependencies": {
+    "com.unity.netcode.gameobjects": "2.11.2",
+    "com.koiusa.steammultiruntime.localization": "0.1.0"
+  }
+}

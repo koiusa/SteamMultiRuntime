@@ -1,0 +1,16 @@
+{
+  "name": "com.koiusa.steammultiruntime.locomoter.netcode",
+  "displayName": "Steam Multi Runtime Locomoter Netcode",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Netcode integration for Steam Multi Runtime locomotion.",
+  "author": { "name": "koiusa" },
+  "dependencies": {
+    "com.unity.inputsystem": "1.18.0",
+    "com.unity.netcode.gameobjects": "2.11.2",
+    "com.koiusa.input.core": "0.1.0",
+    "com.koiusa.steammultiruntime.core": "0.1.0",
+    "com.koiusa.steammultiruntime.locomoter": "0.1.0",
+    "com.koiusa.ui.common": "0.1.0"
+  }
+}
