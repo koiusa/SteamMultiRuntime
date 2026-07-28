@@ -20,6 +20,8 @@ Feature packages
 - `com.koiusa.steammultiruntime.lobby`: バックエンド非依存のLobby契約、シーンフロー、ローカルLobby UI。
 - `com.koiusa.steammultiruntime.lobby.netcode`: Netcode for GameObjectsによるセッションとシーン同期。
 - `com.koiusa.steammultiruntime.lobby.steam`: Steamworks LobbyバックエンドとSteam固有UI。LobbyおよびLobby Netcodeへ一方向に依存する。
+- `com.koiusa.steammultiruntime.character.ui`: Character選択などCharacter固有UI。
+- `com.koiusa.steammultiruntime.player.ui`: プレイヤー名表示などPlayer固有UI。Netcodeへ直接依存しない。
 
 ## 依存ルール
 

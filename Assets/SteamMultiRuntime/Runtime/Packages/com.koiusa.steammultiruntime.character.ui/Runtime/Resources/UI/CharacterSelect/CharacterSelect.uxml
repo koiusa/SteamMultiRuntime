@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Style src="../../../Packages/com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
-    <ui:Style src="../../../Packages/com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeScrollView.uss" />
+    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
+    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeScrollView.uss" />
     <ui:Style src="CharacterSelect.uss" />
     <ui:VisualElement class="smr-theme character-select-root">
         <ui:VisualElement class="character-select-panel">

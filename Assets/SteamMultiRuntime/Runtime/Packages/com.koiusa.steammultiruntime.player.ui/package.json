@@ -1,0 +1,11 @@
+{
+  "name": "com.koiusa.steammultiruntime.player.ui",
+  "displayName": "Steam Multi Runtime Player UI",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Player-specific UI such as world-space display name overlays.",
+  "author": { "name": "koiusa" },
+  "dependencies": {
+    "com.koiusa.steammultiruntime.player": "0.1.0"
+  }
+}

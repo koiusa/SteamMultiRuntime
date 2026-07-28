@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.SteamMultiRuntime.Player.UI
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]

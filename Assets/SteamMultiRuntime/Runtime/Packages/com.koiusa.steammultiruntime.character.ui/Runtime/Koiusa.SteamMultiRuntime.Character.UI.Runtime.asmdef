@@ -1,11 +1,9 @@
 {
-    "name": "Koiusa.SteamMultiRuntime.UI.Runtime",
-    "rootNamespace": "",
+    "name": "Koiusa.SteamMultiRuntime.Character.UI.Runtime",
+    "rootNamespace": "Koiusa.SteamMultiRuntime.Character.UI",
     "references": [
         "Koiusa.Input.Core.Runtime",
         "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
-        "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
-        "Koiusa.SteamMultiRuntime.Player.Runtime",
         "TNRD.SerializableInterface",
         "Unity.InputSystem"
         ,"Koiusa.SteamMultiRuntime.Localization.Runtime"

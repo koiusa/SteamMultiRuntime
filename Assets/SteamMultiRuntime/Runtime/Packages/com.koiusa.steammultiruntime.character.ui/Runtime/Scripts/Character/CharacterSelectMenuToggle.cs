@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.SteamMultiRuntime.Character.UI
 {
     [DisallowMultipleComponent]
     public class CharacterSelectMenuToggle : MonoBehaviour

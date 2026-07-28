@@ -3,7 +3,7 @@ using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.SteamMultiRuntime.Character.UI
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
