@@ -46,9 +46,24 @@
 
   "samples": [
     {
+      "displayName": "Gameplay Sample",
+      "description": "Main gameplay sample with playable stages plus the Unity logo and welcome startup flow. Also import Shared Sample Assets.",
+      "path": "Samples/Gameplay"
+    },
+    {
+      "displayName": "Steam Multiplayer - Third Person",
+      "description": "Primary multiplayer sample with third-person traversal, local play, and Steam lobby flows. Also import Shared Sample Assets and Gameplay Sample.",
+      "path": "Samples/SteamMultiPlayer_ThirdPersonView"
+    },
+    {
       "displayName": "Shared Sample Assets",
-      "description": "Assets shared by the gameplay, startup, and multiplayer samples. Import this before samples that depend on shared content.",
+      "description": "Required settings and assets shared by the gameplay and multiplayer samples.",
       "path": "Samples/Common"
+    },
+    {
+      "displayName": "Build Profile Scene Preset",
+      "description": "Recommended scene preset for the Third Person sample. Import Shared Sample Assets, Gameplay Sample, and Steam Multiplayer - Third Person first.",
+      "path": "Samples/BuildPreset"
     },
     {
       "displayName": "Keyconfig - Production Input",
@@ -61,29 +76,14 @@
       "path": "Samples/Features/TargetingSystem"
     },
     {
-      "displayName": "Gameplay Sample",
-      "description": "Gameplay stages plus the Unity logo and welcome scenes used by the sample startup flow.",
-      "path": "Samples/Gameplay"
-    },
-    {
-      "displayName": "Steam Multiplayer - Server",
-      "description": "Dedicated server lobby and session sample.",
-      "path": "Samples/SteamMultiPlayer_Server"
-    },
-    {
       "displayName": "Steam Multiplayer - Quarter View",
       "description": "Quarter-view local and Steam multiplayer lobby sample.",
       "path": "Samples/SteamMultiPlayer_QuarterView"
     },
     {
-      "displayName": "Steam Multiplayer - Third Person",
-      "description": "Third-person traversal with local and Steam multiplayer lobby flows.",
-      "path": "Samples/SteamMultiPlayer_ThirdPersonView"
-    },
-    {
-      "displayName": "Build Profile Scene Preset",
-      "description": "Scene preset for configuring a Unity Build Profile. Import Shared Sample Assets, Gameplay Sample, and Steam Multiplayer - Third Person first.",
-      "path": "Samples/BuildPreset"
+      "displayName": "Steam Multiplayer - Server",
+      "description": "Dedicated server lobby and session sample.",
+      "path": "Samples/SteamMultiPlayer_Server"
     }
   ]
 }

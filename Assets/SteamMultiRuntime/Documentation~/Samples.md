@@ -9,14 +9,17 @@ Package Managerで`Steam Multi Runtime`を選び、用途に応じて次のサ�
 
 | サンプル | 内容 |
 |---|---|
-| `Shared Sample Assets` | GameplayとMultiplayerで共有する設定・素材 |
 | `Gameplay Sample` | Stage、`UnityLogo`、`WelcomeScene` |
 | `Steam Multiplayer - Third Person` | Third Person用Lobby／Local Scene |
-| `Steam Multiplayer - Quarter View` | Quarter View用Lobby／Local Scene |
-| `Steam Multiplayer - Server` | Dedicated Server用Lobby Scene |
+| `Shared Sample Assets` | GameplayとMultiplayerで必要になる共有設定・素材 |
 | `Build Profile Scene Preset` | Third Person構成をBuild Profileへ登録するPreset |
 | `Keyconfig - Production Input` | 本番Input Actionsを使用するKeyconfig確認Scene |
 | `Targeting System - Production Input` | 本番Input Actionsを使用するTargeting確認Scene |
+| `Steam Multiplayer - Quarter View` | Quarter View用Lobby／Local Scene |
+| `Steam Multiplayer - Server` | Dedicated Server用Lobby Scene |
+
+一覧は主な利用頻度が高い順です。Third Personサンプルを実行する場合は、上位3サンプルと
+`Build Profile Scene Preset`をImportしてください。
 
 Importされたファイルは、通常は次の場所へコピーされます。
 
@@ -71,4 +74,3 @@ Presetを適用する前に旧バージョンのSampleを削除してくださ�
 - Build Profileが固有Scene一覧を使う場合、その一覧に登録している
 - `Assets/Samples/.../<old version>/`への参照が残っていない
 - Scene移動直後の場合はPlay Modeを終了し、Build Profileを再適用してから再実行している
-
