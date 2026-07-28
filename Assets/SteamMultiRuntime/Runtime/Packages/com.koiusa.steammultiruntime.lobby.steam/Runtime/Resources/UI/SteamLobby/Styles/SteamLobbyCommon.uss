@@ -269,5 +269,6 @@
 .lobby-list-focus-group {
     flex-grow: 1;
     flex-shrink: 1;
-    min-height: 140px;
+    min-height: 0;
+    height: 100%;
 }
