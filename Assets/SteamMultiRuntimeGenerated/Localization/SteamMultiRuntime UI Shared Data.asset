@@ -383,6 +383,94 @@ MonoBehaviour:
     m_Key: keyconfig.section_camera
     m_Metadata:
       m_Items: []
+  - m_Id: 8765481934848
+    m_Key: input.action.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683584
+    m_Key: input.action.look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683585
+    m_Key: input.action.attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683586
+    m_Key: input.action.dash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683587
+    m_Key: input.action.guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683588
+    m_Key: input.action.heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683589
+    m_Key: input.action.interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683590
+    m_Key: input.action.crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683591
+    m_Key: input.action.jump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683592
+    m_Key: input.action.previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683593
+    m_Key: input.action.next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683594
+    m_Key: input.action.sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683595
+    m_Key: input.action.lock_on
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683596
+    m_Key: input.action.grapple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683597
+    m_Key: input.action.reel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683598
+    m_Key: input.action.strafe_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683599
+    m_Key: input.action.camera_zoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683600
+    m_Key: input.action.grapple_fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683601
+    m_Key: input.part.up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683602
+    m_Key: input.part.down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683603
+    m_Key: input.part.left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683604
+    m_Key: input.part.right
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

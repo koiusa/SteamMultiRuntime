@@ -389,6 +389,94 @@ MonoBehaviour:
     m_Localized: CAMERA / INTERACTION
     m_Metadata:
       m_Items: []
+  - m_Id: 8765481934848
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683584
+    m_Localized: Look
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683585
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683586
+    m_Localized: Dash
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683587
+    m_Localized: Guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683588
+    m_Localized: Heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683589
+    m_Localized: Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683590
+    m_Localized: Crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683591
+    m_Localized: Jump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683592
+    m_Localized: Previous
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683593
+    m_Localized: Next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683594
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683595
+    m_Localized: Lock On
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683596
+    m_Localized: Grapple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683597
+    m_Localized: Reel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683598
+    m_Localized: Strafe Toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683599
+    m_Localized: Camera Zoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683600
+    m_Localized: Grapple Fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683601
+    m_Localized: Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683602
+    m_Localized: Down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683603
+    m_Localized: Left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8765519683604
+    m_Localized: Right
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

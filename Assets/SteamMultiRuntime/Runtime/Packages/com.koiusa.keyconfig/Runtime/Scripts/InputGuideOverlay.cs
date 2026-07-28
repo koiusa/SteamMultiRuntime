@@ -73,7 +73,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
-            GameLocalization.LocaleChanged += RefreshOperationSectionTitles;
+            GameLocalization.LocaleChanged += RefreshLocalizedUi;
             AcquireDebugToggleInput();
             Build();
             SetVisible(startVisible);
@@ -81,7 +81,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
-            GameLocalization.LocaleChanged -= RefreshOperationSectionTitles;
+            GameLocalization.LocaleChanged -= RefreshLocalizedUi;
             ReleaseDebugToggleInput();
             localizedTree?.Dispose();
             localizedTree = null;
@@ -364,15 +364,11 @@ namespace Koiusa.Keyconfig.Runtime
             BuildOperationSections(map, gamepadOperationList, true);
         }
 
-        private void RefreshOperationSectionTitles()
+        private void RefreshLocalizedUi()
         {
-            if (inputActionAsset == null)
-                return;
-            var map = string.IsNullOrWhiteSpace(actionMapName)
-                ? (inputActionAsset.actionMaps.Count > 0 ? inputActionAsset.actionMaps[0] : null)
-                : inputActionAsset.FindActionMap(actionMapName, false);
-            if (map != null)
-                BuildOperationLists(map);
+            var wasVisible = IsVisible;
+            Build();
+            SetVisible(wasVisible);
         }
 
         private void BuildOperationSections(InputActionMap map, VisualElement target, bool gamepad)
@@ -467,7 +463,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             var row = new VisualElement();
             row.AddToClassList("input-operation-row");
-            var actionLabel = new Label(Nicify(actionName));
+            var actionLabel = new Label(GameLocalization.Get(actionName));
             actionLabel.AddToClassList("input-operation-action");
             row.Add(actionLabel);
             var bindingLabel = new Label(string.Join(" / ", bindings));
@@ -552,9 +548,10 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
+            var localizedActionName = GameLocalization.Get(action.name);
             var actionName = binding.isPartOfComposite
-                ? $"{Nicify(action.name)} · {Nicify(binding.name)}"
-                : Nicify(action.name);
+                ? $"{localizedActionName} · {GameLocalization.Get(Nicify(binding.name))}"
+                : localizedActionName;
             var actionLabel = controlElement.Q<Label>("control-action-label");
             if (actionLabel == null)
             {

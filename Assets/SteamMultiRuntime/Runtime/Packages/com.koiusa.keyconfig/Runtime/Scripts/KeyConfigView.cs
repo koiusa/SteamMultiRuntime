@@ -342,7 +342,12 @@ namespace Koiusa.Keyconfig.Runtime
                 rowCounter++;
 
                 // アクション名セル（アクション初出のみ表示）
-                var actionCell = new Label(isNewAction && !entry.IsPartOfComposite ? entry.ActionName : (entry.IsPartOfComposite ? entry.DisplayName.Split('/')[0] : string.Empty));
+                var actionText = isNewAction && !entry.IsPartOfComposite
+                    ? entry.ActionName
+                    : (entry.IsPartOfComposite ? entry.DisplayName.Split('/')[0] : string.Empty);
+                var actionCell = new Label(actionText);
+                if (!string.IsNullOrEmpty(actionText))
+                    BindRow(actionCell, actionText);
                 actionCell.AddToClassList("keyconfig-cell-action");
                 if (entry.IsPartOfComposite)
                 {
