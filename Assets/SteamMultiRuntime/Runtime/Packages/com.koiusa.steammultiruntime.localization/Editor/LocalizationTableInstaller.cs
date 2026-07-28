@@ -33,12 +33,15 @@ namespace Koiusa.SteamMultiRuntime.Editor
             var collection = LocalizationEditorSettings.GetStringTableCollection(TableName) ??
                              LocalizationEditorSettings.CreateStringTableCollection(TableName, Root);
 
-            UpdateTable(collection, japanese, useJapanese: true);
-            UpdateTable(collection, english, useJapanese: false);
+            var japaneseResult = UpdateTable(collection, japanese, useJapanese: true);
+            var englishResult = UpdateTable(collection, english, useJapanese: false);
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
             Debug.Log(
                 $"Localization: installed {UiLocalizationCatalog.Entries.Count} stable UI keys for Japanese and English. " +
+                $"ja: {japaneseResult.added} added / {japaneseResult.updated} updated, " +
+                $"en: {englishResult.added} added / {englishResult.updated} updated. " +
                 "Addressables entries were updated without replacing the consuming project's settings.");
         }
 
@@ -94,18 +97,38 @@ namespace Koiusa.SteamMultiRuntime.Editor
             return locale;
         }
 
-        private static void UpdateTable(StringTableCollection collection, Locale locale, bool useJapanese)
+        private static (int added, int updated) UpdateTable(
+            StringTableCollection collection,
+            Locale locale,
+            bool useJapanese)
         {
             var table = collection.GetTable(locale.Identifier) as StringTable;
             if (table == null)
                 table = collection.AddNewTable(locale.Identifier) as StringTable;
 
+            var added = 0;
+            var updated = 0;
             foreach (var entry in UiLocalizationCatalog.Entries)
-                table.AddEntry(entry.Key, useJapanese ? entry.Japanese : entry.English);
+            {
+                var expected = useJapanese ? entry.Japanese : entry.English;
+                var tableEntry = table.GetEntry(entry.Key);
+                if (tableEntry == null)
+                {
+                    table.AddEntry(entry.Key, expected);
+                    added++;
+                }
+                else if (!string.Equals(tableEntry.Value, expected, StringComparison.Ordinal))
+                {
+                    tableEntry.Value = expected;
+                    updated++;
+                }
+            }
 
             LocalizationEditorSettings.SetPreloadTableFlag(table, true);
             EditorUtility.SetDirty(table);
             EditorUtility.SetDirty(collection.SharedData);
+            EditorUtility.SetDirty(collection);
+            return (added, updated);
         }
 
         private static bool ValidateCatalog(out string error)
@@ -137,8 +160,15 @@ namespace Koiusa.SteamMultiRuntime.Editor
             }
             foreach (var entry in UiLocalizationCatalog.Entries)
             {
-                if (table.GetEntry(entry.Key) == null)
+                var tableEntry = table.GetEntry(entry.Key);
+                if (tableEntry == null)
                     missing.Add($"{localeCode}:{entry.Key}");
+                else
+                {
+                    var expected = localeCode == "ja" ? entry.Japanese : entry.English;
+                    if (!string.Equals(tableEntry.Value, expected, StringComparison.Ordinal))
+                        missing.Add($"{localeCode}:{entry.Key} has stale text");
+                }
             }
         }
 
