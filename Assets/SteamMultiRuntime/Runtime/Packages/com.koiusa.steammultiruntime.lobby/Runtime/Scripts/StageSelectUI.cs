@@ -11,8 +11,13 @@ namespace Koiusa.SteamMultiRuntime
     /// </summary>
     public sealed class StageSelectUI
     {
+        private const string ThemeStyleSheetPath = "UI/StageSelect/LocalStageSelectTheme";
+
         private readonly UIDocument uiDocument;
         private DropdownField stageSceneField;
+        private StyleSheet popupStyleSheet;
+        private VisualElement popupStyleHost;
+        private VisualElement pendingPanelRoot;
 
         public event Action<string> StageSelected;
 
@@ -41,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSceneField.RegisterValueChangedCallback(OnStageSceneChanged);
+            ApplyPopupStyle(root);
         }
 
         public void PopulateStageScenes(IReadOnlyList<string> sceneNames)
@@ -95,6 +101,63 @@ namespace Koiusa.SteamMultiRuntime
             if (stageSceneField != null)
             {
                 stageSceneField.UnregisterValueChangedCallback(OnStageSceneChanged);
+            }
+
+            if (pendingPanelRoot != null)
+            {
+                pendingPanelRoot.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+                pendingPanelRoot = null;
+            }
+
+            if (popupStyleHost != null && popupStyleSheet != null)
+            {
+                popupStyleHost.styleSheets.Remove(popupStyleSheet);
+                popupStyleHost = null;
+            }
+        }
+
+        private void ApplyPopupStyle(VisualElement root)
+        {
+            popupStyleSheet ??= Resources.Load<StyleSheet>(ThemeStyleSheetPath);
+            if (popupStyleSheet == null)
+            {
+                Debug.LogWarning($"StageSelectUI: Popup stylesheet not found at '{ThemeStyleSheetPath}'.");
+                return;
+            }
+
+            if (root.panel != null)
+            {
+                AttachPopupStyle(root.panel.visualTree);
+                return;
+            }
+
+            pendingPanelRoot = root;
+            pendingPanelRoot.RegisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+        }
+
+        private void OnRootAttachedToPanel(AttachToPanelEvent evt)
+        {
+            pendingPanelRoot?.UnregisterCallback<AttachToPanelEvent>(OnRootAttachedToPanel);
+            pendingPanelRoot = null;
+            AttachPopupStyle(evt.destinationPanel.visualTree);
+        }
+
+        private void AttachPopupStyle(VisualElement panelRoot)
+        {
+            if (popupStyleHost == panelRoot)
+            {
+                return;
+            }
+
+            if (popupStyleHost != null)
+            {
+                popupStyleHost.styleSheets.Remove(popupStyleSheet);
+            }
+
+            popupStyleHost = panelRoot;
+            if (!popupStyleHost.styleSheets.Contains(popupStyleSheet))
+            {
+                popupStyleHost.styleSheets.Add(popupStyleSheet);
             }
         }
 
