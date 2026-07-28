@@ -51,6 +51,6 @@ Scrollbarは`com.koiusa.ui.common`の`SteamMultiRuntimeScrollView.uss`を共有�
 
 ## 資産の配置
 
-- 汎用パッケージのサンプル設定は`com.koiusa.keyconfig/Samples/Resources`に置きます。
+- 汎用パッケージの基本サンプルは`com.koiusa.keyconfig/Samples/Basic`に置きます。
 - SteamMultiRuntime本番設定は`Assets/SteamMultiRuntime/Runtime/Configs/Input`に置きます。
 - 本番設定を使う機能サンプルSceneは`Assets/SteamMultiRuntime/Samples/Features/Keyconfig`に置きます。

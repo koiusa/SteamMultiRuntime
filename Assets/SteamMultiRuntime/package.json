@@ -46,23 +46,43 @@
 
   "samples": [
     {
-      "displayName": "Samples Common Assets",
-      "description": "Sample for Common Assets.",
+      "displayName": "Shared Sample Assets",
+      "description": "Assets shared by the gameplay, startup, and multiplayer samples. Import this before samples that depend on shared content.",
       "path": "Samples/Common"
     },
     {
-      "displayName": "Samples Steam Multi Player Server",
-      "description": "Sample for Steam Multi Player Server.",
+      "displayName": "Keyconfig - Production Input",
+      "description": "Key configuration UI connected to the Steam Multi Runtime production Input Actions asset.",
+      "path": "Samples/Features/Keyconfig"
+    },
+    {
+      "displayName": "Targeting System - Production Input",
+      "description": "Target detection, Solo Lock-On, target switching, and camera control using the production Input Actions asset.",
+      "path": "Samples/Features/TargetingSystem"
+    },
+    {
+      "displayName": "Gameplay Stages",
+      "description": "Playable stages for locomotion, network physics, NPC spawning, and server gameplay.",
+      "path": "Samples/Gameplay/Stages"
+    },
+    {
+      "displayName": "Startup Presentation",
+      "description": "Unity logo and welcome scenes used by the sample startup flow.",
+      "path": "Samples/Presentation/Startup"
+    },
+    {
+      "displayName": "Steam Multiplayer - Server",
+      "description": "Dedicated server lobby and session sample.",
       "path": "Samples/SteamMultiPlayer_Server"
     },
     {
-      "displayName": "Samples Steam Multi Player Quarter View",
-      "description": "Sample for Steam Multi Player Quarter View.",
+      "displayName": "Steam Multiplayer - Quarter View",
+      "description": "Quarter-view local and Steam multiplayer lobby sample.",
       "path": "Samples/SteamMultiPlayer_QuarterView"
     },
     {
-      "displayName": "Samples Steam Multi Player Third Person View",
-      "description": "Sample for Steam Multi Player Third Person View.",
+      "displayName": "Steam Multiplayer - Third Person",
+      "description": "Third-person traversal with local and Steam multiplayer lobby flows.",
       "path": "Samples/SteamMultiPlayer_ThirdPersonView"
     },
     {

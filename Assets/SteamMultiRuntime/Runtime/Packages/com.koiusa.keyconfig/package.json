@@ -22,9 +22,9 @@
 
   "samples": [
     {
-      "displayName": "Samples Common Assets",
-      "description": "Sample for Common Assets.",
-      "path": "Samples"
+      "displayName": "Basic Key Rebinding",
+      "description": "Runtime key configuration UI with input monitoring, rebinding, reset, save, and load.",
+      "path": "Samples/Basic"
     }
   ]
 }
