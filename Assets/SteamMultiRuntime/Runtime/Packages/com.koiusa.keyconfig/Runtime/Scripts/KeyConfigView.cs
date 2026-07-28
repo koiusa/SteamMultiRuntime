@@ -10,6 +10,7 @@ namespace Koiusa.Keyconfig.Runtime
     {
         private const string DropdownPopupStyleSheetPath = "UI/KeyConfig/KeyConfigDropdownPopup";
         private const float NavigationScrollStep = 72f;
+        private const float ConflictInputGuardSeconds = 0.2f;
 
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
@@ -33,6 +34,7 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement conflictOverlay;
         private readonly List<Button> conflictButtons = new List<Button>();
         private Action onConflictCancel;
+        private float conflictInputUnlockTime;
 
         private Action onLoad;
         private Action onSave;
@@ -156,6 +158,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
             root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
             root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+            root?.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit, TrickleDown.TrickleDown);
             root?.RegisterCallback<FocusInEvent>(OnRootFocusIn);
         }
 
@@ -171,6 +174,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
             root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
             root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+            root?.UnregisterCallback<NavigationSubmitEvent>(OnNavigationSubmit, TrickleDown.TrickleDown);
             root?.UnregisterCallback<FocusInEvent>(OnRootFocusIn);
 
             onLoad = null;
@@ -272,6 +276,7 @@ namespace Koiusa.Keyconfig.Runtime
             conflictOverlay.Add(panel);
             root.Add(conflictOverlay);
             onConflictCancel = cancel;
+            conflictInputUnlockTime = Time.unscaledTime + ConflictInputGuardSeconds;
             conflictOverlay.schedule.Execute(() => conflictButtons[conflictButtons.Count - 1].Focus());
         }
 
@@ -281,6 +286,7 @@ namespace Koiusa.Keyconfig.Runtime
             conflictOverlay = null;
             conflictButtons.Clear();
             onConflictCancel = null;
+            conflictInputUnlockTime = 0f;
         }
 
         private void AddConflictButton(VisualElement parent, string localizationKey, Action action)
@@ -757,6 +763,13 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (conflictOverlay != null)
             {
+                if (Time.unscaledTime < conflictInputUnlockTime)
+                {
+                    root?.focusController?.IgnoreEvent(evt);
+                    evt.StopImmediatePropagation();
+                    return;
+                }
+
                 var cancel = onConflictCancel;
                 HideConflict();
                 root?.focusController?.IgnoreEvent(evt);
@@ -780,6 +793,17 @@ namespace Koiusa.Keyconfig.Runtime
 
             evt.StopImmediatePropagation();
             onClose.Invoke();
+        }
+
+        private void OnNavigationSubmit(NavigationSubmitEvent evt)
+        {
+            if (conflictOverlay == null || Time.unscaledTime >= conflictInputUnlockTime)
+            {
+                return;
+            }
+
+            root?.focusController?.IgnoreEvent(evt);
+            evt.StopImmediatePropagation();
         }
 
         private static void OnBindingRowFocusIn(FocusInEvent evt)
@@ -808,6 +832,12 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (conflictOverlay != null)
             {
+                if (Time.unscaledTime < conflictInputUnlockTime)
+                {
+                    ConsumeNavigationMove(evt);
+                    return;
+                }
+
                 if (evt.direction == NavigationMoveEvent.Direction.Left || evt.direction == NavigationMoveEvent.Direction.Right)
                 {
                     var focused = root?.focusController?.focusedElement as Button;
