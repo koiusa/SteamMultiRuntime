@@ -45,7 +45,7 @@
 | Action | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|---|
 | `System/DebugInputGuideToggle` | 入力ガイド表示切替 | F1 | DualShock Touchpad |
-| `System/CharacterDebugToggle` | キャラクターデバッグUI表示切替 | F2 | — |
+| `System/CharacterDebugToggle` | キャラクターデバッグUI表示切替 | F2 | L3ダブルクリック |
 | `System/DebugSessionMenuToggle` | 実行モード別デバッグ画面（Local: Stage Select／Network: Steam Lobby） | F3 | Select / Share |
 | `System/GameQuit` | ゲーム終了／EditorのPlay Mode終了 | Escape | — |
 

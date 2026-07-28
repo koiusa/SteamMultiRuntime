@@ -1674,6 +1674,17 @@
                 },
                 {
                     "name": "",
+                    "id": "550456dc-f729-4753-8106-db70caea33f4",
+                    "path": "<Gamepad>/leftStickPress",
+                    "interactions": "MultiTap(tapCount=2)",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "CharacterDebugToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "b49321b6-8c2f-40e8-90b5-41e968de37d8",
                     "path": "<Keyboard>/f3",
                     "interactions": "",
