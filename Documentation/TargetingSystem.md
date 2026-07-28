@@ -23,7 +23,7 @@ Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.in
 
 ## テスト
 
-`Assets/SteamMultiRuntime/Samples/Common/TargetingSystem_ProductionInput.unity`を開いてPlayします。
+`Assets/SteamMultiRuntime/Samples/Features/TargetingSystem/TargetingSystem_ProductionInput.unity`を開いてPlayします。
 
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
@@ -57,4 +57,4 @@ Koiusa > Steam Multi Runtime > Targeting > Validate Production Input
 
 - 汎用パッケージのサンプル設定は`com.koiusa.targetingsystem/Samples/Resources`に置きます。
 - SteamMultiRuntime本番設定は`Assets/SteamMultiRuntime/Runtime/Configs/Input`に置きます。
-- 本番設定を使うテストSceneは`Assets/SteamMultiRuntime/Samples/Common`に置きます。
+- 本番設定を使う機能サンプルSceneは`Assets/SteamMultiRuntime/Samples/Features/TargetingSystem`に置きます。

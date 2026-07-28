@@ -23,7 +23,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 
 ## テスト
 
-`Assets/SteamMultiRuntime/Samples/Common/Keyconfig_ProductionInput.unity`を開いてPlayします。
+`Assets/SteamMultiRuntime/Samples/Features/Keyconfig/Keyconfig_ProductionInput.unity`を開いてPlayします。
 
 - 入力すると該当行が点灯します。
 - `Change`で新しいキー／ボタンを入力します。Escapeでキャンセルします。
@@ -53,4 +53,4 @@ Scrollbarは`com.koiusa.ui.common`の`SteamMultiRuntimeScrollView.uss`を共有�
 
 - 汎用パッケージのサンプル設定は`com.koiusa.keyconfig/Samples/Resources`に置きます。
 - SteamMultiRuntime本番設定は`Assets/SteamMultiRuntime/Runtime/Configs/Input`に置きます。
-- 本番設定を使うテストSceneは`Assets/SteamMultiRuntime/Samples/Common`に置きます。
+- 本番設定を使う機能サンプルSceneは`Assets/SteamMultiRuntime/Samples/Features/Keyconfig`に置きます。
