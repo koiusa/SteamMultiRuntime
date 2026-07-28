@@ -4,26 +4,37 @@ using UnityEngine.InputSystem;
 namespace Koiusa.TargetingSystem.Runtime
 {
     [CreateAssetMenu(fileName = "TargetingInputActionsConfig", menuName = "Koiusa/Targeting/Input Actions Config")]
-    public sealed class TargetingInputActionsConfig : ScriptableObject
+    public sealed class TargetingInputActionsConfig : TargetingInputActions
     {
-        [Header("Package Sample Only")]
-        [TextArea, SerializeField] private string purpose =
-            "TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。";
+        [Header("Purpose")]
+        [TextArea, SerializeField] private string purpose;
+
+        [Header("Action Paths")]
+        [SerializeField] private string lookActionPath = "Player/Look";
+        [SerializeField] private string soloLockActionPath = "Player/SingleLockOn";
+        [SerializeField] private string multiLockActionPath = "Player/MultiLockOn";
+        [SerializeField] private string clearLockActionPath = "Player/ClearLockOn";
+        [SerializeField] private string bulkLockActionPath = "Player/BulkLockOn";
+        [SerializeField] private string previousTargetActionPath = "Player/Previous";
+        [SerializeField] private string nextTargetActionPath = "Player/Next";
+        [SerializeField] private string focusActionPath = "Player/Focus";
 
         public string Purpose => purpose;
 
-        public InputAction LookAction => Resolve("Player/Look");
-        public InputAction SoloLockAction => Resolve("Player/SingleLockOn");
-        public InputAction MultiLockAction => Resolve("Player/MultiLockOn");
-        public InputAction ClearLockAction => Resolve("Player/ClearLockOn");
-        public InputAction BulkLockAction => Resolve("Player/BulkLockOn");
-        public InputAction PreviousTargetAction => Resolve("Player/Previous");
-        public InputAction NextTargetAction => Resolve("Player/Next");
-        public InputAction FocusAction => Resolve("Player/Focus");
+        public override InputAction LookAction => Resolve(lookActionPath);
+        public override InputAction SoloLockAction => Resolve(soloLockActionPath);
+        public override InputAction MultiLockAction => Resolve(multiLockActionPath);
+        public override InputAction ClearLockAction => Resolve(clearLockActionPath);
+        public override InputAction BulkLockAction => Resolve(bulkLockActionPath);
+        public override InputAction PreviousTargetAction => Resolve(previousTargetActionPath);
+        public override InputAction NextTargetAction => Resolve(nextTargetActionPath);
+        public override InputAction FocusAction => Resolve(focusActionPath);
 
-        [Tooltip("TargetingSystem sample's complete InputActionAsset. Configure its actions and bindings in that asset.")]
+        [Tooltip("The complete InputActionAsset used by this targeting profile.")]
         [SerializeField] private InputActionAsset inputActionAsset;
 
-        private InputAction Resolve(string path) => inputActionAsset?.FindAction(path, throwIfNotFound: false);
+        private InputAction Resolve(string path) => string.IsNullOrWhiteSpace(path)
+            ? null
+            : inputActionAsset?.FindAction(path, throwIfNotFound: false);
     }
 }

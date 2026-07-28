@@ -1,0 +1,11 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.TargetingSystem.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.TargetingSystem",
+  "references": [
+    "Koiusa.TargetingSystem.Runtime",
+    "Koiusa.Input.Core.Runtime",
+    "Unity.InputSystem"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

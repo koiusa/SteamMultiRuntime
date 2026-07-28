@@ -18,7 +18,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private TargetingCameraRig cameraRig;
 
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
+        [SerializeField] private TargetingInputActions inputActionsConfig;
 
         private bool isActive;
         private InputActionLease lookLease;

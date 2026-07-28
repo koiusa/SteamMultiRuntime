@@ -38,9 +38,12 @@ Samples / Prototype / Integration
 |---|---|---|
 | `com.koiusa.steammultiruntime.core` | 内部パッケージ間で共有する最小契約と属性 | `ILocalPlayerProvider`, `LocalPlayerProviderRegistry`, `FallRecovery` |
 | `com.koiusa.steammultiruntime.localization` | 日本語・英語カタログ、Unity Localization連携、導入ツール | `GameLocalization`, `UiLocalizationCatalog` |
+| `com.koiusa.steammultiruntime.keyconfig` | 汎用KeyconfigをSteamMultiRuntimeのLocalizationへ接続 | `SteamMultiRuntimeKeyConfigLocalizer` |
+| `com.koiusa.steammultiruntime.targetingsystem` | 汎用TargetingSystemを共有Input Actions設定へ接続 | `SteamMultiRuntimeTargetingInputActions` |
 | `com.koiusa.steammultiruntime.editor-tools` | Steam Multi Runtime共通のEditor支援 | Animation Event可視化など |
 
 CoreとLocalizationは異なる関心事です。CoreからLocalizationを参照せず、Localizationから機能ドメインも参照しません。
+KeyconfigとTargetingSystemの汎用実装はプロジェクト汎用パッケージに残し、SteamMultiRuntime固有の接続だけを同名の`com.koiusa.steammultiruntime.*`パッケージへ配置します。
 
 ### Characterとリソース
 
@@ -98,6 +101,9 @@ locomoter.netcode ──────────> locomoter + core
 lobby.netcode ──────────────> lobby
 lobby.steam ────────────────> lobby + lobby.netcode + player
 lobby ──────────────────────> core + resourceloader + localization
+
+steammultiruntime.keyconfig ───────> keyconfig + localization
+steammultiruntime.targetingsystem ─> targetingsystem
 
 feature packages ───────────> input.core / core / localization as required
 ```

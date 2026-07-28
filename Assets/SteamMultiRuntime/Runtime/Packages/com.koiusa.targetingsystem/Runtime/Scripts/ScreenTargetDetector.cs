@@ -14,6 +14,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private readonly HashSet<ITargetable> candidates = new HashSet<ITargetable>();
         private readonly List<ITargetable> snapshot = new List<ITargetable>();
+        private readonly List<ITargetable> registeredTargets = new List<ITargetable>();
 
         public IReadOnlyCollection<ITargetable> Candidates => candidates;
 
@@ -37,19 +38,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnDisable()
         {
-            if (candidates.Count == 0)
-            {
-                return;
-            }
-
-            snapshot.Clear();
-            snapshot.AddRange(candidates);
-            candidates.Clear();
-
-            for (var i = 0; i < snapshot.Count; i++)
-            {
-                TargetExited?.Invoke(snapshot[i]);
-            }
+            ClearCandidates();
         }
 
         public void Refresh()
@@ -61,11 +50,15 @@ namespace Koiusa.TargetingSystem.Runtime
 
             if (registry == null)
             {
+                ClearCandidates();
                 return;
             }
 
-            foreach (var target in registry.Targets)
+            registeredTargets.Clear();
+            registeredTargets.AddRange(registry.Targets);
+            for (var i = 0; i < registeredTargets.Count; i++)
             {
+                var target = registeredTargets[i];
                 if (target == null || !target.IsTargetable)
                 {
                     continue;
@@ -98,6 +91,23 @@ namespace Koiusa.TargetingSystem.Runtime
                 {
                     TargetExited?.Invoke(oldTarget);
                 }
+            }
+        }
+
+        private void ClearCandidates()
+        {
+            if (candidates.Count == 0)
+            {
+                return;
+            }
+
+            snapshot.Clear();
+            snapshot.AddRange(candidates);
+            candidates.Clear();
+
+            for (var i = 0; i < snapshot.Count; i++)
+            {
+                TargetExited?.Invoke(snapshot[i]);
             }
         }
 

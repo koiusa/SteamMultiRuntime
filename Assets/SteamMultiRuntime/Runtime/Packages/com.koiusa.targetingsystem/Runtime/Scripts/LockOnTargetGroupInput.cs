@@ -9,7 +9,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class LockOnTargetGroupInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
+        [SerializeField] private TargetingInputActions inputActionsConfig;
 
         [Header("References")]
         [SerializeField] private TargetIndicatorController indicatorController;

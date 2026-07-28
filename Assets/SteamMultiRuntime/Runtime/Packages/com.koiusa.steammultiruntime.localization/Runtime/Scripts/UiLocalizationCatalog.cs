@@ -158,7 +158,7 @@ namespace Koiusa.SteamMultiRuntime.Localization
         internal static string ResolveKey(string keyOrSource) =>
             !string.IsNullOrEmpty(keyOrSource) && KeyBySource.TryGetValue(keyOrSource, out var key) ? key : keyOrSource;
 
-        internal static bool TryResolveKey(string keyOrSource, out string key)
+        public static bool TryResolveKey(string keyOrSource, out string key)
         {
             if (!string.IsNullOrEmpty(keyOrSource) && ByKey.ContainsKey(keyOrSource))
             {

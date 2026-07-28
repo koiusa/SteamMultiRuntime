@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UIElements;
-using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -73,7 +72,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
-            GameLocalization.LocaleChanged += RefreshLocalizedUi;
+            KeyConfigLocalization.LocaleChanged += RefreshLocalizedUi;
             AcquireDebugToggleInput();
             Build();
             SetVisible(startVisible);
@@ -81,7 +80,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
-            GameLocalization.LocaleChanged -= RefreshLocalizedUi;
+            KeyConfigLocalization.LocaleChanged -= RefreshLocalizedUi;
             ReleaseDebugToggleInput();
             localizedTree?.Dispose();
             localizedTree = null;
@@ -246,7 +245,7 @@ namespace Koiusa.Keyconfig.Runtime
             deviceLabel = root.Q<Label>("device-label");
             if (deviceLabel != null)
             {
-                deviceLabel.tooltip = GameLocalization.Get("keyconfig.switch_device_tooltip");
+                deviceLabel.tooltip = KeyConfigLocalization.Get("keyconfig.switch_device_tooltip");
                 deviceLabel.AddManipulator(new Clickable(ToggleDeviceLayout));
             }
             keyboardLayout = root.Q<VisualElement>("keyboard-layout");
@@ -268,7 +267,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             if (inputActionAsset == null || deviceLayout == null)
             {
-                GameLocalization.Set(mapLabel, "keyconfig.input_asset_missing");
+                KeyConfigLocalization.Set(mapLabel, "keyconfig.input_asset_missing");
                 return;
             }
 
@@ -277,7 +276,7 @@ namespace Koiusa.Keyconfig.Runtime
                 : inputActionAsset.FindActionMap(actionMapName, false);
             if (map == null)
             {
-                GameLocalization.Set(mapLabel, "keyconfig.action_map_missing");
+                KeyConfigLocalization.Set(mapLabel, "keyconfig.action_map_missing");
                 return;
             }
 
@@ -447,10 +446,10 @@ namespace Koiusa.Keyconfig.Runtime
         {
             return sectionIndex switch
             {
-                0 => GameLocalization.Get("keyconfig.section_movement"),
-                1 => GameLocalization.Get("keyconfig.section_combat"),
-                2 => GameLocalization.Get("keyconfig.section_grapple"),
-                _ => GameLocalization.Get("keyconfig.section_camera")
+                0 => KeyConfigLocalization.Get("keyconfig.section_movement"),
+                1 => KeyConfigLocalization.Get("keyconfig.section_combat"),
+                2 => KeyConfigLocalization.Get("keyconfig.section_grapple"),
+                _ => KeyConfigLocalization.Get("keyconfig.section_camera")
             };
         }
 
@@ -463,7 +462,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             var row = new VisualElement();
             row.AddToClassList("input-operation-row");
-            var actionLabel = new Label(GameLocalization.Get(actionName));
+            var actionLabel = new Label(KeyConfigLocalization.Get(actionName));
             actionLabel.AddToClassList("input-operation-action");
             row.Add(actionLabel);
             var bindingLabel = new Label(string.Join(" / ", bindings));
@@ -548,9 +547,9 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var localizedActionName = GameLocalization.Get(action.name);
+            var localizedActionName = KeyConfigLocalization.Get(action.name);
             var actionName = binding.isPartOfComposite
-                ? $"{localizedActionName} · {GameLocalization.Get(Nicify(binding.name))}"
+                ? $"{localizedActionName} · {KeyConfigLocalization.Get(Nicify(binding.name))}"
                 : localizedActionName;
             var actionLabel = controlElement.Q<Label>("control-action-label");
             if (actionLabel == null)

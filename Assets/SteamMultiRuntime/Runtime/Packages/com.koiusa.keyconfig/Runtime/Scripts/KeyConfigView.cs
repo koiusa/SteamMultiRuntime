@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
-using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.Keyconfig.Runtime
 {
@@ -57,7 +56,7 @@ namespace Koiusa.Keyconfig.Runtime
             this.uiDocument = uiDocument;
             this.layoutAsset = layoutAsset;
             this.styleSheet = styleSheet;
-            GameLocalization.LocaleChanged += RefreshBindingGroupChoices;
+            KeyConfigLocalization.LocaleChanged += RefreshBindingGroupChoices;
         }
 
         public bool IsRenderable => statusLabel != null && bindingListView != null;
@@ -161,7 +160,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Dispose()
         {
-            GameLocalization.LocaleChanged -= RefreshBindingGroupChoices;
+            KeyConfigLocalization.LocaleChanged -= RefreshBindingGroupChoices;
             localizedTree?.Dispose();
             localizedTree = null;
             statusBinding?.Dispose();
@@ -204,8 +203,8 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            bindingGroupDropdown.label = GameLocalization.Get("keyconfig.binding_group");
-            var allLabel = GameLocalization.Get("keyconfig.all");
+            bindingGroupDropdown.label = KeyConfigLocalization.Get("keyconfig.binding_group");
+            var allLabel = KeyConfigLocalization.Get("keyconfig.all");
             var choices = new List<string> { allLabel };
             if (cachedBindingGroups != null)
             {
@@ -552,7 +551,7 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var group = string.Equals(evt.newValue, GameLocalization.Get("keyconfig.all"), StringComparison.Ordinal)
+            var group = string.Equals(evt.newValue, KeyConfigLocalization.Get("keyconfig.all"), StringComparison.Ordinal)
                 ? string.Empty
                 : evt.newValue;
             cachedSelectedBindingGroup = group;

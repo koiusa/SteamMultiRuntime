@@ -1,0 +1,10 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Keyconfig.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Keyconfig",
+  "references": [
+    "koiusa.Keyconfig.Runtime",
+    "Koiusa.SteamMultiRuntime.Localization.Runtime"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

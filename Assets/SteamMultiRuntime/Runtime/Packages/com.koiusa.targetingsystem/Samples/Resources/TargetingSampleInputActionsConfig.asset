@@ -13,4 +13,12 @@ MonoBehaviour:
   m_Name: TargetingSampleInputActionsConfig
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingInputActionsConfig
   purpose: TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。
+  lookActionPath: Player/Look
+  soloLockActionPath: Player/SingleLockOn
+  multiLockActionPath: Player/MultiLockOn
+  clearLockActionPath: Player/ClearLockOn
+  bulkLockActionPath: Player/BulkLockOn
+  previousTargetActionPath: Player/Previous
+  nextTargetActionPath: Player/Next
+  focusActionPath: Player/Focus
   inputActionAsset: {fileID: -944628639613478452, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}

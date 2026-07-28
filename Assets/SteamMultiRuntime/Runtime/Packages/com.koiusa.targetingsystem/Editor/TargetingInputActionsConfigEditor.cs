@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Koiusa.TargetingSystem.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -8,12 +9,22 @@ namespace Koiusa.TargetingSystem.Editor
     [CustomEditor(typeof(TargetingInputActionsConfig))]
     public sealed class TargetingInputActionsConfigEditor : UnityEditor.Editor
     {
-        private SerializedProperty purpose;
+        private static readonly string[] ActionPathProperties =
+        {
+            "lookActionPath",
+            "soloLockActionPath",
+            "multiLockActionPath",
+            "clearLockActionPath",
+            "bulkLockActionPath",
+            "previousTargetActionPath",
+            "nextTargetActionPath",
+            "focusActionPath"
+        };
+
         private SerializedProperty inputActionAsset;
 
         private void OnEnable()
         {
-            purpose = serializedObject.FindProperty("purpose");
             inputActionAsset = serializedObject.FindProperty("inputActionAsset");
         }
 
@@ -22,11 +33,10 @@ namespace Koiusa.TargetingSystem.Editor
             serializedObject.Update();
 
             EditorGUILayout.HelpBox(
-                "TargetingSystemパッケージ単体サンプル用です。ActionとBindingはInput Action Assetを開いて設定します。",
+                "Input Action Assetと各ターゲティング操作のAction Pathを設定します。空のPathはその操作を無効化します。",
                 MessageType.Info);
 
-            EditorGUILayout.PropertyField(purpose);
-            EditorGUILayout.PropertyField(inputActionAsset);
+            DrawPropertiesExcluding(serializedObject, "m_Script");
             serializedObject.ApplyModifiedProperties();
 
             var asset = inputActionAsset.objectReferenceValue as InputActionAsset;
@@ -34,6 +44,23 @@ namespace Koiusa.TargetingSystem.Editor
             {
                 EditorGUILayout.HelpBox("Input Action Assetを設定してください。", MessageType.Error);
                 return;
+            }
+
+            var missingActions = new List<string>();
+            foreach (var propertyName in ActionPathProperties)
+            {
+                var path = serializedObject.FindProperty(propertyName)?.stringValue;
+                if (!string.IsNullOrWhiteSpace(path) && asset.FindAction(path, false) == null)
+                {
+                    missingActions.Add(path);
+                }
+            }
+
+            if (missingActions.Count > 0)
+            {
+                EditorGUILayout.HelpBox(
+                    $"Input Action Assetに存在しないAction Pathがあります:\n{string.Join("\n", missingActions)}",
+                    MessageType.Warning);
             }
 
             EditorGUILayout.Space();

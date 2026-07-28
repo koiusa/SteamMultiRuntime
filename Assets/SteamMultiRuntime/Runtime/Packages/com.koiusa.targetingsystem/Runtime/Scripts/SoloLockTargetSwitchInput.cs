@@ -12,7 +12,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private GameObject cameraRigObject;
 
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
+        [SerializeField] private TargetingInputActions inputActionsConfig;
 
         private bool isBound;
 

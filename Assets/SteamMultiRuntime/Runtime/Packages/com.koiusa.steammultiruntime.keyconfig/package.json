@@ -1,0 +1,22 @@
+{
+  "name": "com.koiusa.steammultiruntime.keyconfig",
+  "displayName": "Steam Multi Runtime Keyconfig Integration",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "unityRelease": "9f1",
+  "description": "Steam Multi Runtime localization integration for the generic Koiusa Keyconfig package.",
+  "author": {
+    "name": "koiusa"
+  },
+  "dependencies": {
+    "com.koiusa.keyconfig": "0.1.0",
+    "com.koiusa.steammultiruntime.localization": "0.1.0"
+  },
+  "keywords": [
+    "input",
+    "keyconfig",
+    "localization",
+    "integration",
+    "unity"
+  ]
+}

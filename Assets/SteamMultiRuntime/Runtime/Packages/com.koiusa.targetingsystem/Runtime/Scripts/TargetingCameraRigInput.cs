@@ -13,7 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
     public sealed class TargetingCameraRigInput : MonoBehaviour
     {
         [Header("Input")]
-        [SerializeField] private TargetingInputActionsConfig inputActionsConfig;
+        [SerializeField] private TargetingInputActions inputActionsConfig;
 
         private TargetingCameraRig cameraRig;
         private bool isBound;

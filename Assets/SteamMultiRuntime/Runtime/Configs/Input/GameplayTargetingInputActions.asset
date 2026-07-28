@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd7c53511b6a4bca9480b9475a7e7f28, type: 3}
+  m_Name: GameplayTargetingInputActions
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.TargetingSystem.Runtime::Koiusa.SteamMultiRuntime.TargetingSystem.SteamMultiRuntimeTargetingInputActions
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  lookActionPath: Player/Look
+  soloLockActionPath: Player/LockOn
+  multiLockActionPath:
+  clearLockActionPath:
+  bulkLockActionPath:
+  previousTargetActionPath: Player/Previous
+  nextTargetActionPath: Player/Next
+  focusActionPath:
