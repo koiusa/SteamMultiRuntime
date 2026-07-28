@@ -8,13 +8,10 @@
             <ui:Label text="Steam Lobby" class="title" />
 
             <ui:VisualElement class="lobby-content-row">
-                <ui:VisualElement class="lobby-controls-column">
-                    <ui:VisualElement name="status-panel-host" />
-                    <ui:VisualElement name="online-members-panel-host" />
+                <ui:VisualElement class="lobby-stage-column">
                     <ui:VisualElement name="create-focus-group" class="lobby-focus-group lobby-create-focus-group">
-                        <ui:Label text="シーン選択・ロビー管理  [LB: 一覧 / RB: 検索]" class="focus-group-title" />
+                        <ui:Label text="ステージ選択・ロビー作成  [LB: 一覧 / RB: 検索]" class="focus-group-title" />
                         <ui:VisualElement name="create-panel-host" />
-                        <ui:VisualElement name="actions-panel-host" />
                     </ui:VisualElement>
                 </ui:VisualElement>
 
@@ -28,6 +25,12 @@
                         <ui:Label text="ロビーを選択して決定  [↑↓ 選択 / 決定で参加 / LB: 検索 / RB: 作成]" class="focus-group-title" />
                         <ui:VisualElement name="list-panel-host" />
                     </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="lobby-controls-column">
+                    <ui:VisualElement name="status-panel-host" />
+                    <ui:VisualElement name="online-members-panel-host" />
+                    <ui:VisualElement name="actions-panel-host" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

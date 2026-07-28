@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -29,6 +30,7 @@ namespace Koiusa.Keyconfig.Runtime
         private bool usingBindingGroupFallback;
 
         public string BindingGroup => bindingGroup;
+        public event Action Closed;
 
         private void Awake()
         {
@@ -182,6 +184,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnCloseClicked()
         {
+            Closed?.Invoke();
             gameObject.SetActive(false);
         }
 

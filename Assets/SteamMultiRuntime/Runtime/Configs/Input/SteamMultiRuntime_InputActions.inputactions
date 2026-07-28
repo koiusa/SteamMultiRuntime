@@ -1565,6 +1565,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "DebugSessionMenuToggle",
+                    "type": "Button",
+                    "id": "93dbba28-d298-45cf-8090-ec8b778c28d9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1609,6 +1618,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "CharacterDebugToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b49321b6-8c2f-40e8-90b5-41e968de37d8",
+                    "path": "<Keyboard>/f3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "DebugSessionMenuToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

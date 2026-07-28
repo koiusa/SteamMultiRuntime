@@ -35,7 +35,7 @@
 |---|---|---|
 | ナビゲーション | WASD / 矢印キー | 左スティック / D-pad |
 | 決定／キャンセル | Enter / Escape | A / B、× / ○ |
-| メニュー | Tab | Start / Options |
+| キーコンフィグ | Tab | Start / Options |
 | キャラクターメニュー | Backquote / C | Select / Share |
 | 前／次のセクション | Q / E | LB / RB |
 
@@ -45,6 +45,7 @@
 |---|---|---|---|
 | `System/DebugInputGuideToggle` | 入力ガイド表示切替 | F1 | DualShock Touchpad |
 | `System/CharacterDebugToggle` | キャラクターデバッグUI表示切替 | F2 | — |
+| `System/DebugSessionMenuToggle` | 実行モード別デバッグ画面（Local: Stage Select／Network: Steam Lobby） | F3 | — |
 | `System/GameQuit` | ゲーム終了／EditorのPlay Mode終了 | Escape | — |
 
 `System/GameQuit`は誤操作を避けるためEscapeのみです。ゲームパッドではUIのキャンセルとメニューを経由して終了します。

@@ -45,7 +45,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            var action = inputActionsConfig?.FindAction("UI/MenuToggle");
+            var action = inputActionsConfig?.FindAction("System/DebugSessionMenuToggle");
             toggleBinding = InputActionBinding.Bind(action, OnTogglePerformed);
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
 
