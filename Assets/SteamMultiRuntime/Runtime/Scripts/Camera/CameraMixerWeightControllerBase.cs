@@ -36,6 +36,8 @@ namespace Koiusa.SteamMultiRuntime
         private IFocusMarkerContext context;
         private CinemachineInputAxisController inputAxisController;
         private InputAction grappleAction;
+        private IPlayerTraversalCoordinator traversalCoordinator;
+        private GameObject traversalPlayerObject;
         private readonly List<InputActionReference> runtimeActionReferences = new();
         private readonly List<CameraCollisionState> cameraCollisionStates = new();
         private bool appliedCameraCollision;
@@ -114,7 +116,9 @@ namespace Koiusa.SteamMultiRuntime
 
             if (inputAxisController != null)
             {
-                inputAxisController.enabled = grappleAction == null || !grappleAction.IsPressed();
+                inputAxisController.enabled = grappleAction == null
+                    || !grappleAction.IsPressed()
+                    || IsWireAttached();
             }
 
             if (mixingCamera == null)
@@ -131,6 +135,25 @@ namespace Koiusa.SteamMultiRuntime
 
             mixingCamera.SetWeight(defaultCameraIndex, nextDefault);
             mixingCamera.SetWeight(followCameraIndex, nextFollow);
+        }
+
+        private bool IsWireAttached()
+        {
+            var playerObject = context?.PlayerObject;
+            if (playerObject == null)
+            {
+                traversalPlayerObject = null;
+                traversalCoordinator = null;
+                return false;
+            }
+
+            if (traversalPlayerObject != playerObject)
+            {
+                traversalPlayerObject = playerObject;
+                traversalCoordinator = playerObject.GetComponentInChildren<IPlayerTraversalCoordinator>(true);
+            }
+
+            return traversalCoordinator != null && traversalCoordinator.IsWireAttached;
         }
 
         private void OnContextStateChanged()

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -13,6 +14,9 @@ namespace Koiusa.SteamMultiRuntime
         /// Network: IsInLobby に相当。 Local: LocalPlayerObject が存在するかどうか。
         /// </summary>
         bool IsActive { get; }
+
+        /// <summary>Camera が追従するローカル PlayerObject。</summary>
+        GameObject PlayerObject { get; }
 
         /// <summary>
         /// 状態が変化したときに発火するイベント。

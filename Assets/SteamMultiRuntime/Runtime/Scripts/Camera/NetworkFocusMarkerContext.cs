@@ -1,4 +1,5 @@
 using System;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -13,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private SteamLobbyService lobbyService;
 
         public bool IsActive => lobbyService != null && (lobbyService.IsInLobby || lobbyService.HasLoadedStageScene);
+        public GameObject PlayerObject => NetworkManager.Singleton?.LocalClient?.PlayerObject?.gameObject;
 
         public event Action StateChanged;
 

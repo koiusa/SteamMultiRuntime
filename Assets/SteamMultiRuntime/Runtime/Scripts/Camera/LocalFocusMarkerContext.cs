@@ -10,7 +10,8 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class LocalFocusMarkerContext : MonoBehaviour, IFocusMarkerContext
     {
-        public bool IsActive => ResolveLocalPlayerObject() != null;
+        public GameObject PlayerObject => ResolveLocalPlayerObject();
+        public bool IsActive => PlayerObject != null;
 
         public event Action StateChanged;
 

@@ -43,7 +43,7 @@ Orbit Scale                 ← Player/CameraZoom
 Grapple判定                  ← Player/Grapple
 ```
 
-Grapple入力中は照準操作との競合を避けるため、Cameraの`CinemachineInputAxisController`を一時的に無効化します。生成したAction ReferenceはDestroy時に破棄します。
+Grapple入力中は照準操作との競合を避けるため、Cameraの`CinemachineInputAxisController`を一時的に無効化します。Wire接続が成立した後はGrapple入力を保持していてもCamera入力を再度有効化し、接続中に視点を操作できます。生成したAction ReferenceはDestroy時に破棄します。
 
 ## 障害物回避
 
@@ -74,7 +74,7 @@ Collision Recovery Damping:    0.70 sec
 1. Camera Collision LayerにPlayer自身を含めていないか
 2. `Enable Camera Collision`が無効な場合にCamera Componentへ干渉しないか
 3. Mixing Camera配下の全Virtual Cameraへ同じ設定を適用できるか
-4. Grapple中にCamera入力が停止し、終了後に復帰するか
+4. Wire照準中にCamera入力が停止し、Wire接続後またはGrapple終了後に復帰するか
 5. 遮蔽物の出入りでCameraが振動しないか
 6. CameraがCollider内部へ入った場合に速やかに押し出されるか
 7. LocalとLobbyの両ContextでWeight切替が動作するか
