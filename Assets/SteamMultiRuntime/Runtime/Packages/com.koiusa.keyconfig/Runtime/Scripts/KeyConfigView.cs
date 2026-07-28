@@ -38,6 +38,9 @@ namespace Koiusa.Keyconfig.Runtime
         private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
         private LocalizedVisualTree localizedTree;
         private LocalizedTextBinding statusBinding;
+        private LocalizedTextBinding inputMonitorBinding;
+        private readonly List<LocalizedTextBinding> rowBindings = new List<LocalizedTextBinding>();
+        private int lastActiveInputCount = int.MinValue;
 
         private sealed class InputStateRow
         {
@@ -74,6 +77,8 @@ namespace Koiusa.Keyconfig.Runtime
                 statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
                 inputMonitorDot = root.Q<Label>("input-monitor-dot");
                 inputMonitorStatus = root.Q<Label>("input-monitor-status");
+                inputMonitorBinding?.Dispose();
+                inputMonitorBinding = inputMonitorStatus == null ? null : new LocalizedTextBinding(inputMonitorStatus);
                 bindingListView = root.Q<ScrollView>("binding-list-view");
 
                 var tableHeader = root.Q<VisualElement>("table-header");
@@ -109,6 +114,8 @@ namespace Koiusa.Keyconfig.Runtime
             BuildFallbackUi(root);
             statusBinding?.Dispose();
             statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
+            inputMonitorBinding?.Dispose();
+            inputMonitorBinding = inputMonitorStatus == null ? null : new LocalizedTextBinding(inputMonitorStatus);
             localizedTree?.Dispose();
             localizedTree = LocalizedVisualTree.Bind(root, statusLabel, inputMonitorStatus);
         }
@@ -155,6 +162,9 @@ namespace Koiusa.Keyconfig.Runtime
             localizedTree = null;
             statusBinding?.Dispose();
             statusBinding = null;
+            inputMonitorBinding?.Dispose();
+            inputMonitorBinding = null;
+            ClearRowBindings();
         }
 
         public void SetLocalizedStatus(string key, params object[] arguments) => statusBinding?.Set(key, arguments);
@@ -218,6 +228,7 @@ namespace Koiusa.Keyconfig.Runtime
             cachedOnRebind = onRebind;
             cachedOnReset = onReset;
 
+            ClearRowBindings();
             bindingListView.Clear();
             mapTabBar?.Clear();
             inputStateRows.Clear();
@@ -225,7 +236,8 @@ namespace Koiusa.Keyconfig.Runtime
             if (entries == null || entries.Count == 0)
             {
                 selectedMapName = null;
-                var emptyLabel = new Label(GameLocalization.Get("keyconfig.no_bindings"));
+                var emptyLabel = new Label();
+                BindRow(emptyLabel, "keyconfig.no_bindings");
                 emptyLabel.AddToClassList("keyconfig-binding");
                 bindingListView.Add(emptyLabel);
                 return;
@@ -343,7 +355,8 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
 
-                var inputStateLabel = new Label(GameLocalization.Get("keyconfig.input_active"));
+                var inputStateLabel = new Label();
+                BindRow(inputStateLabel, "keyconfig.input_active");
                 inputStateLabel.AddToClassList("keyconfig-input-state");
                 inputStateLabel.style.display = DisplayStyle.None;
                 bindingCell.Add(inputStateLabel);
@@ -353,12 +366,14 @@ namespace Koiusa.Keyconfig.Runtime
                 var buttonCell = new VisualElement();
                 buttonCell.AddToClassList("keyconfig-cell-buttons");
 
-                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex)) { text = GameLocalization.Get("keyconfig.change") };
+                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex));
+                BindRow(rebindButton, "keyconfig.change");
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 rebindButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(rebindButton);
 
-                var resetButton = new Button(() => onReset?.Invoke(rowIndex)) { text = GameLocalization.Get("keyconfig.reset") };
+                var resetButton = new Button(() => onReset?.Invoke(rowIndex));
+                BindRow(resetButton, "keyconfig.reset");
                 resetButton.AddToClassList("keyconfig-reset-button");
                 resetButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(resetButton);
@@ -413,11 +428,12 @@ namespace Koiusa.Keyconfig.Runtime
                 }
             }
 
-            if (inputMonitorStatus != null)
+            if (inputMonitorStatus != null && activeCount != lastActiveInputCount)
             {
-                inputMonitorStatus.text = activeCount > 0
-                    ? $"{activeCount} INPUT{(activeCount == 1 ? string.Empty : "S")} DETECTED"
-                    : "WAITING FOR INPUT";
+                lastActiveInputCount = activeCount;
+                if (activeCount == 0) inputMonitorBinding?.Set("keyconfig.waiting_input");
+                else if (activeCount == 1) inputMonitorBinding?.Set("keyconfig.input_detected");
+                else inputMonitorBinding?.Set("keyconfig.inputs_detected", activeCount);
             }
 
             if (inputMonitorDot != null)
@@ -495,6 +511,20 @@ namespace Koiusa.Keyconfig.Runtime
             buttonRow.Add(saveButton);
             buttonRow.Add(resetAllButton);
             buttonRow.Add(closeButton);
+        }
+
+        private void BindRow(TextElement element, string key)
+        {
+            var binding = new LocalizedTextBinding(element);
+            binding.Set(key);
+            rowBindings.Add(binding);
+        }
+
+        private void ClearRowBindings()
+        {
+            foreach (var binding in rowBindings)
+                binding.Dispose();
+            rowBindings.Clear();
         }
 
         private void OnBindingGroupDropdownValueChanged(ChangeEvent<string> evt)

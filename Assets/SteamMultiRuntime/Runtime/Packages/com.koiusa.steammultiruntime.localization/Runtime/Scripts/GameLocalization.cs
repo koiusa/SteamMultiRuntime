@@ -35,8 +35,10 @@ namespace Koiusa.SteamMultiRuntime.Localization
         public static string Get(string key, params object[] arguments)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
+            if (!UiLocalizationCatalog.TryResolveKey(key, out var resolvedKey))
+                return FormatText(key, arguments);
             if (!LocalizationSettings.HasSettings)
-                return FormatFallback(key, arguments);
+                return FormatFallback(resolvedKey, arguments);
 
             // GetLocalizedString is synchronous and internally uses WaitForCompletion.
             // Never call it while Addressables/Localization is still initializing;
@@ -45,15 +47,17 @@ namespace Koiusa.SteamMultiRuntime.Localization
             if (!initialization.IsDone ||
                 initialization.Status != UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded ||
                 LocalizationSettings.SelectedLocale == null)
-                return FormatFallback(key, arguments);
+                return FormatFallback(resolvedKey, arguments);
             try
             {
-                var value = LocalizationSettings.StringDatabase.GetLocalizedString(TableName, key, arguments);
-                return string.IsNullOrEmpty(value) ? FormatFallback(key, arguments) : value;
+                var value = LocalizationSettings.StringDatabase.GetLocalizedString(TableName, resolvedKey, arguments);
+                return string.IsNullOrEmpty(value) || value.StartsWith("No translation found for", StringComparison.Ordinal)
+                    ? FormatFallback(resolvedKey, arguments)
+                    : value;
             }
             catch (Exception)
             {
-                return FormatFallback(key, arguments);
+                return FormatFallback(resolvedKey, arguments);
             }
         }
 
@@ -84,9 +88,14 @@ namespace Koiusa.SteamMultiRuntime.Localization
         private static string FormatFallback(string key, object[] arguments)
         {
             var fallback = UiLocalizationCatalog.GetJapaneseFallback(key);
-            if (arguments == null || arguments.Length == 0) return fallback;
-            try { return string.Format(fallback, arguments); }
-            catch (FormatException) { return fallback; }
+            return FormatText(fallback, arguments);
+        }
+
+        private static string FormatText(string text, object[] arguments)
+        {
+            if (arguments == null || arguments.Length == 0) return text;
+            try { return string.Format(text, arguments); }
+            catch (FormatException) { return text; }
         }
 
         private static void OnSelectedLocaleChanged(Locale locale)
@@ -146,8 +155,10 @@ namespace Koiusa.SteamMultiRuntime.Localization
             var excludedSet = excluded == null ? null : new HashSet<TextElement>(excluded);
             foreach (var element in root.Query<TextElement>().ToList())
             {
-                if (!string.IsNullOrWhiteSpace(element.text) && (excludedSet == null || !excludedSet.Contains(element)))
-                    entries.Add((element, UiLocalizationCatalog.ResolveKey(element.text)));
+                if (!string.IsNullOrWhiteSpace(element.text) &&
+                    (excludedSet == null || !excludedSet.Contains(element)) &&
+                    UiLocalizationCatalog.TryResolveKey(element.text, out var key))
+                    entries.Add((element, key));
             }
             GameLocalization.LocaleChanged += Refresh;
             Refresh();

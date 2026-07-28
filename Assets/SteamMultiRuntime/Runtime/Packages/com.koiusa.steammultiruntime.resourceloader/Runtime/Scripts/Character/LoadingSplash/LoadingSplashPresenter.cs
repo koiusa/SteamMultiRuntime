@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -21,10 +22,12 @@ namespace Koiusa.SteamMultiRuntime
         {
             this.owner = owner;
             this.splashSettings = splashSettings;
+            GameLocalization.LocaleChanged += RefreshSplashUi;
         }
 
         public void Dispose()
         {
+            GameLocalization.LocaleChanged -= RefreshSplashUi;
             if (splashUiObject != null)
             {
                 Object.Destroy(splashUiObject);
@@ -226,7 +229,8 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var messageText = splashSettings != null ? splashSettings.SplashMessage : "Loading...";
-            splashMessageElement.text = string.IsNullOrWhiteSpace(messageText) ? "Loading..." : messageText;
+            splashMessageElement.text = GameLocalization.Get(
+                string.IsNullOrWhiteSpace(messageText) ? "loading.default" : messageText);
             splashMessageElement.style.display = string.IsNullOrWhiteSpace(messageText)
                 ? DisplayStyle.None
                 : DisplayStyle.Flex;

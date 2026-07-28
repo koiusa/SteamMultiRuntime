@@ -11,6 +11,8 @@ namespace Koiusa.SteamMultiRuntime
         private readonly LocalizedTextBinding connectionBinding;
         private readonly LocalizedTextBinding currentLobbyBinding;
         private readonly LocalizedTextBinding infoBinding;
+        private readonly System.Collections.Generic.List<LocalizedTextBinding> lobbyBindings = new();
+        private readonly System.Collections.Generic.List<LocalizedTextBinding> memberBindings = new();
 
         public LobbyViewPresenter(LobbyViewContext context, LobbyViewNavigationController navigation)
         {
@@ -64,9 +66,12 @@ namespace Koiusa.SteamMultiRuntime
 
         public void ShowNoLobbies(string messageKey = "lobby.not_found")
         {
+            ClearBindings(lobbyBindings);
+            ClearBindings(lobbyBindings);
             context.LobbyListView.Clear();
             navigation.ClearLobbyRows();
-            var emptyLabel = new Label(GameLocalization.Get(messageKey));
+            var emptyLabel = new Label();
+            BindDynamic(lobbyBindings, emptyLabel, messageKey);
             emptyLabel.AddToClassList("muted");
             context.LobbyListView.Add(emptyLabel);
         }
@@ -81,6 +86,8 @@ namespace Koiusa.SteamMultiRuntime
             System.Action<ulong> onJoinLobby)
         {
             var rememberedLobbyId = navigation.RememberedLobbyId;
+            ClearBindings(lobbyBindings);
+            ClearBindings(lobbyBindings);
             context.LobbyListView.Clear();
             navigation.ClearLobbyRows();
 
@@ -104,13 +111,14 @@ namespace Koiusa.SteamMultiRuntime
                 var actions = new VisualElement();
                 actions.AddToClassList("lobby-row-actions");
                 if (isLocalHostLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("lobby.host"), "host-badge");
+                    AddLobbyBadge(actions, "lobby.host", "host-badge");
                 if (isCurrentLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("lobby.joined"), "joined-badge");
+                    AddLobbyBadge(actions, "lobby.joined", "joined-badge");
                 else if (isFullLobby)
-                    AddLobbyBadge(actions, GameLocalization.Get("lobby.full"), "full-badge");
+                    AddLobbyBadge(actions, "lobby.full", "full-badge");
 
-                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { text = GameLocalization.Get("lobby.join"), focusable = false };
+                var joinButton = new Button(() => onJoinLobby(lobby.Id)) { focusable = false };
+                BindDynamic(lobbyBindings, joinButton, "lobby.join");
                 joinButton.AddToClassList("join-button");
                 joinButton.SetEnabled(canJoinLobby);
                 actions.Add(joinButton);
@@ -130,9 +138,10 @@ namespace Koiusa.SteamMultiRuntime
             navigation.RestoreFocusAfterListRebuild();
         }
 
-        private static void AddLobbyBadge(VisualElement actions, string text, string className)
+        private void AddLobbyBadge(VisualElement actions, string key, string className)
         {
-            var badge = new Label(text);
+            var badge = new Label();
+            BindDynamic(lobbyBindings, badge, key);
             badge.AddToClassList("lobby-badge");
             badge.AddToClassList(className);
             actions.Add(badge);
@@ -173,10 +182,12 @@ namespace Koiusa.SteamMultiRuntime
                 context.MemberConnectionStrengthLabel.text = visible ? connectionStrengthText : string.Empty;
             }
 
+            ClearBindings(memberBindings);
             context.OnlineMemberListView.Clear();
             if (!isInLobby || memberNames == null || memberNames.Count == 0)
             {
-                var emptyLabel = new Label(GameLocalization.Get(isInLobby ? "lobby.no_member_info" : "lobby.not_joined"));
+                var emptyLabel = new Label();
+                BindDynamic(memberBindings, emptyLabel, isInLobby ? "lobby.no_member_info" : "lobby.not_joined");
                 emptyLabel.AddToClassList("muted");
                 context.OnlineMemberListView.Add(emptyLabel);
                 return;
@@ -184,7 +195,9 @@ namespace Koiusa.SteamMultiRuntime
 
             foreach (var memberName in memberNames)
             {
-                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? GameLocalization.Get("common.unknown") : memberName);
+                var memberLabel = new Label(string.IsNullOrWhiteSpace(memberName) ? string.Empty : memberName);
+                if (string.IsNullOrWhiteSpace(memberName))
+                    BindDynamic(memberBindings, memberLabel, "common.unknown");
                 memberLabel.AddToClassList("online-member-name");
                 context.OnlineMemberListView.Add(memberLabel);
             }
@@ -192,9 +205,28 @@ namespace Koiusa.SteamMultiRuntime
 
         public void Dispose()
         {
+            ClearBindings(lobbyBindings);
+            ClearBindings(memberBindings);
             connectionBinding.Dispose();
             currentLobbyBinding.Dispose();
             infoBinding.Dispose();
+        }
+
+        private static void BindDynamic(
+            System.Collections.Generic.ICollection<LocalizedTextBinding> bindings,
+            TextElement element,
+            string key)
+        {
+            var binding = new LocalizedTextBinding(element);
+            binding.Set(key);
+            bindings.Add(binding);
+        }
+
+        private static void ClearBindings(System.Collections.Generic.ICollection<LocalizedTextBinding> bindings)
+        {
+            foreach (var binding in bindings)
+                binding.Dispose();
+            bindings.Clear();
         }
     }
 }

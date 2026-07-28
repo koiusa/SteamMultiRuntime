@@ -33,11 +33,14 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("common.unknown", "不明", "Unknown", "Unknown"),
             E("loading.default", "読み込み中…", "Loading...", "Loading..."),
             E("stage.title", "ステージ選択", "Stage Selection", "Stage Selection"),
+            E("stage.field", "ステージ", "Stage", "Stage"),
 
             E("keyconfig.title", "キーコンフィグ", "Key Configuration"),
             E("keyconfig.help", "キーやボタンを押すと、対応する操作がリアルタイムに点灯します。", "Press a key or button to highlight its action in real time."),
             E("keyconfig.input_monitor", "入力モニター", "INPUT MONITOR", "INPUT MONITOR"),
             E("keyconfig.waiting_input", "入力待機中", "WAITING FOR INPUT", "WAITING FOR INPUT"),
+            E("keyconfig.input_detected", "入力を1件検出", "1 INPUT DETECTED"),
+            E("keyconfig.inputs_detected", "入力を{0}件検出", "{0} INPUTS DETECTED"),
             E("keyconfig.action", "アクション", "Action"),
             E("keyconfig.binding", "キー / ボタン", "Key / Button"),
             E("keyconfig.load", "読込", "Load"),
@@ -81,6 +84,8 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("lobby.refresh", "更新", "Refresh", "Refresh"),
             E("lobby.leave", "ロビーを退出", "Leave Lobby", "Leave Lobby"),
             E("lobby.join_by_id", "IDで参加", "Join by ID", "Join by ID"),
+            E("lobby.id", "ロビーID", "Lobby ID", "Lobby ID"),
+            E("lobby.name", "ロビー名", "Lobby Name", "Lobby Name"),
             E("lobby.join", "参加", "Join", "Join"),
             E("lobby.host", "ホスト", "HOST", "HOST"),
             E("lobby.joined", "参加中", "JOINED", "JOINED"),
@@ -114,6 +119,16 @@ namespace Koiusa.SteamMultiRuntime.Localization
 
         internal static string ResolveKey(string keyOrSource) =>
             !string.IsNullOrEmpty(keyOrSource) && KeyBySource.TryGetValue(keyOrSource, out var key) ? key : keyOrSource;
+
+        internal static bool TryResolveKey(string keyOrSource, out string key)
+        {
+            if (!string.IsNullOrEmpty(keyOrSource) && ByKey.ContainsKey(keyOrSource))
+            {
+                key = keyOrSource;
+                return true;
+            }
+            return KeyBySource.TryGetValue(keyOrSource ?? string.Empty, out key);
+        }
 
         internal static string GetJapaneseFallback(string keyOrSource)
         {
