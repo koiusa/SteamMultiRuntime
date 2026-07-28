@@ -44,6 +44,7 @@
 | Action | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|---|
 | `System/DebugInputGuideToggle` | 入力ガイド表示切替 | F1 | DualShock Touchpad |
+| `System/CharacterDebugToggle` | キャラクターデバッグUI表示切替 | F2 | — |
 | `System/GameQuit` | ゲーム終了／EditorのPlay Mode終了 | Escape | — |
 
 `System/GameQuit`は誤操作を避けるためEscapeのみです。ゲームパッドではUIのキャンセルとメニューを経由して終了します。

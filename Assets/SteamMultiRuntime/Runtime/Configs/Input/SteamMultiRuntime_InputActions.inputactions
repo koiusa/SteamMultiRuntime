@@ -1556,6 +1556,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "CharacterDebugToggle",
+                    "type": "Button",
+                    "id": "790d0948-18b5-4d7a-8bb4-80330b6b3462",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1589,6 +1598,17 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "DebugInputGuideToggle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a2442b88-9a68-4a74-a449-a90bdd946a48",
+                    "path": "<Keyboard>/f2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "CharacterDebugToggle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

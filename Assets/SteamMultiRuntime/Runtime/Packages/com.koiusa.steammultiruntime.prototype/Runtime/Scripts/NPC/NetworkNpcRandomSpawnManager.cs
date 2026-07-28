@@ -5,6 +5,8 @@ using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using Koiusa.SteamMultiRuntime.Network;
 using Koiusa.SteamMultiRuntime.Character;
+using Koiusa.Input;
+using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -93,6 +95,7 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Debug")]
         [SerializeField] private bool showNpcDestinationMarkers;
         [SerializeField] private bool showCharacterDebugUi;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private bool hasSpawned;
         private bool hasSubscribedServerStarted;
@@ -101,10 +104,13 @@ namespace Koiusa.SteamMultiRuntime
         private NetworkSceneManager subscribedSceneManager;
         private Transform debugDisplayRoot;
         private readonly CharacterDebugDisplayState characterDebugDisplayState = new();
+        private InputActionBinding characterDebugToggleBinding;
 
         private void Awake()
         {
             characterDebugDisplayState.IsVisible = showCharacterDebugUi;
+            var toggleAction = inputActionsConfig?.FindAction("System/CharacterDebugToggle");
+            characterDebugToggleBinding = InputActionBinding.Bind(toggleAction, OnCharacterDebugTogglePerformed);
             if (!SpawnAnchors.Contains(this))
             {
                 SpawnAnchors.Add(this);
@@ -155,6 +161,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            characterDebugToggleBinding?.Dispose();
+            characterDebugToggleBinding = null;
             spawnedNpcs.DestroyAll();
             SpawnAnchors.Remove(this);
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
@@ -217,6 +225,11 @@ namespace Koiusa.SteamMultiRuntime
         {
             showCharacterDebugUi = visible;
             characterDebugDisplayState.IsVisible = visible;
+        }
+
+        private void OnCharacterDebugTogglePerformed(InputAction.CallbackContext context)
+        {
+            SetCharacterDebugUiVisible(!showCharacterDebugUi);
         }
 
         private void OnValidate()
