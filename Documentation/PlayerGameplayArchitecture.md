@@ -20,7 +20,7 @@ com.koiusa.steammultiruntime.player.netcode
 
 ## 現在の実装状況
 
-`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Combat/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定する実装ですが、Combat機能はPlay Modeを含む動作確認が未完了です。
+`PlayerCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Combat/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定します。DashはStrafe移動方向へ対応し、GuardはLocal／Remote双方のShield表示へ接続済みです。Combat全般のPlay Mode検証は継続中です。
 
 ### 実装済み
 
@@ -35,6 +35,9 @@ com.koiusa.steammultiruntime.player.netcode
 - `PlayerSkillInputController`によるLocal PlayerのAttack／Dash／Guard／Heal入力接続
 - `NetworkPlayerSkillController`によるOwner入力、Skill発動／Guard解除のServerRpc接続
 - Active Skill IndexとActivation SequenceのServer書き込み・全Client読み取り同期
+- Strafe中の移動入力方向を使用するDash
+- Guard状態に連動するIcosphere Shield、攻撃命中Ring、Scene Depth環境交差表示
+- Active Skill Indexを利用したRemote Guard Shield表示
 - Input Guide OverlayによるSkillキーのBinding名とライブ入力状態表示
 
 `PlayerCharacterCoordinator`が現在提供する主な入口は以下です。
@@ -49,7 +52,7 @@ characterCoordinator.ResetState();
 - Combat全般のPlay Mode動作確認（Hit判定、Damage、Heal、Guard倍率、死亡状態）
 - Network環境でのCombat動作確認とServer Authorityの検証
 - Cooldown StateのNetwork同期
-- Network Skill Stateを利用したRemote側Animation／Effect再生
+- Network Skill Stateを利用したAttack／Dash／HealのRemote Animation／Effect再生
 - Sword AttackのLight／Heavy／Combo Action
 - Guard Counter Action
 - Cooldown、Active Duration、Skill固有値の設定アセットへの分離
@@ -99,6 +102,7 @@ Player
    │  │  ├─ HeavyAttackAction                           [予定]
    │  │  └─ ComboAttackAction                           [予定]
    │  ├─ GuardSkillFeature                              [実装済]
+   │  │  ├─ GuardShieldVisual                           [実装済]
    │  │  └─ GuardCounterAction                          [予定]
    │  └─ HealSkillFeature                               [実装済]
    │
@@ -135,7 +139,7 @@ Network Player
 
 Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
 
-`ActiveSkillIndex`はAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。現在はRemote側のAnimation／Effect再生へは未接続です。
+`ActiveSkillIndex`はAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。Guardの表示状態は`ActiveSkillIndex`から全Clientの`GuardShieldVisual`へ反映します。その他のSkill Animation／Effect再生は未接続です。
 
 ### 設定クラスの予定
 
@@ -231,18 +235,28 @@ SkillFeature
     └─→ IPlayerCombatCoordinator
 ```
 
-Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付きモーションを要求します。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
+Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付きモーションを要求します。通常時は入力Controllerから渡された基準方向を使用し、Strafe中に移動入力がある場合は`IPlayerLocomotionState.MoveDirection`を優先します。これにより、注視方向を維持したまま前後左右および斜めへDashできます。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
 
 ## 初期Skill
 
 | Feature | 動作 |
 |---|---|
-| `DashSkillFeature` | 指定方向へ期限付きモーションを要求する |
+| `DashSkillFeature` | 指定方向、またはStrafe中の移動方向へ期限付きモーションを要求する |
 | `SwordAttackSkillFeature` | 前方の範囲内へ一度だけダメージを与える |
-| `GuardSkillFeature` | 発動中の被ダメージ倍率を下げる |
+| `GuardSkillFeature` | 発動中の被ダメージ倍率を下げ、`GuardShieldVisual`を表示する |
 | `HealSkillFeature` | 生存中かつHPが減っている場合に回復する |
 
 各Skillには共通してSkill ID、Cooldown、Active Durationがあります。Dashだけは固有のDurationをモーション時間にも使用します。
+
+## Guard表示
+
+`GuardShieldVisual`は実行時にIcosphereを生成し、`Koiusa/Effects/GuardShield` Shaderで半透明膜、リム、均一な格子、Pulseを描画します。表示ObjectはPlayerの`Presentation`配下へ配置し、Character Modelと同じ補間座標を使用します。
+
+- Guard開始／終了時は中心から拡縮しながらFadeする
+- 攻撃命中は`PlayerDamageRequest.Point`を中心とするRingで表示する
+- 環境との交差はURP Scene Depthを比較して表示する
+- 環境交差のためPC／Mobile双方のURP AssetでDepth Textureを有効にする
+- Network Playerでは`ActiveSkillIndex == 2`を全Clientへ反映する
 
 > [!CAUTION]
 > Combat関連クラスとPrefab設定は存在しますが、現時点では動作未確認です。この節の動作説明はコード上の意図を示すもので、検証済み仕様ではありません。

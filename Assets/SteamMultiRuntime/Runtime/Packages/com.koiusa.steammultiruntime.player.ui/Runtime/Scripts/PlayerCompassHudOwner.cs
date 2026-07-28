@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime.Player.UI
@@ -6,39 +5,36 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
     [DisallowMultipleComponent]
     public sealed class PlayerCompassHudOwner : MonoBehaviour
     {
-        private Component networkObject;
-        private PropertyInfo isSpawnedProperty;
-        private PropertyInfo isOwnerProperty;
+        private ILocalPlayerOwnership ownership;
         private bool registered;
 
         private void Awake()
         {
-            var components = GetComponents<Component>();
+            var components = GetComponents<MonoBehaviour>();
             for (var i = 0; i < components.Length; i++)
             {
-                var candidate = components[i];
-                if (candidate == null || candidate.GetType().FullName != "Unity.Netcode.NetworkObject") continue;
-                networkObject = candidate;
-                isSpawnedProperty = candidate.GetType().GetProperty("IsSpawned");
-                isOwnerProperty = candidate.GetType().GetProperty("IsOwner");
-                break;
+                if (components[i] is ILocalPlayerOwnership source)
+                {
+                    ownership = source;
+                    break;
+                }
             }
         }
 
         private void OnEnable()
         {
-            if (networkObject == null) Register();
+            TryRegister();
         }
 
         private void Update()
         {
-            if (registered || networkObject == null) return;
-            if (ReadBoolean(isSpawnedProperty) && ReadBoolean(isOwnerProperty)) Register();
+            if (!registered) TryRegister();
         }
 
-        private bool ReadBoolean(PropertyInfo property)
+        private void TryRegister()
         {
-            return property != null && property.GetValue(networkObject) is true;
+            if (ownership != null && ownership.IsOwnershipResolved && ownership.IsLocalOwner)
+                Register();
         }
 
         private void Register()

@@ -77,6 +77,12 @@ Collision Recovery Damping:    0.70 sec
 
 衝突対象は`cameraCollisionLayers`で制御し、Triggerの扱いなど実際の判定はCinemachine Componentに委ねます。Terrain専用Decollisionは無効です。
 
+## Compass HUD
+
+`PlayerCompassHud`は画面上部に横スクロール式Compassを表示します。Camera Forwardを水平面へ投影した角度を使用し、Worldの`+Z`をNorth、`+X`をEastとして、8方角、15度刻みの目盛り、現在角度を表示します。
+
+CompassはStartup時に自動生成しません。Human Player Prefab上の`PlayerCompassHudOwner`が`ILocalPlayerOwnership`を参照し、Local Playerであることを確認して専用GameObjectを生成します。Playerの無効化／破棄時には削除します。NetworkではOwnerだけが表示し、Remote PlayerとNPCは生成しません。
+
 ## 変更時の確認項目
 
 1. Camera Collision LayerにPlayer自身を含めていないか

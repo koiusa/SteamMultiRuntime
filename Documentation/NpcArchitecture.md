@@ -80,6 +80,12 @@ LocalPlayer_NPC
 `PlayerControllerAdapter`はLocalではNPC状態、Networkでは同期済み状態を共通のPlayer Controller契約へ変換します。
 Local／Networkとも構成が同じになり、Animatorなどが行う`GetComponent<IPlayerController>()`の結果も一意です。
 
+## 表示補間と移動床
+
+Local／Network NPCはPlayerと同じ`PhysicsPresentationSmoother`を使用します。Physics RootのRigidbody補間は`None`とし、Character Modelなどの表示階層だけを`Presentation`上で補間します。Network Clientは物理Simulationを行わず、`NetworkTransform`の補間結果を表示します。
+
+移動床上では`GroundMotionTracker`が`IGroundMotionSnapshotSource`から速度、変位、回転を一括取得します。床の移動行列はNPCごとに再計算せずPhysics tick単位で共有します。床変位は`PlayerMotor`が一度だけ適用し、物理押し出しとの二重適用は行いません。
+
 ## 変更時の確認項目
 
 1. Moduleの装着、未装着、無効化が独立して動作するか
@@ -89,3 +95,5 @@ Local／Networkとも構成が同じになり、Animatorなどが行う`GetCompo
 5. 到着、スタック復旧、中心復帰が競合しないか
 6. Network NPCがサーバー所有になっているか
 7. Spawn、Despawn、途中参加時の同期が正しいか
+8. PlayerとNPCでPresentation補間が二重適用されていないか
+9. 多数のNPCが移動床へ乗った際に床行列がNPCごとに再計算されていないか

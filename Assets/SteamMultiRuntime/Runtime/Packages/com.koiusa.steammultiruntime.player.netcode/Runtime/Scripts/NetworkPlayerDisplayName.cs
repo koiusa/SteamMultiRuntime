@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetworkObject))]
-    public sealed class NetworkPlayerDisplayName : NetworkBehaviour, IPlayerDisplayNameSource
+    public sealed class NetworkPlayerDisplayName : NetworkBehaviour, IPlayerDisplayNameSource, ILocalPlayerOwnership
     {
         private readonly NetworkVariable<FixedString64Bytes> displayName = new(
             default,
@@ -14,6 +14,8 @@ namespace Koiusa.SteamMultiRuntime
             NetworkVariableWritePermission.Server);
 
         public bool IsAvailable => IsSpawned;
+        public bool IsOwnershipResolved => IsSpawned;
+        public bool IsLocalOwner => IsSpawned && IsOwner;
         public ulong? PlayerId => IsSpawned ? OwnerClientId : null;
 
         public string DisplayName

@@ -287,6 +287,14 @@ Minimum Rope Length: 2 m
 
 `PlayerAnimatorStateDriver`がMotorとCoordinatorの状態をAnimatorパラメータへ変換します。
 
+接地Locomotionの`Speed`と`MotionSpeed`には水平速度だけでなく、水平速度と鉛直速度の合成値を使用します。
+
+```text
+Animation Move Speed = sqrt(HorizontalVelocity² + VerticalVelocity²)
+```
+
+この値は斜面に沿った実移動距離を反映するため、上り坂／下り坂でAnimation再生速度が遅くなることを防ぎます。空中では従来どおり水平速度を使用します。Gameplay上の`HorizontalVelocity`定義は変更しません。
+
 `PlayerLocomotionAnimationMode`は次の値を使用します。
 
 ```text
@@ -298,6 +306,23 @@ WireSwing = 4
 ```
 
 `WireSwing`は独立したAnimator Stateです。現在は`InAir`と同じAnimationClipを参照しており、専用Clip追加後は`WireSwing` StateのMotionだけを差し替えます。
+
+## 物理表示補間
+
+PlayerとNPCは同じ表示補間方式を使用します。
+
+```text
+Physics Root       Rigidbody interpolation = None
+└─ Presentation   PhysicsPresentationSmootherで描画Frame間を補間
+```
+
+Motor、Collider、Network同期は補間前のPhysics Rootを参照します。Character Model、Camera Marker、World UI、Guard Shieldなどの表示Objectは`Presentation`配下に置きます。Rigidbody補間と`PhysicsPresentationSmoother`を同時使用して二重補間しないでください。Remote Network Objectは`NetworkTransform`の補間を使用します。
+
+## 移動床
+
+`PrototypeMotionMover`はPhysics tickでCollider Transformを更新し、子の`Presentation`だけを描画Frame間で補間します。Player／NPCの床追従は物理押し出しではなく`IGroundMotionSource`の変位を`PlayerMotor`が一度だけ適用します。
+
+`IGroundMotionSnapshotSource`対応床は、前回／現在の移動行列、逆行列、回転差をPhysics tickごとに一度だけキャッシュします。`GroundMotionTracker`は速度、変位、回転を個別に再計算せず、1回のSnapshot取得で受け取ります。キャッシュは呼び出し時の`Time.fixedTime`で更新するため、Script Execution Orderには依存しません。
 
 ## Netcode
 

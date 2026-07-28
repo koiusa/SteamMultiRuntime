@@ -49,6 +49,8 @@ SoloLockTargetSwitchInput
 
 ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。
 
+Local専用UIは`ILocalPlayerOwnership`を通じて所有状態を参照します。Local実装は常に解決済みOwnerを返し、Network実装は`NetworkObject`のSpawn／Owner状態を型付き契約へ変換します。UI側はNetcode型やReflectionへ依存しません。
+
 ## 全体構成
 
 ```text
@@ -84,7 +86,10 @@ SteamMultiRuntime
 │
 ├─ Presentation
 │  ├─ PlayerAnimatorStateDriver
+│  ├─ PhysicsPresentationSmoother
+│  ├─ GuardShieldVisual
 │  ├─ Camera Mixer / Focus Marker
+│  ├─ PlayerCompassHud
 │  └─ Player Name / Loading UI
 │
 └─ Session
