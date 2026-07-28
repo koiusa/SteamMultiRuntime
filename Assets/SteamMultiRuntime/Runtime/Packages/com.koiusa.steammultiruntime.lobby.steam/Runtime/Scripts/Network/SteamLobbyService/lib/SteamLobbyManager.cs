@@ -508,7 +508,13 @@ namespace Koiusa.SteamMultiRuntime
             lobbyState.Clear();
             if (currentLobby.HasValue)
             {
-                departedLobbyIds.Add(currentLobby.Value.Id);
+                // Only suppress a lobby that this player hosted and therefore closed.
+                // A client leaving an open lobby must be able to discover and rejoin it.
+                if (wasHost)
+                {
+                    departedLobbyIds.Add(currentLobby.Value.Id);
+                }
+
                 lobbyCache.RemoveAll(lobby => lobby.Id == currentLobby.Value.Id);
             }
             PublishLobbyCache();
