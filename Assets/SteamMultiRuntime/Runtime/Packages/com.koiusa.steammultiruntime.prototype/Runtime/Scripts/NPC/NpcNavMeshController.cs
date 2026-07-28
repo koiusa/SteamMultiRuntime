@@ -53,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerMotor _baseMotor;
         private AiPlayerInputSource _inputSource;
         private ServerDrivenPlayerController _networkPlayerController;
+        private PhysicsPresentationSmoother _presentationSmoother;
 
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
@@ -114,6 +115,10 @@ namespace Koiusa.SteamMultiRuntime
             _baseMotor = GetComponent<IPlayerMotor>();
             _inputSource = new AiPlayerInputSource();
             _networkPlayerController = GetComponent<ServerDrivenPlayerController>();
+            _presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
+            if (_presentationSmoother == null)
+                _presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
+            _presentationSmoother.Initialize(_rigidbody);
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -125,7 +130,7 @@ namespace Koiusa.SteamMultiRuntime
             if (_rigidbody != null)
             {
                 _rigidbody.freezeRotation = true;
-                _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+                _rigidbody.interpolation = RigidbodyInterpolation.None;
             }
 
             ResetInputState();
@@ -258,6 +263,7 @@ namespace Koiusa.SteamMultiRuntime
             _moveInputReceiver?.SetMoveInput(_moveInput);
             _moveInputReceiver?.SetMoveReferenceRotation(transform.rotation);
             _motor.Tick(_moveDirection, jumpThisFrame);
+            _presentationSmoother?.CapturePhysicsPose();
 
             if (_agent != null && _agent.isOnNavMesh && _rigidbody != null)
                 _agent.nextPosition = _rigidbody.position;
