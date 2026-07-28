@@ -385,12 +385,14 @@ namespace Koiusa.Keyconfig.Runtime
 
                 var rebindButton = new Button(() => onRebind?.Invoke(rowIndex));
                 BindRow(rebindButton, "keyconfig.change");
+                rebindButton.AddToClassList("keyconfig-row-button");
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 rebindButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(rebindButton);
 
                 var resetButton = new Button(() => onReset?.Invoke(rowIndex));
                 BindRow(resetButton, "keyconfig.reset");
+                resetButton.AddToClassList("keyconfig-row-button");
                 resetButton.AddToClassList("keyconfig-reset-button");
                 resetButton.SetEnabled(!entry.IsComposite);
                 buttonCell.Add(resetButton);
