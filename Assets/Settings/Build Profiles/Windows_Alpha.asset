@@ -27,7 +27,7 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity
   - m_enabled: 1
-    m_path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
+    m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Startup/UnityLogo.unity
   - m_enabled: 1
     m_path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/NPCVillage.unity
   m_HasScriptingDefines: 0

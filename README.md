@@ -22,7 +22,7 @@ Usage
    - ゲーム用Stageを追加
      - `Assets/SteamMultiRuntime/Samples/Gameplay/Stages/<シーン名>.unity`
    - 必要に応じて起動用Sceneを追加
-     - `Assets/SteamMultiRuntime/Samples/Presentation/Startup/<シーン名>.unity`
+     - `Assets/SteamMultiRuntime/Samples/Gameplay/Startup/<シーン名>.unity`
    - ゲームシーン: 以下のいずれかを選択
      - `Assets/SteamMultiRuntime/Samples/SteamMultiPlayer_<ビューモード>/<シーン名>.unity`
 3. Unityエディタでサンプルシーンをプレイ。  

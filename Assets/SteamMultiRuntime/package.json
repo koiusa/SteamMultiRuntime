@@ -66,9 +66,9 @@
       "path": "Samples/Gameplay/Stages"
     },
     {
-      "displayName": "Startup Presentation",
-      "description": "Unity logo and welcome scenes used by the sample startup flow.",
-      "path": "Samples/Presentation/Startup"
+      "displayName": "Gameplay - Startup Scenes",
+      "description": "Unity logo and welcome scenes used by the gameplay sample startup flow.",
+      "path": "Samples/Gameplay/Startup"
     },
     {
       "displayName": "Steam Multiplayer - Server",

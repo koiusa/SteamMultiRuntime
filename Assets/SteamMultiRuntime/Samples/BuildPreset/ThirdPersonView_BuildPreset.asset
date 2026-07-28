@@ -24,7 +24,7 @@ MonoBehaviour:
     path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity
   - enabled: 1
     guid: 2b64709540d56cd4a9e0714b6197cc60
-    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Startup/UnityLogo.unity
   - enabled: 1
     guid: 0ad083b12f9e5c04abd9318132df160d
     path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/NPCVillage.unity

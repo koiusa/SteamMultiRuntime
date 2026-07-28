@@ -7,8 +7,9 @@ Samples/
 ├─ Features/                     # 1機能を単独で確認するサンプル
 │  ├─ Keyconfig/
 │  └─ TargetingSystem/
-├─ Gameplay/Stages/              # ゲームプレイ用Stage
-├─ Presentation/Startup/         # 起動・ロゴ表示用Scene
+├─ Gameplay/
+│  ├─ Stages/                    # ゲームプレイ用Stage
+│  └─ Startup/                   # ゲームの起動・ロゴ表示用Scene
 ├─ SteamMultiPlayer_QuarterView/ # 複数機能を組み合わせたゲームサンプル
 ├─ SteamMultiPlayer_Server/
 └─ SteamMultiPlayer_ThirdPersonView/
@@ -33,7 +34,7 @@ Samples/
 | `Gameplay/Stages/NPCVillage.unity` | NavMesh上のNPC自動Spawn検証 |
 | `Gameplay/Stages/ServerScene.unity` | NPCとNetwork物理Objectを含むServer向けStage |
 
-`Presentation/Startup`にはゲーム機能を検証するSceneではなく、起動時のLogoとWelcome Sceneを配置します。
+`Gameplay/Startup`にはゲーム起動フローで使用するLogoとWelcome Sceneを配置します。
 
 ## 新しい機能サンプルの追加規約
 

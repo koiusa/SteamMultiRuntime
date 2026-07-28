@@ -15,10 +15,10 @@ EditorBuildSettings:
     path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/PlayGroundScene.unity
     guid: 2eb1146ffd007e045b00384444ce1c9a
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/UnityLogo.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Startup/UnityLogo.unity
     guid: 2b64709540d56cd4a9e0714b6197cc60
   - enabled: 1
-    path: Assets/SteamMultiRuntime/Samples/Presentation/Startup/WelcomeScene.unity
+    path: Assets/SteamMultiRuntime/Samples/Gameplay/Startup/WelcomeScene.unity
     guid: 57d22547efc65ce4599bf78aa609c35e
   - enabled: 1
     path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/SandBoxScene.unity

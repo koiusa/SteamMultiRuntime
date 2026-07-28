@@ -5,7 +5,6 @@
   <Project Path="Koiusa.SteamMultiRuntime.Thirdparty.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Steam.Editor.csproj" />
-  <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Keyconfig.Runtime.csproj" />
@@ -40,6 +39,7 @@
   <Project Path="Koiusa.UI.Common.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Localization.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.Editor.csproj" />
+  <Project Path="Koiusa.TargetingSystem.Sample.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.Runtime.csproj" />
   <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Editor.csproj" />
