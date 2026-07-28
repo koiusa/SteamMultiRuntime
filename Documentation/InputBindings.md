@@ -37,4 +37,11 @@
 | キャラクターメニュー | Backquote / C | Select / Share |
 | 前／次のセクション | Q / E | LB / RB |
 
-`System/GameQuit` は誤操作を避けるため Escape のみです。ゲームパッドではUIのキャンセルとメニューを経由して終了します。
+## System／Debug
+
+| Action | 操作 | Keyboard / Mouse | Gamepad |
+|---|---|---|---|
+| `System/DebugInputGuideToggle` | 入力ガイド表示切替 | F1 | DualShock Touchpad |
+| `System/GameQuit` | ゲーム終了／EditorのPlay Mode終了 | Escape | — |
+
+`System/GameQuit`は誤操作を避けるためEscapeのみです。ゲームパッドではUIのキャンセルとメニューを経由して終了します。

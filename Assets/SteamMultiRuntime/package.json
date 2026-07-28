@@ -61,11 +61,6 @@
       "path": "Samples/Common"
     },
     {
-      "displayName": "Build Profile Scene Preset",
-      "description": "Recommended scene preset for the Third Person sample. Import Shared Sample Assets, Gameplay Sample, and Steam Multiplayer - Third Person first.",
-      "path": "Samples/BuildPreset"
-    },
-    {
       "displayName": "Keyconfig - Production Input",
       "description": "Key configuration UI connected to the Steam Multi Runtime production Input Actions asset.",
       "path": "Samples/Features/Keyconfig"
@@ -84,6 +79,11 @@
       "displayName": "Steam Multiplayer - Server",
       "description": "Dedicated server lobby and session sample.",
       "path": "Samples/SteamMultiPlayer_Server"
+    },
+    {
+      "displayName": "Build Profile Scene Preset",
+      "description": "Optional preset for testing the Build Profile scene editor tool. Manual scene registration is recommended.",
+      "path": "Samples/BuildPreset"
     }
   ]
 }

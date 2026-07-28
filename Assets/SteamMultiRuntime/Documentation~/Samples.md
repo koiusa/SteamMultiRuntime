@@ -12,14 +12,14 @@ Package Managerで`Steam Multi Runtime`を選び、用途に応じて次のサ�
 | `Gameplay Sample` | Stage、`UnityLogo`、`WelcomeScene` |
 | `Steam Multiplayer - Third Person` | Third Person用Lobby／Local Scene |
 | `Shared Sample Assets` | GameplayとMultiplayerで必要になる共有設定・素材 |
-| `Build Profile Scene Preset` | Third Person構成をBuild Profileへ登録するPreset |
 | `Keyconfig - Production Input` | 本番Input Actionsを使用するKeyconfig確認Scene |
 | `Targeting System - Production Input` | 本番Input Actionsを使用するTargeting確認Scene |
 | `Steam Multiplayer - Quarter View` | Quarter View用Lobby／Local Scene |
 | `Steam Multiplayer - Server` | Dedicated Server用Lobby Scene |
+| `Build Profile Scene Preset` | Build Profile編集Tool検証用の補助Preset |
 
-一覧は主な利用頻度が高い順です。Third Personサンプルを実行する場合は、上位3サンプルと
-`Build Profile Scene Preset`をImportしてください。
+一覧は主な利用頻度が高い順です。Third Personサンプルを実行する場合は、上位3サンプルを
+Importしてください。Scene登録はUnity標準のBuild Profile画面から手動で行います。
 
 Importされたファイルは、通常は次の場所へコピーされます。
 
@@ -36,13 +36,17 @@ Unity 6では、Build Profileが固有のScene一覧を使用している場合�
 そのBuild Profileの一覧へSceneを追加する必要があります。
 
 1. `File > Build Profiles`から使用するBuild Profileを作成または選択します。
-2. `Tools > SteamMultiRuntime > Build > Build Profile Scenes`を開きます。
-3. `Build Profile`へ使用するProfileを指定します。
-4. `Build Profile Scene Preset`をImport済みなら、`Scene Preset`へ
-   `ThirdPersonView_BuildPreset`を指定して`Apply Preset`を押します。
-5. Scene一覧に、少なくとも使用するLobby Scene、Stage、`UnityLogo`が含まれることを確認します。
+2. Build Profileが固有のScene Listを使用する場合は、そのScene Listを表示します。
+3. Projectウィンドウから次のSceneをScene Listへドラッグして追加します。
+   - 使用するMultiplayerのLobby Scene
+   - `Gameplay Sample/Startup/UnityLogo.unity`
+   - `Gameplay Sample/Startup/WelcomeScene.unity`
+   - 使用する`Gameplay Sample/Stages/<Stage>.unity`
+4. 各Sceneが有効になっていることと、旧バージョンのパスがないことを確認します。
 
-起動フローで`WelcomeScene`を使用する構成では、これも一覧へ追加します。
+`Build Profile Scene Preset`と`Tools > SteamMultiRuntime > Build > Build Profile Scenes`は
+補助的なEditor Toolです。現在は完全な構成を保証しないため、標準セットアップには使用せず、
+UnityのBuild Profile画面でSceneを手動登録してください。
 
 ## パッケージ更新時
 
@@ -52,11 +56,11 @@ UPMサンプルはバージョン別フォルダーへコピーされるため�
 1. Unityを終了するか、Play Modeを終了します。
 2. 使用側プロジェクトの旧バージョンSampleフォルダーを削除します。
 3. Package Managerから新バージョンの必要なサンプルをImportします。
-4. 各Build ProfileへPresetを再適用するか、新しいSample Sceneを登録し直します。
+4. 各Build Profileへ新しいSample Sceneを手動で登録し直します。
 5. Build Profile内に旧バージョンや存在しないSceneパスが残っていないことを確認します。
 
 旧版と新版に同名Sceneが同時に存在すると、Scene名による検索結果が曖昧になります。
-Presetを適用する前に旧バージョンのSampleを削除してください。
+Build ProfileへSceneを登録する前に旧バージョンのSampleを削除してください。
 
 ## `Scene is not in Build Settings`エラー
 
@@ -73,4 +77,4 @@ Presetを適用する前に旧バージョンのSampleを削除してくださ�
 - 現在使用中のBuild Profileに新しい`UnityLogo.unity`が登録され、有効になっている
 - Build Profileが固有Scene一覧を使う場合、その一覧に登録している
 - `Assets/Samples/.../<old version>/`への参照が残っていない
-- Scene移動直後の場合はPlay Modeを終了し、Build Profileを再適用してから再実行している
+- Scene移動直後の場合はPlay Modeを終了し、Build Profileへ新しいSceneを登録してから再実行している

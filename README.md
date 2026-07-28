@@ -22,15 +22,17 @@ Usage
    - `Gameplay Sample`
    - `Steam Multiplayer - Third Person`
    - `Shared Sample Assets`
-   - `Build Profile Scene Preset`
 2. `File > Build Profiles`から使用するBuild Profileを作成または選択します。
-3. `Tools > SteamMultiRuntime > Build > Build Profile Scenes`を開きます。
-4. `Scene Preset`へ`ThirdPersonView_BuildPreset`を指定し、`Apply Preset`を押します。
-5. Third PersonのLobby Sceneを開いてPlayします。
+3. Build ProfileのScene Listへ、Projectウィンドウから次のSceneをドラッグして追加します。
+   - `Steam Multiplayer - Third Person/SampleLobbyScene_ThirdPersonView_Traversal.unity`
+   - `Gameplay Sample/Startup/UnityLogo.unity`
+   - `Gameplay Sample/Startup/WelcomeScene.unity`
+   - 使用する`Gameplay Sample/Stages/<Stage>.unity`
+4. 追加したSceneが有効になっていることを確認します。
+5. `SampleLobbyScene_ThirdPersonView_Traversal.unity`を開いてPlayします。
 
-パッケージ使用側のSceneは、通常
-`Assets/Samples/Steam Multi Runtime/<version>/<sample name>/`へコピーされます。
-パッケージ開発プロジェクトでは`Assets/SteamMultiRuntime/Samples/`にあります。
+Build Profileが固有のScene Listを使用している場合、Global Build Settingsへ追加しただけでは
+実行時にロードできません。必ず現在使用しているBuild ProfileのScene Listへ追加してください。
 
 ### 操作
 
@@ -45,6 +47,15 @@ Usage
 | 前／次のターゲット | 1 / 2 | D-pad左／右 |
 | グラップル | 右クリック | RB / R1 |
 | メニュー | Tab | Start / Options |
+
+### System／デバッグ操作
+
+| 操作 | Keyboard / Mouse | Gamepad |
+|---|---|---|
+| 入力ガイド表示切替 | F1 | DualShock Touchpad |
+| ゲーム終了／EditorのPlay Mode終了 | Escape | — |
+
+入力ガイドには現在の入力デバイスに対応するGameplay／UI操作が表示されます。
 
 すべてのGameplay／UI操作は[Input Bindings](Documentation/InputBindings.md)を参照してください。
 
