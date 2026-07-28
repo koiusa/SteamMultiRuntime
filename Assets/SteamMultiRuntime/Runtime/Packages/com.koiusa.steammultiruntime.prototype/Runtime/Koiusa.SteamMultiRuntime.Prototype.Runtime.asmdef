@@ -2,6 +2,7 @@
 	"name": "Koiusa.SteamMultiRuntime.Prototype.Runtime",
 	"rootNamespace": "",
 	"references": [
+		"Koiusa.SteamMultiRuntime.Character.Runtime",
 		"Unity.Netcode.Runtime",
 		"Koiusa.SteamMultiRuntime.Locomoter.Runtime",
 		"Koiusa.SteamMultiRuntime.Integration.Runtime",

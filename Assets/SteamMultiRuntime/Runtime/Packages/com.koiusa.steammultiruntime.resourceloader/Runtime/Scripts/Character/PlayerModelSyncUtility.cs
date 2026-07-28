@@ -1,11 +1,11 @@
-using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.SteamMultiRuntime.Character;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
     public static class PlayerModelSyncUtility
     {
-        public static void EnsureModelIdList(ref Network.CharacterModelIdList modelIdList)
+        public static void EnsureModelIdList(ref CharacterModelIdList modelIdList)
         {
             if (modelIdList != null)
             {
@@ -36,7 +36,7 @@ namespace Koiusa.SteamMultiRuntime
             prefabLoaderBehaviour = prefabLoader;
         }
 
-        public static string GetCurrentResourceId(Network.CharacterModelIdList modelIdList, int selectedModelIndex)
+        public static string GetCurrentResourceId(CharacterModelIdList modelIdList, int selectedModelIndex)
         {
             var ids = modelIdList != null ? modelIdList.modelIds : null;
             if (ids == null || selectedModelIndex < 0 || selectedModelIndex >= ids.Length)

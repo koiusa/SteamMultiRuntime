@@ -1,6 +1,4 @@
-using Koiusa.SteamMultiRuntime.Network;
-
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.SteamMultiRuntime.Character
 {
     public interface IPlayerModelSync
     {

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace Koiusa.SteamMultiRuntime.Network
+namespace Koiusa.SteamMultiRuntime.Character
 {
     [CreateAssetMenu(fileName = "CharacterModelIdList", menuName = "SteamMultiRuntime/Character Model Id List", order = 100)]
     public class CharacterModelIdList : ScriptableObject

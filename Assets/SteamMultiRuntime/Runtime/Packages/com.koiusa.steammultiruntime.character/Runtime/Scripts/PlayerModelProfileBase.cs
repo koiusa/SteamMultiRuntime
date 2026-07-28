@@ -1,7 +1,6 @@
-using Koiusa.SteamMultiRuntime.Network;
 using UnityEngine;
 
-namespace Koiusa.SteamMultiRuntime
+namespace Koiusa.SteamMultiRuntime.Character
 {
     public abstract class PlayerModelProfileBase : MonoBehaviour, IRuntimeUserProfileModelSource
     {

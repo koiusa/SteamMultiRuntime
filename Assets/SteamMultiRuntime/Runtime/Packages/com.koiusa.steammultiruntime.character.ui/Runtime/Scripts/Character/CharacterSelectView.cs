@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Koiusa.SteamMultiRuntime.Network;
 using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime.Character.UI

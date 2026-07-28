@@ -1,7 +1,8 @@
 {
     "name": "Koiusa.SteamMultiRuntime.ResourceLoader.Editor",
     "rootNamespace": "",
-    "references": [
+	"references": [
+		"Koiusa.SteamMultiRuntime.Character.Runtime",
         "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
         "TNRD.SerializableInterface",
         "Unity.TextMeshPro"

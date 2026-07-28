@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.SteamMultiRuntime.Character;
 
 namespace Koiusa.SteamMultiRuntime
 {

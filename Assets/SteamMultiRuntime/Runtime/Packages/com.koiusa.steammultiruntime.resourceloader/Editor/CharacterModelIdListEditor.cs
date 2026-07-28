@@ -1,4 +1,4 @@
-using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.SteamMultiRuntime.Character;
 using UnityEditor;
 
 namespace Koiusa.SteamMultiRuntime.Editor

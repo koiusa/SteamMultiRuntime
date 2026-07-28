@@ -1,4 +1,5 @@
 using Koiusa.SteamMultiRuntime;
+using Koiusa.SteamMultiRuntime.Character;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;

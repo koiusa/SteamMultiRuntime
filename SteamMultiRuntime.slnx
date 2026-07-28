@@ -24,10 +24,11 @@
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Steam.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.UI.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Character.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.UI.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Editor.csproj" />
   <Project Path="UnityChan.Editor.csproj" />

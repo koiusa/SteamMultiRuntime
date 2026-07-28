@@ -6,6 +6,7 @@
   "description": "Character and runtime resource loading components for Steam Multi Runtime.",
   "author": { "name": "koiusa" },
   "dependencies": {
+    "com.koiusa.steammultiruntime.character": "0.1.0",
     "com.unity.netcode.gameobjects": "2.11.2",
     "com.koiusa.steammultiruntime.localization": "0.1.0"
   }

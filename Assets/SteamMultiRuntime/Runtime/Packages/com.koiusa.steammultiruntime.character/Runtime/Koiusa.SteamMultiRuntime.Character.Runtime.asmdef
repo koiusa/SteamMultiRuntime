@@ -1,0 +1,7 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Character.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Character",
+  "references": [],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

@@ -21,6 +21,7 @@ Feature packages
 - `com.koiusa.steammultiruntime.lobby.netcode`: Netcode for GameObjectsによるセッションとシーン同期。
 - `com.koiusa.steammultiruntime.lobby.steam`: Steamworks LobbyバックエンドとSteam固有UI。LobbyおよびLobby Netcodeへ一方向に依存する。
 - `com.koiusa.steammultiruntime.character.ui`: Character選択などCharacter固有UI。
+- `com.koiusa.steammultiruntime.character`: Characterモデル一覧、プロフィール、モデル同期の共通契約。ロード方式には依存しない。
 - `com.koiusa.steammultiruntime.player.ui`: プレイヤー名表示などPlayer固有UI。Netcodeへ直接依存しない。
 
 ## 依存ルール
@@ -31,6 +32,7 @@ Feature packages
 4. asmdefで内部パッケージを参照した場合、`package.json`にも同じ依存を宣言する。
 5. パッケージ共通型は利用箇所が2つ以上あることだけで移動せず、ドメイン所有者が共通基盤である場合に限って移す。
 6. Unityアセット参照を維持するため、ファイル移動時は`.meta`を同時に移動する。
+7. Character UIはCharacterへ、ResourceLoaderはCharacterへ依存する。CharacterからUIやResourceLoaderを参照しない。
 
 ## Localization API
 

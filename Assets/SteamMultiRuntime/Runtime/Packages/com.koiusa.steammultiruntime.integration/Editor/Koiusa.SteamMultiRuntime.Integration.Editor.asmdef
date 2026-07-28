@@ -3,6 +3,7 @@
 	"rootNamespace": "",
 	"references": [
 		"Koiusa.SteamMultiRuntime.Integration.Runtime",
+		"Koiusa.SteamMultiRuntime.Character.Runtime",
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime"
 	],
 	"includePlatforms": [

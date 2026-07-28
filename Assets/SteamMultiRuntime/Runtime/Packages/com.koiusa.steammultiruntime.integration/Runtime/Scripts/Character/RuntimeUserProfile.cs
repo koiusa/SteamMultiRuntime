@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Koiusa.SteamMultiRuntime.Network;
+using Koiusa.SteamMultiRuntime.Character;
 
 namespace Koiusa.SteamMultiRuntime
 {

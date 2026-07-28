@@ -1,0 +1,8 @@
+{
+  "name": "com.koiusa.steammultiruntime.character",
+  "displayName": "Steam Multi Runtime Character",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Character model catalogs, profile contracts and model selection state.",
+  "author": { "name": "koiusa" }
+}
