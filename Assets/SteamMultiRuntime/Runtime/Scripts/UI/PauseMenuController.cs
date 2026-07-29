@@ -21,6 +21,7 @@ namespace Koiusa.SteamMultiRuntime
         private Button keyConfigButton;
         private Button characterSelectButton;
         private Button closeButton;
+        private CharacterSelectMenuToggle characterMenu;
         private int selectedButtonIndex;
 
         private void OnEnable()
@@ -48,7 +49,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var characterMenu = FindFirstObjectByType<CharacterSelectMenuToggle>(FindObjectsInactive.Include);
+            ResolveCharacterMenu();
             if (characterMenu != null && characterMenu.IsVisible)
             {
                 characterMenu.Hide();
@@ -70,6 +71,7 @@ namespace Koiusa.SteamMultiRuntime
         public void Show()
         {
             if (pauseMenuRoot == null) return;
+            DisposeNavigationSession();
             pauseMenuRoot.SetActive(true);
             BindButtons();
             selectedButtonIndex = 0;
@@ -79,7 +81,6 @@ namespace Koiusa.SteamMultiRuntime
                 SubmitSelection,
                 Hide,
                 pauseMenuDocument?.rootVisualElement);
-            UnityEngine.Cursor.visible = true;
             ScheduleInitialFocus();
         }
 
@@ -89,7 +90,6 @@ namespace Koiusa.SteamMultiRuntime
             DisposeNavigationSession();
             UnbindButtons();
             pauseMenuRoot.SetActive(false);
-            UnityEngine.Cursor.visible = false;
         }
 
         private void BindButtons()
@@ -104,6 +104,9 @@ namespace Koiusa.SteamMultiRuntime
             if (keyConfigButton != null) keyConfigButton.clicked += OpenKeyConfig;
             if (characterSelectButton != null) characterSelectButton.clicked += OpenCharacterSelect;
             if (closeButton != null) closeButton.clicked += Hide;
+            keyConfigButton?.RegisterCallback<FocusInEvent>(OnKeyConfigFocused);
+            characterSelectButton?.RegisterCallback<FocusInEvent>(OnCharacterSelectFocused);
+            closeButton?.RegisterCallback<FocusInEvent>(OnCloseFocused);
         }
 
         private void UnbindButtons()
@@ -111,6 +114,9 @@ namespace Koiusa.SteamMultiRuntime
             if (keyConfigButton != null) keyConfigButton.clicked -= OpenKeyConfig;
             if (characterSelectButton != null) characterSelectButton.clicked -= OpenCharacterSelect;
             if (closeButton != null) closeButton.clicked -= Hide;
+            keyConfigButton?.UnregisterCallback<FocusInEvent>(OnKeyConfigFocused);
+            characterSelectButton?.UnregisterCallback<FocusInEvent>(OnCharacterSelectFocused);
+            closeButton?.UnregisterCallback<FocusInEvent>(OnCloseFocused);
             keyConfigButton = null;
             characterSelectButton = null;
             closeButton = null;
@@ -181,6 +187,20 @@ namespace Koiusa.SteamMultiRuntime
             navigationSession = null;
         }
 
+        private void OnKeyConfigFocused(FocusInEvent evt) => selectedButtonIndex = 0;
+
+        private void OnCharacterSelectFocused(FocusInEvent evt) => selectedButtonIndex = 1;
+
+        private void OnCloseFocused(FocusInEvent evt) => selectedButtonIndex = 2;
+
+        private void ResolveCharacterMenu()
+        {
+            if (characterMenu == null)
+            {
+                characterMenu = FindFirstObjectByType<CharacterSelectMenuToggle>(FindObjectsInactive.Include);
+            }
+        }
+
         private void OpenKeyConfig()
         {
             Hide();
@@ -189,7 +209,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OpenCharacterSelect()
         {
-            var characterMenu = FindFirstObjectByType<CharacterSelectMenuToggle>(FindObjectsInactive.Include);
+            ResolveCharacterMenu();
             Hide();
             characterMenu?.Show();
         }

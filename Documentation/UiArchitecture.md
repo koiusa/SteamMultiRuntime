@@ -8,7 +8,8 @@
 2. 行、グリッド、タブなど独自移動が必要なUIは`UiNavigationInputSession`を使う
 3. UI側で`InputAction.Enable`／`Disable`、長押し時間、デッドゾーンを再実装しない
 4. 1つの画面でEventSystem標準移動と独自移動を同時に実行しない
-5. 画面を閉じるときは入力Sessionを破棄し、共有Actionの取得前の有効状態を復元する
+5. 画面を閉じるときは入力Sessionを破棄し、共有Actionとカーソル表示の取得前状態を復元する
+6. 複数画面が存在する場合も、入力を処理するのは最後に開いた最前面Sessionだけとする
 
 ## 共通入力
 
@@ -18,9 +19,9 @@
 |---|---|
 | `InputActionLease` | 共有Actionの参照数と取得前の有効状態を管理 |
 | `InputActionBinding` | performed CallbackとLeaseの寿命を1つにまとめる |
-| `UiNavigationInputSession` | Navigate方向判定、初回移動、長押しリピート、Submit、Cancelを管理 |
+| `UiNavigationInputSession` | 最前面入力の排他、Navigate方向判定、長押しリピート、Submit、Cancel、カーソル表示を管理 |
 
-`UiNavigationInputSession`の標準値は、方向しきい値0.5、リピート開始0.4秒、リピート間隔0.1秒です。画面は`UiNavigationDirection`のMove、Submit、CancelのCallbackだけを渡します。Session自身がInput Systemの更新後に保持方向とリピート時刻を評価するため、各画面に入力用`Update`は置きません。Up／Down／Left／Rightを保持するため、縦リスト、横タブ、2次元グリッドで同じSessionを使えます。独自入力を使う場合は対象`VisualElement`を渡し、EventSystemの重複`NavigationMoveEvent`／`NavigationSubmitEvent`／`NavigationCancelEvent`をSession内で消費します。
+`UiNavigationInputSession`の標準値は、方向しきい値0.5、リピート開始0.4秒、リピート間隔0.1秒です。画面は`UiNavigationDirection`のMove、Submit、CancelのCallbackだけを渡します。方向変化はInput ActionのCallbackで受信し、方向が保持されている間だけInput System更新後にリピート時刻を評価します。各画面に入力用`Update`は置きません。複数Sessionが一時的に存在しても、最後に作られたSessionだけがMove／Submit／Cancelを処理します。Sessionの参照数でカーソル表示も保持するため、背面UIの終了処理が前面UIのカーソルを隠すことはありません。Up／Down／Left／Rightを保持するため、縦リスト、横タブ、2次元グリッドで同じSessionを使えます。独自入力を使う場合は対象`VisualElement`を渡し、EventSystemの重複`NavigationMoveEvent`／`NavigationSubmitEvent`／`NavigationCancelEvent`をSession内で消費します。
 
 `UI/Navigate`はEventSystem標準UIとの互換性を保つため`PassThrough`とします。独自UIの重複入力はAction Typeの変更ではなく、`UiNavigationInputSession`のイベント消費で抑止します。
 

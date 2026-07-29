@@ -13,18 +13,14 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnEnable()
         {
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
-            if (keyConfigUiDocument != null) keyConfigUiDocument.Closed += OnUiClosed;
         }
 
         private void OnDisable()
         {
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
-            if (keyConfigUiDocument != null) keyConfigUiDocument.Closed -= OnUiClosed;
         }
 
         private void OnActiveSceneChanged(Scene previousScene, Scene nextScene) => Hide();
-
-        private void OnUiClosed() => Cursor.visible = false;
 
         public void Toggle()
         {
@@ -37,14 +33,12 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (keyConfigUiDocument == null) return;
             keyConfigUiDocument.gameObject.SetActive(true);
-            Cursor.visible = true;
         }
 
         public void Hide()
         {
             if (keyConfigUiDocument == null) return;
             keyConfigUiDocument.gameObject.SetActive(false);
-            Cursor.visible = false;
         }
     }
 }

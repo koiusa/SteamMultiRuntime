@@ -71,7 +71,6 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             view.Build(ids);
             view.BindActions(OnCharacterSelected, OnConfirmClicked);
             registeredRoot = uiDocument.rootVisualElement;
-            registeredRoot?.RegisterCallback<NavigationCancelEvent>(OnCancelNavigation);
 
             pendingIndex = UserProfile != null ? UserProfile.SelectedModelIndex : 0;
             view.SetSelectedIndex(pendingIndex, ids != null ? ids.modelIds : null);
@@ -82,7 +81,6 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
         private void OnDisable()
         {
             UnbindUiInput();
-            registeredRoot?.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
             registeredRoot = null;
             view?.UnbindActions();
             view?.Dispose();
@@ -141,17 +139,9 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             Close();
         }
 
-        private void OnCancelNavigation(NavigationCancelEvent evt)
-        {
-            registeredRoot?.focusController?.IgnoreEvent(evt);
-            evt.StopImmediatePropagation();
-            Close();
-        }
-
         private void Close()
         {
             gameObject.SetActive(false);
-            UnityEngine.Cursor.visible = false;
         }
     }
 }

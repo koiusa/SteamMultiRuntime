@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -20,6 +21,10 @@ namespace Koiusa.Input
     /// </summary>
     public sealed class UiNavigationInputSession : IDisposable
     {
+        private static readonly LinkedList<UiNavigationInputSession> ActiveSessions = new();
+        private static int cursorVisibilityLeaseCount;
+        private static bool cursorVisibilityBeforeFirstLease;
+
         public const float DefaultThreshold = 0.5f;
         public const float DefaultRepeatDelay = 0.4f;
         public const float DefaultRepeatInterval = 0.1f;
@@ -30,12 +35,18 @@ namespace Koiusa.Input
         private readonly float repeatInterval;
         private readonly Func<UiNavigationDirection, bool> blockNavigationEvent;
         private InputAction navigateAction;
+        private LinkedListNode<UiNavigationInputSession> activeSessionNode;
         private InputActionLease navigateLease;
         private InputActionBinding submitBinding;
         private InputActionBinding cancelBinding;
         private VisualElement blockedEventRoot;
         private UiNavigationDirection heldDirection;
         private float nextRepeatTime;
+        private bool repeatUpdateSubscribed;
+        private bool ownsCursorVisibility;
+
+        private bool IsActiveSession => activeSessionNode != null &&
+            ReferenceEquals(ActiveSessions.Last, activeSessionNode);
 
         public UiNavigationInputSession(
             InputActionsConfig config,
@@ -87,14 +98,28 @@ namespace Koiusa.Input
             }
 
             this.navigateAction = navigateAction;
+            activeSessionNode = ActiveSessions.AddLast(this);
+            AcquireCursorVisibility();
             navigateLease = InputActionLease.Acquire(this.navigateAction);
-            InputSystem.onAfterUpdate += OnAfterInputUpdate;
+            this.navigateAction.performed += OnNavigatePerformed;
             submitBinding = submit == null
                 ? null
-                : InputActionBinding.Bind(submitAction, _ => submit.Invoke());
+                : InputActionBinding.Bind(submitAction, _ =>
+                {
+                    if (IsActiveSession)
+                    {
+                        submit.Invoke();
+                    }
+                });
             cancelBinding = cancel == null
                 ? null
-                : InputActionBinding.Bind(cancelAction, _ => cancel.Invoke());
+                : InputActionBinding.Bind(cancelAction, _ =>
+                {
+                    if (IsActiveSession)
+                    {
+                        cancel.Invoke();
+                    }
+                });
             this.blockedEventRoot = blockedEventRoot;
             this.blockedEventRoot?.RegisterCallback<NavigationMoveEvent>(
                 OnNavigationMoveEvent,
@@ -113,38 +138,84 @@ namespace Koiusa.Input
             }
         }
 
-        private void OnAfterInputUpdate()
+        private void OnNavigatePerformed(InputAction.CallbackContext context)
         {
-            if (navigateAction == null || move == null)
+            if (navigateAction == null || move == null || !IsActiveSession)
             {
-                return;
-            }
-
-            var direction = ResolveDirection(navigateAction.ReadValue<Vector2>(), threshold);
-            if (direction == UiNavigationDirection.None)
-            {
+                StopRepeatUpdates();
                 heldDirection = UiNavigationDirection.None;
                 return;
             }
 
-            if (direction != heldDirection)
+            var direction = ResolveDirection(context.ReadValue<Vector2>(), threshold);
+            if (direction == UiNavigationDirection.None)
             {
-                heldDirection = direction;
-                nextRepeatTime = Time.unscaledTime + repeatDelay;
-                move(direction);
+                StopRepeatUpdates();
+                heldDirection = UiNavigationDirection.None;
+                return;
+            }
+
+            if (direction == heldDirection)
+            {
+                return;
+            }
+
+            heldDirection = direction;
+            nextRepeatTime = Time.unscaledTime + repeatDelay;
+            move(direction);
+            StartRepeatUpdates();
+        }
+
+        private void OnAfterInputUpdate()
+        {
+            if (!IsActiveSession || heldDirection == UiNavigationDirection.None)
+            {
+                StopRepeatUpdates();
+                heldDirection = UiNavigationDirection.None;
                 return;
             }
 
             if (Time.unscaledTime >= nextRepeatTime)
             {
                 nextRepeatTime = Time.unscaledTime + repeatInterval;
-                move(direction);
+                move(heldDirection);
             }
+        }
+
+        private void StartRepeatUpdates()
+        {
+            if (repeatUpdateSubscribed)
+            {
+                return;
+            }
+
+            InputSystem.onAfterUpdate += OnAfterInputUpdate;
+            repeatUpdateSubscribed = true;
+        }
+
+        private void StopRepeatUpdates()
+        {
+            if (!repeatUpdateSubscribed)
+            {
+                return;
+            }
+
+            InputSystem.onAfterUpdate -= OnAfterInputUpdate;
+            repeatUpdateSubscribed = false;
         }
 
         public void Dispose()
         {
-            InputSystem.onAfterUpdate -= OnAfterInputUpdate;
+            StopRepeatUpdates();
+            if (navigateAction != null)
+            {
+                navigateAction.performed -= OnNavigatePerformed;
+            }
+            if (activeSessionNode != null)
+            {
+                ActiveSessions.Remove(activeSessionNode);
+                activeSessionNode = null;
+            }
             blockedEventRoot?.UnregisterCallback<NavigationMoveEvent>(
                 OnNavigationMoveEvent,
                 TrickleDown.TrickleDown);
@@ -169,10 +240,43 @@ namespace Koiusa.Input
             cancelBinding?.Dispose();
             cancelBinding = null;
             heldDirection = UiNavigationDirection.None;
+            ReleaseCursorVisibility();
+        }
+
+        private void AcquireCursorVisibility()
+        {
+            if (cursorVisibilityLeaseCount == 0)
+            {
+                cursorVisibilityBeforeFirstLease = UnityEngine.Cursor.visible;
+            }
+
+            cursorVisibilityLeaseCount++;
+            ownsCursorVisibility = true;
+            UnityEngine.Cursor.visible = true;
+        }
+
+        private void ReleaseCursorVisibility()
+        {
+            if (!ownsCursorVisibility)
+            {
+                return;
+            }
+
+            ownsCursorVisibility = false;
+            cursorVisibilityLeaseCount = Mathf.Max(0, cursorVisibilityLeaseCount - 1);
+            if (cursorVisibilityLeaseCount == 0)
+            {
+                UnityEngine.Cursor.visible = cursorVisibilityBeforeFirstLease;
+            }
         }
 
         private void OnNavigationMoveEvent(NavigationMoveEvent evt)
         {
+            if (!IsActiveSession)
+            {
+                return;
+            }
+
             var direction = evt.direction switch
             {
                 NavigationMoveEvent.Direction.Up => UiNavigationDirection.Up,
@@ -191,12 +295,18 @@ namespace Koiusa.Input
 
         private void OnNavigationSubmitEvent(NavigationSubmitEvent evt)
         {
-            ConsumeEvent(evt);
+            if (IsActiveSession)
+            {
+                ConsumeEvent(evt);
+            }
         }
 
         private void OnNavigationCancelEvent(NavigationCancelEvent evt)
         {
-            ConsumeEvent(evt);
+            if (IsActiveSession)
+            {
+                ConsumeEvent(evt);
+            }
         }
 
         private void ConsumeEvent(EventBase evt)

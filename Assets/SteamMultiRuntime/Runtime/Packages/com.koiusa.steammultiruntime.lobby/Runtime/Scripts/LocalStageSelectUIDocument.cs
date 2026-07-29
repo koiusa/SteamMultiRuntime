@@ -207,7 +207,6 @@ namespace Koiusa.SteamMultiRuntime
         private void Close()
         {
             gameObject.SetActive(false);
-            UnityEngine.Cursor.visible = false;
         }
     }
 }
