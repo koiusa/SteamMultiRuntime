@@ -430,6 +430,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             ClearRowBindings();
             bindingListView.Clear();
+            bindingListView.scrollOffset = Vector2.zero;
             mapTabBar?.Clear();
             inputStateRows.Clear();
             mapNames.Clear();
@@ -622,6 +623,8 @@ namespace Koiusa.Keyconfig.Runtime
                     });
                 }
             }
+
+            bindingListView.schedule.Execute(() => bindingListView.scrollOffset = Vector2.zero);
         }
 
         public void UpdateInputStates(InputActionAsset inputActionAsset)
@@ -885,7 +888,7 @@ namespace Koiusa.Keyconfig.Runtime
                     var targetRow = bindingRows[targetIndex];
                     var target = GetAvailableRowButton(targetRow, resetColumn);
                     target?.Focus();
-                    bindingListView?.ScrollTo(targetRow.Row);
+                    ScrollToBindingRow(targetIndex);
                     return;
                 }
             }
@@ -942,7 +945,7 @@ namespace Koiusa.Keyconfig.Runtime
 
                 var firstRow = bindingRows[0];
                 GetAvailableRowButton(firstRow, preferReset: false)?.Focus();
-                bindingListView?.ScrollTo(firstRow.Row);
+                ScrollToBindingRow(0);
             });
         }
 
@@ -977,7 +980,7 @@ namespace Koiusa.Keyconfig.Runtime
                     }
 
                     GetAvailableRowButton(bindingRows[i], preferReset: false)?.Focus();
-                    bindingListView?.ScrollTo(bindingRows[i].Row);
+                    ScrollToBindingRow(i);
                     return;
                 }
 
@@ -1033,6 +1036,22 @@ namespace Koiusa.Keyconfig.Runtime
             var fallback = preferReset ? row.RebindButton : row.ResetButton;
             if (fallback != null && fallback.enabledInHierarchy) return fallback;
             return row.Row != null && row.Row.focusable ? row.Row : null;
+        }
+
+        private void ScrollToBindingRow(int rowIndex)
+        {
+            if (bindingListView == null || rowIndex < 0 || rowIndex >= bindingRows.Count)
+            {
+                return;
+            }
+
+            if (rowIndex == 0)
+            {
+                bindingListView.scrollOffset = Vector2.zero;
+                return;
+            }
+
+            bindingListView.ScrollTo(bindingRows[rowIndex].Row);
         }
 
         private void FocusAdjacentFunctionButton(int direction)
