@@ -2,7 +2,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [RequireComponent(typeof(WireTraversalFeature)), DisallowMultipleComponent]
-    public sealed class WireReelAction : MonoBehaviour, IWireReelAction
+    public sealed class WireReelAction : MonoBehaviour, IWireReelAction, IWireReelDebugSnapshotSource
     {
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
         [SerializeField, Min(0f)] private float stepDistance = 1.5f;
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsReelingIn => IsEnabled && input < -0.001f;
         private void Awake() => connection = GetComponent<IWireConnection>();
         private void OnValidate() { reelSpeed = Mathf.Max(0f, reelSpeed); stepDistance = Mathf.Max(0f, stepDistance); }
-        internal WireReelDebugSnapshot GetDebugSnapshot() => new WireReelDebugSnapshot(
+        WireReelDebugSnapshot IWireReelDebugSnapshotSource.GetDebugSnapshot() => new WireReelDebugSnapshot(
             input,
             IsReelingIn,
             reelSpeed,

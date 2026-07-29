@@ -6,7 +6,8 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
-    public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext
+    public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext,
+        ITraversalCoordinatorDebugSnapshotSource
     {
         [SerializeField, Tooltip("TraversalのState遷移をUnity Consoleへ出力します。")]
         private bool logStateTransitions;
@@ -54,18 +55,15 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
         public Transform WireAnchorTransform => IsWireAttached ? wireConnection.AnchorTransform : null;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
-        internal bool LogStateTransitions
-        {
-            get => logStateTransitions;
-            set => logStateTransitions = value;
-        }
-
-        internal TraversalCoordinatorDebugSnapshot GetDebugSnapshot() => new TraversalCoordinatorDebugSnapshot(
+        TraversalCoordinatorDebugSnapshot ITraversalCoordinatorDebugSnapshotSource.GetDebugSnapshot() => new TraversalCoordinatorDebugSnapshot(
             CurrentIntentFlags,
             Mathf.Max(0f, wallTraversalBlockedUntilTime - Time.time),
             wallRunBlockedUntilWallExit,
             currentWireAimResult,
             logStateTransitions);
+
+        void ITraversalCoordinatorDebugSnapshotSource.SetStateTransitionLogging(bool enabled) =>
+            logStateTransitions = enabled;
 
         private void Awake()
         {

@@ -51,11 +51,16 @@ namespace Koiusa.SteamMultiRuntime
     internal sealed class PlayerMovementDebugTarget : IPlayerMovementDebugTarget
     {
         private readonly PlayerCompositeMotor composite;
+        private readonly IPlayerCompositeMotorDebugSnapshotSource compositeDebugSource;
         private readonly IPlayerMotor motor;
-        private readonly PlayerTraversalCoordinator coordinator;
-        private readonly WallTraversalFeature wall;
-        private readonly LadderTraversalFeature ladder;
-        private readonly WireTraversalFeature wire;
+        private readonly IPlayerTraversalCoordinator coordinator;
+        private readonly ITraversalCoordinatorDebugSnapshotSource coordinatorDebugSource;
+        private readonly IWallTraversalFeature wall;
+        private readonly IWallTraversalDebugSnapshotSource wallDebugSource;
+        private readonly ILadderTraversalFeature ladder;
+        private readonly ILadderTraversalDebugSnapshotSource ladderDebugSource;
+        private readonly IWireConnection wire;
+        private readonly IWireTraversalDebugSnapshotSource wireDebugSource;
         private readonly IWallRunAction wallRun;
         private readonly IWallJumpAction wallJump;
         private readonly IWallSlideAction wallSlide;
@@ -63,17 +68,23 @@ namespace Koiusa.SteamMultiRuntime
         private readonly ILadderDetachAction ladderDetach;
         private readonly IWireAttachAction wireAttach;
         private readonly IWireSwingAction wireSwing;
-        private readonly WireReelAction wireReel;
+        private readonly IWireReelAction wireReel;
+        private readonly IWireReelDebugSnapshotSource wireReelDebugSource;
         private readonly IWireGroundAction wireGround;
 
         public PlayerMovementDebugTarget(PlayerCompositeMotor composite)
         {
             this.composite = composite;
+            compositeDebugSource = composite.GetComponent<IPlayerCompositeMotorDebugSnapshotSource>();
             motor = composite.GetComponent<IPlayerMotor>();
-            coordinator = composite.GetComponent<PlayerTraversalCoordinator>();
-            wall = composite.GetComponent<WallTraversalFeature>();
-            ladder = composite.GetComponent<LadderTraversalFeature>();
-            wire = composite.GetComponent<WireTraversalFeature>();
+            coordinator = composite.GetComponent<IPlayerTraversalCoordinator>();
+            coordinatorDebugSource = composite.GetComponent<ITraversalCoordinatorDebugSnapshotSource>();
+            wall = composite.GetComponent<IWallTraversalFeature>();
+            wallDebugSource = composite.GetComponent<IWallTraversalDebugSnapshotSource>();
+            ladder = composite.GetComponent<ILadderTraversalFeature>();
+            ladderDebugSource = composite.GetComponent<ILadderTraversalDebugSnapshotSource>();
+            wire = composite.GetComponent<IWireConnection>();
+            wireDebugSource = composite.GetComponent<IWireTraversalDebugSnapshotSource>();
             wallRun = composite.GetComponent<IWallRunAction>();
             wallJump = composite.GetComponent<IWallJumpAction>();
             wallSlide = composite.GetComponent<IWallSlideAction>();
@@ -81,7 +92,8 @@ namespace Koiusa.SteamMultiRuntime
             ladderDetach = composite.GetComponent<ILadderDetachAction>();
             wireAttach = composite.GetComponent<IWireAttachAction>();
             wireSwing = composite.GetComponent<IWireSwingAction>();
-            wireReel = composite.GetComponent<WireReelAction>();
+            wireReel = composite.GetComponent<IWireReelAction>();
+            wireReelDebugSource = composite.GetComponent<IWireReelDebugSnapshotSource>();
             wireGround = composite.GetComponent<IWireGroundAction>();
         }
 
@@ -96,18 +108,24 @@ namespace Koiusa.SteamMultiRuntime
         public float HorizontalVelocity => composite != null ? composite.HorizontalVelocity : 0f;
         public float VerticalVelocity => composite != null ? composite.VerticalVelocity : 0f;
         public Vector3 InheritedGroundVelocity => composite != null ? composite.InheritedGroundVelocity : Vector3.zero;
-        public PlayerCompositeMotorDebugSnapshot Composite => composite != null ? composite.GetDebugSnapshot() : default;
+        public PlayerCompositeMotorDebugSnapshot Composite => IsAlive(compositeDebugSource)
+            ? compositeDebugSource.GetDebugSnapshot()
+            : default;
         public IPlayerMotor BaseMotor => IsAlive(motor) ? motor : null;
-        public IPlayerTraversalCoordinator Traversal => coordinator != null ? coordinator : null;
-        public TraversalCoordinatorDebugSnapshot TraversalDebug => coordinator != null ? coordinator.GetDebugSnapshot() : default;
-        public bool HasTraversalCoordinator => coordinator != null;
-        public IWallTraversalFeature Wall => wall != null ? wall : null;
-        public WallTraversalDebugSnapshot WallDebug => wall != null ? wall.GetDebugSnapshot() : default;
-        public ILadderTraversalFeature Ladder => ladder != null ? ladder : null;
-        public LadderTraversalDebugSnapshot LadderDebug => ladder != null ? ladder.GetDebugSnapshot() : default;
-        public IWireConnection Wire => wire != null ? wire : null;
-        public WireTraversalDebugSnapshot WireDebug => wire != null ? wire.GetDebugSnapshot() : default;
-        public WireReelDebugSnapshot WireReelDebug => wireReel != null ? wireReel.GetDebugSnapshot() : default;
+        public IPlayerTraversalCoordinator Traversal => IsAlive(coordinator) ? coordinator : null;
+        public TraversalCoordinatorDebugSnapshot TraversalDebug => IsAlive(coordinatorDebugSource)
+            ? coordinatorDebugSource.GetDebugSnapshot()
+            : default;
+        public bool HasTraversalCoordinator => IsAlive(coordinator);
+        public IWallTraversalFeature Wall => IsAlive(wall) ? wall : null;
+        public WallTraversalDebugSnapshot WallDebug => IsAlive(wallDebugSource) ? wallDebugSource.GetDebugSnapshot() : default;
+        public ILadderTraversalFeature Ladder => IsAlive(ladder) ? ladder : null;
+        public LadderTraversalDebugSnapshot LadderDebug => IsAlive(ladderDebugSource) ? ladderDebugSource.GetDebugSnapshot() : default;
+        public IWireConnection Wire => IsAlive(wire) ? wire : null;
+        public WireTraversalDebugSnapshot WireDebug => IsAlive(wireDebugSource) ? wireDebugSource.GetDebugSnapshot() : default;
+        public WireReelDebugSnapshot WireReelDebug => IsAlive(wireReelDebugSource)
+            ? wireReelDebugSource.GetDebugSnapshot()
+            : default;
         public bool WallRunInstalled => IsAlive(wallRun);
         public bool WallRunEnabled => IsAlive(wallRun) && wallRun.IsEnabled;
         public bool WallJumpInstalled => IsAlive(wallJump);
@@ -129,7 +147,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetStateTransitionLogging(bool enabled)
         {
-            if (coordinator != null) coordinator.LogStateTransitions = enabled;
+            if (IsAlive(coordinatorDebugSource)) coordinatorDebugSource.SetStateTransitionLogging(enabled);
         }
 
         private static bool IsAlive(object value)

@@ -5,7 +5,8 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver, IPlayerMotorMotionSink
+    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver, IPlayerMotorMotionSink,
+        IPlayerCompositeMotorDebugSnapshotSource
     {
         private Rigidbody rb;
         private IPlayerMotor baseMotor;
@@ -76,7 +77,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsFreefall => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFreefall && !IsTraversalActive;
         public Vector3 InheritedGroundVelocity => baseMotor != null && baseMotor.IsEnabled ? baseMotor.InheritedGroundVelocity : Vector3.zero;
 
-        internal PlayerCompositeMotorDebugSnapshot GetDebugSnapshot()
+        PlayerCompositeMotorDebugSnapshot IPlayerCompositeMotorDebugSnapshotSource.GetDebugSnapshot()
         {
             var hasActiveExternalMotion = hasActiveMotion && Time.time < activeMotionEndsAt;
             return new PlayerCompositeMotorDebugSnapshot(

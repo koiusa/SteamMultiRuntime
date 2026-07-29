@@ -135,7 +135,8 @@ Cooldown
 State、Intent、Wall制限、Wire照準結果と、Wall／Ladder／Wireの
 各FeatureおよびActionの状態をまとめて監視します。診断値はFeatureごとのinternalな
 `GetDebugSnapshot()`で一括取得します。`InternalsVisibleTo`でlocomoterのEditor assemblyだけに公開し、
-Gameplayのpublic APIを増やさず、Editor側からprivate実装も探索しません。
+Gameplayのpublic APIを増やさず、Editor側からprivate実装も探索しません。Composite、Coordinator、各Feature、
+Reel ActionのSnapshot取得はそれぞれinternalなSnapshot Source契約を使用し、Editor Adapterは具体実装へ依存しません。
 Windowは具体Componentを直接列挙せず、Editor側の`IPlayerMovementDebugTarget`を受け取ります。
 `PlayerMovementDebugTarget` AdapterがComponent参照の解決とSnapshot取得を担当し、構成変更時はWindow上部の
 `Refresh`で参照を再構築できます。
@@ -144,7 +145,8 @@ Coordinator全体ビューの`Console Log`を有効にすると、そのPlayer�
 Ladder専用Intentは、Wire未接続かつ実際にLadderへ接続中の場合だけ生成します。State遷移ログには
 `grounded`、`wire`、`ladder`の実状態も併記します。
 Wireビューでは、権威側Actionが保持するReel Inputと、直近の巻き取り適用前後のTarget Rope Lengthも
-`WireReelDebugSnapshot`から確認できます。
+internalな`IWireReelDebugSnapshotSource`を介して`WireReelDebugSnapshot`から確認できます。Editor Adapterは
+`WireReelAction`の具体型へ依存しません。
 
 ## Wall Traversal
 

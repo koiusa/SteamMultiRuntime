@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [DisallowMultipleComponent]
-    public sealed class LadderTraversalFeature : MonoBehaviour, ILadderTraversalFeature
+    public sealed class LadderTraversalFeature : MonoBehaviour, ILadderTraversalFeature, ILadderTraversalDebugSnapshotSource
     {
         [SerializeField] private LadderTraversalSettings settings;
 
@@ -38,7 +38,7 @@ namespace Koiusa.SteamMultiRuntime
             ? settings.WallTraversalBlockDuration
             : LadderTraversalSettings.CreateDefault().WallTraversalBlockDuration;
 
-        internal LadderTraversalDebugSnapshot GetDebugSnapshot() => new LadderTraversalDebugSnapshot(
+        LadderTraversalDebugSnapshot ILadderTraversalDebugSnapshotSource.GetDebugSnapshot() => new LadderTraversalDebugSnapshot(
             currentLadder,
             activeLadders.Count,
             Mathf.Max(0f, reattachBlockedUntilTime - Time.time),

@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(PlayerTraversalCoordinator))]
     [RequireComponent(typeof(WireLineVisualFeature))]
     [DisallowMultipleComponent]
-    public sealed class WireTraversalFeature : MonoBehaviour, IWireConnection
+    public sealed class WireTraversalFeature : MonoBehaviour, IWireConnection, IWireTraversalDebugSnapshotSource
     {
         [SerializeField] private WireLineVisualFeature visual;
         [SerializeField, Tooltip("Elasticはバネ力、Ropeは非伸縮の位置制約として処理します。")]
@@ -46,7 +46,7 @@ namespace Koiusa.SteamMultiRuntime
         public WireConstraintMode ConstraintMode => constraintMode;
         public float ElasticStretchLimit => elasticStretchLimit;
 
-        internal WireTraversalDebugSnapshot GetDebugSnapshot() => new WireTraversalDebugSnapshot(
+        WireTraversalDebugSnapshot IWireTraversalDebugSnapshotSource.GetDebugSnapshot() => new WireTraversalDebugSnapshot(
             ActualLength,
             Mathf.Max(0f, ActualLength - RopeLength),
             AnchorBody != null && !AnchorBody.isKinematic);

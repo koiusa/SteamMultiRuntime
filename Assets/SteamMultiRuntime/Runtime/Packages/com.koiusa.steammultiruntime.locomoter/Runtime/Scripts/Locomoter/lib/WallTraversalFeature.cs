@@ -11,12 +11,12 @@ namespace Koiusa.SteamMultiRuntime
     /// <summary>Owns wall contact resolution shared by all wall actions.</summary>
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
-    public sealed class WallTraversalFeature : MonoBehaviour, IWallTraversalFeature
+    public sealed class WallTraversalFeature : MonoBehaviour, IWallTraversalFeature, IWallTraversalDebugSnapshotSource
     {
         private SlopeContactResolver contacts;
 
         public bool IsEnabled => isActiveAndEnabled;
-        internal WallTraversalDebugSnapshot GetDebugSnapshot()
+        WallTraversalDebugSnapshot IWallTraversalDebugSnapshotSource.GetDebugSnapshot()
         {
             var upAxis = Physics.gravity.sqrMagnitude > 0f ? -Physics.gravity.normalized : Vector3.up;
             var hasNormal = TryGetWallNormal(upAxis, 1f, out var wallNormal);

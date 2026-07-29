@@ -2,6 +2,21 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    internal interface IPlayerCompositeMotorDebugSnapshotSource { PlayerCompositeMotorDebugSnapshot GetDebugSnapshot(); }
+    internal interface ITraversalCoordinatorDebugSnapshotSource
+    {
+        TraversalCoordinatorDebugSnapshot GetDebugSnapshot();
+        void SetStateTransitionLogging(bool enabled);
+    }
+    internal interface IWallTraversalDebugSnapshotSource { WallTraversalDebugSnapshot GetDebugSnapshot(); }
+    internal interface ILadderTraversalDebugSnapshotSource { LadderTraversalDebugSnapshot GetDebugSnapshot(); }
+    internal interface IWireTraversalDebugSnapshotSource { WireTraversalDebugSnapshot GetDebugSnapshot(); }
+
+    internal interface IWireReelDebugSnapshotSource
+    {
+        WireReelDebugSnapshot GetDebugSnapshot();
+    }
+
     internal readonly struct PlayerCompositeMotorDebugSnapshot
     {
         public readonly Vector2 RawMoveInput;
