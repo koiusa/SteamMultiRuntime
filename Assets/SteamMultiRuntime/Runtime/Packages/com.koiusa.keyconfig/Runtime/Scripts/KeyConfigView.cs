@@ -26,7 +26,7 @@ namespace Koiusa.Keyconfig.Runtime
         private Label inputMonitorDot;
         private Label inputMonitorStatus;
         private DropdownField bindingGroupDropdown;
-        private VisualElement mapTabBar;
+        private ScrollView mapTabBar;
         private ScrollView bindingListView;
         private Button loadButton;
         private Button saveButton;
@@ -107,7 +107,7 @@ namespace Koiusa.Keyconfig.Runtime
 
                 bindingGroupDropdown = new DropdownField("BindingGroup");
                 bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");
-                mapTabBar = new VisualElement();
+                mapTabBar = CreateMapTabBar();
                 mapTabBar.AddToClassList("keyconfig-map-tabs");
 
                 if (insertParent != null && tableHeader != null)
@@ -410,6 +410,7 @@ namespace Koiusa.Keyconfig.Runtime
                 if (nextMapIndex < mapTabButtons.Count && mapTabButtons[nextMapIndex].enabledInHierarchy)
                 {
                     mapTabButtons[nextMapIndex].Focus();
+                    mapTabBar?.ScrollTo(mapTabButtons[nextMapIndex]);
                 }
             });
         }
@@ -711,7 +712,7 @@ namespace Koiusa.Keyconfig.Runtime
             bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");
             container.Add(bindingGroupDropdown);
 
-            mapTabBar = new VisualElement();
+            mapTabBar = CreateMapTabBar();
             mapTabBar.AddToClassList("keyconfig-map-tabs");
             container.Add(mapTabBar);
 
@@ -744,6 +745,16 @@ namespace Koiusa.Keyconfig.Runtime
             buttonRow.Add(saveButton);
             buttonRow.Add(resetAllButton);
             buttonRow.Add(closeButton);
+        }
+
+        private static ScrollView CreateMapTabBar()
+        {
+            var scrollView = new ScrollView(ScrollViewMode.Horizontal);
+            scrollView.horizontalScrollerVisibility = ScrollerVisibility.Auto;
+            scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+            scrollView.contentContainer.style.flexDirection = FlexDirection.Row;
+            scrollView.contentContainer.style.flexWrap = Wrap.NoWrap;
+            return scrollView;
         }
 
         private void BindRow(TextElement element, string key)
@@ -994,6 +1005,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (index >= 0 && index < mapTabButtons.Count)
             {
                 mapTabButtons[index].Focus();
+                mapTabBar?.ScrollTo(mapTabButtons[index]);
             }
         }
 

@@ -11,6 +11,11 @@ Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有
 
 汎用KeyconfigはSteamMultiRuntimeを参照しません。SteamMultiRuntime側が`IKeyConfigLocalizer`を実装して接続します。
 
+## レイアウト
+
+Keyconfig Panelは画面内の利用可能な高さを満たします。Binding Listは項目数に関係なく、Table Headerと下部Button Rowの間にある残り領域を埋めます。
+Action Mapタブは固定高の横ScrollViewへ表示します。Map数が増えてもPanelや下部Function Button Rowを押し出しません。
+
 ## 本番入力設定
 
 本番の`InputActionAsset`は次の1ファイルだけです。

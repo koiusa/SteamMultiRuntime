@@ -12,13 +12,15 @@
 
 .keyconfig-panel {
 	min-width: 560px;
+	min-height: 0;
 	width: 72%;
+	height: 100%;
 	max-width: 960px;
-	max-height: 680px;
 	padding-left: 24px;
 	padding-right: 24px;
 	padding-top: 20px;
 	padding-bottom: 20px;
+	overflow: hidden;
 }
 
 .keyconfig-title {
@@ -107,18 +109,23 @@
 
 .keyconfig-binding-group-dropdown {
 	margin-bottom: 8px;
+	flex-shrink: 0;
 }
 
 .keyconfig-map-tabs {
-	flex-direction: row;
-	flex-wrap: nowrap;
-	align-items: flex-end;
-	min-height: 40px;
+	height: 48px;
+	min-height: 48px;
+	max-height: 48px;
 	padding-top: 4px;
-	padding-bottom: 2px;
 	margin-bottom: 2px;
 	flex-shrink: 0;
-	overflow: visible;
+	overflow: hidden;
+}
+
+.keyconfig-map-tabs .unity-scroll-view__content-container {
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: flex-start;
 }
 
 .keyconfig-map-tab-button {
@@ -129,6 +136,7 @@
 	padding-left: 14px;
 	padding-right: 14px;
 	font-size: 13px;
+	-unity-font-style: normal;
 	flex-shrink: 0;
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
@@ -170,9 +178,15 @@
 
 .keyconfig-list {
 	flex-grow: 1;
-	min-height: 220px;
-	max-height: 460px;
+	flex-shrink: 1;
+	min-height: 0;
 	margin-bottom: 12px;
+}
+
+.smr-theme .keyconfig-map-tab-button:hover,
+.smr-theme .keyconfig-map-tab-button:focus,
+.smr-theme .keyconfig-map-tab-button.active {
+	-unity-font-style: normal;
 }
 
 /* ---------- グループヘッダー ---------- */
@@ -414,6 +428,7 @@
 	flex-direction: row;
 	justify-content: flex-end;
 	margin-top: 4px;
+	flex-shrink: 0;
 }
 
 .keyconfig-button {
