@@ -30,40 +30,14 @@ Usage
 4. 追加したSceneが有効になっていることを確認します。
 5. `SampleLobbyScene_ThirdPersonView_Traversal.unity`を開いてPlayします。
 
-Build Profileが固有のScene Listを使用している場合、Global Build Settingsへ追加しただけでは
-実行時にロードできません。必ず現在使用しているBuild ProfileのScene Listへ追加してください。
-
-### 操作
-
-| 操作 | Keyboard / Mouse | Gamepad |
-|---|---|---|
-| 移動 | WASD / 矢印キー | 左スティック |
-| カメラ | マウス移動 | 右スティック |
-| ジャンプ | Space | A / × |
-| ダッシュ | Left Alt | RT / R2 |
-| スプリント | Left Shift | 左スティック押し込み |
-| ロックオン | 中クリック | LT / L2 |
-| 前／次のターゲット | 1 / 2 | D-pad左／右 |
-| グラップル | 右クリック | RB / R1 |
-| メニュー | Tab | Start / Options |
-
 ### System／デバッグ操作
 
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
 | 入力ガイド表示切替 | F1 | DualShock Touchpad |
+| キャラクターデバッグ表示切替 | F2 | L3 2回押し |
+| デバッグ用セッションメニュー | F3 | Select / Share |
 | ゲーム終了／EditorのPlay Mode終了 | Escape | — |
-
-入力ガイドには現在の入力デバイスに対応するGameplay／UI操作が表示されます。
-
-すべてのGameplay／UI操作は[Input Bindings](Documentation/InputBindings.md)を参照してください。
-
-### 詳細なセットアップと更新
-
-[サンプルのImport・Build Profile設定・更新手順](Assets/SteamMultiRuntime/Documentation~/Samples.md)
-
-機能単位のサンプルは`Assets/SteamMultiRuntime/Samples/Features/<機能名>/`にあります。
-一覧と追加規約は[Samples README](Assets/SteamMultiRuntime/Samples/README.md)を参照してください。
 
 Localization Setup
 ------------------
@@ -75,21 +49,13 @@ Localization Setup
 Documentation
 -------------
 
-- [現在のクラス構成](Documentation/CurrentClassStructure.md)
-- [Traversal Architecture](Documentation/TraversalArchitecture.md)
-- [Camera Architecture](Documentation/CameraArchitecture.md)
-- [Player Gameplay Architecture](Documentation/PlayerGameplayArchitecture.md)
-- [NPC Architecture](Documentation/NpcArchitecture.md)
-- [Character Architecture](Documentation/CharacterArchitecture.md)
-- [Session Architecture](Documentation/SessionArchitecture.md)
-- [Editor Specification](Documentation/EditorSpecification.md)
-- [Package Architecture](Documentation/PackageArchitecture.md)
-- [Keyconfig](Documentation/Keyconfig.md)
-- [TargetingSystem](Documentation/TargetingSystem.md)
-- [Input Bindings](Documentation/InputBindings.md)
-- [Sample Setup](Assets/SteamMultiRuntime/Documentation~/Samples.md)
+- [ドキュメント索引](Documentation/README.md) — 設計資料、設定資料、運用手順の一覧
+- [現在のクラス構成](Documentation/CurrentClassStructure.md) — Runtime全体の概要
+- [パッケージ構成](Documentation/PackageArchitecture.md) — 依存方向と境界の正本
+- [入力一覧](Documentation/InputBindings.md) — Gameplay／UI／System操作
+- [Sample Setup](Assets/SteamMultiRuntime/Documentation~/Samples.md) — Import、Build Profile、更新手順
 
 Development Notes
 -----------------
 
-- [Development Notes](Documentation/DevelopmentNotes.md)
+- [開発時に判明した環境依存の注意事項](Documentation/DevelopmentNotes.md)
