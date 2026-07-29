@@ -6,11 +6,20 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField, Min(0f)] private float reelSpeed = 12f;
         [SerializeField, Min(0f)] private float stepDistance = 1.5f;
-        private IWireConnection connection; private float input;
+        private IWireConnection connection;
+        private float input;
+        private float lastLengthBeforeApply;
+        private float lastLengthAfterApply;
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsReelingIn => IsEnabled && input < -0.001f;
         private void Awake() => connection = GetComponent<IWireConnection>();
         private void OnValidate() { reelSpeed = Mathf.Max(0f, reelSpeed); stepDistance = Mathf.Max(0f, stepDistance); }
+        internal WireReelDebugSnapshot GetDebugSnapshot() => new WireReelDebugSnapshot(
+            input,
+            IsReelingIn,
+            reelSpeed,
+            lastLengthBeforeApply,
+            lastLengthAfterApply);
         // Reel axis convention: negative reels in, positive pays the wire out.
         public void SetInput(float value)
         {
@@ -24,10 +33,21 @@ namespace Koiusa.SteamMultiRuntime
                 connection.SetRopeLength(Mathf.Min(connection.RopeLength, actualLength));
             }
         }
-        public void ReelStep() { if (connection != null && connection.IsAttached) connection.SetRopeLength(connection.RopeLength - stepDistance); }
-        private void FixedUpdate()
+        public void ReelStep()
         {
             if (connection == null || !connection.IsAttached) return;
+
+            lastLengthBeforeApply = connection.RopeLength;
+            var actualLength = Vector3.Distance(connection.Body.worldCenterOfMass, connection.AnchorPoint);
+            var tautLength = Mathf.Min(connection.RopeLength, actualLength);
+            connection.SetRopeLength(tautLength - stepDistance);
+            lastLengthAfterApply = connection.RopeLength;
+        }
+        public void ApplyReel(float deltaTime)
+        {
+            if (connection == null || !connection.IsAttached) return;
+
+            lastLengthBeforeApply = connection.RopeLength;
 
             if (IsReelingIn)
             {
@@ -37,7 +57,8 @@ namespace Koiusa.SteamMultiRuntime
                 connection.SetRopeLength(Mathf.Min(connection.RopeLength, actualLength));
             }
 
-            connection.SetRopeLength(connection.RopeLength + input * reelSpeed * Time.fixedDeltaTime);
+            connection.SetRopeLength(connection.RopeLength + input * reelSpeed * Mathf.Max(0f, deltaTime));
+            lastLengthAfterApply = connection.RopeLength;
         }
     }
 }

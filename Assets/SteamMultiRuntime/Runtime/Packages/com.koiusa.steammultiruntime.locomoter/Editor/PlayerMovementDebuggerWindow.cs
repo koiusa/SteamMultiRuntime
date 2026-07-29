@@ -197,6 +197,13 @@ namespace Koiusa.SteamMultiRuntime
                 DrawAction("Attach", target.WireAttachEnabled, target.WireAttachInstalled);
                 DrawAction("Swing", target.WireSwingEnabled, target.WireSwingInstalled);
                 DrawAction("Reel", target.WireReelEnabled, target.WireReelInstalled);
+                if (target.WireReelInstalled)
+                {
+                    var reel = target.WireReelDebug;
+                    Value("    Reel Input / In", $"{reel.Input:F3} / {reel.IsReelingIn}");
+                    Value("    Reel Speed", $"{reel.ReelSpeed:F3} m/s");
+                    Value("    Last Apply Before / After", $"{reel.LastLengthBeforeApply:F3} / {reel.LastLengthAfterApply:F3} m");
+                }
                 DrawAction("Ground", target.WireGroundEnabled, target.WireGroundInstalled);
             EndPanel();
         }

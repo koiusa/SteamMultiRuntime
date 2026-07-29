@@ -83,4 +83,23 @@ namespace Koiusa.SteamMultiRuntime
             HasDynamicAnchor = hasDynamicAnchor;
         }
     }
+
+    internal readonly struct WireReelDebugSnapshot
+    {
+        public readonly float Input;
+        public readonly bool IsReelingIn;
+        public readonly float ReelSpeed;
+        public readonly float LastLengthBeforeApply;
+        public readonly float LastLengthAfterApply;
+
+        public WireReelDebugSnapshot(float input, bool isReelingIn, float reelSpeed,
+            float lastLengthBeforeApply, float lastLengthAfterApply)
+        {
+            Input = input;
+            IsReelingIn = isReelingIn;
+            ReelSpeed = reelSpeed;
+            LastLengthBeforeApply = lastLengthBeforeApply;
+            LastLengthAfterApply = lastLengthAfterApply;
+        }
+    }
 }

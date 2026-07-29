@@ -143,6 +143,8 @@ Coordinator全体ビューの`Console Log`を有効にすると、そのPlayer�
 現在Intent付きでUnity Consoleへ出力します。ログ操作もEditor assemblyに限定し、既定は無効です。
 Ladder専用Intentは、Wire未接続かつ実際にLadderへ接続中の場合だけ生成します。State遷移ログには
 `grounded`、`wire`、`ladder`の実状態も併記します。
+Wireビューでは、権威側Actionが保持するReel Inputと、直近の巻き取り適用前後のTarget Rope Lengthも
+`WireReelDebugSnapshot`から確認できます。
 
 ## Wall Traversal
 
@@ -235,6 +237,8 @@ Grapple入力を保持している間、Wire未接続時は照準操作を優先
 
 - Q／負軸入力で巻き取る
 - E／正軸入力で繰り出す
+- 入力値の反映は独立した`FixedUpdate`ではなく、`PlayerTraversalCoordinator.ApplyTraversal`から呼ばれる権威側の物理Tickで行う
+- Wire接続中の空中ジャンプ入力は、現在の実距離まで余剰Slackを除去してから1ステップ巻き取る
 - 巻き取り中はElasticでも伸びない制約を要求する
 - GroundからJumpした後も現在距離から巻き取る
 

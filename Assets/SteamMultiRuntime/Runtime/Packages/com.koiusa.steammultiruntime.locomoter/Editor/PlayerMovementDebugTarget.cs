@@ -26,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         LadderTraversalDebugSnapshot LadderDebug { get; }
         IWireConnection Wire { get; }
         WireTraversalDebugSnapshot WireDebug { get; }
+        WireReelDebugSnapshot WireReelDebug { get; }
         bool WallRunInstalled { get; }
         bool WallRunEnabled { get; }
         bool WallJumpInstalled { get; }
@@ -62,7 +63,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly ILadderDetachAction ladderDetach;
         private readonly IWireAttachAction wireAttach;
         private readonly IWireSwingAction wireSwing;
-        private readonly IWireReelAction wireReel;
+        private readonly WireReelAction wireReel;
         private readonly IWireGroundAction wireGround;
 
         public PlayerMovementDebugTarget(PlayerCompositeMotor composite)
@@ -80,7 +81,7 @@ namespace Koiusa.SteamMultiRuntime
             ladderDetach = composite.GetComponent<ILadderDetachAction>();
             wireAttach = composite.GetComponent<IWireAttachAction>();
             wireSwing = composite.GetComponent<IWireSwingAction>();
-            wireReel = composite.GetComponent<IWireReelAction>();
+            wireReel = composite.GetComponent<WireReelAction>();
             wireGround = composite.GetComponent<IWireGroundAction>();
         }
 
@@ -106,6 +107,7 @@ namespace Koiusa.SteamMultiRuntime
         public LadderTraversalDebugSnapshot LadderDebug => ladder != null ? ladder.GetDebugSnapshot() : default;
         public IWireConnection Wire => wire != null ? wire : null;
         public WireTraversalDebugSnapshot WireDebug => wire != null ? wire.GetDebugSnapshot() : default;
+        public WireReelDebugSnapshot WireReelDebug => wireReel != null ? wireReel.GetDebugSnapshot() : default;
         public bool WallRunInstalled => IsAlive(wallRun);
         public bool WallRunEnabled => IsAlive(wallRun) && wallRun.IsEnabled;
         public bool WallJumpInstalled => IsAlive(wallJump);

@@ -52,6 +52,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsEnabled { get; }
         bool IsReelingIn { get; }
         void SetInput(float reelInput);
+        void ApplyReel(float deltaTime);
         void ReelStep();
     }
 

@@ -215,6 +215,13 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             lastIsGrounded = isGrounded;
+            // Reel input is applied by the authoritative traversal tick. Keeping this
+            // beside state evaluation prevents MonoBehaviour FixedUpdate ordering from
+            // delaying or skipping the operation when entering WireSwing.
+            if (wireReelAction != null && wireReelAction.IsEnabled)
+            {
+                wireReelAction.ApplyReel(Time.fixedDeltaTime);
+            }
             var allowLadderIntents = !IsWireAttached
                 && activeLadderFeature != null
                 && activeLadderFeature.IsOnLadder;
