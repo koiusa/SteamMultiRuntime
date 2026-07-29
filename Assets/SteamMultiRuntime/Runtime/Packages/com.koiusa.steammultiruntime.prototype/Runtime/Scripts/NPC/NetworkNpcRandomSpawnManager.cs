@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 using Koiusa.SteamMultiRuntime.Network;
 using Koiusa.SteamMultiRuntime.Character;
 using Koiusa.Input;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -104,13 +103,14 @@ namespace Koiusa.SteamMultiRuntime
         private NetworkSceneManager subscribedSceneManager;
         private Transform debugDisplayRoot;
         private readonly CharacterDebugDisplayState characterDebugDisplayState = new();
-        private InputActionBinding characterDebugToggleBinding;
+        private CharacterDebugToggleController characterDebugToggleController;
 
         private void Awake()
         {
             characterDebugDisplayState.IsVisible = showCharacterDebugUi;
-            var toggleAction = inputActionsConfig?.FindAction("System/CharacterDebugToggle");
-            characterDebugToggleBinding = InputActionBinding.Bind(toggleAction, OnCharacterDebugTogglePerformed);
+            characterDebugToggleController = new CharacterDebugToggleController(
+                inputActionsConfig,
+                () => SetCharacterDebugUiVisible(!showCharacterDebugUi));
             if (!SpawnAnchors.Contains(this))
             {
                 SpawnAnchors.Add(this);
@@ -161,8 +161,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
-            characterDebugToggleBinding?.Dispose();
-            characterDebugToggleBinding = null;
+            characterDebugToggleController?.Dispose();
+            characterDebugToggleController = null;
             spawnedNpcs.DestroyAll();
             SpawnAnchors.Remove(this);
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
@@ -225,11 +225,6 @@ namespace Koiusa.SteamMultiRuntime
         {
             showCharacterDebugUi = visible;
             characterDebugDisplayState.IsVisible = visible;
-        }
-
-        private void OnCharacterDebugTogglePerformed(InputAction.CallbackContext context)
-        {
-            SetCharacterDebugUiVisible(!showCharacterDebugUi);
         }
 
         private void OnValidate()

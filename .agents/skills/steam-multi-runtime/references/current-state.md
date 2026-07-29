@@ -5,6 +5,7 @@
 - `System/DebugInputGuideToggle`: F1 or DualShock touchpad.
 - `System/CharacterDebugToggle`: F2 or L3 double-click. The L3 binding uses `MultiTap(tapCount=2)`.
 - `System/DebugSessionMenuToggle`: F3 or Select/Share. Local mode opens Stage Select; Network mode opens Steam Lobby through the manager that exists in the active runtime.
+- F1 Input Guide uses `InputActionBinding`; F2 Character Debug input is owned by `CharacterDebugToggleController`, while `NetworkNpcRandomSpawnManager` owns only its NPC group's visibility state.
 - `UI/MenuToggle`: Tab or Start/Options. It opens `PauseMenuController`, whose choices are Key Config and Character Select.
 - `UI/CharacterMenuToggle`: Backquote or C remains the direct Character Select keyboard shortcut. It has no gamepad Select/Share binding.
 - `Adventure/CharacterSelectModifier`: gamepad button east (B/○).

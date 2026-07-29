@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
@@ -63,7 +64,7 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement leftStickVisual;
         private VisualElement rightStickVisual;
         private InputActionAsset inputActionAsset;
-        private InputAction debugToggleAction;
+        private InputActionBinding debugToggleBinding;
         private InputDevice lastActiveDevice;
         private bool isGamepadLayoutVisible;
         private float lastMouseActivityTime;
@@ -294,26 +295,15 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void AcquireDebugToggleInput()
         {
-            debugToggleAction = inputActionAsset?.FindAction("System/DebugInputGuideToggle", false);
-            if (debugToggleAction == null)
-            {
-                return;
-            }
-
-            debugToggleAction.performed += OnDebugTogglePerformed;
-            debugToggleAction.Enable();
+            debugToggleBinding = InputActionBinding.Bind(
+                inputActionAsset?.FindAction("System/DebugInputGuideToggle", false),
+                OnDebugTogglePerformed);
         }
 
         private void ReleaseDebugToggleInput()
         {
-            if (debugToggleAction == null)
-            {
-                return;
-            }
-
-            debugToggleAction.performed -= OnDebugTogglePerformed;
-            debugToggleAction.Disable();
-            debugToggleAction = null;
+            debugToggleBinding?.Dispose();
+            debugToggleBinding = null;
         }
 
         private void OnDebugTogglePerformed(InputAction.CallbackContext context)

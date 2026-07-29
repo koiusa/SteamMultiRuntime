@@ -51,3 +51,10 @@ Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、�
 - 独自選択UIなら、表示時に`UiNavigationInputSession`を作成します。入力更新とリピートはSessionが管理します。
 - 非表示時にSessionを`Dispose`します。
 - Input Action名、リピート、Event消費を各UIにコピーしません。
+
+## デバッグUI
+
+- Input GuideはF1入力を`InputActionBinding`で所有し、疑似デバイス表示とOperationパネルを同じInputActionAssetから構築します。
+- Character DebugのF2購読は`CharacterDebugToggleController`が所有し、NPC Spawn ManagerはNPC群の表示状態だけを所有します。
+- Character Debugのテレメトリ更新は連続状態のため0.1秒間隔のポーリングを許可します。非表示時や表示担当でないInstanceはUIを更新しません。
+- Stage Select／Steam LobbyのF3は通常の`IUiMenu`遷移として扱い、Overlayとは分離します。
