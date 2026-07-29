@@ -24,6 +24,15 @@ Work from the repository's current code and serialized assets; do not infer pref
 - Do not add reflection-like dispatch to first-party Runtime code. Prefer typed contracts and explicit adapters.
 - Apply only the documented Editor and vendored Thirdparty exceptions. When reviewing reflection findings, distinguish delegate `Invoke` and ordinary `object.GetType()` from member inspection.
 
+## Runtime update policy
+
+- Apply push-based design across the project, not only to input. Prefer callbacks, events, async completion, explicit commands, and lifecycle transitions for discrete changes in UI, networking, ownership, loading, configuration, collections, and gameplay state.
+- Before adding `Update`, `FixedUpdate`, `LateUpdate`, a coroutine loop, timer, or repeated query, verify that the behavior genuinely requires continuous sampling, elapsed-time progression, or a specific Unity player-loop phase. Use an existing notification when one is available.
+- Limit polling to continuous behavior such as movement, physics, interpolation, animation following, and held-action repeat. Centralize necessary polling in the system that owns the behavior; do not duplicate it in every consumer.
+- Start and stop subscriptions, timers, and polling with explicit lifecycle ownership. Avoid scene-wide searches, repeated `GetComponent`, allocation, and unchanged-state work inside frame loops.
+- Do not introduce an interface or event bus only to appear decoupled. Use typed events or contracts when there are multiple implementations, a package boundary, or a real producer-consumer lifetime boundary.
+- When polling is retained in new or substantially changed code, make its necessity apparent in code structure or documentation and verify its frequency and shutdown behavior.
+
 ## Project rules
 
 - Treat `Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.inputactions` as the production input source of truth.
