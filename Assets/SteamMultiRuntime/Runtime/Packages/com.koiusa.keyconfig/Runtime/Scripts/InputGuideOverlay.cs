@@ -73,6 +73,7 @@ namespace Koiusa.Keyconfig.Runtime
         private bool primaryDeviceIsGamepad;
         private OverlayDisplayMode displayMode = OverlayDisplayMode.Hidden;
         private LocalizedVisualTree localizedTree;
+        private bool bindingRefreshScheduled;
 
         private sealed class GuideRow
         {
@@ -96,6 +97,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnEnable()
         {
             KeyConfigLocalization.LocaleChanged += RefreshLocalizedUi;
+            InputSystem.onActionChange += OnInputActionChange;
             AcquireDebugToggleInput();
             Build();
             SetDisplayMode(startVisible ? OverlayDisplayMode.Both : OverlayDisplayMode.Hidden);
@@ -104,6 +106,8 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnDisable()
         {
             KeyConfigLocalization.LocaleChanged -= RefreshLocalizedUi;
+            InputSystem.onActionChange -= OnInputActionChange;
+            bindingRefreshScheduled = false;
             ReleaseDebugToggleInput();
             localizedTree?.Dispose();
             localizedTree = null;
@@ -255,6 +259,37 @@ namespace Koiusa.Keyconfig.Runtime
             AcquireDebugToggleInput();
             Build();
             SetDisplayMode(previousMode);
+        }
+
+        private void OnInputActionChange(object changedObject, InputActionChange change)
+        {
+            if (change != InputActionChange.BoundControlsChanged ||
+                bindingRefreshScheduled ||
+                !BelongsToInputAsset(changedObject))
+            {
+                return;
+            }
+
+            bindingRefreshScheduled = true;
+            uiDocument?.rootVisualElement.schedule.Execute(() =>
+            {
+                bindingRefreshScheduled = false;
+                if (isActiveAndEnabled)
+                {
+                    Refresh();
+                }
+            });
+        }
+
+        private bool BelongsToInputAsset(object changedObject)
+        {
+            return changedObject switch
+            {
+                InputAction action => ReferenceEquals(action.actionMap?.asset, inputActionAsset),
+                InputActionMap map => ReferenceEquals(map.asset, inputActionAsset),
+                InputActionAsset asset => ReferenceEquals(asset, inputActionAsset),
+                _ => false
+            };
         }
 
         private void AcquireDebugToggleInput()
