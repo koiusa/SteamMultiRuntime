@@ -96,6 +96,34 @@
     overflow: hidden;
 }
 
+.character-debug-summary {
+    height: 30px;
+    min-height: 30px;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 5px;
+    padding-left: 8px;
+    padding-right: 8px;
+    background-color: rgba(20, 31, 48, 0.92);
+    border-left-width: 2px;
+    border-left-color: rgb(94, 234, 212);
+}
+
+.character-debug-summary-value {
+    color: rgb(203, 213, 225);
+    font-size: 12px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.character-debug-summary-target {
+    flex-grow: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-text-overflow-position: end;
+}
+
 .character-debug-tabs {
     height: 32px;
     flex-direction: row;

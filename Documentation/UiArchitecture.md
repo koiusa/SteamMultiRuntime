@@ -57,4 +57,6 @@ Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、�
 - Input GuideはF1入力を`InputActionBinding`で所有し、疑似デバイス表示とOperationパネルを同じInputActionAssetから構築します。`InputGuideOverlay`は入力監視と表示モードを、`InputGuideOperationPanel`はBinding Groupで絞った操作一覧の生成とデバイス別表示を所有します。
 - Character DebugのF2購読は`CharacterDebugToggleController`が所有し、NPC Spawn ManagerはNPC群の表示状態だけを所有します。
 - Character Debugのテレメトリ更新は連続状態のため0.1秒間隔のポーリングを許可します。非表示時や表示担当でないInstanceはUIを更新しません。
+- `CharacterDebugOverlay`はGameplay／Animator／Network参照をラベルから直接読みません。`ICharacterDebugSnapshotSource`が0.1秒ごとに再利用可能な`CharacterDebugSnapshot`へ値を取得し、UIはSnapshotだけを描画します。Animator Parameter定義とSnapshot内Listは再利用します。
+- Character Debugの使用Character名と実行Mode（`Local`／`Host`／`Server`／`Client`）は、STATE／ANIMATIONタブに依存しない固定サマリーとしてタブの上へ表示します。Player Object名は上部のTarget Selectorへ表示します。
 - Stage Select／Steam LobbyのF3は通常の`IUiMenu`遷移として扱い、Overlayとは分離します。

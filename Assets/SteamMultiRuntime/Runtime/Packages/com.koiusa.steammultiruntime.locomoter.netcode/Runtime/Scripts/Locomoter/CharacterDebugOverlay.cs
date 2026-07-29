@@ -39,7 +39,9 @@ namespace Koiusa.SteamMultiRuntime
         private static int selectedInstanceIndex;
 
         private readonly List<LabelBinding> labelBindings = new();
+        private readonly CharacterDebugSnapshot debugSnapshot = new();
         private IPlayerController playerController;
+        private ICharacterDebugSnapshotSource snapshotSource;
         private NetworkBehaviour targetNetworkBehaviour;
         private CharacterDebugDisplayScope displayScope;
         private UIDocument uiDocument;
@@ -104,6 +106,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             target?.ResolveReferences();
+            target?.CaptureDebugSnapshot();
             UpdateBoundLabels();
             UpdateTargetSelector(target);
         }
@@ -121,7 +124,25 @@ namespace Koiusa.SteamMultiRuntime
             if (targetRigidbody == null) targetRigidbody = root.GetComponent<Rigidbody>();
             if (targetAnimator == null) targetAnimator = FindBodyAnimator(root);
             if (targetFaceAnimator == null) targetFaceAnimator = FindFaceAnimator(root);
+            var hasFaceAnimator = TryGetFaceAnimatorAndLayer(out var resolvedFaceAnimator, out var faceLayer);
+            var faceAnimator = hasFaceAnimator ? resolvedFaceAnimator : null;
+            var resolvedFaceLayer = hasFaceAnimator ? faceLayer : -1;
+            if (snapshotSource == null || !snapshotSource.Matches(
+                    root, playerController, targetRigidbody, targetAnimator, faceAnimator,
+                    targetNetworkBehaviour, resolvedFaceLayer))
+            {
+                snapshotSource = new CharacterDebugSnapshotSource(
+                    root,
+                    playerController,
+                    targetRigidbody,
+                    targetAnimator,
+                    faceAnimator,
+                    targetNetworkBehaviour,
+                    resolvedFaceLayer);
+            }
         }
+
+        private void CaptureDebugSnapshot() => snapshotSource?.Capture(debugSnapshot);
 
         private void EnsureUi()
         {
@@ -253,6 +274,13 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             target.ResolveReferences();
+            target.CaptureDebugSnapshot();
+
+            var summary = new VisualElement();
+            summary.AddToClassList("character-debug-summary");
+            content.Add(summary);
+            BindSummaryLabel(summary, "Character", () => target.debugSnapshot.CharacterName, true);
+            BindSummaryLabel(summary, "Mode", () => target.debugSnapshot.NetworkMode, false);
 
             var tabBar = new VisualElement();
             tabBar.AddToClassList("character-debug-tabs");
@@ -273,20 +301,15 @@ namespace Koiusa.SteamMultiRuntime
             stateTab.clicked += () => SelectPage(0, statePage, animationPage, stateTab, animationTab);
             animationTab.clicked += () => SelectPage(1, statePage, animationPage, stateTab, animationTab);
 
-            AddSection(statePage, "Target", section =>
-            {
-                BindLabel(section, "Name", target.GetTargetDisplayName);
-                BindLabel(section, "NetworkMode", GetNetworkModeDisplayName);
-            });
-
             var stateColumns = CreateColumns(statePage);
             AddSection(stateColumns.left, "Controller State", section => BindControllerLabels(section, target));
             AddSection(stateColumns.right, "Rigidbody", section => BindRigidbodyLabels(section, target));
 
             var animationColumns = CreateColumns(animationPage);
             AddSection(animationColumns.left, "Body Animator", section =>
-                BindAnimatorLabels(section, target.targetAnimator, 0, true));
-            AddSection(animationColumns.right, "Face Animation", section => BindFaceAnimatorLabels(section, target));
+                BindAnimatorLabels(section, target.debugSnapshot.BodyAnimator, true));
+            AddSection(animationColumns.right, "Face Animation", section =>
+                BindAnimatorLabels(section, target.debugSnapshot.FaceAnimator, false));
             SelectPage(selectedPageIndex, statePage, animationPage, stateTab, animationTab);
             UpdateBoundLabels();
             UpdateTargetSelector(target);
@@ -337,41 +360,57 @@ namespace Koiusa.SteamMultiRuntime
             labelBindings.Add(new LabelBinding { Label = label, Value = () => $"{name}: {value()}" });
         }
 
+        private void BindSummaryLabel(VisualElement parent, string name, Func<string> value, bool grow)
+        {
+            var label = new Label();
+            label.AddToClassList("character-debug-summary-value");
+            if (grow) label.AddToClassList("character-debug-summary-target");
+            parent.Add(label);
+            labelBindings.Add(new LabelBinding { Label = label, Value = () => $"{name}: {value()}" });
+        }
+
         private void BindControllerLabels(VisualElement parent, CharacterDebugOverlay target)
         {
-            if (target.playerController == null) { parent.Add(new Label("IPlayerController: not found")); return; }
-            BindLabel(parent, "Grounded", () => target.playerController.IsGrounded.ToString());
-            BindLabel(parent, "Jumping", () => target.playerController.IsJumping.ToString());
-            BindLabel(parent, "Freefall", () => target.playerController.IsFreefall.ToString());
-            BindLabel(parent, "FallingAfterJump", () => target.playerController.IsFallingAfterJump.ToString());
-            if (target.playerController is IPlayerLadderState ladder)
+            var snapshot = target.debugSnapshot;
+            if (!snapshot.HasController) { parent.Add(new Label("IPlayerController: not found")); return; }
+            BindLabel(parent, "Grounded", () => snapshot.Grounded.ToString());
+            BindLabel(parent, "Jumping", () => snapshot.Jumping.ToString());
+            BindLabel(parent, "Freefall", () => snapshot.Freefall.ToString());
+            BindLabel(parent, "FallingAfterJump", () => snapshot.FallingAfterJump.ToString());
+            if (snapshot.HasLadderState)
             {
-                BindLabel(parent, "OnLadder", () => ladder.IsOnLadder.ToString());
-                BindLabel(parent, "LadderSpeed", () => ladder.LadderSpeed.ToString("F3"));
+                BindLabel(parent, "OnLadder", () => snapshot.OnLadder.ToString());
+                BindLabel(parent, "LadderSpeed", () => snapshot.LadderSpeed.ToString("F3"));
             }
-            BindLabel(parent, "HorizontalVelocity", () => target.playerController.HorizontalVelocity.ToString("F3"));
-            BindLabel(parent, "VerticalVelocity", () => target.playerController.VerticalVelocity.ToString("F3"));
-            BindLabel(parent, "MaxMoveSpeed", () => target.playerController.MaxMoveSpeed.ToString("F3"));
-            BindLabel(parent, "InheritedGroundVelocity", () => target.playerController.InheritedGroundVelocity.ToString());
+            BindLabel(parent, "HorizontalVelocity", () => snapshot.HorizontalVelocity.ToString("F3"));
+            BindLabel(parent, "VerticalVelocity", () => snapshot.VerticalVelocity.ToString("F3"));
+            BindLabel(parent, "MaxMoveSpeed", () => snapshot.MaxMoveSpeed.ToString("F3"));
+            BindLabel(parent, "InheritedGroundVelocity", () => snapshot.InheritedGroundVelocity.ToString());
         }
 
         private void BindRigidbodyLabels(VisualElement parent, CharacterDebugOverlay target)
         {
-            if (target.targetRigidbody == null) { parent.Add(new Label("Rigidbody: not found")); return; }
-            BindLabel(parent, "Position", () => target.targetRigidbody.position.ToString());
-            BindLabel(parent, "Velocity", () => target.targetRigidbody.linearVelocity.ToString());
-            BindLabel(parent, "Speed", () => target.targetRigidbody.linearVelocity.magnitude.ToString("F3"));
-            BindLabel(parent, "AngularVelocity", () => target.targetRigidbody.angularVelocity.ToString());
+            var snapshot = target.debugSnapshot;
+            if (!snapshot.HasRigidbody) { parent.Add(new Label("Rigidbody: not found")); return; }
+            BindLabel(parent, "Position", () => snapshot.Position.ToString());
+            BindLabel(parent, "Velocity", () => snapshot.Velocity.ToString());
+            BindLabel(parent, "Speed", () => snapshot.Velocity.magnitude.ToString("F3"));
+            BindLabel(parent, "AngularVelocity", () => snapshot.AngularVelocity.ToString());
         }
 
-        private void BindAnimatorLabels(VisualElement parent, Animator animator, int layer, bool parameters)
+        private void BindAnimatorLabels(VisualElement parent, AnimatorDebugSnapshot snapshot, bool parameters)
         {
-            if (animator == null || layer < 0 || layer >= animator.layerCount)
+            if (!snapshot.IsAvailable)
             {
                 parent.Add(new Label("Animator/layer not found"));
                 return;
             }
-            BindAnimatorState(parent, animator, layer);
+            BindLabel(parent, "Animator", () => snapshot.AnimatorName);
+            BindLabel(parent, "Layer", () => snapshot.Layer);
+            BindLabel(parent, "State", () => snapshot.State);
+            BindLabel(parent, "NormalizedTime", () => snapshot.NormalizedTime.ToString("F3"));
+            BindLabel(parent, "LayerWeight", () => snapshot.LayerWeight.ToString("F3"));
+            BindLabel(parent, "Clip", () => snapshot.Clip);
             if (!parameters) return;
             var parameterTitle = new Label("Parameters");
             parameterTitle.AddToClassList("character-debug-parameter-title");
@@ -379,42 +418,14 @@ namespace Koiusa.SteamMultiRuntime
             var parameterGrid = new VisualElement();
             parameterGrid.AddToClassList("character-debug-parameter-grid");
             parent.Add(parameterGrid);
-            foreach (var parameter in animator.parameters)
+            for (var i = 0; i < snapshot.Parameters.Count; i++)
             {
-                var captured = parameter;
-                BindLabel(parameterGrid, captured.name, () => GetAnimatorParameterValue(animator, captured));
+                var index = i;
+                var name = snapshot.Parameters[index].Name;
+                BindLabel(parameterGrid, name, () => index < snapshot.Parameters.Count
+                    ? snapshot.Parameters[index].Value
+                    : "unavailable");
             }
-        }
-
-        private void BindFaceAnimatorLabels(VisualElement parent, CharacterDebugOverlay target)
-        {
-            if (!target.TryGetFaceAnimatorAndLayer(out var animator, out var layer))
-            {
-                parent.Add(new Label("Face animation layer/animator not found"));
-                return;
-            }
-            BindLabel(parent, "Animator", () => animator.name);
-            BindAnimatorState(parent, animator, layer);
-        }
-
-        private void BindAnimatorState(VisualElement parent, Animator animator, int layer)
-        {
-            BindLabel(parent, "Layer", () => $"{animator.GetLayerName(layer)} ({layer})");
-            BindLabel(parent, "State", () => GetAnimatorStateDisplayName(animator, layer));
-            BindLabel(parent, "NormalizedTime", () => animator.GetCurrentAnimatorStateInfo(layer).normalizedTime.ToString("F3"));
-            BindLabel(parent, "LayerWeight", () => animator.GetLayerWeight(layer).ToString("F3"));
-            BindLabel(parent, "Clip", () => GetAnimatorClipName(animator, layer));
-        }
-
-        private static string GetAnimatorParameterValue(Animator animator, AnimatorControllerParameter parameter)
-        {
-            return parameter.type switch
-            {
-                AnimatorControllerParameterType.Float => animator.GetFloat(parameter.nameHash).ToString("F3"),
-                AnimatorControllerParameterType.Int => animator.GetInteger(parameter.nameHash).ToString(),
-                AnimatorControllerParameterType.Bool => animator.GetBool(parameter.nameHash).ToString(),
-                _ => "trigger"
-            };
         }
 
         private void UpdateBoundLabels()
@@ -456,7 +467,7 @@ namespace Koiusa.SteamMultiRuntime
             if (targetSelectorLabel == null) return;
             var targets = aggregateFromAllInstances ? CollectAggregateTargets() : new List<CharacterDebugOverlay> { this };
             var index = target != null ? targets.IndexOf(target) : -1;
-            targetSelectorLabel.text = target == null ? "No target" : $"{index + 1}/{targets.Count} {target.GetTargetDisplayName()}";
+            targetSelectorLabel.text = target == null ? "No target" : $"{index + 1}/{targets.Count} {target.debugSnapshot.TargetName}";
         }
 
         private void BeginDrag(PointerDownEvent evt)
@@ -592,32 +603,5 @@ namespace Koiusa.SteamMultiRuntime
             return -1;
         }
 
-        private string GetTargetDisplayName()
-        {
-            var root = targetRoot != null ? targetRoot : transform;
-            return targetNetworkBehaviour == null ? root.name : $"{root.name} (Owner:{targetNetworkBehaviour.OwnerClientId})";
-        }
-
-        private static string GetNetworkModeDisplayName()
-        {
-            var manager = NetworkManager.Singleton;
-            if (manager == null || !manager.IsListening) return "Offline";
-            if (manager.IsHost) return "Host";
-            if (manager.IsServer) return "Server";
-            return manager.IsClient ? "Client" : "Unknown";
-        }
-
-        private static string GetAnimatorStateDisplayName(Animator animator, int layer)
-        {
-            var clips = animator.GetCurrentAnimatorClipInfo(layer);
-            return clips.Length > 0 && clips[0].clip != null
-                ? clips[0].clip.name : animator.GetCurrentAnimatorStateInfo(layer).shortNameHash.ToString();
-        }
-
-        private static string GetAnimatorClipName(Animator animator, int layer)
-        {
-            var clips = animator.GetCurrentAnimatorClipInfo(layer);
-            return clips.Length > 0 && clips[0].clip != null ? clips[0].clip.name : "none";
-        }
     }
 }
