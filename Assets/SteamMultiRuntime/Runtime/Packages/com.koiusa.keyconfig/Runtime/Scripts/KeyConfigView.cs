@@ -519,6 +519,7 @@ namespace Koiusa.Keyconfig.Runtime
                 var row = new VisualElement();
                 row.AddToClassList("keyconfig-row");
                 row.AddToClassList(rowCounter % 2 == 0 ? "even" : "odd");
+                row.focusable = !entry.IsComposite && !entry.IsRebindable;
                 row.RegisterCallback<FocusInEvent>(OnBindingRowFocusIn);
                 row.RegisterCallback<FocusOutEvent>(OnBindingRowFocusOut);
                 rowCounter++;
@@ -584,7 +585,7 @@ namespace Koiusa.Keyconfig.Runtime
                 resetButton.SetEnabled(isInteractive && canReset);
                 buttonCell.Add(resetButton);
 
-                if (!entry.IsComposite && entry.IsRebindable)
+                if (!entry.IsComposite)
                 {
                     bindingRows.Add(new BindingRowNavigation
                     {
@@ -999,6 +1000,13 @@ namespace Koiusa.Keyconfig.Runtime
                     resetColumn = true;
                     return true;
                 }
+
+                if (focusedElement == bindingRows[i].Row)
+                {
+                    rowIndex = i;
+                    resetColumn = false;
+                    return true;
+                }
             }
 
             rowIndex = -1;
@@ -1006,12 +1014,13 @@ namespace Koiusa.Keyconfig.Runtime
             return false;
         }
 
-        private static Button GetAvailableRowButton(BindingRowNavigation row, bool preferReset)
+        private static VisualElement GetAvailableRowButton(BindingRowNavigation row, bool preferReset)
         {
             var preferred = preferReset ? row.ResetButton : row.RebindButton;
             if (preferred != null && preferred.enabledInHierarchy) return preferred;
             var fallback = preferReset ? row.RebindButton : row.ResetButton;
-            return fallback != null && fallback.enabledInHierarchy ? fallback : null;
+            if (fallback != null && fallback.enabledInHierarchy) return fallback;
+            return row.Row != null && row.Row.focusable ? row.Row : null;
         }
 
         private void FocusAdjacentFunctionButton(int direction)

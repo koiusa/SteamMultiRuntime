@@ -18,6 +18,7 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 - Refresh and Leave belong in the left management section with stage selection and lobby creation.
 - The lobby list's flex chain must stretch to the bottom even when it has no items.
 - Key Config attaches `KeyConfigDropdownPopup.uss` to the panel root so the dropdown popup list receives styling, and removes it when the view is disposed.
+- Key Config shows the protected UI Action Map as a navigable tab and read-only row list; its Change and Reset controls remain disabled.
 - Pause Menu, Character Select, Stage Select, Key Config, and Steam Lobby use `UiNavigationInputSession` for exclusive frontmost input, event-driven direction changes, held-input repeat, cursor visibility, and Input Action lifetime. Screen-specific controllers own focus transitions only and do not poll navigation in `Update`.
 - When a prior binding override path is null or empty, rebind reset must call `RemoveBindingOverride`; only non-empty paths may be passed to `ApplyBindingOverride`.
 

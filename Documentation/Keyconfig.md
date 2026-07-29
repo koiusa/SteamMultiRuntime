@@ -31,7 +31,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - `Save`／`Load`でユーザー設定を保存／復元します。Change／Reset／Reset Allは画面内の編集中状態へ即時反映されますが、`Save`せずに閉じた場合は画面を開いた時点の設定へ戻ります。
 - Player、System、UIタブでAction Mapを切り替えます。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
-- UI Action Mapは入力状態を確認できるよう一覧へ表示しますが、Keyconfig自身の操作を失わないようChange／Resetの対象外です。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
+- UI Action Mapは入力状態を確認できるようタブと一覧へ表示し、Submitで行の中へ入って上下移動できます。Keyconfig自身の操作を失わないようChange／Resetは無効のままです。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
 - LB／RB（`UI/PreviousSection`／`UI/NextSection`）でAction Mapタブを循環切り替えします。左右はBinding Group／Load／Save／Reset All／Closeのフォーカスを循環します。通常のD-padまたは左スティック上下はフォーカスを移動せずリストをスクロールし、Binding Groupにフォーカス中だけDropdownの選択操作へ渡します。
 - Action MapタブでSubmitすると、そのMap内の最初に変更可能な行へ入ります。リスト内では上下で行、左右でChange／Resetを選び、CancelでAction Mapタブへ戻ります。
 - UI Navigateの方向判定とリピートは`input.core`の`UiNavigationInputSession`を使います。単発入力は1行ずつ移動し、長押しは0.4秒後から0.1秒間隔で連続移動します。
