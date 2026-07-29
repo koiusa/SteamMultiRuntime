@@ -8,6 +8,9 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext
     {
+        [SerializeField, Tooltip("TraversalのState遷移をUnity Consoleへ出力します。")]
+        private bool logStateTransitions;
+
         private Rigidbody rb;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
@@ -50,6 +53,18 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
         public Transform WireAnchorTransform => IsWireAttached ? wireConnection.AnchorTransform : null;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
+        internal bool LogStateTransitions
+        {
+            get => logStateTransitions;
+            set => logStateTransitions = value;
+        }
+
+        internal TraversalCoordinatorDebugSnapshot GetDebugSnapshot() => new TraversalCoordinatorDebugSnapshot(
+            CurrentIntentFlags,
+            Mathf.Max(0f, wallTraversalBlockedUntilTime - Time.time),
+            wallRunBlockedUntilWallExit,
+            currentWireAimResult,
+            logStateTransitions);
 
         private void Awake()
         {
@@ -344,8 +359,17 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            var previousState = CurrentState;
+            var previousStateElapsed = StateElapsedTime;
             CurrentState = nextState;
             stateEnteredAt = Time.time;
+            if (logStateTransitions)
+            {
+                Debug.Log(
+                    $"[Traversal] {name}: {previousState} -> {nextState} " +
+                    $"(elapsed: {previousStateElapsed:F3}s, intent: {CurrentIntentFlags})",
+                    this);
+            }
         }
 
         private static bool CanProcessWallRun(PlayerTraversalState state)

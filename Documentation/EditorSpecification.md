@@ -29,6 +29,7 @@ Skill Featureには紫の専用アイコンを表示します。
 | `ServerDrivenPlayerController` | `ServerDrivenPlayerControllerEditor` | Composite MotorとControl Mode別の同期方針を表示する |
 | `PlayerCompositeMotor` | `PlayerCompositeMotorEditor` | Motor、Coordinator、Traversal Feature／Actionの装着状況を階層表示し、不足Featureを追加できる |
 | `PlayerTraversalCoordinator` | `PlayerTraversalCoordinatorEditor` | 管理対象Featureを表示し、Play中の状態、Wire接続、Blend値を読み取り専用表示する |
+| Player Movement Debugger | `PlayerMovementDebuggerWindow` | 選択したPlayerのComposite／Base Motor、Coordinator全体、Wall／Ladder／Wire Feature・Actionの実行状態を一覧監視する |
 | `WallTraversalFeature` | `WallTraversalFeatureEditor` | Wall ActionとResolverの不足を検出し、`Repair Wall Feature`で補完する |
 | `LadderTraversalFeature` | `LadderTraversalFeatureEditor` | Climb／Detach Actionの不足を検出し、`Repair Ladder Feature`で補完する |
 | `LadderVolume` | `LadderVolumeEditor` | シーン側Triggerとしての設定を表示する |

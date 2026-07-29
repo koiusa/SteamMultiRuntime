@@ -16,6 +16,15 @@ namespace Koiusa.SteamMultiRuntime
         private SlopeContactResolver contacts;
 
         public bool IsEnabled => isActiveAndEnabled;
+        internal WallTraversalDebugSnapshot GetDebugSnapshot()
+        {
+            var upAxis = Physics.gravity.sqrMagnitude > 0f ? -Physics.gravity.normalized : Vector3.up;
+            var hasNormal = TryGetWallNormal(upAxis, 1f, out var wallNormal);
+            return new WallTraversalDebugSnapshot(
+                contacts != null && contacts.HasObstacleContact,
+                hasNormal,
+                wallNormal);
+        }
 
         private void Awake()
         {

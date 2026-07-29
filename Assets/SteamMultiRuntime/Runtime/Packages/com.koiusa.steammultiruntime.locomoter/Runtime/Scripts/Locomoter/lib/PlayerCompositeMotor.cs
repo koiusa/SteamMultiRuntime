@@ -76,6 +76,16 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsFreefall => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFreefall && !IsTraversalActive;
         public Vector3 InheritedGroundVelocity => baseMotor != null && baseMotor.IsEnabled ? baseMotor.InheritedGroundVelocity : Vector3.zero;
 
+        internal PlayerCompositeMotorDebugSnapshot GetDebugSnapshot()
+        {
+            var hasActiveExternalMotion = hasActiveMotion && Time.time < activeMotionEndsAt;
+            return new PlayerCompositeMotorDebugSnapshot(
+                rawMoveInput,
+                moveReferenceRotation,
+                hasActiveExternalMotion,
+                hasActiveExternalMotion ? Mathf.Max(0f, activeMotionEndsAt - Time.time) : 0f);
+        }
+
         public float HorizontalVelocity
         {
             get

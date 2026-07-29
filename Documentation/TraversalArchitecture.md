@@ -130,6 +130,18 @@ Cooldown
 
 主な公開契約は`IPlayerTraversalCoordinator`です。
 
+`Tools > SteamMultiRuntime > Debug > Player Movement Debugger`から専用のEditorWindowを開けます。実行中の
+`PlayerCompositeMotor`を対象に、Composite MotorとBase Motor、その配下の`PlayerTraversalCoordinator`の
+State、Intent、Wall制限、Wire照準結果と、Wall／Ladder／Wireの
+各FeatureおよびActionの状態をまとめて監視します。診断値はFeatureごとのinternalな
+`GetDebugSnapshot()`で一括取得します。`InternalsVisibleTo`でlocomoterのEditor assemblyだけに公開し、
+Gameplayのpublic APIを増やさず、Editor側からprivate実装も探索しません。
+Windowは具体Componentを直接列挙せず、Editor側の`IPlayerMovementDebugTarget`を受け取ります。
+`PlayerMovementDebugTarget` AdapterがComponent参照の解決とSnapshot取得を担当し、構成変更時はWindow上部の
+`Refresh`で参照を再構築できます。
+Coordinator全体ビューの`Console Log`を有効にすると、そのPlayerのState遷移だけを、遷移前の滞在時間と
+現在Intent付きでUnity Consoleへ出力します。ログ操作もEditor assemblyに限定し、既定は無効です。
+
 ## Wall Traversal
 
 ### WallTraversalFeature

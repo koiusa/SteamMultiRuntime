@@ -38,6 +38,13 @@ namespace Koiusa.SteamMultiRuntime
             ? settings.WallTraversalBlockDuration
             : LadderTraversalSettings.CreateDefault().WallTraversalBlockDuration;
 
+        internal LadderTraversalDebugSnapshot GetDebugSnapshot() => new LadderTraversalDebugSnapshot(
+            currentLadder,
+            activeLadders.Count,
+            Mathf.Max(0f, reattachBlockedUntilTime - Time.time),
+            rb != null && rb.useGravity,
+            hasFacing ? facingDirection : Vector3.zero);
+
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();

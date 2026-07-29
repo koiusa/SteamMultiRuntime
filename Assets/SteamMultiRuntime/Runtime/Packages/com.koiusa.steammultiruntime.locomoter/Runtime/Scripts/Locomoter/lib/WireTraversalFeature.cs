@@ -46,6 +46,11 @@ namespace Koiusa.SteamMultiRuntime
         public WireConstraintMode ConstraintMode => constraintMode;
         public float ElasticStretchLimit => elasticStretchLimit;
 
+        internal WireTraversalDebugSnapshot GetDebugSnapshot() => new WireTraversalDebugSnapshot(
+            ActualLength,
+            Mathf.Max(0f, ActualLength - RopeLength),
+            AnchorBody != null && !AnchorBody.isKinematic);
+
         private void Awake()
         {
             Body = GetComponent<Rigidbody>();
