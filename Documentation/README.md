@@ -44,6 +44,12 @@ SteamMultiRuntimeの設計・運用資料の索引です。
 
 機能単位のSample一覧と追加規約は[Samples README](../Assets/SteamMultiRuntime/Samples/README.md)を参照してください。
 
+## 履歴資料
+
+| 文書 | 内容 |
+|---|---|
+| [NPC実装レビュー（2026-07-25）](../IMPLEMENTATION_REVIEW.md) | NPC責務分割時のレビュー結果と未検証項目。現行仕様の正本ではありません。 |
+
 ## 文書を更新するとき
 
 - クラスの追加・移動や主要な処理経路の変更は、領域別の正本文書と`CurrentClassStructure.md`へ反映する。

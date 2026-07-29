@@ -1,4 +1,6 @@
-# 現在の実装レビュー
+# NPC実装レビュー（2026-07-25）
+
+> この文書はNPC責務分割時のレビュー記録です。現在の構成と変更時の確認項目は[NPC Architecture](Documentation/NpcArchitecture.md)を正本とします。
 
 レビュー基準コミット: `5e53d0b` からの作業差分
 

@@ -18,7 +18,8 @@ Steam Lobby
 ├─ SteamLobbyService
 │  ├─ SteamConnection
 │  ├─ SteamLobbyManager
-│  ├─ SteamLobbyNetworkFacade
+│  ├─ INetworkSessionController
+│  │  └─ LobbyNetworkSessionController
 │  ├─ SteamLobbyQualityTracker
 │  └─ SteamLobbyConnectionStatus
 ├─ SteamLobbyUiDocument
@@ -49,12 +50,15 @@ Loading
 | `SteamLobbyService` | Lobby操作の外部窓口と各内部サービスの統合 |
 | `SteamConnection` | Steam初期化・接続状態の基盤 |
 | `SteamLobbyManager` | Lobbyの作成、検索、参加、退出、キャッシュ管理 |
-| `SteamLobbyNetworkFacade` | NetworkManagerとTransportの開始・停止を仲介する |
+| `INetworkSessionController` | LobbyからNetwork実装を分離するセッション操作契約 |
+| `LobbyNetworkSessionController` | NGOのHost／Server／Client開始・停止、Facepunch Transport接続先、Network Scene同期を管理する |
 | `SteamLobbyQualityTracker` | Member間の品質情報を収集・配信する |
 | `SteamLobbyConnectionStatus` | Memberごとの接続品質を公開する |
 | `SteamLobbyUiDocument` / `LobbyView` | Lobby一覧と操作UIを表示する |
 
 接続品質は`NetworkTransport.GetCurrentRtt()`から取得します。Facepunch Transportは`Connection.QuickStatus().Ping`を標準Transport APIへ公開し、Lobby側はFacepunch内部型やReflectionへ依存しません。Steam IDだけからPingを推定する処理は持ちません。この型付きアダプター方針は[Package Architecture](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
+
+`INetworkSessionController`はバックエンド非依存の`lobby`パッケージが所有し、`lobby.netcode`の`LobbyNetworkSessionController`が実装します。`SteamLobbyService`はこの実装を`SteamLobbyManager`と`SteamLobbyQualityTracker`へ渡し、Steam Lobbyの操作とNGOのセッション制御を合成します。
 
 Lobby一覧の再検索・再描画では、選択中のLobby IDが引き続き一覧に存在して参加可能な場合、その行のフォーカスとハイライトを復元します。
 
