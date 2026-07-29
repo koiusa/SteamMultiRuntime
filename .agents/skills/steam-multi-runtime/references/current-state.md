@@ -28,7 +28,7 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 
 ## Player, ownership, and guard
 
-- Local and Network player-facing UI uses the typed `ILocalPlayerOwnership` contract.
+- Local and Network player-facing UI uses the typed `ILocalPlayerOwnership` snapshot contract. Consumers that react to transitions use `ILocalPlayerOwnershipNotifier.OwnershipChanged` and must not poll ownership every frame.
 - `CharacterSelectShortcutController` is attached to both Local and Network user runtime profiles and applies the selected model through `PlayerModelProfileBase`.
 - The Character Select shortcut is categorized under the Adventure action map; button east is also Dash in the Player map, so respect the active-map/input-routing behavior when changing it.
 - `GuardShieldVisual` generates an Icosphere and uses `Koiusa/Effects/GuardShield` HLSL for a spherical, evenly sized grid.

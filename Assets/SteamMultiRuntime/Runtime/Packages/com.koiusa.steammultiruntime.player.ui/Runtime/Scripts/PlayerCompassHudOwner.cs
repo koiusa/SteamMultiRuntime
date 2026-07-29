@@ -5,7 +5,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
     [DisallowMultipleComponent]
     public sealed class PlayerCompassHudOwner : MonoBehaviour
     {
-        private ILocalPlayerOwnership ownership;
+        private ILocalPlayerOwnershipNotifier ownership;
         private bool registered;
 
         private void Awake()
@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             var components = GetComponents<MonoBehaviour>();
             for (var i = 0; i < components.Length; i++)
             {
-                if (components[i] is ILocalPlayerOwnership source)
+                if (components[i] is ILocalPlayerOwnershipNotifier source)
                 {
                     ownership = source;
                     break;
@@ -23,18 +23,20 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 
         private void OnEnable()
         {
-            TryRegister();
+            if (ownership != null)
+                ownership.OwnershipChanged += OnOwnershipChanged;
+            ApplyOwnership();
         }
 
-        private void Update()
-        {
-            if (!registered) TryRegister();
-        }
-
-        private void TryRegister()
+        private void ApplyOwnership()
         {
             if (ownership != null && ownership.IsOwnershipResolved && ownership.IsLocalOwner)
+            {
                 Register();
+                return;
+            }
+
+            Unregister();
         }
 
         private void Register()
@@ -45,6 +47,18 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         }
 
         private void OnDisable()
+        {
+            if (ownership != null)
+                ownership.OwnershipChanged -= OnOwnershipChanged;
+            Unregister();
+        }
+
+        private void OnOwnershipChanged()
+        {
+            ApplyOwnership();
+        }
+
+        private void Unregister()
         {
             if (!registered) return;
             registered = false;

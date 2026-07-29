@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: 6201986091832488526}
   - component: {fileID: 5853105225308195857}
   - component: {fileID: 2502101480324563665}
+  - component: {fileID: 8152076884592495327}
   m_Layer: 0
   m_Name: LocalPlayer_NPC
   m_TagString: Untagged
@@ -335,6 +336,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+  logStateTransitions: 0
 --- !u!114 &4331762846265168320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -766,6 +768,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
+--- !u!114 &8152076884592495327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a87a2afb5bfc8da45a6304629062f689, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetMarker
+  aimPoint: {fileID: 0}
+  priority: 0
+  isTargetable: 1
+  registry: {fileID: 0}
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

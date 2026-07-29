@@ -44,6 +44,13 @@ GameObject:
   - component: {fileID: 7230373683702354775}
   - component: {fileID: 880000000000000002}
   - component: {fileID: 955000000000000003}
+  - component: {fileID: 2693781690596545527}
+  - component: {fileID: 9178378348473125444}
+  - component: {fileID: 34166585380494275}
+  - component: {fileID: 7955463977599990132}
+  - component: {fileID: 3703049516710170246}
+  - component: {fileID: 2333227148447976475}
+  - component: {fileID: 7942950129131282800}
   m_Layer: 0
   m_Name: NetworkPlayer_Runtime
   m_TagString: Untagged
@@ -51,29 +58,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &880000000000000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8931c22a2d64645a6e23b12e05d3732, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerSkillController
-  ShowTopMostFoldoutHeaderGroup: 1
-  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
-  attackActionPath: Combat/Attack
-  dashActionPath: Player/Dash
-  guardActionPath: Player/Guard
-  healActionPath: Player/Heal
-  attackSkill: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
-  dashSkill: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
-  guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
-  healSkill: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
-  directionReference: {fileID: 4035978081068949003}
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0
@@ -243,6 +227,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  gamepadAimCursorSettings:
+    mode: 0
+    radiusInScreenHeights: 0.3
+    speedInScreenHeightsPerSecond: 2.5
+    responseExponent: 2
+    rememberLastRelativePosition: 1
+    syncSystemPointerPosition: 1
   cameraTransform: {fileID: 0}
   controlMode: 0
 --- !u!114 &940000000000000002
@@ -366,6 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 595c0de618347374eb3fc14ff552a2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+  logStateTransitions: 0
 --- !u!114 &5777529995516017243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -711,6 +703,148 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
+--- !u!114 &880000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8931c22a2d64645a6e23b12e05d3732, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerSkillController
+  ShowTopMostFoldoutHeaderGroup: 1
+  inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  attackActionPath: Combat/Attack
+  dashActionPath: Player/Dash
+  guardActionPath: Player/Guard
+  healActionPath: Player/Heal
+  attackSkill: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
+  dashSkill: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
+  guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
+  healSkill: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
+  directionReference: {fileID: 4035978081068949003}
+--- !u!114 &955000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481874b64bf84ca6a059a5ecdfc913c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerCompassHudOwner
+--- !u!114 &2693781690596545527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a87a2afb5bfc8da45a6304629062f689, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetMarker
+  aimPoint: {fileID: 0}
+  priority: 0
+  isTargetable: 1
+  registry: {fileID: 0}
+--- !u!114 &9178378348473125444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da2a2fc0f9204859a64c8d16638dc07d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingContextProvider
+  owner: {fileID: 0}
+  viewCamera: {fileID: 0}
+--- !u!114 &34166585380494275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b058484ece74885a85ed2d57da711cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.RegistryTargetCandidateSource
+  registry: {fileID: 0}
+--- !u!114 &7955463977599990132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d670f302edb40d8b77ed7add824a9b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.ViewportTargetPolicy
+  acquisitionDistance: 20
+  viewportPadding: 0.02
+  centerWeight: 1
+  distanceWeight: 0.25
+  priorityWeight: 1
+--- !u!114 &3703049516710170246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed688a20c1884df98484b3f5e57990e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingController
+  contextSource: {fileID: 9178378348473125444}
+  candidateSource: {fileID: 34166585380494275}
+  filters:
+  - {fileID: 7955463977599990132}
+  scorers:
+  - {fileID: 7955463977599990132}
+  maximumTargets: 8
+--- !u!114 &2333227148447976475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c772dd50ab434a498257125e93c89387, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCommandInput
+  controller: {fileID: 3703049516710170246}
+  inputActions: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
+--- !u!114 &7942950129131282800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fd58be4cf8f498da35ea88d6357e5e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.TargetingSystem.Runtime::Koiusa.SteamMultiRuntime.TargetingSystem.PlayerTargetingOwner
+  controller: {fileID: 3703049516710170246}
+  input: {fileID: 2333227148447976475}
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -831,15 +965,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 327ecbedcc38d0a46b88b0a86ac9327e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::CameraTrackMarker
---- !u!114 &955000000000000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 481874b64bf84ca6a059a5ecdfc913c4, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerCompassHudOwner

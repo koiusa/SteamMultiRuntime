@@ -1,10 +1,10 @@
 {
   "name": "com.koiusa.targetingsystem",
   "displayName": "Koiusa Targeting System",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
-  "description": "Runtime targeting system for Unity.",
+  "description": "Camera-independent targeting state, selection policies, input commands, and optional Cinemachine presentation for Unity.",
   "author": {
     "name": "koiusa"
   },

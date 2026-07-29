@@ -3,10 +3,12 @@ using Koiusa.Input;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Koiusa.TargetingSystem.Runtime;
+using Koiusa.SteamMultiRuntime.TargetingSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public abstract class CameraMixerWeightControllerBase : MonoBehaviour
+    public abstract class CameraMixerWeightControllerBase : MonoBehaviour, ILocalTargetingCameraConsumer
     {
         [Header("References")]
         [SerializeField] private CinemachineMixingCamera mixingCamera;
@@ -17,6 +19,15 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Weight Index")]
         [SerializeField, Min(0)] private int defaultCameraIndex = 0;
         [SerializeField, Min(0)] private int followCameraIndex = 1;
+        [SerializeField, Min(0)] private int singleTargetCameraIndex = 2;
+        [SerializeField, Min(0)] private int multiTargetCameraIndex = 3;
+
+        [Header("Targeting")]
+        [SerializeField] private CinemachineCamera singleTargetCamera;
+        [SerializeField] private CinemachineCamera multiTargetCamera;
+        [SerializeField] private CinemachineTargetGroup multiTargetGroup;
+        [SerializeField, Min(0f)] private float targetingGroupWeight = 1f;
+        [SerializeField, Min(0f)] private float targetingGroupRadius = 0.5f;
 
         [Header("Transition")]
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
@@ -33,6 +44,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private float targetDefaultWeight;
         private float targetFollowWeight;
+        private float targetSingleWeight;
+        private float targetMultiWeight;
         private IFocusMarkerContext context;
         private CinemachineInputAxisController inputAxisController;
         private InputAction grappleAction;
@@ -41,6 +54,9 @@ namespace Koiusa.SteamMultiRuntime
         private readonly List<InputActionReference> runtimeActionReferences = new();
         private readonly List<CameraCollisionState> cameraCollisionStates = new();
         private bool appliedCameraCollision;
+        private TargetingController targetingController;
+        private TargetingMode targetingMode;
+        private readonly List<Transform> targetingGroupMembers = new();
 
         private sealed class CameraCollisionState
         {
@@ -75,6 +91,7 @@ namespace Koiusa.SteamMultiRuntime
 
         protected virtual void OnDestroy()
         {
+            SetTargetingController(null);
             foreach (var actionReference in runtimeActionReferences)
             {
                 if (actionReference != null)
@@ -132,9 +149,13 @@ namespace Koiusa.SteamMultiRuntime
 
             var nextDefault = Mathf.Lerp(mixingCamera.GetWeight(defaultCameraIndex), targetDefaultWeight, t);
             var nextFollow = Mathf.Lerp(mixingCamera.GetWeight(followCameraIndex), targetFollowWeight, t);
+            var nextSingle = Mathf.Lerp(mixingCamera.GetWeight(singleTargetCameraIndex), targetSingleWeight, t);
+            var nextMulti = Mathf.Lerp(mixingCamera.GetWeight(multiTargetCameraIndex), targetMultiWeight, t);
 
             mixingCamera.SetWeight(defaultCameraIndex, nextDefault);
             mixingCamera.SetWeight(followCameraIndex, nextFollow);
+            mixingCamera.SetWeight(singleTargetCameraIndex, nextSingle);
+            mixingCamera.SetWeight(multiTargetCameraIndex, nextMulti);
         }
 
         private bool IsWireAttached()
@@ -166,7 +187,9 @@ namespace Koiusa.SteamMultiRuntime
             var isActive = context != null && context.IsActive;
 
             targetDefaultWeight = isActive ? 0f : 1f;
-            targetFollowWeight = isActive ? 1f : 0f;
+            targetFollowWeight = isActive && targetingMode == TargetingMode.None ? 1f : 0f;
+            targetSingleWeight = isActive && targetingMode == TargetingMode.Single ? 1f : 0f;
+            targetMultiWeight = isActive && targetingMode == TargetingMode.Multi ? 1f : 0f;
 
             if (!immediate || mixingCamera == null)
             {
@@ -175,7 +198,65 @@ namespace Koiusa.SteamMultiRuntime
 
             mixingCamera.SetWeight(defaultCameraIndex, targetDefaultWeight);
             mixingCamera.SetWeight(followCameraIndex, targetFollowWeight);
+            mixingCamera.SetWeight(singleTargetCameraIndex, targetSingleWeight);
+            mixingCamera.SetWeight(multiTargetCameraIndex, targetMultiWeight);
         }
+
+        public void SetTargetingController(TargetingController controller)
+        {
+            if (targetingController == controller) return;
+            if (targetingController != null) targetingController.StateChanged -= OnTargetingStateChanged;
+            targetingController = controller;
+            if (targetingController != null)
+            {
+                targetingController.StateChanged += OnTargetingStateChanged;
+                ApplyTargetingState(targetingController.State);
+            }
+            else
+            {
+                ApplyTargetingState(TargetingState.Empty);
+            }
+        }
+
+        private void OnTargetingStateChanged(TargetingStateChange change)
+        {
+            ApplyTargetingState(change.Current);
+        }
+
+        private void ApplyTargetingState(TargetingState state)
+        {
+            targetingMode = state.Mode;
+            if (singleTargetCamera != null)
+                singleTargetCamera.LookAt = ResolveTargetAimPoint(state.PrimaryTarget);
+            RebuildTargetingGroup(state.SelectedTargets);
+            RefreshTargetWeight(false);
+        }
+
+        private void RebuildTargetingGroup(IReadOnlyList<ITargetable> targets)
+        {
+            ClearTargetingGroup();
+            if (multiTargetGroup == null) return;
+            for (var i = 0; i < targets.Count; i++)
+            {
+                var aimPoint = ResolveTargetAimPoint(targets[i]);
+                if (aimPoint == null) continue;
+                multiTargetGroup.AddMember(aimPoint, targetingGroupWeight, targetingGroupRadius);
+                targetingGroupMembers.Add(aimPoint);
+            }
+        }
+
+        private void ClearTargetingGroup()
+        {
+            if (multiTargetGroup != null)
+            {
+                foreach (var member in targetingGroupMembers)
+                    if (member != null) multiTargetGroup.RemoveMember(member);
+            }
+            targetingGroupMembers.Clear();
+        }
+
+        private static Transform ResolveTargetAimPoint(ITargetable target) =>
+            target?.AimPoint != null ? target.AimPoint : target?.Root;
 
         private void ConfigureCameraInputActions()
         {

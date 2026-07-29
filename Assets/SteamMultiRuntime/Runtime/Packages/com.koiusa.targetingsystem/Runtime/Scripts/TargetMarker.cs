@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.TargetingSystem.Runtime
 {
-    public sealed class TargetMarker : MonoBehaviour, ITargetable
+    public sealed class TargetMarker : MonoBehaviour, ITargetable, ITargetableLifetime
     {
         [SerializeField] private Transform aimPoint;
         [SerializeField] private float priority;
@@ -13,6 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
         public Transform AimPoint => aimPoint != null ? aimPoint : transform;
         public bool IsTargetable => isTargetable && isActiveAndEnabled;
         public float Priority => priority;
+        public event System.Action Invalidated;
 
         public TargetMarkerRegistry Registry
         {
@@ -40,17 +41,36 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnEnable()
         {
-            Registry?.Register(this);
+            TargetMarkerRegistry.CurrentChanged += OnCurrentRegistryChanged;
+            ResolveRegistry()?.Register(this);
         }
 
         private void OnDisable()
         {
-            Registry?.Unregister(this);
+            TargetMarkerRegistry.CurrentChanged -= OnCurrentRegistryChanged;
+            ResolveRegistry()?.Unregister(this);
+            Invalidated?.Invoke();
+        }
+
+        private TargetMarkerRegistry ResolveRegistry() => registry != null ? registry : TargetMarkerRegistry.Current;
+
+        private void OnCurrentRegistryChanged(TargetMarkerRegistry current)
+        {
+            if (registry == null) current?.Register(this);
         }
 
         public void SetTargetable(bool value)
         {
+            if (isTargetable == value)
+            {
+                return;
+            }
+
             isTargetable = value;
+            if (!value)
+            {
+                Invalidated?.Invoke();
+            }
         }
 
     }

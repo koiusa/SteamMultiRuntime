@@ -15,6 +15,8 @@
         "GUID:6b34352181405ab4fb3bb7eb02e80c9a",
         "GUID:726d4e3f8f415514f81587df3e3135b2",
         "Koiusa.SteamMultiRuntime.Core.Runtime",
+        "Koiusa.SteamMultiRuntime.TargetingSystem.Runtime",
+        "Koiusa.TargetingSystem.Runtime",
         "GUID:553d555c7e4d2e0489f667accc75a33e",
         "GUID:99c58e25dd62d814c871618a2e4ddc49",
         "GUID:5bbc18ddbddd976498741c6c3ecfc8e5",

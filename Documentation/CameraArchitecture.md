@@ -25,13 +25,17 @@ Focus Marker
 
 ## Camera切替
 
-`CinemachineMixingCamera`内の2台を重みで切り替えます。
+`CinemachineMixingCamera`内の4台を重みで切り替えます。Camera Weightの最終決定は`CameraMixerWeightControllerBase`だけが担当し、Targeting側から並行してWeightを書き込みません。
 
 - `defaultCameraIndex`: Focusが無効なときに重み1
 - `followCameraIndex`: Focusが有効なときに重み1
+- `singleTargetCameraIndex`: Single Lock中に重み1
+- `multiTargetCameraIndex`: Multi Lock中に重み1
 - `transitionSpeed`: 指数補間による切替速度
 
 Contextの`StateChanged`を購読し、`IsActive`が変わると目標Weightを更新します。Enable直後は現在状態を即時反映し、その後の切替は毎Frame補間します。
+
+`LocalTargetingCameraConnector`は`LocalTargetingControllerRegistry.CurrentChanged`を購読し、Local Ownerの`TargetingController`をCameraへ接続します。Single Cameraは`PrimaryTarget`、Multi Cameraは`CinemachineTargetGroup`をLookAtに使用します。登録・所有権変更・Targeting状態変更はイベント駆動です。
 
 ## Camera入力
 

@@ -4,6 +4,7 @@
   "references": [
     "Koiusa.TargetingSystem.Runtime",
     "Koiusa.Input.Core.Runtime",
+    "Koiusa.SteamMultiRuntime.Player.Runtime",
     "Unity.InputSystem"
   ],
   "autoReferenced": true,

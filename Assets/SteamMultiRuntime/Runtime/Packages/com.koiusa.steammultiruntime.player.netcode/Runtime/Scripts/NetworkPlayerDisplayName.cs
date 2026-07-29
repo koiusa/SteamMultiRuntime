@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetworkObject))]
-    public sealed class NetworkPlayerDisplayName : NetworkBehaviour, IPlayerDisplayNameSource, ILocalPlayerOwnership
+    public sealed class NetworkPlayerDisplayName : NetworkBehaviour, IPlayerDisplayNameSource, ILocalPlayerOwnershipNotifier
     {
         private readonly NetworkVariable<FixedString64Bytes> displayName = new(
             default,
@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsAvailable => IsSpawned;
         public bool IsOwnershipResolved => IsSpawned;
         public bool IsLocalOwner => IsSpawned && IsOwner;
+        public event System.Action OwnershipChanged;
         public ulong? PlayerId => IsSpawned ? OwnerClientId : null;
 
         public string DisplayName
@@ -29,8 +30,24 @@ namespace Koiusa.SteamMultiRuntime
 
         public override void OnNetworkSpawn()
         {
+            OwnershipChanged?.Invoke();
             if (IsOwner)
                 SubmitDisplayNameServerRpc(PlayerDisplayNameSettings.ResolveLocalDisplayName());
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            OwnershipChanged?.Invoke();
+        }
+
+        public override void OnGainedOwnership()
+        {
+            OwnershipChanged?.Invoke();
+        }
+
+        public override void OnLostOwnership()
+        {
+            OwnershipChanged?.Invoke();
         }
 
         public void SetLocalDisplayName(string newDisplayName)

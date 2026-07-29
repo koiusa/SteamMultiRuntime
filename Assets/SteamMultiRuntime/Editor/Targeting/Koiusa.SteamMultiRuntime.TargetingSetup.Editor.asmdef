@@ -1,0 +1,15 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.TargetingSetup.Editor",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.TargetingSystem.Editor",
+  "references": [
+    "Koiusa.SteamMultiRuntime.Runtime",
+    "Koiusa.SteamMultiRuntime.Player.Runtime",
+    "Koiusa.SteamMultiRuntime.TargetingSystem.Runtime",
+    "Koiusa.TargetingSystem.Runtime",
+    "Unity.Cinemachine",
+    "Unity.InputSystem"
+  ],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

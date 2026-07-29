@@ -15,9 +15,9 @@ MonoBehaviour:
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   lookActionPath: Player/Look
   soloLockActionPath: Player/LockOn
-  multiLockActionPath:
-  clearLockActionPath:
-  bulkLockActionPath:
+  multiLockActionPath: Player/MultiLock
+  clearLockActionPath: 
+  bulkLockActionPath: 
   previousTargetActionPath: Player/Previous
   nextTargetActionPath: Player/Next
-  focusActionPath:
+  focusActionPath: 
