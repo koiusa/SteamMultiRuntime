@@ -28,6 +28,7 @@ namespace Koiusa.SteamMultiRuntime
         private IScreenAimCursor screenAimCursor;
         private float wallTraversalBlockedUntilTime;
         private bool wallRunBlockedUntilWallExit;
+        private bool lastIsGrounded;
         private float stateEnteredAt;
         private WireAimResult currentWireAimResult;
 
@@ -101,6 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             CurrentIntentFlags = TraversalIntentFlags.None;
             wallTraversalBlockedUntilTime = 0f;
             wallRunBlockedUntilWallExit = false;
+            lastIsGrounded = false;
             SetState(PlayerTraversalState.Grounded);
             wallRunAction?.ResetState();
             wallJumpAction?.ResetState();
@@ -212,7 +214,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            CurrentIntentFlags = BuildIntentFlags(moveInput, jumpRequested, isGrounded);
+            lastIsGrounded = isGrounded;
+            var allowLadderIntents = !IsWireAttached
+                && activeLadderFeature != null
+                && activeLadderFeature.IsOnLadder;
+            CurrentIntentFlags = BuildIntentFlags(moveInput, jumpRequested, isGrounded, allowLadderIntents);
             if (IsWireAttached)
             {
                 activeLadderFeature?.ResetState();
@@ -367,7 +373,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 Debug.Log(
                     $"[Traversal] {name}: {previousState} -> {nextState} " +
-                    $"(elapsed: {previousStateElapsed:F3}s, intent: {CurrentIntentFlags})",
+                    $"(elapsed: {previousStateElapsed:F3}s, intent: {CurrentIntentFlags}, " +
+                    $"grounded: {lastIsGrounded}, wire: {IsWireAttached}, ladder: {IsOnLadder})",
                     this);
             }
         }
@@ -381,13 +388,22 @@ namespace Koiusa.SteamMultiRuntime
                 || state == PlayerTraversalState.WallRun;
         }
 
-        private static TraversalIntentFlags BuildIntentFlags(Vector2 moveInput, bool jumpRequested, bool isGrounded)
+        private static TraversalIntentFlags BuildIntentFlags(
+            Vector2 moveInput,
+            bool jumpRequested,
+            bool isGrounded,
+            bool allowLadderIntents)
         {
             var flags = TraversalIntentFlags.None;
 
             if (jumpRequested)
             {
                 flags |= TraversalIntentFlags.JumpRequested;
+            }
+
+            if (!allowLadderIntents)
+            {
+                return flags;
             }
 
             if (Mathf.Abs(moveInput.x) > 0.2f)

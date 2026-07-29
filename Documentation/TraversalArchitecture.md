@@ -141,6 +141,8 @@ Windowは具体Componentを直接列挙せず、Editor側の`IPlayerMovementDebu
 `Refresh`で参照を再構築できます。
 Coordinator全体ビューの`Console Log`を有効にすると、そのPlayerのState遷移だけを、遷移前の滞在時間と
 現在Intent付きでUnity Consoleへ出力します。ログ操作もEditor assemblyに限定し、既定は無効です。
+Ladder専用Intentは、Wire未接続かつ実際にLadderへ接続中の場合だけ生成します。State遷移ログには
+`grounded`、`wire`、`ladder`の実状態も併記します。
 
 ## Wall Traversal
 
