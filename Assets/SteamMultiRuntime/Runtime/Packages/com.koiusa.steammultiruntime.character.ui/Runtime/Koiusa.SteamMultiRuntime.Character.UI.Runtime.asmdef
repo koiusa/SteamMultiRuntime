@@ -3,6 +3,7 @@
     "rootNamespace": "Koiusa.SteamMultiRuntime.Character.UI",
     "references": [
         "Koiusa.Input.Core.Runtime",
+        "Koiusa.UI.Common.Runtime",
         "Koiusa.SteamMultiRuntime.Character.Runtime",
         "TNRD.SerializableInterface",
         "Unity.InputSystem"

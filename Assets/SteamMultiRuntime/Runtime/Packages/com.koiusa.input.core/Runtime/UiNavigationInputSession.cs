@@ -48,6 +48,14 @@ namespace Koiusa.Input
         private bool IsActiveSession => activeSessionNode != null &&
             ReferenceEquals(ActiveSessions.Last, activeSessionNode);
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            ActiveSessions.Clear();
+            cursorVisibilityLeaseCount = 0;
+            cursorVisibilityBeforeFirstLease = false;
+        }
+
         public UiNavigationInputSession(
             InputActionsConfig config,
             Action<UiNavigationDirection> move,

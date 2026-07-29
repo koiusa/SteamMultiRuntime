@@ -1,6 +1,7 @@
 using Koiusa.Input;
 using Koiusa.Keyconfig.Runtime;
 using Koiusa.SteamMultiRuntime.Character.UI;
+using Koiusa.UI.Common;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,7 @@ using UnityEngine.UIElements;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PauseMenuController : MonoBehaviour
+    public sealed class PauseMenuController : MonoBehaviour, IUiMenu
     {
         [SerializeField] private GameObject pauseMenuRoot;
         [SerializeField] private UIDocument pauseMenuDocument;
@@ -23,6 +24,8 @@ namespace Koiusa.SteamMultiRuntime
         private Button closeButton;
         private CharacterSelectMenuToggle characterMenu;
         private int selectedButtonIndex;
+
+        public bool IsVisible => pauseMenuRoot != null && pauseMenuRoot.activeSelf;
 
         private void OnEnable()
         {
@@ -43,32 +46,27 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnTogglePerformed(InputAction.CallbackContext context)
         {
-            if (keyConfigMenu != null && keyConfigMenu.IsVisible)
+            if (UiMenuNavigator.Current != null && !ReferenceEquals(UiMenuNavigator.Current, this))
             {
-                keyConfigMenu.Hide();
-                return;
-            }
-
-            ResolveCharacterMenu();
-            if (characterMenu != null && characterMenu.IsVisible)
-            {
-                characterMenu.Hide();
+                UiMenuNavigator.Back();
                 return;
             }
 
             Toggle();
         }
 
-        private void OnActiveSceneChanged(Scene previousScene, Scene nextScene) => Hide();
+        private void OnActiveSceneChanged(Scene previousScene, Scene nextScene) => UiMenuNavigator.CloseAll();
 
         public void Toggle()
         {
-            if (pauseMenuRoot == null) return;
-            if (pauseMenuRoot.activeSelf) Hide();
-            else Show();
+            UiMenuNavigator.ToggleRoot(this);
         }
 
-        public void Show()
+        public void Show() => UiMenuNavigator.OpenRoot(this);
+
+        public void Hide() => UiMenuNavigator.Close(this);
+
+        public void Activate()
         {
             if (pauseMenuRoot == null) return;
             DisposeNavigationSession();
@@ -81,10 +79,9 @@ namespace Koiusa.SteamMultiRuntime
                 SubmitSelection,
                 Hide,
                 pauseMenuDocument?.rootVisualElement);
-            ScheduleInitialFocus();
         }
 
-        public void Hide()
+        public void Deactivate()
         {
             if (pauseMenuRoot == null) return;
             DisposeNavigationSession();
@@ -203,15 +200,15 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OpenKeyConfig()
         {
-            Hide();
-            keyConfigMenu?.Show();
+            if (keyConfigMenu != null) UiMenuNavigator.Push(keyConfigMenu);
         }
 
         private void OpenCharacterSelect()
         {
             ResolveCharacterMenu();
-            Hide();
-            characterMenu?.Show();
+            if (characterMenu != null) UiMenuNavigator.Push(characterMenu);
         }
+
+        public void FocusInitial() => ScheduleInitialFocus();
     }
 }

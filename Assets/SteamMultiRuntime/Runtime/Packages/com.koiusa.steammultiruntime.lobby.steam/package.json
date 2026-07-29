@@ -12,6 +12,7 @@
     "com.koiusa.steammultiruntime.lobby.netcode": "0.1.0",
     "com.koiusa.steammultiruntime.player": "0.1.0",
     "com.koiusa.input.core": "0.1.0",
+    "com.koiusa.ui.common": "0.1.0",
     "com.koiusa.steammultiruntime.localization": "0.1.0",
     "com.koiusa.steammultiruntime.resourceloader": "0.1.0"
   }

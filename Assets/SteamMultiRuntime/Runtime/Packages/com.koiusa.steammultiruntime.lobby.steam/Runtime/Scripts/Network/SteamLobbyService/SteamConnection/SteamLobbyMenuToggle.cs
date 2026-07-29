@@ -2,11 +2,12 @@ using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public class SteamLobbyMenuToggle : MonoBehaviour
+    public class SteamLobbyMenuToggle : MonoBehaviour, IUiMenu
     {
         [Header("References")]
         [SerializeField] private SteamLobbyUiDocument lobbyUiDocument;
@@ -20,6 +21,7 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionBinding toggleBinding;
 
         public InputActionsConfig InputActionsConfig => inputActionsConfig;
+        public bool IsVisible => lobbyUiDocument != null && lobbyUiDocument.gameObject.activeSelf;
 
         private void Awake()
         {
@@ -76,7 +78,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
         {
-            Hide();
+            UiMenuNavigator.CloseAll();
         }
 
         private void OnLobbyStateChanged()
@@ -98,16 +100,14 @@ namespace Koiusa.SteamMultiRuntime
 
         public void Toggle()
         {
-            if (lobbyUiDocument == null)
-            {
-                return;
-            }
-
-            var isVisible = lobbyUiDocument.gameObject.activeSelf;
-            lobbyUiDocument.gameObject.SetActive(!isVisible);
+            UiMenuNavigator.ToggleRoot(this);
         }
 
-        public void Show()
+        public void Show() => UiMenuNavigator.OpenRoot(this);
+
+        public void Hide() => UiMenuNavigator.Close(this);
+
+        public void Activate()
         {
             if (lobbyUiDocument == null)
             {
@@ -117,7 +117,7 @@ namespace Koiusa.SteamMultiRuntime
             lobbyUiDocument.gameObject.SetActive(true);
         }
 
-        public void Hide()
+        public void Deactivate()
         {
             if (lobbyUiDocument == null)
             {
@@ -126,5 +126,7 @@ namespace Koiusa.SteamMultiRuntime
 
             lobbyUiDocument.gameObject.SetActive(false);
         }
+
+        public void FocusInitial() => lobbyUiDocument?.FocusInitial();
     }
 }

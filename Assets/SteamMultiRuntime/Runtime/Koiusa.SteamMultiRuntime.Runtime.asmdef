@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Koiusa.Input.Core.Runtime",
+        "Koiusa.UI.Common.Runtime",
         "Koiusa.SteamMultiRuntime.Character.UI.Runtime",
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:2aa43b0c797e0d444a7e82e75d4f2082",

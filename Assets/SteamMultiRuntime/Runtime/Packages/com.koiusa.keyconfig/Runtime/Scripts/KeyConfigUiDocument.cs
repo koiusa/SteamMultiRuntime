@@ -42,6 +42,8 @@ namespace Koiusa.Keyconfig.Runtime
         public string BindingGroup => bindingGroup;
         public event Action Closed;
 
+        public void FocusInitial() => view?.FocusDefault();
+
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();

@@ -1,3 +1,4 @@
+using System;
 using Koiusa.Input;
 using TNRD;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
         private VisualElement registeredRoot;
         private int pendingIndex = -1;
         private UiNavigationInputSession inputSession;
+        private Action closeRequested;
 
         private IRuntimeUserProfileModelSource UserProfile => userProfile != null ? userProfile.Value : null;
 
@@ -91,6 +93,10 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             inputActionsConfig = config;
         }
 
+        public void ConfigureClose(Action close) => closeRequested = close;
+
+        public void FocusInitial() => view?.FocusSelectedCharacter();
+
         private void BindUiInput()
         {
             UnbindUiInput();
@@ -141,7 +147,8 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private void Close()
         {
-            gameObject.SetActive(false);
+            if (closeRequested != null) closeRequested.Invoke();
+            else gameObject.SetActive(false);
         }
     }
 }

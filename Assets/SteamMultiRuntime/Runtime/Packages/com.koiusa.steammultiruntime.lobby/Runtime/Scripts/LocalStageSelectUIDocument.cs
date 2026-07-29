@@ -26,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool isLoading;
         private LocalizedVisualTree localizedTree;
         private UiNavigationInputSession inputSession;
+        private Action closeRequested;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -54,6 +55,10 @@ namespace Koiusa.SteamMultiRuntime
         {
             inputActionsConfig = config;
         }
+
+        public void ConfigureClose(Action close) => closeRequested = close;
+
+        public void FocusInitial() => stageSelectUI?.Focus();
 
         private void ResolveSceneLoader()
         {
@@ -206,7 +211,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Close()
         {
-            gameObject.SetActive(false);
+            if (closeRequested != null) closeRequested.Invoke();
+            else gameObject.SetActive(false);
         }
     }
 }

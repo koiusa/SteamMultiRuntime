@@ -2,6 +2,7 @@ using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -10,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
     /// 共通Input Profileによるキー入力、およびUnityEvent / 外部コード呼び出しにも対応。
     /// </summary>
     [DisallowMultipleComponent]
-    public class StageSelectMenuToggle : MonoBehaviour
+    public class StageSelectMenuToggle : MonoBehaviour, IUiMenu
     {
         [Header("References")]
         [SerializeField] private LocalStageSelectUIDocument stageSelectUiDocument;
@@ -19,6 +20,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputActionBinding toggleBinding;
+
+        public bool IsVisible => stageSelectUiDocument != null && stageSelectUiDocument.gameObject.activeSelf;
 
         private void Awake()
         {
@@ -33,6 +36,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             stageSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
+            stageSelectUiDocument?.ConfigureClose(() => UiMenuNavigator.Back(this));
         }
 
         private void OnEnable()
@@ -56,22 +60,19 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
         {
-            Hide();
+            UiMenuNavigator.CloseAll();
         }
 
         public void Toggle()
         {
-            if (stageSelectUiDocument == null)
-            {
-                return;
-            }
-
-            var isVisible = stageSelectUiDocument.gameObject.activeSelf;
-            stageSelectUiDocument.ConfigureInputActions(inputActionsConfig);
-            stageSelectUiDocument.gameObject.SetActive(!isVisible);
+            UiMenuNavigator.ToggleRoot(this);
         }
 
-        public void Show()
+        public void Show() => UiMenuNavigator.OpenRoot(this);
+
+        public void Hide() => UiMenuNavigator.Close(this);
+
+        public void Activate()
         {
             if (stageSelectUiDocument == null)
             {
@@ -82,7 +83,7 @@ namespace Koiusa.SteamMultiRuntime
             stageSelectUiDocument.gameObject.SetActive(true);
         }
 
-        public void Hide()
+        public void Deactivate()
         {
             if (stageSelectUiDocument == null)
             {
@@ -91,5 +92,7 @@ namespace Koiusa.SteamMultiRuntime
 
             stageSelectUiDocument.gameObject.SetActive(false);
         }
+
+        public void FocusInitial() => stageSelectUiDocument?.FocusInitial();
     }
 }

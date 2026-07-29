@@ -2,11 +2,12 @@ using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime.Character.UI
 {
     [DisallowMultipleComponent]
-    public class CharacterSelectMenuToggle : MonoBehaviour
+    public class CharacterSelectMenuToggle : MonoBehaviour, IUiMenu
     {
         [Header("References")]
         [SerializeField] private CharacterSelectUiDocument characterSelectUiDocument;
@@ -31,6 +32,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             }
 
             characterSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
+            characterSelectUiDocument?.ConfigureClose(() => UiMenuNavigator.Back(this));
         }
 
         private void OnEnable()
@@ -53,22 +55,19 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private void OnActiveSceneChanged(Scene previousScene, Scene nextScene)
         {
-            Hide();
+            UiMenuNavigator.CloseAll();
         }
 
         public void Toggle()
         {
-            if (characterSelectUiDocument == null)
-            {
-                return;
-            }
-
-            var isVisible = characterSelectUiDocument.gameObject.activeSelf;
-            characterSelectUiDocument.ConfigureInputActions(inputActionsConfig);
-            characterSelectUiDocument.gameObject.SetActive(!isVisible);
+            UiMenuNavigator.ToggleRoot(this);
         }
 
-        public void Show()
+        public void Show() => UiMenuNavigator.OpenRoot(this);
+
+        public void Hide() => UiMenuNavigator.Close(this);
+
+        public void Activate()
         {
             if (characterSelectUiDocument == null)
             {
@@ -79,7 +78,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             characterSelectUiDocument.gameObject.SetActive(true);
         }
 
-        public void Hide()
+        public void Deactivate()
         {
             if (characterSelectUiDocument == null)
             {
@@ -88,5 +87,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
             characterSelectUiDocument.gameObject.SetActive(false);
         }
+
+        public void FocusInitial() => characterSelectUiDocument?.FocusInitial();
     }
 }

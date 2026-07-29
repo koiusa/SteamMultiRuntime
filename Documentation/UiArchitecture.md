@@ -10,6 +10,13 @@
 4. 1つの画面でEventSystem標準移動と独自移動を同時に実行しない
 5. 画面を閉じるときは入力Sessionを破棄し、共有Actionとカーソル表示の取得前状態を復元する
 6. 複数画面が存在する場合も、入力を処理するのは最後に開いた最前面Sessionだけとする
+7. メニュー表示と親子遷移は`IUiMenu`／`UiMenuNavigator`を通し、画面同士が直接Show／Hideを連鎖しない
+
+## メニュー遷移
+
+`com.koiusa.ui.common`の`IUiMenu`は表示状態、Activate、Deactivate、初期フォーカスだけを定義します。`UiMenuNavigator`はRoot表示、子メニューのPush、Backによる親メニュー復帰、シーン変更時のCloseAllを管理します。
+
+Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、子画面を決定またはCancelで閉じるとPause Menuを再表示します。Character Select、Stage Select、Steam Lobbyをショートカットから直接開く場合はRootとして表示します。
 
 ## 共通入力
 
@@ -40,6 +47,7 @@
 ## 新しいUIの追加
 
 - 標準UIなら、GameObjectを有効化した後にUI Toolkitのschedulerから最初の操作要素へFocusを設定します。
+- 新しいメニューは`IUiMenu`を実装し、外部公開のShow／Hide／Toggleを`UiMenuNavigator`へ委譲します。
 - 独自選択UIなら、表示時に`UiNavigationInputSession`を作成します。入力更新とリピートはSessionが管理します。
 - 非表示時にSessionを`Dispose`します。
 - Input Action名、リピート、Event消費を各UIにコピーしません。

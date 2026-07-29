@@ -21,6 +21,7 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 - Key Config shows the protected UI Action Map as a navigable tab and read-only row list; its Change and Reset controls remain disabled.
 - Key Config PreviousSection/NextSection navigation cycles through Binding Group and every Action Map tab.
 - Pause Menu, Character Select, Stage Select, Key Config, and Steam Lobby use `UiNavigationInputSession` for exclusive frontmost input, event-driven direction changes, held-input repeat, cursor visibility, and Input Action lifetime. Screen-specific controllers own focus transitions only and do not poll navigation in `Update`.
+- Those menus implement `IUiMenu`; `UiMenuNavigator` owns root opening, child Push, Back restoration, and CloseAll. Pause pushes Key Config and Character Select so closing either child restores Pause automatically.
 - When a prior binding override path is null or empty, rebind reset must call `RemoveBindingOverride`; only non-empty paths may be passed to `ApplyBindingOverride`.
 
 ## Player, ownership, and guard

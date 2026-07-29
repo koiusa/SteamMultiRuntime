@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Koiusa.Input.Core.Runtime",
+        "Koiusa.UI.Common.Runtime",
         "Koiusa.SteamMultiRuntime.Lobby.Runtime",
         "Koiusa.SteamMultiRuntime.Lobby.Netcode.Runtime",
         "Koiusa.SteamMultiRuntime.Player.Runtime",

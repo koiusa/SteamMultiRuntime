@@ -35,6 +35,8 @@ namespace Koiusa.SteamMultiRuntime
         private InputActionBinding nextSectionBinding;
         private UiNavigationInputSession navigationSession;
 
+        public void FocusInitial() => view?.FocusInitialControl();
+
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
