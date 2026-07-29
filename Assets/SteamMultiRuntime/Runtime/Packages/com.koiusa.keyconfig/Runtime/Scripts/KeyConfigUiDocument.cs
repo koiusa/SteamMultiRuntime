@@ -414,7 +414,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
             if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
-                view.SelectAdjacentMap(-1);
+                view.SelectAdjacentSection(-1);
         }
 
         private void SuspendNonUiActions()
@@ -449,7 +449,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
             if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
-                view.SelectAdjacentMap(1);
+                view.SelectAdjacentSection(1);
         }
 
         private void ApplyReadyStatus()

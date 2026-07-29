@@ -381,23 +381,35 @@ namespace Koiusa.Keyconfig.Runtime
             iconResolver = resolver;
         }
 
-        public void SelectAdjacentMap(int direction)
+        public void SelectAdjacentSection(int direction)
         {
             if (!isInteractive || mapNames.Count == 0 || direction == 0)
             {
                 return;
             }
 
-            var currentIndex = mapNames.IndexOf(selectedMapName);
-            if (currentIndex < 0) currentIndex = 0;
-            var nextIndex = (currentIndex + Math.Sign(direction) + mapNames.Count) % mapNames.Count;
-            selectedMapName = mapNames[nextIndex];
+            var focusedElement = root?.focusController?.focusedElement as VisualElement;
+            var bindingGroupFocused = bindingGroupDropdown != null && focusedElement != null &&
+                (focusedElement == bindingGroupDropdown || bindingGroupDropdown.Contains(focusedElement));
+            var selectedMapIndex = Mathf.Max(0, mapNames.IndexOf(selectedMapName));
+            var currentSectionIndex = bindingGroupFocused ? 0 : selectedMapIndex + 1;
+            var sectionCount = mapNames.Count + 1;
+            var nextSectionIndex = (currentSectionIndex + Math.Sign(direction) + sectionCount) % sectionCount;
+
+            if (nextSectionIndex == 0)
+            {
+                bindingGroupDropdown?.Focus();
+                return;
+            }
+
+            var nextMapIndex = nextSectionIndex - 1;
+            selectedMapName = mapNames[nextMapIndex];
             RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
             root?.schedule.Execute(() =>
             {
-                if (nextIndex < mapTabButtons.Count && mapTabButtons[nextIndex].enabledInHierarchy)
+                if (nextMapIndex < mapTabButtons.Count && mapTabButtons[nextMapIndex].enabledInHierarchy)
                 {
-                    mapTabButtons[nextIndex].Focus();
+                    mapTabButtons[nextMapIndex].Focus();
                 }
             });
         }
@@ -1025,7 +1037,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void FocusAdjacentFunctionButton(int direction)
         {
-            VisualElement[] controls = { bindingGroupDropdown, loadButton, saveButton, resetAllButton, closeButton };
+            VisualElement[] controls = { loadButton, saveButton, resetAllButton, closeButton };
             var focusedElement = root?.focusController?.focusedElement as VisualElement;
             var currentIndex = Array.IndexOf(controls, focusedElement);
 
