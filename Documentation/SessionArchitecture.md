@@ -70,6 +70,7 @@ Lobby UI / Stage Select UI / Startup Loader
 
 - Network Lobbyでは`SteamLobbySceneLoader`がLobbyとStage間の遷移を管理する
 - Local実行では`LocalSceneFlowLoader`が同じScene Loader契約を実装する
+- Local Stage Selectは`UiNavigationInputSession`を使い、UI Navigate上下／左右でStage候補を循環し、Submitで選択中のStageを読み込む
 - Dedicated ServerはUIを経由せず起動対象Stageを決定する
 - Scene参照の一覧は`StageSceneList`へ集約する
 

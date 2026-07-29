@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Koiusa.Input;
 using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,11 +19,13 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private StageSelectUiAssets uiAssets;
         [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private UIDocument uiDocument;
         private StageSelectUI stageSelectUI;
         private bool isLoading;
         private LocalizedVisualTree localizedTree;
+        private UiNavigationInputSession inputSession;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -42,7 +45,14 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            inputSession?.Dispose();
+            inputSession = null;
             UnbindUI();
+        }
+
+        public void ConfigureInputActions(InputActionsConfig config)
+        {
+            inputActionsConfig = config;
         }
 
         private void ResolveSceneLoader()
@@ -124,6 +134,12 @@ namespace Koiusa.SteamMultiRuntime
 
             stageSelectUI.StageSelected += OnStageSelected;
             stageSelectUI.Focus();
+            inputSession = new UiNavigationInputSession(
+                inputActionsConfig,
+                stageSelectUI.MoveSelection,
+                stageSelectUI.SubmitSelection,
+                Close,
+                root);
         }
 
         private void UnbindUI()
@@ -187,5 +203,11 @@ namespace Koiusa.SteamMultiRuntime
         /// 指定されたステージを選択
         /// </summary>
         public bool TrySelectStage(string stageName) => stageSelectUI?.TrySelectStage(stageName) ?? false;
+
+        private void Close()
+        {
+            gameObject.SetActive(false);
+            UnityEngine.Cursor.visible = false;
+        }
     }
 }

@@ -33,6 +33,7 @@ namespace Koiusa.SteamMultiRuntime
         private string lobbyNameSearch = string.Empty;
         private InputActionBinding previousSectionBinding;
         private InputActionBinding nextSectionBinding;
+        private UiNavigationInputSession navigationSession;
 
         private void Awake()
         {
@@ -75,6 +76,15 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             BuildUi();
+            navigationSession = new UiNavigationInputSession(
+                inputActionsConfig?.FindAction("UI/Navigate"),
+                null,
+                null,
+                view.HandleNavigationMove,
+                null,
+                null,
+                uiDocument.rootVisualElement,
+                view.HandlesNavigationMove);
             GameLocalization.LocaleChanged += Render;
             previousSectionBinding = InputActionBinding.Bind(
                 inputActionsConfig?.FindAction("UI/PreviousSection"),
@@ -118,6 +128,8 @@ namespace Koiusa.SteamMultiRuntime
         private void OnDisable()
         {
             GameLocalization.LocaleChanged -= Render;
+            navigationSession?.Dispose();
+            navigationSession = null;
             view?.Dispose();
             previousSectionBinding?.Dispose();
             previousSectionBinding = null;

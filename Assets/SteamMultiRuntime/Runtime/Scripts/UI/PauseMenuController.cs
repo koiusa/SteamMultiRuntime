@@ -17,9 +17,11 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputActionBinding toggleBinding;
+        private UiNavigationInputSession navigationSession;
         private Button keyConfigButton;
         private Button characterSelectButton;
         private Button closeButton;
+        private int selectedButtonIndex;
 
         private void OnEnable()
         {
@@ -31,6 +33,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            DisposeNavigationSession();
             toggleBinding?.Dispose();
             toggleBinding = null;
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
@@ -69,13 +72,21 @@ namespace Koiusa.SteamMultiRuntime
             if (pauseMenuRoot == null) return;
             pauseMenuRoot.SetActive(true);
             BindButtons();
+            selectedButtonIndex = 0;
+            navigationSession = new UiNavigationInputSession(
+                inputActionsConfig,
+                MoveSelection,
+                SubmitSelection,
+                Hide,
+                pauseMenuDocument?.rootVisualElement);
             UnityEngine.Cursor.visible = true;
-            keyConfigButton?.Focus();
+            ScheduleInitialFocus();
         }
 
         public void Hide()
         {
             if (pauseMenuRoot == null) return;
+            DisposeNavigationSession();
             UnbindButtons();
             pauseMenuRoot.SetActive(false);
             UnityEngine.Cursor.visible = false;
@@ -103,6 +114,71 @@ namespace Koiusa.SteamMultiRuntime
             keyConfigButton = null;
             characterSelectButton = null;
             closeButton = null;
+        }
+
+        private void ScheduleInitialFocus()
+        {
+            var root = pauseMenuDocument?.rootVisualElement;
+            root?.schedule.Execute(() =>
+            {
+                if (pauseMenuRoot != null && pauseMenuRoot.activeInHierarchy)
+                {
+                    FocusSelectedButton();
+                }
+            });
+        }
+
+        private void MoveSelection(UiNavigationDirection direction)
+        {
+            if (direction != UiNavigationDirection.Up && direction != UiNavigationDirection.Down &&
+                direction != UiNavigationDirection.Left && direction != UiNavigationDirection.Right)
+            {
+                return;
+            }
+
+            var offset = direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Left
+                ? -1
+                : 1;
+            selectedButtonIndex = (selectedButtonIndex + offset + 3) % 3;
+            FocusSelectedButton();
+        }
+
+        private void SubmitSelection()
+        {
+            switch (selectedButtonIndex)
+            {
+                case 0:
+                    OpenKeyConfig();
+                    break;
+                case 1:
+                    OpenCharacterSelect();
+                    break;
+                case 2:
+                    Hide();
+                    break;
+            }
+        }
+
+        private void FocusSelectedButton()
+        {
+            switch (selectedButtonIndex)
+            {
+                case 0:
+                    keyConfigButton?.Focus();
+                    break;
+                case 1:
+                    characterSelectButton?.Focus();
+                    break;
+                case 2:
+                    closeButton?.Focus();
+                    break;
+            }
+        }
+
+        private void DisposeNavigationSession()
+        {
+            navigationSession?.Dispose();
+            navigationSession = null;
         }
 
         private void OpenKeyConfig()

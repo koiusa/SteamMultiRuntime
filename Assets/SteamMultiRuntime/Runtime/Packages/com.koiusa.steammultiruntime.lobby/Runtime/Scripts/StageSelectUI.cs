@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -170,6 +171,40 @@ namespace Koiusa.SteamMultiRuntime
         {
             StageSelectionPreferences.Save(evt.newValue);
             StageSelected?.Invoke(evt.newValue);
+        }
+
+        public void MoveSelection(UiNavigationDirection direction)
+        {
+            if (stageSceneField == null || stageSceneField.choices.Count == 0 ||
+                direction == UiNavigationDirection.None)
+            {
+                return;
+            }
+
+            var offset = direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Left
+                ? -1
+                : 1;
+
+            var currentIndex = stageSceneField.choices.IndexOf(stageSceneField.value);
+            if (currentIndex < 0)
+            {
+                currentIndex = 0;
+            }
+
+            var nextIndex = (currentIndex + offset + stageSceneField.choices.Count) %
+                stageSceneField.choices.Count;
+            stageSceneField.SetValueWithoutNotify(stageSceneField.choices[nextIndex]);
+        }
+
+        public void SubmitSelection()
+        {
+            if (stageSceneField == null || string.IsNullOrWhiteSpace(stageSceneField.value))
+            {
+                return;
+            }
+
+            StageSelectionPreferences.Save(stageSceneField.value);
+            StageSelected?.Invoke(stageSceneField.value);
         }
 
         public bool TrySelectStage(string stageName)

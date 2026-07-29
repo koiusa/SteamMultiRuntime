@@ -27,7 +27,7 @@ Samples / Prototype / Integration
 | パッケージ | 責務 |
 |---|---|
 | `com.koiusa.system.core` | 終了処理などUnityプロジェクト全般で使えるシステム機能 |
-| `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理 |
+| `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.common` | 特定ゲームやLocalizationに依存しないUI共通機能 |
 | `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
 | `com.koiusa.targetingsystem` | ターゲット検出、ロックオン、Camera連携 |
@@ -177,6 +177,7 @@ FootstepCollider
 
 ## 関連文書
 
+- [UI Architecture](UiArchitecture.md)
 - [CurrentClassStructure.md](CurrentClassStructure.md)
 - [CharacterArchitecture.md](CharacterArchitecture.md)
 - [SessionArchitecture.md](SessionArchitecture.md)

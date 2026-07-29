@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Koiusa.Input;
 using Koiusa.SteamMultiRuntime.Localization;
 
 namespace Koiusa.SteamMultiRuntime.Character.UI
@@ -174,6 +175,34 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             // Directional navigation should preview the focused character just as
             // pointing at an option and clicking it does with a mouse.
             onSelect?.Invoke(index);
+        }
+
+        public void MoveSelection(UiNavigationDirection direction)
+        {
+            if (characterButtons.Count == 0 || direction == UiNavigationDirection.None)
+            {
+                return;
+            }
+
+            var offset = direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Left
+                ? -1
+                : 1;
+
+            var root = uiDocument.rootVisualElement;
+            var focusedElement = root?.focusController?.focusedElement as VisualElement;
+            var currentIndex = characterButtons.FindIndex(button =>
+                focusedElement == button || (focusedElement != null && button.Contains(focusedElement)));
+            if (currentIndex < 0)
+            {
+                currentIndex = selectedIndex >= 0 && selectedIndex < characterButtons.Count
+                    ? selectedIndex
+                    : 0;
+            }
+
+            var nextIndex = (currentIndex + offset + characterButtons.Count) % characterButtons.Count;
+            var nextButton = characterButtons[nextIndex];
+            nextButton.Focus();
+            listScroll?.ScrollTo(nextButton);
         }
 
     }

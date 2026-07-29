@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -157,7 +158,6 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingGroupDropdown.RegisterValueChangedCallback(OnBindingGroupDropdownValueChanged);
             }
             root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
-            root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
             root?.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit, TrickleDown.TrickleDown);
             root?.RegisterCallback<FocusInEvent>(OnRootFocusIn);
         }
@@ -173,7 +173,6 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingGroupDropdown.UnregisterValueChangedCallback(OnBindingGroupDropdownValueChanged);
             }
             root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
-            root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
             root?.UnregisterCallback<NavigationSubmitEvent>(OnNavigationSubmit, TrickleDown.TrickleDown);
             root?.UnregisterCallback<FocusInEvent>(OnRootFocusIn);
 
@@ -828,67 +827,60 @@ namespace Koiusa.Keyconfig.Runtime
             });
         }
 
-        private void OnNavigationMove(NavigationMoveEvent evt)
+        public void HandleNavigationMove(UiNavigationDirection direction)
         {
             if (conflictOverlay != null)
             {
                 if (Time.unscaledTime < conflictInputUnlockTime)
                 {
-                    ConsumeNavigationMove(evt);
                     return;
                 }
 
-                if (evt.direction == NavigationMoveEvent.Direction.Left || evt.direction == NavigationMoveEvent.Direction.Right)
+                if (direction == UiNavigationDirection.Left || direction == UiNavigationDirection.Right)
                 {
                     var focused = root?.focusController?.focusedElement as Button;
                     var index = conflictButtons.IndexOf(focused);
-                    var delta = evt.direction == NavigationMoveEvent.Direction.Left ? -1 : 1;
+                    var delta = direction == UiNavigationDirection.Left ? -1 : 1;
                     index = index < 0 ? conflictButtons.Count - 1 : (index + delta + conflictButtons.Count) % conflictButtons.Count;
                     conflictButtons[index].Focus();
                 }
-                ConsumeNavigationMove(evt);
                 return;
             }
 
             if (!isInteractive)
             {
-                ConsumeNavigationMove(evt);
                 return;
             }
 
             if (TryGetFocusedBindingRow(out var focusedRowIndex, out var resetColumn))
             {
-                if (evt.direction == NavigationMoveEvent.Direction.Left ||
-                    evt.direction == NavigationMoveEvent.Direction.Right)
+                if (direction == UiNavigationDirection.Left ||
+                    direction == UiNavigationDirection.Right)
                 {
-                    var target = evt.direction == NavigationMoveEvent.Direction.Left
+                    var target = direction == UiNavigationDirection.Left
                         ? bindingRows[focusedRowIndex].RebindButton
                         : bindingRows[focusedRowIndex].ResetButton;
                     if (target.enabledInHierarchy) target.Focus();
-                    ConsumeNavigationMove(evt);
                     return;
                 }
 
-                if (evt.direction == NavigationMoveEvent.Direction.Up ||
-                    evt.direction == NavigationMoveEvent.Direction.Down)
+                if (direction == UiNavigationDirection.Up ||
+                    direction == UiNavigationDirection.Down)
                 {
-                    var delta = evt.direction == NavigationMoveEvent.Direction.Up ? -1 : 1;
+                    var delta = direction == UiNavigationDirection.Up ? -1 : 1;
                     var targetIndex = Mathf.Clamp(focusedRowIndex + delta, 0, bindingRows.Count - 1);
                     var targetRow = bindingRows[targetIndex];
                     var target = GetAvailableRowButton(targetRow, resetColumn);
                     target?.Focus();
                     bindingListView?.ScrollTo(targetRow.Row);
-                    ConsumeNavigationMove(evt);
                     return;
                 }
             }
 
-            if (evt.direction == NavigationMoveEvent.Direction.Left ||
-                evt.direction == NavigationMoveEvent.Direction.Right)
+            if (direction == UiNavigationDirection.Left ||
+                direction == UiNavigationDirection.Right)
             {
-                FocusAdjacentFunctionButton(evt.direction == NavigationMoveEvent.Direction.Left ? -1 : 1);
-                root?.focusController?.IgnoreEvent(evt);
-                evt.StopImmediatePropagation();
+                FocusAdjacentFunctionButton(direction == UiNavigationDirection.Left ? -1 : 1);
                 return;
             }
 
@@ -896,17 +888,26 @@ namespace Koiusa.Keyconfig.Runtime
             if (bindingGroupDropdown != null && focusedElement != null &&
                 (focusedElement == bindingGroupDropdown || bindingGroupDropdown.Contains(focusedElement)))
             {
+                if ((direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down) &&
+                    bindingGroupDropdown.choices.Count > 0)
+                {
+                    var offset = direction == UiNavigationDirection.Up ? -1 : 1;
+                    var currentIndex = Mathf.Max(0, bindingGroupDropdown.index);
+                    var nextIndex = (currentIndex + offset + bindingGroupDropdown.choices.Count) %
+                        bindingGroupDropdown.choices.Count;
+                    bindingGroupDropdown.index = nextIndex;
+                }
                 return;
             }
 
             if (bindingListView == null ||
-                (evt.direction != NavigationMoveEvent.Direction.Up &&
-                 evt.direction != NavigationMoveEvent.Direction.Down))
+                (direction != UiNavigationDirection.Up &&
+                 direction != UiNavigationDirection.Down))
             {
                 return;
             }
 
-            var direction = evt.direction == NavigationMoveEvent.Direction.Up ? -1f : 1f;
+            var scrollDirection = direction == UiNavigationDirection.Up ? -1f : 1f;
             var currentOffset = bindingListView.scrollOffset;
             var contentHeight = bindingListView.contentContainer.layout.height;
             var viewportHeight = bindingListView.contentViewport.layout.height;
@@ -914,9 +915,7 @@ namespace Koiusa.Keyconfig.Runtime
             var maxOffset = hasResolvedLayout ? Mathf.Max(0f, contentHeight - viewportHeight) : 0f;
             bindingListView.scrollOffset = new Vector2(
                 currentOffset.x,
-                Mathf.Clamp(currentOffset.y + direction * NavigationScrollStep, 0f, maxOffset));
-            root?.focusController?.IgnoreEvent(evt);
-            evt.StopImmediatePropagation();
+                Mathf.Clamp(currentOffset.y + scrollDirection * NavigationScrollStep, 0f, maxOffset));
         }
 
         private void EnterBindingList()
@@ -1013,12 +1012,6 @@ namespace Koiusa.Keyconfig.Runtime
             if (preferred != null && preferred.enabledInHierarchy) return preferred;
             var fallback = preferReset ? row.RebindButton : row.ResetButton;
             return fallback != null && fallback.enabledInHierarchy ? fallback : null;
-        }
-
-        private void ConsumeNavigationMove(NavigationMoveEvent evt)
-        {
-            root?.focusController?.IgnoreEvent(evt);
-            evt.StopImmediatePropagation();
         }
 
         private void FocusAdjacentFunctionButton(int direction)

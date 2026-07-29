@@ -31,6 +31,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 stageSelectUiDocument = FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include);
             }
+
+            stageSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
         }
 
         private void OnEnable()
@@ -65,6 +67,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var isVisible = stageSelectUiDocument.gameObject.activeSelf;
+            stageSelectUiDocument.ConfigureInputActions(inputActionsConfig);
             stageSelectUiDocument.gameObject.SetActive(!isVisible);
             Cursor.visible = !isVisible;
         }
@@ -76,6 +79,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
+            stageSelectUiDocument.ConfigureInputActions(inputActionsConfig);
             stageSelectUiDocument.gameObject.SetActive(true);
             Cursor.visible = true;
         }

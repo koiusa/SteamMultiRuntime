@@ -40,6 +40,10 @@
 | キャラクター選択ショートカット | Backquote / C | — |
 | 前／次のセクション | Q / E | LB / RB |
 
+`UI/Navigate`は`Value`型で入力方向を保持します。これにより、EventSystemは単発のフォーカス移動に加えて、キーボードやゲームパッドの方向入力を押し続けたときのリピート移動を行います。
+
+UIが共有Actionを一時的に借りる場合、取得前から有効だったActionは解放後も有効状態を維持します。Character Selectを閉じた後も、EventSystemとPause Menuの`Navigate`／`Submit`／`Cancel`は無効化しません。
+
 ## System／Debug
 
 | Action | 操作 | Keyboard / Mouse | Gamepad |

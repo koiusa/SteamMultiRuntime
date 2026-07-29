@@ -29,6 +29,8 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             {
                 characterSelectUiDocument = FindFirstObjectByType<CharacterSelectUiDocument>(FindObjectsInactive.Include);
             }
+
+            characterSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
         }
 
         private void OnEnable()
@@ -62,6 +64,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             }
 
             var isVisible = characterSelectUiDocument.gameObject.activeSelf;
+            characterSelectUiDocument.ConfigureInputActions(inputActionsConfig);
             characterSelectUiDocument.gameObject.SetActive(!isVisible);
             Cursor.visible = !isVisible;
         }
@@ -73,6 +76,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
                 return;
             }
 
+            characterSelectUiDocument.ConfigureInputActions(inputActionsConfig);
             characterSelectUiDocument.gameObject.SetActive(true);
             Cursor.visible = true;
         }

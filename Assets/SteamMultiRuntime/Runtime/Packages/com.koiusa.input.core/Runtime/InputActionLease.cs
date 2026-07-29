@@ -10,19 +10,29 @@ namespace Koiusa.Input
     /// </summary>
     public sealed class InputActionLease : IDisposable
     {
-        private static readonly Dictionary<InputAction, int> RefCounts = new();
+        private sealed class LeaseState
+        {
+            public int Count;
+            public bool DisableOnRelease;
+        }
+
+        private static readonly Dictionary<InputAction, LeaseState> States = new();
         private InputAction action;
 
         private InputActionLease(InputAction action)
         {
             this.action = action;
-            if (!RefCounts.TryGetValue(action, out var count))
+            if (!States.TryGetValue(action, out var state))
             {
-                count = 0;
+                state = new LeaseState
+                {
+                    DisableOnRelease = !action.enabled
+                };
+                States.Add(action, state);
             }
 
-            RefCounts[action] = count + 1;
-            if (count == 0)
+            state.Count++;
+            if (!action.enabled)
             {
                 action.Enable();
             }
@@ -40,14 +50,17 @@ namespace Koiusa.Input
                 return;
             }
 
-            if (RefCounts.TryGetValue(action, out var count) && count > 1)
+            if (States.TryGetValue(action, out var state) && state.Count > 1)
             {
-                RefCounts[action] = count - 1;
+                state.Count--;
             }
             else
             {
-                RefCounts.Remove(action);
-                action.Disable();
+                States.Remove(action);
+                if (state != null && state.DisableOnRelease)
+                {
+                    action.Disable();
+                }
             }
 
             action = null;

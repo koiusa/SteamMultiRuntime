@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using TNRD;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         [Header("References")]
         [SerializeField] private SerializableInterface<IRuntimeUserProfileModelSource> userProfile;
+        [SerializeField] private InputActionsConfig inputActionsConfig;
 
         [Header("UI Assets")]
         [SerializeField] private VisualTreeAsset layoutAsset;
@@ -22,6 +24,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
         private CharacterSelectView view;
         private VisualElement registeredRoot;
         private int pendingIndex = -1;
+        private UiNavigationInputSession inputSession;
 
         private IRuntimeUserProfileModelSource UserProfile => userProfile != null ? userProfile.Value : null;
 
@@ -73,14 +76,38 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             pendingIndex = UserProfile != null ? UserProfile.SelectedModelIndex : 0;
             view.SetSelectedIndex(pendingIndex, ids != null ? ids.modelIds : null);
             view.FocusSelectedCharacter();
+            BindUiInput();
         }
 
         private void OnDisable()
         {
+            UnbindUiInput();
             registeredRoot?.UnregisterCallback<NavigationCancelEvent>(OnCancelNavigation);
             registeredRoot = null;
             view?.UnbindActions();
             view?.Dispose();
+        }
+
+        public void ConfigureInputActions(InputActionsConfig config)
+        {
+            inputActionsConfig = config;
+        }
+
+        private void BindUiInput()
+        {
+            UnbindUiInput();
+            inputSession = new UiNavigationInputSession(
+                inputActionsConfig,
+                view.MoveSelection,
+                OnConfirmClicked,
+                Close,
+                registeredRoot);
+        }
+
+        private void UnbindUiInput()
+        {
+            inputSession?.Dispose();
+            inputSession = null;
         }
 
         private CharacterModelIdList ResolveModelIdList()
@@ -116,8 +143,8 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private void OnCancelNavigation(NavigationCancelEvent evt)
         {
-            evt.PreventDefault();
-            evt.StopPropagation();
+            registeredRoot?.focusController?.IgnoreEvent(evt);
+            evt.StopImmediatePropagation();
             Close();
         }
 

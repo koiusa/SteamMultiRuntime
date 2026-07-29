@@ -1,5 +1,6 @@
 using Steamworks.Data;
 using Lobby = Steamworks.Data.Lobby;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Localization;
@@ -148,6 +149,9 @@ namespace Koiusa.SteamMultiRuntime
         public void FocusInitialControl() => navigation?.FocusInitialControl();
         public void FocusPreviousSection() => navigation?.FocusPreviousSection();
         public void FocusNextSection() => navigation?.FocusNextSection();
+        public void HandleNavigationMove(UiNavigationDirection direction) => navigation?.HandleNavigationMove(direction);
+        public bool HandlesNavigationMove(UiNavigationDirection direction) =>
+            navigation?.HandlesNavigationMove(direction) ?? false;
 
         public void BindActions(System.Action onCreate, System.Action onJoinById, System.Action onSearchByName, System.Action onRefresh, System.Action onLeave)
         {

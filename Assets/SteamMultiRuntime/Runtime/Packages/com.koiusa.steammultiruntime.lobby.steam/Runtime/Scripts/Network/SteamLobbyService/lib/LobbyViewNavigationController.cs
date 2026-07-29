@@ -1,3 +1,4 @@
+using Koiusa.Input;
 using UnityEngine.UIElements;
 
 namespace Koiusa.SteamMultiRuntime
@@ -102,10 +103,6 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ConfigureFocusSections()
         {
-            var root = context.UiDocument.rootVisualElement;
-            root.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
-            root.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
-
             createControls.Clear();
             AddCreateControl(context.LobbyNameField);
             AddCreateControl(context.StageSceneField);
@@ -149,7 +146,7 @@ namespace Koiusa.SteamMultiRuntime
             });
         }
 
-        private void OnNavigationMove(NavigationMoveEvent evt)
+        public void HandleNavigationMove(UiNavigationDirection direction)
         {
             var root = context.UiDocument.rootVisualElement;
             var focused = root.focusController?.focusedElement as VisualElement;
@@ -162,28 +159,25 @@ namespace Koiusa.SteamMultiRuntime
             var isInsideLobbyList = context.LobbyListView != null &&
                                     (focused == context.LobbyListView || context.LobbyListView.Contains(focused));
 
-            if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+            if ((direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down) &&
                 createControl != null)
             {
-                FocusAdjacent(createControls, createControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.StopPropagation();
+                FocusAdjacent(createControls, createControl, direction == UiNavigationDirection.Down ? 1 : -1);
             }
-            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+            else if ((direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down) &&
                 searchControl != null)
             {
-                FocusAdjacent(searchControls, searchControl, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.StopPropagation();
+                FocusAdjacent(searchControls, searchControl, direction == UiNavigationDirection.Down ? 1 : -1);
             }
-            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+            else if ((direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down) &&
                      lobbyRow != null)
             {
-                FocusAdjacent(lobbyRows, lobbyRow, evt.direction == NavigationMoveEvent.Direction.Down ? 1 : -1);
-                evt.StopPropagation();
+                FocusAdjacent(lobbyRows, lobbyRow, direction == UiNavigationDirection.Down ? 1 : -1);
             }
-            else if ((evt.direction == NavigationMoveEvent.Direction.Up || evt.direction == NavigationMoveEvent.Direction.Down) &&
+            else if ((direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down) &&
                      isInsideLobbyList)
             {
-                var target = evt.direction == NavigationMoveEvent.Direction.Down
+                var target = direction == UiNavigationDirection.Down
                     ? lobbyRows.Find(IsFocusable)
                     : lobbyRows.FindLast(IsFocusable);
 
@@ -193,24 +187,39 @@ namespace Koiusa.SteamMultiRuntime
                     ScrollToLobbyRow(target);
                 }
 
-                // Keep navigation inside the list even when it has no
-                // joinable rows. Section changes are handled by LB/RB.
-                evt.StopPropagation();
             }
-            else if (evt.direction == NavigationMoveEvent.Direction.Right &&
+            else if (direction == UiNavigationDirection.Right &&
                      searchControl != null &&
                      searchControl is not TextField)
             {
-                if (FocusLobbySection())
-                {
-                    evt.StopPropagation();
-                }
+                FocusLobbySection();
             }
-            else if (evt.direction == NavigationMoveEvent.Direction.Left && lobbyRow != null)
+            else if (direction == UiNavigationDirection.Left && lobbyRow != null)
             {
                 FocusSearchSection();
-                evt.StopPropagation();
             }
+        }
+
+        public bool HandlesNavigationMove(UiNavigationDirection direction)
+        {
+            var root = context.UiDocument.rootVisualElement;
+            var focused = root.focusController?.focusedElement as VisualElement;
+            if (focused == null)
+                return false;
+
+            var searchControl = FindContaining(focused, searchControls);
+            var createControl = FindContaining(focused, createControls);
+            var lobbyRow = FindContaining(focused, lobbyRows);
+            var isInsideLobbyList = context.LobbyListView != null &&
+                                    (focused == context.LobbyListView || context.LobbyListView.Contains(focused));
+
+            if (direction == UiNavigationDirection.Up || direction == UiNavigationDirection.Down)
+                return createControl != null || searchControl != null || lobbyRow != null || isInsideLobbyList;
+
+            if (direction == UiNavigationDirection.Right)
+                return searchControl != null && searchControl is not TextField;
+
+            return direction == UiNavigationDirection.Left && lobbyRow != null;
         }
 
         private void OnLobbyRowFocused(VisualElement row)

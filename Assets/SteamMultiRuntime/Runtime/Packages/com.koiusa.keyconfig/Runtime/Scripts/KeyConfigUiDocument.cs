@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -29,10 +30,9 @@ namespace Koiusa.Keyconfig.Runtime
         private InputRebindController rebindController;
         private List<InputBindingService.BindingEntry> currentEntries = new List<InputBindingService.BindingEntry>();
         private bool usingBindingGroupFallback;
-        private InputAction previousSectionAction;
-        private InputAction nextSectionAction;
-        private bool enabledPreviousSectionAction;
-        private bool enabledNextSectionAction;
+        private UiNavigationInputSession navigationSession;
+        private InputActionBinding previousSectionBinding;
+        private InputActionBinding nextSectionBinding;
         private Coroutine pendingRebindCoroutine;
         private int activeRebindEntryIndex = -1;
         private readonly List<InputAction> suspendedActions = new List<InputAction>();
@@ -68,6 +68,15 @@ namespace Koiusa.Keyconfig.Runtime
         {
             view.Build();
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
+            var asset = bindingService?.InputActionAsset;
+            navigationSession = new UiNavigationInputSession(
+                asset?.FindAction("UI/Navigate"),
+                null,
+                null,
+                view.HandleNavigationMove,
+                null,
+                null,
+                uiDocument.rootVisualElement);
             BindSectionNavigation();
             SuspendNonUiActions();
 
@@ -98,6 +107,8 @@ namespace Koiusa.Keyconfig.Runtime
             }
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
+            navigationSession?.Dispose();
+            navigationSession = null;
             RestoreUnsavedChanges();
             view.HideConflict();
             view.UnbindActions();
@@ -384,42 +395,20 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            previousSectionAction = asset.FindAction(inputActionsConfig.PreviousSectionActionPath);
-            nextSectionAction = asset.FindAction(inputActionsConfig.NextSectionActionPath);
-
-            if (previousSectionAction != null)
-            {
-                previousSectionAction.performed += OnPreviousSectionPerformed;
-                enabledPreviousSectionAction = !previousSectionAction.enabled;
-                if (enabledPreviousSectionAction) previousSectionAction.Enable();
-            }
-
-            if (nextSectionAction != null)
-            {
-                nextSectionAction.performed += OnNextSectionPerformed;
-                enabledNextSectionAction = !nextSectionAction.enabled;
-                if (enabledNextSectionAction) nextSectionAction.Enable();
-            }
+            previousSectionBinding = InputActionBinding.Bind(
+                asset.FindAction(inputActionsConfig.PreviousSectionActionPath),
+                OnPreviousSectionPerformed);
+            nextSectionBinding = InputActionBinding.Bind(
+                asset.FindAction(inputActionsConfig.NextSectionActionPath),
+                OnNextSectionPerformed);
         }
 
         private void UnbindSectionNavigation()
         {
-            if (previousSectionAction != null)
-            {
-                previousSectionAction.performed -= OnPreviousSectionPerformed;
-                if (enabledPreviousSectionAction) previousSectionAction.Disable();
-            }
-
-            if (nextSectionAction != null)
-            {
-                nextSectionAction.performed -= OnNextSectionPerformed;
-                if (enabledNextSectionAction) nextSectionAction.Disable();
-            }
-
-            previousSectionAction = null;
-            nextSectionAction = null;
-            enabledPreviousSectionAction = false;
-            enabledNextSectionAction = false;
+            previousSectionBinding?.Dispose();
+            previousSectionBinding = null;
+            nextSectionBinding?.Dispose();
+            nextSectionBinding = null;
         }
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)

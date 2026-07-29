@@ -74,6 +74,8 @@ CharacterSelectMenuToggle
 
 UIは選択値をProfileへ渡し、モデルを直接生成しません。モデル生成と差し替えはModel Sync／Loader側の責務です。
 
+Character Select表示中は`input.core`の`UiNavigationInputSession`を使い、本番Input Actionsの`UI/Navigate`／`Submit`／`Cancel`を共通ポリシーで処理します。画面側は候補移動、決定、キャンセルの結果だけを受け取り、Actionの有効化やリピート時間を所有しません。EventSystemが生成する同じ移動Eventは消費し、1入力で1候補だけ移動します。
+
 ## Player Name Overlay
 
 ```text
