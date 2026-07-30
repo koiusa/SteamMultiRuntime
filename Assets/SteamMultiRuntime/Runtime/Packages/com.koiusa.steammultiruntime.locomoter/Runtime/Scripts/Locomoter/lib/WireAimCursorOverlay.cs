@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private const float CloseDelay = 0.08f;
         private const float CloseDuration = 0.22f;
         private const float RootSize = 64f;
+        private const string RuntimeThemePath = "UI/WireAimCursorRuntimeTheme";
 
         private Vector2 screenPosition;
         private bool isVisible;
@@ -101,6 +102,7 @@ namespace Koiusa.SteamMultiRuntime
 
             panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
             panelSettings.name = "Wire Aim Cursor Panel Settings";
+            panelSettings.themeStyleSheet = Resources.Load<ThemeStyleSheet>(RuntimeThemePath);
             panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             panelSettings.referenceResolution = new Vector2Int(1920, 1080);
             panelSettings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;

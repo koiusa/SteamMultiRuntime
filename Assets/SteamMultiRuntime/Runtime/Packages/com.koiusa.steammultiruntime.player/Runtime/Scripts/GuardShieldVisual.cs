@@ -127,7 +127,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var candidate = renderers[i];
                 if (candidate == null || candidate == shieldRenderer ||
-                    candidate is ParticleSystemRenderer || candidate is TrailRenderer || candidate is LineRenderer)
+                    candidate is ParticleSystemRenderer || candidate is TrailRenderer || candidate is LineRenderer ||
+                    candidate.GetComponentInParent<PlayerSkillEffectVisual>() != null)
                     continue;
 
                 if (!hasBounds)

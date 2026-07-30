@@ -52,7 +52,7 @@ characterCoordinator.ResetState();
 - Combat全般のPlay Mode動作確認（Hit判定、Damage、Heal、Guard倍率、死亡状態）
 - Network環境でのCombat動作確認とServer Authorityの検証
 - Cooldown StateのNetwork同期
-- Network Skill Stateを利用したAttack／Dash／HealのRemote Animation／Effect再生
+- Skill Animation用Triggerを持つAnimator Controller／Animation Clipの制作
 - Sword AttackのLight／Heavy／Combo Action
 - Guard Counter Action
 - Cooldown、Active Duration、Skill固有値の設定アセットへの分離
@@ -139,7 +139,11 @@ Network Player
 
 Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
 
-`ActiveSkillIndex`は`PlayerSkillSlot`によりAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。Guardの表示状態は`ActiveSkillIndex`から`IGuardSkillPresentation`へ通知し、`GuardSkillFeature`が全Clientの`GuardShieldVisual`を一元管理します。その他のSkill Animation／Effect再生は未接続です。
+`ActiveSkillIndex`は`PlayerSkillSlot`によりAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加し、`LastActivatedSkillIndex`と組み合わせて短時間Skillが同一Network tick内に終了しても一回限りの演出を失わないようにします。すべて全Clientから読み取り可能ですが、書き込みはServerだけが行います。
+
+Local／ServerのSkill開始・終了は`PlayerSkillCoordinator`から、Remote ClientはNetwork Skill Stateから、共通の`PlayerSkillPresentation`へ通知します。HostではServer側のCoordinator通知だけを使うため二重再生しません。PresentationはAttack／Dash／HealのVFX Graph、Guard Shield、Animatorの任意Trigger／Boolを一元管理します。現在の標準Animator ControllerにはSkill用Parameter／Clipがないため、Animationは対応Controllerへ`Attack`、`Dash`、`Guard`、`Heal`を追加した場合に再生されます。
+
+Dash TrailはDash本体の0.2秒で新規発生を停止し、0.42秒でEffect Objectを破棄します。移動終了後に長いTrailが残らないよう、発生時間と残像時間を分けて管理します。
 
 `NetworkPlayerCombatState`は`IPlayerCombatProcessGate`としてNetwork CombatのDamage、Heal、Hit DetectionをSpawn済みServerだけに制限し、`PlayerHealthFeature.CurrentHealth`をServer-writeのNetworkVariableで全Clientへ同期します。Clientへの反映は`PlayerHealthFeature.ApplyReplicatedHealth`を通して`HealthChanged`通知を維持します。Local CharacterにはGateを配置せず、従来どおり共通Combatを直接処理します。
 
@@ -257,11 +261,14 @@ Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付き�
 
 `GuardShieldVisual`は実行時にIcosphereを生成し、`Koiusa/Effects/GuardShield` Shaderで半透明膜、リム、均一な格子、Pulseを描画します。表示ObjectはPlayerの`Presentation`配下へ配置し、Character Modelと同じ補間座標を使用します。
 
+Shield中心はCharacter ModelのRenderer boundsからGuard開始時に一度だけ計算します。直前のAttack／Dash／Heal VFX Rendererはbounds対象外とし、Skill Effectの位置へShield中心が引かれないようにします。
+
 - Guard開始／終了時は中心から拡縮しながらFadeする
 - 攻撃命中は`PlayerDamageRequest.Point`を中心とするRingで表示する
 - 環境との交差はURP Scene Depthを比較して表示する
 - 環境交差のためPC／Mobile双方のURP AssetでDepth Textureを有効にする
 - Network Playerでは`PlayerSkillSlot.Guard`の同期状態を全Clientへ反映する
+- Attack／Dash／Healの一回限りのEffectは`ActivationSequence`でRemote Clientへ反映する
 
 > [!CAUTION]
 > Combat関連クラスとPrefab設定は存在しますが、現時点では動作未確認です。この節の動作説明はコード上の意図を示すもので、検証済み仕様ではありません。

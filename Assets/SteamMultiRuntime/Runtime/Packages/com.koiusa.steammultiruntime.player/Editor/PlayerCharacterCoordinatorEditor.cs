@@ -50,6 +50,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 EditorGUI.indentLevel++;
                 DrawReadOnly<PlayerSkillCoordinator>(owner, "Coordinator");
+                DrawOptional<PlayerSkillPresentation>(owner, "Skill Presentation");
                 DrawSkillInput(owner);
                 DrawOptional<DashSkillFeature>(owner, "Dash Skill");
                 DrawOptional<SwordAttackSkillFeature>(owner, "Sword Attack Skill");

@@ -48,6 +48,13 @@ namespace Koiusa.SteamMultiRuntime.Tests
         }
 
         [Test]
+        public void CharacterAgentCore_HasSharedSkillPresentation()
+        {
+            var prefab = LoadPrefab(CorePrefabPath);
+            Assert.That(prefab.GetComponent<PlayerSkillPresentation>(), Is.Not.Null);
+        }
+
+        [Test]
         public void LocalProxyPrefabs_ReferenceStandardCharacterModelCatalog()
         {
             var expectedCatalog = LoadExpectedCatalog();

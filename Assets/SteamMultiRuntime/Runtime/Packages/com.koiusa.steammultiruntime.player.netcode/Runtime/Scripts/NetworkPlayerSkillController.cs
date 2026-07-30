@@ -19,13 +19,15 @@ namespace Koiusa.SteamMultiRuntime
 
         private readonly NetworkVariable<int> activeSkillIndex = new NetworkVariable<int>(
             (int)PlayerSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<int> lastActivatedSkillIndex = new NetworkVariable<int>(
+            (int)PlayerSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<uint> activationSequence = new NetworkVariable<uint>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private PlayerCharacterCoordinator coordinator;
         private PlayerSkillInputBindings inputBindings;
         private bool guardStartedByInput;
-        private IGuardSkillPresentation guardPresentation;
+        private IPlayerSkillPresentation presentation;
 
         public int ActiveSkillIndex => activeSkillIndex.Value;
         public uint ActivationSequence => activationSequence.Value;
@@ -33,7 +35,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             coordinator = GetComponent<PlayerCharacterCoordinator>();
-            guardPresentation = GetComponent<IGuardSkillPresentation>();
+            presentation = GetComponent<IPlayerSkillPresentation>();
             CreateInputBindings();
         }
 
@@ -41,7 +43,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             base.OnNetworkSpawn();
             activeSkillIndex.OnValueChanged += OnActiveSkillIndexChanged;
-            ApplyGuardPresentation(activeSkillIndex.Value);
+            activationSequence.OnValueChanged += OnActivationSequenceChanged;
+            if (!IsServer) presentation?.SetActiveSkill((PlayerSkillSlot)activeSkillIndex.Value);
             if (IsServer && coordinator?.Skills != null)
             {
                 coordinator.Skills.SkillStarted += OnServerSkillStarted;
@@ -53,7 +56,8 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkDespawn()
         {
             activeSkillIndex.OnValueChanged -= OnActiveSkillIndexChanged;
-            guardPresentation?.SetGuardingPresentation(false);
+            activationSequence.OnValueChanged -= OnActivationSequenceChanged;
+            if (!IsServer) presentation?.SetActiveSkill(PlayerSkillSlot.None);
             ReleaseInput();
             if (coordinator?.Skills != null)
             {
@@ -65,7 +69,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSkillIndexChanged(int previousValue, int newValue)
         {
-            ApplyGuardPresentation(newValue);
+            if (!IsServer) presentation?.SetActiveSkill((PlayerSkillSlot)newValue);
+        }
+
+        private void OnActivationSequenceChanged(uint previousValue, uint newValue)
+        {
+            if (!IsServer && newValue != 0)
+                presentation?.PlaySkillActivation((PlayerSkillSlot)lastActivatedSkillIndex.Value, newValue);
         }
 
         private void OnEnable()
@@ -157,7 +167,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnServerSkillStarted(IPlayerSkillFeature skill)
         {
-            activeSkillIndex.Value = (int)GetDefinitionSlot(skill.Definition);
+            var slot = GetDefinitionSlot(skill.Definition);
+            activeSkillIndex.Value = (int)slot;
+            lastActivatedSkillIndex.Value = (int)slot;
             activationSequence.Value++;
         }
 
@@ -186,11 +198,6 @@ namespace Koiusa.SteamMultiRuntime
             if (definition == guardSkill) return PlayerSkillSlot.Guard;
             if (definition == healSkill) return PlayerSkillSlot.Heal;
             return PlayerSkillSlot.None;
-        }
-
-        private void ApplyGuardPresentation(int skillIndex)
-        {
-            guardPresentation?.SetGuardingPresentation(skillIndex == (int)PlayerSkillSlot.Guard);
         }
     }
 }

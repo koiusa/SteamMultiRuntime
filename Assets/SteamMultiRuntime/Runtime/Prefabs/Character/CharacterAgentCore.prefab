@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 566156994252057087}
   - component: {fileID: 4987499974731793392}
   - component: {fileID: 112213991497632317}
+  - component: {fileID: 712213991497632317}
   m_Layer: 0
   m_Name: CharacterAgentCore
   m_TagString: Untagged
@@ -392,6 +393,23 @@ MonoBehaviour:
   priority: 0
   isTargetable: 1
   registry: {fileID: 0}
+--- !u!114 &712213991497632317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abf634ed93aeb5740a000c4e17367b17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillPresentation
+  attackTrigger: Attack
+  dashTrigger: Dash
+  guardParameter: Guard
+  healTrigger: Heal
+  playSkillEffects: 1
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

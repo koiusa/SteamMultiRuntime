@@ -8,12 +8,17 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class PlayerSkillCoordinator : MonoBehaviour, IPlayerSkillCoordinator
     {
         private readonly List<IPlayerSkillFeature> skills = new List<IPlayerSkillFeature>();
+        private IPlayerSkillPresentation presentation;
         public IPlayerSkillFeature ActiveSkill { get; private set; }
         public IReadOnlyList<IPlayerSkillFeature> Skills => skills;
         public event Action<IPlayerSkillFeature> SkillStarted;
         public event Action<IPlayerSkillFeature> SkillEnded;
 
-        private void Awake() => RefreshSkills();
+        private void Awake()
+        {
+            RefreshSkills();
+            presentation = GetComponent<IPlayerSkillPresentation>();
+        }
         private void OnEnable() => RefreshSkills();
 
         private void Update()
@@ -24,6 +29,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var ended = ActiveSkill;
                 ActiveSkill = null;
+                presentation?.SetActiveSkill(PlayerSkillSlot.None);
                 SkillEnded?.Invoke(ended);
             }
         }
@@ -45,6 +51,8 @@ namespace Koiusa.SteamMultiRuntime
                 if (!string.Equals(skill.SkillId, skillId, StringComparison.OrdinalIgnoreCase)) continue;
                 if (!skill.TryActivate(context)) return false;
                 ActiveSkill = skill;
+                presentation?.PlaySkillActivation(GetSkillSlot(skill));
+                presentation?.SetActiveSkill(GetSkillSlot(skill));
                 SkillStarted?.Invoke(skill);
                 return true;
             }
@@ -57,9 +65,22 @@ namespace Koiusa.SteamMultiRuntime
             var cancelled = ActiveSkill;
             ActiveSkill.Cancel();
             ActiveSkill = null;
+            presentation?.SetActiveSkill(PlayerSkillSlot.None);
             SkillEnded?.Invoke(cancelled);
         }
 
         private void OnDisable() => CancelActiveSkill();
+
+        private static PlayerSkillSlot GetSkillSlot(IPlayerSkillFeature skill)
+        {
+            return skill switch
+            {
+                SwordAttackSkillFeature => PlayerSkillSlot.Attack,
+                DashSkillFeature => PlayerSkillSlot.Dash,
+                GuardSkillFeature => PlayerSkillSlot.Guard,
+                HealSkillFeature => PlayerSkillSlot.Heal,
+                _ => PlayerSkillSlot.None
+            };
+        }
     }
 }

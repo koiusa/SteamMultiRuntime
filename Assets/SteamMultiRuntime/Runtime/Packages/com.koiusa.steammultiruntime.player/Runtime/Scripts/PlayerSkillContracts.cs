@@ -11,9 +11,10 @@ namespace Koiusa.SteamMultiRuntime
         Heal = 3
     }
 
-    internal interface IGuardSkillPresentation
+    internal interface IPlayerSkillPresentation
     {
-        void SetGuardingPresentation(bool guarding);
+        void PlaySkillActivation(PlayerSkillSlot slot, uint sequence = 0);
+        void SetActiveSkill(PlayerSkillSlot slot);
     }
 
     public readonly struct PlayerSkillContext
