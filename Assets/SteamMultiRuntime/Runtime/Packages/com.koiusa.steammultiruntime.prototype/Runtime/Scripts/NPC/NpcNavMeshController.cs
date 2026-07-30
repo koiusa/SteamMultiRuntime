@@ -43,6 +43,7 @@ namespace Koiusa.SteamMultiRuntime
         private int rvoPrimaryNeighborCount => avoidance.RvoPrimaryNeighborCount;
         private float steeringLowPassCutoffHz => steering != null ? steering.SteeringLowPassCutoffHz : 3f;
         private float steeringDeadband => steering != null ? steering.SteeringDeadband : 0f;
+        private float steeringDirectionDeadbandDeg => steering != null ? steering.SteeringDirectionDeadbandDeg : 0f;
         private float steeringMaxTurnDegPerSec => steering != null ? steering.SteeringMaxTurnDegPerSec : 360f;
 
 
@@ -59,6 +60,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 _moveDirection;
         private Vector3 _filteredSteeringPlanar;
         private Vector3 _cachedRawSteeringPlanar;
+        private Vector3 _cachedTargetPlanarVelocity;
         private float _nextSteeringUpdateTime;
         private float _avoidanceSideSign = 1f;
         private float _avoidanceSideLockUntilTime;
@@ -328,40 +330,38 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var now = Time.time;
-            if (now < _nextSteeringUpdateTime)
+            var steeringPlanUpdated = now >= _nextSteeringUpdateTime;
+            if (steeringPlanUpdated)
             {
-                _inputSource.SetMove(_moveInput);
-                return;
-            }
+                _nextSteeringUpdateTime = now + Mathf.Max(0.01f, steeringUpdateInterval);
 
-            _nextSteeringUpdateTime = now + Mathf.Max(0.01f, steeringUpdateInterval);
-
-            // Path corner extraction and neighborhood queries are the expensive part of NPC AI.
-            // Run the complete steering plan at the configured rate instead of once per frame.
-            var upAxis = PlayerMotor.GetUpAxis();
-            var targetPlanarVelocity = BuildTargetPlanarVelocity(upAxis);
-            var rawSteering = targetPlanarVelocity;
-            if (avoidance != null && avoidance.isActiveAndEnabled)
-            {
-                switch (avoidance.Mode)
+                // Path extraction and neighborhood queries stay rate-limited. Their result is
+                // consumed by the inexpensive filter below on every player-loop update.
+                var planningUpAxis = PlayerMotor.GetUpAxis();
+                _cachedTargetPlanarVelocity = BuildTargetPlanarVelocity(planningUpAxis);
+                _cachedRawSteeringPlanar = _cachedTargetPlanarVelocity;
+                if (avoidance != null && avoidance.isActiveAndEnabled)
                 {
-                case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
-                    rawSteering = BuildBoidSteeringPlanar(upAxis, targetPlanarVelocity);
-                    break;
-                case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
-                    rawSteering = BuildRvoSteeringPlanar(upAxis, targetPlanarVelocity);
-                    break;
+                    switch (avoidance.Mode)
+                    {
+                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
+                        _cachedRawSteeringPlanar = BuildBoidSteeringPlanar(planningUpAxis, _cachedTargetPlanarVelocity);
+                        break;
+                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
+                        _cachedRawSteeringPlanar = BuildRvoSteeringPlanar(planningUpAxis, _cachedTargetPlanarVelocity);
+                        break;
+                    }
                 }
             }
 
-            _cachedRawSteeringPlanar = rawSteering;
+            var upAxis = PlayerMotor.GetUpAxis();
             var steeringPlanar = ApplySteeringLowPass(upAxis, _cachedRawSteeringPlanar);
             steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
             steeringPlanar = ApplySteeringDeadband(steeringPlanar);
 
             var localDesired = transform.InverseTransformDirection(steeringPlanar);
             var nextMoveInput = new Vector2(localDesired.x, localDesired.z);
-            nextMoveInput = ApplyAdaptiveMoveInputMagnitude(nextMoveInput, targetPlanarVelocity, upAxis);
+            nextMoveInput = ApplyAdaptiveMoveInputMagnitude(nextMoveInput, _cachedTargetPlanarVelocity, upAxis);
             if (nextMoveInput.sqrMagnitude > 1f)
                 nextMoveInput = nextMoveInput.normalized;
 
@@ -369,7 +369,8 @@ namespace Koiusa.SteamMultiRuntime
             _moveDirection = PlayerMotor.GetMoveDirection(transform, nextMoveInput);
             _inputSource.SetMove(nextMoveInput);
 
-            if (jump != null && jump.TryRequestJump(IsGrounded, targetPlanarVelocity.magnitude))
+            if (steeringPlanUpdated && jump != null
+                && jump.TryRequestJump(IsGrounded, _cachedTargetPlanarVelocity.magnitude))
                 _inputSource.QueueJump();
         }
 
@@ -459,7 +460,7 @@ namespace Koiusa.SteamMultiRuntime
                 return target;
             }
 
-            var dt = Mathf.Max(Mathf.Max(Time.deltaTime, steeringUpdateInterval), 0.0001f);
+            var dt = Mathf.Max(Time.deltaTime, 0.0001f);
             var cutoff = Mathf.Max(0.1f, steeringLowPassCutoffHz);
             var alpha = 1f - Mathf.Exp(-2f * Mathf.PI * cutoff * dt);
             _filteredSteeringPlanar = Vector3.Lerp(_filteredSteeringPlanar, target, alpha);
@@ -473,8 +474,12 @@ namespace Koiusa.SteamMultiRuntime
             if (target.sqrMagnitude <= 0.000001f || current.sqrMagnitude <= 0.000001f)
                 return target;
 
+            var directionDelta = Vector3.Angle(current, target);
+            if (directionDelta <= Mathf.Max(0f, steeringDirectionDeadbandDeg))
+                return current.normalized * target.magnitude;
+
             var maxTurn = Mathf.Max(1f, steeringMaxTurnDegPerSec)
-                * Mathf.Max(Time.deltaTime, steeringUpdateInterval);
+                * Mathf.Max(Time.deltaTime, 0.0001f);
             var limited = Vector3.RotateTowards(current.normalized, target.normalized, maxTurn * Mathf.Deg2Rad, 0f);
             return limited * target.magnitude;
         }
@@ -487,6 +492,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private Vector3 BuildRvoSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
         {
+            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            var goalSpeed = goalPlanar.magnitude;
+            if (goalSpeed <= 0.0001f)
+                return goalPlanarVelocity;
+
             var radius = Mathf.Max(0.1f, rvoNeighborRadius);
             var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
             if (count <= 0)
@@ -501,7 +511,6 @@ namespace Koiusa.SteamMultiRuntime
             var selfPlanarVel = Vector3.ProjectOnPlane(selfVel, upAxis);
             var agentRadius = Mathf.Max(0.05f, _agent.radius);
             var timeHorizon = Mathf.Max(0.1f, rvoTimeHorizon);
-            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
             var goalDirection = goalPlanar.sqrMagnitude > 0.000001f ? goalPlanar.normalized : transform.forward;
             goalDirection = Vector3.ProjectOnPlane(goalDirection, upAxis).normalized;
             var now = Time.time;
@@ -512,10 +521,6 @@ namespace Koiusa.SteamMultiRuntime
                 if (col == null)
                     continue;
                 if (col.attachedRigidbody == _rigidbody)
-                    continue;
-
-                var other = col.GetComponentInParent<IPlayerController>();
-                if (other == null)
                     continue;
 
                 var neighborKey = col.attachedRigidbody != null
@@ -531,6 +536,10 @@ namespace Koiusa.SteamMultiRuntime
                     break;
                 }
                 if (alreadyAdded)
+                    continue;
+
+                var other = col.GetComponentInParent<IPlayerController>();
+                if (other == null)
                     continue;
 
                 _uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
@@ -621,7 +630,14 @@ namespace Koiusa.SteamMultiRuntime
             if (Mathf.Approximately(_avoidanceSideSign, 0f))
                 _avoidanceSideSign = 1f;
 
-            var blended = goalPlanarVelocity * rvoGoalWeight + avoidance * rvoAvoidanceWeight;
+            var goalContribution = goalPlanarVelocity * rvoGoalWeight;
+            var avoidanceContribution = avoidance * rvoAvoidanceWeight;
+            // Avoidance is a lateral correction. It must not overpower the requested travel
+            // speed and turn a near-stationary agent around its own axis.
+            avoidanceContribution = Vector3.ClampMagnitude(
+                avoidanceContribution,
+                goalContribution.magnitude * 0.75f);
+            var blended = goalContribution + avoidanceContribution;
             return Vector3.ProjectOnPlane(blended, upAxis);
         }
 
@@ -631,6 +647,7 @@ namespace Koiusa.SteamMultiRuntime
             _moveDirection = Vector3.zero;
             _filteredSteeringPlanar = Vector3.zero;
             _cachedRawSteeringPlanar = Vector3.zero;
+            _cachedTargetPlanarVelocity = Vector3.zero;
             // Spread expensive steering/physics queries across frames. Without this phase,
             // every NPC spawned in one batch performs its query on the same frame.
             var phase = (GetInstanceID() & 0x7fffffff) % 997 / 997f;

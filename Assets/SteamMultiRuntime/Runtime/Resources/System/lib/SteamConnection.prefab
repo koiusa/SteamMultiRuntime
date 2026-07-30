@@ -198,6 +198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyUiDocument
   lobbyService: {fileID: 7001024383980304856}
+  steamConnection: {fileID: 2255673815828834066}
   sceneLoader:
     mode: 0
     unityReference: {fileID: 283368555198532959}

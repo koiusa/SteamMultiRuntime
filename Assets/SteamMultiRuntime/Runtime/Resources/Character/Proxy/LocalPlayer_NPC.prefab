@@ -550,9 +550,10 @@ MonoBehaviour:
   arrivalInputMinScale: 0.3
   navCornerDirectionWeight: 0.65
   navCornerMinDistance: 0.1
-  steeringLowPassCutoffHz: 3
+  steeringLowPassCutoffHz: 1.5
   steeringDeadband: 0.06
-  steeringMaxTurnDegPerSec: 180
+  steeringDirectionDeadbandDeg: 3
+  steeringMaxTurnDegPerSec: 120
 --- !u!114 &920000000000000005
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -6,6 +6,10 @@ namespace Koiusa.SteamMultiRuntime
     {
         private Vector3 BuildBoidSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
         {
+            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            if (goalPlanar.sqrMagnitude <= 0.000001f)
+                return goalPlanarVelocity;
+
             var radius = Mathf.Max(0.1f, boidSeparationRadius);
             var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
             if (count <= 0)
@@ -16,8 +20,10 @@ namespace Koiusa.SteamMultiRuntime
             var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _boidNeighborBuffer.Length);
             var radiusSqr = radius * radius;
             var uniqueNeighborCount = 0;
+            var separationExponent = Mathf.Max(1f, boidSeparationExponent);
+            var selfPosition = transform.position;
 
-            var referenceForward = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
+            var referenceForward = goalPlanar;
             if (referenceForward.sqrMagnitude <= 0.0001f)
                 referenceForward = Vector3.ProjectOnPlane(transform.forward, upAxis);
             if (referenceForward.sqrMagnitude > 0.0001f)
@@ -29,10 +35,6 @@ namespace Koiusa.SteamMultiRuntime
                 if (col == null)
                     continue;
                 if (col.attachedRigidbody == _rigidbody)
-                    continue;
-
-                var other = col.GetComponentInParent<IPlayerController>();
-                if (other == null)
                     continue;
 
                 var neighborKey = col.attachedRigidbody != null
@@ -51,16 +53,22 @@ namespace Koiusa.SteamMultiRuntime
                 if (alreadyAdded)
                     continue;
 
+                var other = col.GetComponentInParent<IPlayerController>();
+                if (other == null)
+                    continue;
+
                 _uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
 
                 var neighborPosition = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
-                var delta = transform.position - neighborPosition;
+                var delta = selfPosition - neighborPosition;
                 var planarDelta = Vector3.ProjectOnPlane(delta, upAxis);
                 var sqr = planarDelta.sqrMagnitude;
                 if (sqr <= 0.0001f || sqr > radiusSqr)
                     continue;
 
-                var directionToNeighbor = -planarDelta.normalized;
+                var distance = Mathf.Sqrt(sqr);
+                var separationDirection = planarDelta / distance;
+                var directionToNeighbor = -separationDirection;
                 if (boidUseForwardNeighborFilter && referenceForward.sqrMagnitude > 0.0001f)
                 {
                     var forwardDot = Vector3.Dot(referenceForward, directionToNeighbor);
@@ -68,12 +76,10 @@ namespace Koiusa.SteamMultiRuntime
                         continue;
                 }
 
-                var distance = Mathf.Sqrt(sqr);
                 var normalizedDistance = Mathf.Clamp01(distance / radius);
                 var strength = 1f - normalizedDistance;
-                var exponent = Mathf.Max(1f, boidSeparationExponent);
-                strength = Mathf.Pow(strength, exponent);
-                separation += planarDelta.normalized * strength;
+                strength = Mathf.Pow(strength, separationExponent);
+                separation += separationDirection * strength;
                 neighborCount++;
             }
 
@@ -82,7 +88,6 @@ namespace Koiusa.SteamMultiRuntime
 
             separation /= neighborCount;
 
-            var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
             if (goalPlanar.sqrMagnitude > 0.0001f)
             {
                 var goalDir = goalPlanar.normalized;
@@ -93,7 +98,12 @@ namespace Koiusa.SteamMultiRuntime
                 separation = lateralSeparation;
             }
 
-            var blended = goalPlanarVelocity * boidGoalWeight + separation * boidSeparationWeight;
+            var goalContribution = goalPlanarVelocity * boidGoalWeight;
+            var separationContribution = separation * boidSeparationWeight;
+            separationContribution = Vector3.ClampMagnitude(
+                separationContribution,
+                goalContribution.magnitude * 0.75f);
+            var blended = goalContribution + separationContribution;
             return Vector3.ProjectOnPlane(blended, upAxis);
         }
     }

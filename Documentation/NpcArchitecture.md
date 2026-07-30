@@ -29,6 +29,10 @@ NpcNavMeshController : INpcLocomotionState
 
 各Moduleは任意装着です。`NpcNavMeshController`は存在し、有効になっているModuleだけを利用します。回避方式を有効にした場合は`NavMeshAgent`標準回避を停止し、無効化時に復元します。
 
+回避の近傍Physics Queryと経路Corner取得は`NpcNavMeshAvoidanceModule.UpdateInterval`の周期だけ実行し、NPCのInstance IDから決めた位相でFrame間へ分散します。近傍ColliderはRigidbody／Root単位で重複を除外してからPlayer Controllerを解決します。Boid計算では距離と正規化方向を同じ平方根から算出し、近傍ごとの重複した正規化を行いません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
+
+重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。
+
 ## 駆動経路
 
 ### Local NPC

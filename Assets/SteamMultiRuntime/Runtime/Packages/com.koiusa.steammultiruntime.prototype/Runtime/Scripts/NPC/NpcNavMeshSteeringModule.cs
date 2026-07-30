@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Steering Filter")]
         [SerializeField, Min(0.1f)] private float steeringLowPassCutoffHz = 3f;
         [SerializeField, Min(0f)] private float steeringDeadband = 0.06f;
+        [SerializeField, Range(0f, 45f)] private float steeringDirectionDeadbandDeg = 3f;
         [SerializeField, Min(1f)] private float steeringMaxTurnDegPerSec = 180f;
         public float MinMoveInputMagnitude => minMoveInputMagnitude;
         public float CorneringInputReduction => corneringInputReduction;
@@ -25,6 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         public float NavCornerMinDistance => navCornerMinDistance;
         public float SteeringLowPassCutoffHz => steeringLowPassCutoffHz;
         public float SteeringDeadband => steeringDeadband;
+        public float SteeringDirectionDeadbandDeg => steeringDirectionDeadbandDeg;
         public float SteeringMaxTurnDegPerSec => steeringMaxTurnDegPerSec;
 
         private void OnValidate()
@@ -37,6 +39,7 @@ namespace Koiusa.SteamMultiRuntime
             navCornerMinDistance = Mathf.Max(0f, navCornerMinDistance);
             steeringLowPassCutoffHz = Mathf.Max(0.1f, steeringLowPassCutoffHz);
             steeringDeadband = Mathf.Max(0f, steeringDeadband);
+            steeringDirectionDeadbandDeg = Mathf.Clamp(steeringDirectionDeadbandDeg, 0f, 45f);
             steeringMaxTurnDegPerSec = Mathf.Max(1f, steeringMaxTurnDegPerSec);
         }
     }
