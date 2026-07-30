@@ -1080,14 +1080,14 @@ MonoBehaviour:
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: 3ab95556cf2d610409cb0dc344bee2cc, type: 2}
+  m_PanelSettings: {fileID: 11400000, guid: 7c6f1e4a9b234d6e8f102a3b4c5d6e7f, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: 4d95a541045261a44b18f3fc9c1582f7, type: 3}
   m_SortingOrder: 0
   m_Position: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
+  m_WorldSpaceSizeMode: 0
+  m_WorldSpaceWidth: 480
+  m_WorldSpaceHeight: 64
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
@@ -1103,14 +1103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee94f4e0b282e6a41b0372b02e1c1fc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
-  refreshInterval: 1
-  labelWidth: 88
-  labelMaxWidth: 360
-  labelHeight: 24
   fadeStartDistance: 8
   fadeEndDistance: 20
-  labelTemplateAsset: {fileID: 9197481963319205126, guid: 4d95a541045261a44b18f3fc9c1582f7, type: 3}
-  overlayStyleSheet: {fileID: 7433441132597879392, guid: 928de3804a42d3e4db9c03c72e72c92f, type: 3}
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

@@ -32,6 +32,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/SteamMultiRuntime/Samples/Gameplay/Stages/ServerScene.unity
     guid: e050ced7b67192b418ee482cf3fe6036
+  - enabled: 1
+    path: Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.ui/Runtime/Scenes/SteamMultiRuntime_UI.unity
+    guid: 412e5487fc964ed2aefefada90aed5fb
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 6f6c3fff31728d745b397ae4df14d516, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

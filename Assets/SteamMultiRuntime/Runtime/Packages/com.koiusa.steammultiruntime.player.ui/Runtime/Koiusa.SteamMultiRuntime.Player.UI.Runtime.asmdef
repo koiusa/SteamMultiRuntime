@@ -2,7 +2,8 @@
   "name": "Koiusa.SteamMultiRuntime.Player.UI.Runtime",
   "rootNamespace": "Koiusa.SteamMultiRuntime.Player.UI",
   "references": [
-    "Koiusa.SteamMultiRuntime.Player.Runtime"
+    "Koiusa.SteamMultiRuntime.Player.Runtime",
+    "Koiusa.SteamMultiRuntime.Core.Runtime"
   ],
   "autoReferenced": true,
   "noEngineReferences": false

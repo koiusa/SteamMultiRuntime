@@ -260,3 +260,9 @@ Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付き�
 
 > [!CAUTION]
 > Combat関連クラスとPrefab設定は存在しますが、現時点では動作未確認です。この節の動作説明はコード上の意図を示すもので、検証済み仕様ではありません。
+
+## Player表示名
+
+Player表示名は各Playerの`Presentation`配下にあるWorld Space `UIDocument`で描画します。位置はPlayerの表示補間Transformから継承し、スクリーン座標への変換やPlayer一覧走査を`Update`／`LateUpdate`で行いません。
+
+表示名の変更は`IPlayerDisplayNameNotifier.DisplayNameChanged`で通知します。カメラ正対と距離Fadeだけは、実際にCameraが描画される直前のRender Pipelineコールバックで更新します。Player表示名専用MaterialはDepth Testを無効化し、World Spaceの距離表現を保ったままシーンObjectより手前へ描画します。

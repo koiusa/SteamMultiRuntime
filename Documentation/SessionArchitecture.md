@@ -77,6 +77,7 @@ Lobby UI / Stage Select UI / Startup Loader
 - Local Stage Selectは`UiNavigationInputSession`を使い、UI Navigate上下／左右でStage候補を循環し、Submitで選択中のStageを読み込む
 - Dedicated ServerはUIを経由せず起動対象Stageを決定する
 - Scene参照の一覧は`StageSceneList`へ集約する
+- Stage Scene Cameraの無効化では`IPreservedLoadedSceneCamera`を持つUI基盤Cameraを除外する
 
 パッケージ使用側ではSample SceneをImportしただけではBuild Settingsへ追加されません。
 Build Profile固有のScene一覧と、パッケージ更新時の旧Sample削除については

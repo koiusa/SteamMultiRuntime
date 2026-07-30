@@ -1,0 +1,20 @@
+{
+  "name": "Koiusa.SteamMultiRuntime.Player.UI.URP.Runtime",
+  "rootNamespace": "Koiusa.SteamMultiRuntime.Player.UI.URP",
+  "references": [
+    "Koiusa.SteamMultiRuntime.Player.UI.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "expression": "17.0.0",
+      "define": "STEAMMULTIRUNTIME_URP"
+    }
+  ],
+  "defineConstraints": [
+    "STEAMMULTIRUNTIME_URP"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

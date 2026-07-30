@@ -19,6 +19,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.EditorTools.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.TargetingSystem.Runtime.csproj" />
   <Project Path="koiusa.Keyconfig.Editor.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Player.UI.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.Runtime.csproj" />
   <Project Path="Koiusa.Input.Core.Runtime.csproj" />
@@ -26,7 +27,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Player.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.TargetingSystem.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Player.UI.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Player.UI.URP.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />

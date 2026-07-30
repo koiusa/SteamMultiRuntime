@@ -1,47 +1,61 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 namespace Koiusa.SteamMultiRuntime.Player.UI
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
-    public class PlayerNameOverlayUiDocument : MonoBehaviour
+    public sealed class PlayerNameOverlayUiDocument : MonoBehaviour
     {
-        private const string DefaultLabelTemplateResourcePath = "UI/PlayerNameOverlay/PlayerNameOverlayLabel";
-        private const string DefaultStyleSheetResourcePath = "UI/PlayerNameOverlay/PlayerNameOverlay";
-
-        [Header("Display")]
-        [SerializeField] private float refreshInterval = 1f;
-        [SerializeField] private float labelWidth = 88f;
-        [SerializeField] private float labelMaxWidth = 360f;
-        [SerializeField] private float labelHeight = 24f;
-
         [Header("Distance Fade")]
         [Min(0f)] [SerializeField] private float fadeStartDistance = 8f;
         [Min(0f)] [SerializeField] private float fadeEndDistance = 20f;
 
-        [Header("UI Assets")]
-        [SerializeField] private VisualTreeAsset labelTemplateAsset;
-        [SerializeField] private StyleSheet overlayStyleSheet;
+        [Header("Screen Size")]
+        [Min(0.01f)] [SerializeField] private float referenceDistance = 5f;
+        [Range(1f, 179f)] [SerializeField] private float referenceFieldOfView = 60f;
+        [Min(0.01f)] [SerializeField] private float referenceOrthographicSize = 5f;
+        [Min(0.01f)] [SerializeField] private float screenSizeMultiplier = 1f;
 
-        private UIDocument sourceDocument;
+        private UIDocument uiDocument;
+        private Label playerNameLabel;
         private IPlayerIdentitySource identitySource;
-
-        internal float RefreshInterval => Mathf.Max(0.1f, refreshInterval);
-        internal float LabelWidth => labelWidth;
-        internal float LabelMaxWidth => Mathf.Max(labelWidth, labelMaxWidth);
-        internal float LabelHeight => labelHeight;
-        internal float FadeStartDistance => fadeStartDistance;
-        internal float FadeEndDistance => fadeEndDistance;
-        internal VisualTreeAsset LabelTemplateAsset => labelTemplateAsset;
-        internal StyleSheet OverlayStyleSheet => overlayStyleSheet;
+        private IPlayerDisplayNameNotifier displayNameNotifier;
+        private int originalLayer;
+        private Vector3 baseLocalScale;
+        private float referenceProjectionScale;
 
         private void Awake()
         {
-            sourceDocument = GetComponent<UIDocument>();
-            labelTemplateAsset ??= Resources.Load<VisualTreeAsset>(DefaultLabelTemplateResourcePath);
-            overlayStyleSheet ??= Resources.Load<StyleSheet>(DefaultStyleSheetResourcePath);
+            uiDocument = GetComponent<UIDocument>();
+            originalLayer = gameObject.layer;
+            baseLocalScale = transform.localScale;
+            CacheProjectionReference();
+        }
+
+        private void OnValidate() => CacheProjectionReference();
+
+        private void CacheProjectionReference()
+        {
+            referenceProjectionScale = 1f
+                / Mathf.Tan(Mathf.Clamp(referenceFieldOfView, 1f, 179f) * 0.5f * Mathf.Deg2Rad);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void RestoreLiveInstancesAfterSubsystemReset()
+        {
+            // With both Domain Reload and Scene Reload disabled, enabled scene components
+            // do not receive OnEnable again although subsystem static state was reset.
+            var instances = FindObjectsByType<PlayerNameOverlayUiDocument>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            for (var i = 0; i < instances.Length; i++)
+            {
+                var instance = instances[i];
+                if (instance != null && instance.isActiveAndEnabled)
+                    instance.InitializeRuntime();
+            }
         }
 
         private void OnEnable()
@@ -49,43 +63,99 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             if (!Application.isPlaying)
                 return;
 
-            sourceDocument ??= GetComponent<UIDocument>();
-            var panelSettings = sourceDocument != null ? sourceDocument.panelSettings : null;
+            InitializeRuntime();
+        }
 
-            // The prefab document is only a settings holder. Rendering one full-screen document
-            // per character is expensive, so the shared manager owns the only active document.
-            if (sourceDocument != null)
-                sourceDocument.enabled = false;
+        private void InitializeRuntime()
+        {
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            if (displayNameNotifier != null)
+                displayNameNotifier.DisplayNameChanged -= RefreshDisplayName;
 
-            PlayerNameOverlayManager.Register(this, panelSettings);
+            uiDocument ??= GetComponent<UIDocument>();
+            BindVisualTreeAndRefresh();
+            uiDocument?.rootVisualElement?.schedule.Execute(BindVisualTreeAndRefresh);
+            identitySource = FindIdentitySource();
+            displayNameNotifier = identitySource as IPlayerDisplayNameNotifier;
+            if (displayNameNotifier != null)
+                displayNameNotifier.DisplayNameChanged += RefreshDisplayName;
+
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
+            WorldSpaceUiOverlayCamera.Register(gameObject, originalLayer);
+            RefreshDisplayName();
         }
 
         private void OnDisable()
         {
-            if (Application.isPlaying)
-                PlayerNameOverlayManager.Unregister(this);
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+            WorldSpaceUiOverlayCamera.Unregister(gameObject);
+            if (displayNameNotifier != null)
+                displayNameNotifier.DisplayNameChanged -= RefreshDisplayName;
+
+            displayNameNotifier = null;
+            identitySource = null;
+            playerNameLabel = null;
+            transform.localScale = baseLocalScale;
         }
 
-        internal bool TryGetPlayerName(out string playerName)
+        private void BindVisualTreeAndRefresh()
         {
-            identitySource ??= FindIdentitySource();
+            playerNameLabel = uiDocument != null
+                ? uiDocument.rootVisualElement?.Q<Label>("player-name-label")
+                : null;
+            RefreshDisplayName();
+        }
+
+        private void RefreshDisplayName()
+        {
+            if (playerNameLabel == null)
+                return;
+
             if (identitySource == null || !identitySource.IsAvailable)
             {
-                playerName = null;
-                return false;
+                playerNameLabel.style.display = DisplayStyle.None;
+                return;
             }
 
             var displayName = identitySource.DisplayName;
-            if (!string.IsNullOrWhiteSpace(displayName))
-            {
-                playerName = displayName;
-                return true;
-            }
+            playerNameLabel.text = !string.IsNullOrWhiteSpace(displayName)
+                ? displayName
+                : identitySource.PlayerId is { } playerId ? $"Player{playerId}" : "Player";
+            playerNameLabel.style.display = DisplayStyle.Flex;
+        }
 
-            playerName = identitySource.PlayerId is { } playerId
-                ? $"Player{playerId}"
-                : "Player";
-            return true;
+        private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
+        {
+            if (camera == null || playerNameLabel == null || camera.cameraType != CameraType.Game
+                || camera.GetComponent<WorldSpaceUiOverlayCameraMarker>() != null)
+                return;
+
+            // Position is inherited from Presentation. Only camera-facing orientation and
+            // camera-dependent fading are updated at the render boundary.
+            transform.rotation = camera.transform.rotation;
+
+            var distance = Vector3.Distance(camera.transform.position, transform.position);
+            transform.localScale = baseLocalScale * (CalculateScreenSizeScale(camera) * screenSizeMultiplier);
+
+            var fadeRange = Mathf.Max(0.01f, fadeEndDistance - fadeStartDistance);
+            playerNameLabel.style.opacity = 1f - Mathf.Clamp01((distance - fadeStartDistance) / fadeRange);
+        }
+
+        private float CalculateScreenSizeScale(Camera camera)
+        {
+            if (camera.orthographic)
+                return Mathf.Max(0.01f, camera.orthographicSize / referenceOrthographicSize);
+
+            // Projected height is proportional to worldSize * projection.m11 / viewDepth.
+            // Compensating both terms keeps the UI's viewport height stable even when
+            // the player is off-center or the camera FOV changes.
+            var toOverlay = transform.position - camera.transform.position;
+            var viewDepth = Mathf.Max(camera.nearClipPlane, Vector3.Dot(toOverlay, camera.transform.forward));
+            var currentProjectionScale = Mathf.Max(0.0001f, Mathf.Abs(camera.projectionMatrix.m11));
+            return Mathf.Max(
+                0.01f,
+                viewDepth * referenceProjectionScale
+                / (Mathf.Max(0.01f, referenceDistance) * currentProjectionScale));
         }
 
         private IPlayerIdentitySource FindIdentitySource()
@@ -99,217 +169,6 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             }
 
             return null;
-        }
-    }
-
-    internal sealed class PlayerNameOverlayManager : MonoBehaviour
-    {
-        private sealed class Entry
-        {
-            public PlayerNameOverlayUiDocument Owner;
-            public Label Label;
-            public float NextRefreshTime;
-            public bool HasTarget;
-            public bool Visible;
-            public float LastOpacity = -1f;
-        }
-
-        private static PlayerNameOverlayManager instance;
-
-        private readonly Dictionary<PlayerNameOverlayUiDocument, Entry> entries = new();
-        private readonly List<PlayerNameOverlayUiDocument> removalBuffer = new();
-        private UIDocument uiDocument;
-        private VisualElement overlayRoot;
-        private Camera targetCamera;
-
-        internal static void Register(PlayerNameOverlayUiDocument owner, PanelSettings panelSettings)
-        {
-            if (owner == null || panelSettings == null)
-                return;
-
-            EnsureInstance(panelSettings);
-            instance.Add(owner);
-        }
-
-        internal static void Unregister(PlayerNameOverlayUiDocument owner)
-        {
-            if (instance != null)
-                instance.Remove(owner);
-        }
-
-        private static void EnsureInstance(PanelSettings panelSettings)
-        {
-            if (instance != null)
-                return;
-
-            var managerObject = new GameObject("[Player Name Overlay]");
-            DontDestroyOnLoad(managerObject);
-            instance = managerObject.AddComponent<PlayerNameOverlayManager>();
-            instance.uiDocument = managerObject.AddComponent<UIDocument>();
-            instance.uiDocument.panelSettings = panelSettings;
-            instance.uiDocument.sortingOrder = short.MaxValue;
-            instance.BuildRoot();
-        }
-
-        private void BuildRoot()
-        {
-            var documentRoot = uiDocument != null ? uiDocument.rootVisualElement : null;
-            if (documentRoot == null)
-                return;
-
-            documentRoot.pickingMode = PickingMode.Ignore;
-            overlayRoot = new VisualElement
-            {
-                name = "player-name-overlay-root",
-                pickingMode = PickingMode.Ignore
-            };
-            overlayRoot.AddToClassList("player-name-overlay");
-            documentRoot.Add(overlayRoot);
-        }
-
-        private void Add(PlayerNameOverlayUiDocument owner)
-        {
-            if (entries.ContainsKey(owner))
-                return;
-
-            if (overlayRoot == null)
-                BuildRoot();
-            if (overlayRoot == null)
-                return;
-
-            if (owner.OverlayStyleSheet != null && !overlayRoot.styleSheets.Contains(owner.OverlayStyleSheet))
-                overlayRoot.styleSheets.Add(owner.OverlayStyleSheet);
-
-            var label = CreateLabel(owner);
-            overlayRoot.Add(label);
-            entries.Add(owner, new Entry { Owner = owner, Label = label });
-        }
-
-        private static Label CreateLabel(PlayerNameOverlayUiDocument owner)
-        {
-            Label label = null;
-            if (owner.LabelTemplateAsset != null)
-            {
-                var container = owner.LabelTemplateAsset.Instantiate();
-                label = container.Q<Label>();
-                label?.RemoveFromHierarchy();
-            }
-
-            label ??= new Label();
-            label.pickingMode = PickingMode.Ignore;
-            label.AddToClassList("player-name-overlay__label");
-            label.style.position = Position.Absolute;
-            label.style.width = StyleKeyword.Auto;
-            label.style.minWidth = owner.LabelWidth;
-            label.style.maxWidth = owner.LabelMaxWidth;
-            label.style.height = owner.LabelHeight;
-            label.style.display = DisplayStyle.None;
-            return label;
-        }
-
-        private void Remove(PlayerNameOverlayUiDocument owner)
-        {
-            if (!entries.TryGetValue(owner, out var entry))
-                return;
-
-            entry.Label?.RemoveFromHierarchy();
-            entries.Remove(owner);
-        }
-
-        private void LateUpdate()
-        {
-            if (overlayRoot == null || overlayRoot.panel == null)
-                return;
-
-            targetCamera = ResolveCamera(targetCamera);
-            removalBuffer.Clear();
-
-            foreach (var pair in entries)
-            {
-                var entry = pair.Value;
-                if (entry.Owner == null)
-                {
-                    removalBuffer.Add(pair.Key);
-                    continue;
-                }
-
-                if (Time.unscaledTime >= entry.NextRefreshTime)
-                {
-                    entry.HasTarget = entry.Owner.TryGetPlayerName(out var playerName);
-                    if (entry.HasTarget && entry.Label.text != playerName)
-                        entry.Label.text = playerName;
-                    entry.NextRefreshTime = Time.unscaledTime + entry.Owner.RefreshInterval;
-                }
-
-                UpdateEntry(entry, targetCamera);
-            }
-
-            for (var i = 0; i < removalBuffer.Count; i++)
-                Remove(removalBuffer[i]);
-        }
-
-        private void UpdateEntry(Entry entry, Camera camera)
-        {
-            if (camera == null || !entry.HasTarget)
-            {
-                SetVisible(entry, false);
-                return;
-            }
-
-            var screenPosition = camera.WorldToScreenPoint(entry.Owner.transform.position);
-            var viewport = camera.pixelRect;
-            var visible = screenPosition.z > 0f
-                && screenPosition.x >= viewport.xMin
-                && screenPosition.x <= viewport.xMax
-                && screenPosition.y >= viewport.yMin
-                && screenPosition.y <= viewport.yMax;
-            SetVisible(entry, visible);
-            if (!visible)
-                return;
-
-            var panelPosition = RuntimePanelUtils.ScreenToPanel(
-                overlayRoot.panel,
-                new Vector2(screenPosition.x, Screen.height - screenPosition.y));
-            var resolvedLabelWidth = entry.Label.resolvedStyle.width;
-            if (float.IsNaN(resolvedLabelWidth) || resolvedLabelWidth <= 0f)
-                resolvedLabelWidth = entry.Owner.LabelWidth;
-            entry.Label.transform.position = new Vector3(
-                panelPosition.x - resolvedLabelWidth * 0.5f,
-                panelPosition.y - entry.Owner.LabelHeight * 0.5f,
-                0f);
-
-            var distance = Vector3.Distance(camera.transform.position, entry.Owner.transform.position);
-            var fadeRange = Mathf.Max(0.01f, entry.Owner.FadeEndDistance - entry.Owner.FadeStartDistance);
-            var opacity = 1f - Mathf.Clamp01((distance - entry.Owner.FadeStartDistance) / fadeRange);
-            if (Mathf.Abs(opacity - entry.LastOpacity) >= 0.01f)
-            {
-                entry.Label.style.opacity = opacity;
-                entry.LastOpacity = opacity;
-            }
-        }
-
-        private static void SetVisible(Entry entry, bool visible)
-        {
-            if (entry.Visible == visible)
-                return;
-
-            entry.Visible = visible;
-            entry.Label.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-        }
-
-        private static Camera ResolveCamera(Camera current)
-        {
-            if (current != null && current.isActiveAndEnabled)
-                return current;
-            if (Camera.main != null && Camera.main.isActiveAndEnabled)
-                return Camera.main;
-            return FindFirstObjectByType<Camera>();
-        }
-
-        private void OnDestroy()
-        {
-            if (instance == this)
-                instance = null;
         }
     }
 }

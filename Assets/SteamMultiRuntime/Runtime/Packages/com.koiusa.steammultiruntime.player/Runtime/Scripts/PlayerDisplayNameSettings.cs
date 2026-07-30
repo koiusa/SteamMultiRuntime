@@ -14,12 +14,30 @@ namespace Koiusa.SteamMultiRuntime
     {
     }
 
+    public interface IPlayerDisplayNameNotifier
+    {
+        event Action DisplayNameChanged;
+    }
+
     public static class PlayerDisplayNameSettings
     {
         private const string PlayerPrefsKey = "SteamMultiRuntime.PlayerDisplayName";
         public const int MaxLength = 24;
+        private static Func<string> platformDisplayNameResolver;
 
-        public static Func<string> PlatformDisplayNameResolver { get; set; }
+        public static Func<string> PlatformDisplayNameResolver
+        {
+            get => platformDisplayNameResolver;
+            set
+            {
+                if (platformDisplayNameResolver == value)
+                    return;
+
+                platformDisplayNameResolver = value;
+                DisplayNameChanged?.Invoke();
+            }
+        }
+        public static event Action DisplayNameChanged;
 
         public static string CustomDisplayName => PlayerPrefs.GetString(PlayerPrefsKey, string.Empty);
 
@@ -32,6 +50,7 @@ namespace Koiusa.SteamMultiRuntime
                 PlayerPrefs.SetString(PlayerPrefsKey, sanitized);
 
             PlayerPrefs.Save();
+            DisplayNameChanged?.Invoke();
         }
 
         public static string ResolveLocalDisplayName()

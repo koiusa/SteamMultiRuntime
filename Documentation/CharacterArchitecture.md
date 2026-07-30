@@ -40,10 +40,9 @@ Character UI
 └─ CharacterSelectMenuToggle
 
 Display Name
-├─ LocalPlayerDisplayName : IPlayerDisplayNameSource
-├─ NetworkPlayerDisplayName : IPlayerDisplayNameSource
-└─ PlayerNameOverlayUiDocument
-   └─ PlayerNameOverlayManager
+├─ LocalPlayerDisplayName : IPlayerDisplayNameSource + IPlayerDisplayNameNotifier
+├─ NetworkPlayerDisplayName : IPlayerDisplayNameSource + IPlayerDisplayNameNotifier
+└─ PlayerNameOverlayUiDocument（World Space）
 ```
 
 ## モデル反映経路
@@ -80,13 +79,20 @@ Character Select表示中は`input.core`の`UiNavigationInputSession`を使い�
 
 ```text
 LocalPlayerDisplayName / NetworkPlayerDisplayName
-  → IPlayerDisplayNameSource
-  → PlayerNameOverlayUiDocument
-  → PlayerNameOverlayManager
-  → World座標をScreen座標へ変換してLabel表示
+  → IPlayerDisplayNameSource / IPlayerDisplayNameNotifier
+  → PlayerNameOverlayUiDocument（Presentation配下）
+  → World Space Label表示
 ```
 
-Network表示名はNetworkBehaviour側で同期し、Overlayは表示処理だけを担当します。
+Network表示名はNetworkBehaviour側で同期し、Overlayは表示処理だけを担当します。表示位置は`Presentation`の補間Transformから継承し、Player一覧の走査やWorld座標からScreen座標への毎Frame変換は行いません。名前変更は`DisplayNameChanged`で反映し、UIDocumentのDynamicサイズで文字列と余白に追従します。カメラ正対、画面上の見かけサイズを一定にするView Depth／投影行列補正、距離FadeだけをRender PipelineのCamera描画開始通知で更新します。PerspectiveのFOV変更とOrthographic Sizeにも追従します。
+
+Client起動時は`SteamMultiRuntime_UI` Sceneを加算ロードし、`WorldSpaceUiOverlaySceneRoot`がWorld Space UIの後段Camera群を所有します。World Space UIは実行時に未使用User Layerへ登録し、`WorldSpaceUiOverlayCamera`が各Game Cameraと同じ投影設定でDepthだけをクリアしたCameraを生成します。元CameraからOverlay Layerを除外し、後段CameraはOverlay Layerだけを描画するため、UI ToolkitのWorld Space描画を維持したままシーンObjectによる遮蔽を受けません。
+
+利用側ProjectでUI SceneがBuild Settingsへ未登録の場合は、同じScene Rootを`DontDestroyOnLoad`で生成してフォールバックします。利用側のTagManager設定は要求しません。URPでは`WorldSpaceUiOverlayUrpCameraAdapter`が後段CameraをCamera StackのOverlayとして接続し、Colorを維持してDepthだけをクリアします。Render Pipeline固有設定はAdapter assemblyへ分離し、HDRPも同じ契約へ接続します。Graphics DeviceがNullのDedicated ServerではUI Sceneをロードしません。Compassは別のScreen Space PanelSettingsを使用します。
+
+Presentation Scene LoaderがStage内Cameraを無効化するとき、Overlay Cameraは`IPreservedLoadedSceneCamera`によって対象外になります。Stage Cameraを無効化する既存ポリシーは維持し、UI基盤Cameraだけを保護します。
+
+EditorのFast Enter Play ModeでDomain ReloadとScene Reloadの両方が無効でも、Subsystem初期化後に有効な`PlayerNameOverlayUiDocument`を再登録します。Scene Componentの`OnEnable`が再実行されない設定でも、Camera Stackと表示名Event購読をPlay開始ごとに復元します。
 
 ## 境界
 

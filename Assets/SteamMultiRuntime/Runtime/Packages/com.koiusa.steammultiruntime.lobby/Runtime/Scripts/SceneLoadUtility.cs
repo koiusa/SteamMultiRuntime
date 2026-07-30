@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -128,6 +129,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 foreach (var camera in rootGameObject.GetComponentsInChildren<Camera>(true))
                 {
+                    if (camera.GetComponent<IPreservedLoadedSceneCamera>() != null)
+                    {
+                        continue;
+                    }
+
                     camera.enabled = false;
 
                     if (camera.gameObject.activeSelf)
