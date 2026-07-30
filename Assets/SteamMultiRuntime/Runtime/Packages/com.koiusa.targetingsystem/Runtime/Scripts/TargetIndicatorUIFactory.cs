@@ -20,11 +20,14 @@ namespace Koiusa.TargetingSystem.Runtime
         private const string LockedClassName = "locked";
         private const string UnfocusedClassName = "unfocused";
         private const string CircleClassName = "marker-circle";
+        private const string InnerRingClassName = "marker-inner-ring";
+        private const string CenterDotClassName = "marker-center-dot";
+        private const string CornerClassName = "marker-corner";
         private const string LabelClassName = "marker-label";
 
         /// <summary>
         /// ターゲット用マーカーUIを生成。
-        /// 円形の枠とターゲット名ラベルの組み合わせ。
+        /// 二重リング、照準コーナー、中心点、ターゲット名ラベルの組み合わせ。
         /// </summary>
         public VisualElement CreateTargetMarker(string targetName, float size, IndicatorVisualState state)
         {
@@ -37,14 +40,39 @@ namespace Koiusa.TargetingSystem.Runtime
             var circle = new VisualElement();
             circle.AddToClassList(CircleClassName);
 
+            var innerRing = new VisualElement();
+            innerRing.AddToClassList(InnerRingClassName);
+
+            var centerDot = new VisualElement();
+            centerDot.AddToClassList(CenterDotClassName);
+
+            var topLeft = CreateCorner("top-left");
+            var topRight = CreateCorner("top-right");
+            var bottomLeft = CreateCorner("bottom-left");
+            var bottomRight = CreateCorner("bottom-right");
+
             var label = new Label(targetName);
             label.AddToClassList(LabelClassName);
 
             marker.Add(circle);
+            marker.Add(innerRing);
+            marker.Add(centerDot);
+            marker.Add(topLeft);
+            marker.Add(topRight);
+            marker.Add(bottomLeft);
+            marker.Add(bottomRight);
             marker.Add(label);
 
             UpdateMarkerVisualState(marker, state);
             return marker;
+        }
+
+        private static VisualElement CreateCorner(string positionClassName)
+        {
+            var corner = new VisualElement();
+            corner.AddToClassList(CornerClassName);
+            corner.AddToClassList(positionClassName);
+            return corner;
         }
 
         public void UpdateMarkerVisualState(VisualElement marker, IndicatorVisualState state)

@@ -6,8 +6,8 @@ Targeting Systemは、ターゲット選択のGameplay状態をCamera、入力�
 
 | パッケージ | 責務 |
 |---|---|
-| `com.koiusa.targetingsystem` | Targeting状態、Command、候補収集、Filter、Scorer、任意のCinemachine表示 |
-| `com.koiusa.steammultiruntime.targetingsystem` | 共有Input ActionsとLocal／Network所有権への接続 |
+| `com.koiusa.targetingsystem` | Targeting状態、Command、候補収集、Filter、Scorer、UI Toolkit Indicator、Sample Player移動、Random Spawner／Moverなどの汎用部品 |
+| `com.koiusa.steammultiruntime.targetingsystem` | 共有Input ActionsとLocal／Network所有権への接続、Cinemachine込みの完成Showcase |
 
 Targetingの状態管理はCinemachine、Netcode、Skillの具象実装を参照しません。`TargetingCameraPresenter`は任意の表示アダプターであり、Targeting状態の所有者ではありません。
 
@@ -48,7 +48,7 @@ SingleとMultiで別々の状態を所有しません。Multi中も`PrimaryTarge
 
 ## Camera
 
-汎用Sampleでは`TargetingCameraPresenter`を使用できます。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が同じ`CinemachineMixingCamera`配下の4台を一元管理します。
+統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が同じ`CinemachineMixingCamera`配下の4台を一元管理します。
 
 ```text
 Default Camera
@@ -58,6 +58,11 @@ MultiTargetCamera -> CinemachineTargetGroup
 ```
 
 Controllerの状態変更時だけLookAtとTargetGroupを更新し、Camera Weightの補間だけを`Update`で行います。最終Weight決定は既存Camera Controllerへ統合済みです。
+None／Single／Multiの切替時は、遷移元Cameraの最終位置と向きを遷移先Cameraへ渡してからWeightをブレンドします。ロック解除時もFollow Cameraへ現在姿勢を引き継ぐため、Follow Cameraに残っていた古い軌道角へ急に戻りません。
+実ゲームのSingle／Multi CameraはPlayerと選択Targetを同じ`CinemachineTargetGroup`へ登録し、`CinemachineGroupFraming`で両方を画角へ収めます。Single CameraがTargetだけをLookAtしてPlayerを画角外へ出す構成にはしません。
+Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`TargetingCameraGroupPresenter`が所有します。実ゲームの`CameraMixerWeightControllerBase`とSampleの`TargetingCameraPresenter`は同Componentへ状態を渡し、Camera Weight制御だけを各自で担当します。
+Free／Single Target CameraはPlayerをTracking Target、Player配下の高さ付き`Camera Aim`をLookAtとして分離します。Single未選択時も`Camera Aim`をfallback LookAtとして保持し、無効WeightのRotation Composerから警告が出ないようにします。
+ShowcaseのOrbital Follow、Rotation Composer、Input Axis Controllerは実ゲームの`Local Mixing Camera.prefab`を正本としてコピーし、独自の視点感度処理を持ちません。
 
 Wire照準はTargeting状態とは別のCamera入力制約です。Wire照準中もSingle／Multi状態を保持し、Camera Directorが一時的にWire側の要求を優先します。
 
@@ -80,11 +85,14 @@ Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.in
 | 前の対象 | `Player/Previous` |
 | 次の対象 | `Player/Next` |
 
-MultiはKeyboard `3`、Gamepad R3です。明示Clear、Bulk Lock、Focusは設定Pathが空のため無効で、Single／Multiボタンの再入力で解除します。
+MultiはKeyboard `3`、Gamepad R3です。入力時にMultiへ遷移して画面内候補を上限8体まで一括選択し、同じボタンの再入力で解除します。明示Clear、独立Bulk Lock、Focusの設定Pathは空のままです。
+Gamepad L2の`Player/Strafe`はホールド式です。押している間だけStrafeになり、離すと通常移動へ戻ります。Single Lock中に押した場合はStrafe開始と同時に現在対象を保持したままMultiへ昇格し、画面内候補を追加選択します。L2を離すと追加対象を解除し、Primary Targetを維持したSingleへ戻ります。`3`／R3で開始したMultiはL2解放の影響を受けません。
 
 ## Local／Network所有権
 
 `PlayerTargetingOwner`が同じPlayer上の`ILocalPlayerOwnershipNotifier`を解決し、Local OwnerだけでControllerと入力を有効化して`LocalTargetingControllerRegistry`へ登録します。Cameraは`CurrentChanged`を購読します。状態の読み取りだけを提供する`ILocalPlayerOwnership`と、Push通知を提供するNotifierを分離しています。所有権の確定・獲得・喪失・Network Despawnは`OwnershipChanged`で通知され、Frame Pollingは行いません。Remote PlayerとDedicated ServerではLocal Camera Targetingを動作させません。
+
+`LocalTargetingIndicatorPresenter`も同じRegistryを購読し、Local Controllerが存在する間だけScreen SpaceのUI Toolkit Indicatorを有効化します。選択集合とPrimary表示は`TargetingStateChange`で更新し、移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従します。Remote PlayerごとのUIDocumentは生成しません。
 
 Network Skillへ対象を渡す場合、Clientの選択結果は入力意図としてだけ扱います。Serverは対象の存在、敵味方、距離、角度、Skill固有条件、Multi対象数を検証し、HitとDamageを確定します。
 
@@ -103,12 +111,10 @@ Player側に次を配置します。
 
 同じ構成を再生成するEditor操作は`Tools/SteamMultiRuntime/Targeting/Install Production Setup`です。処理はUnityのPrefab／Asset公開APIを使用し、Reflectionは使用しません。
 
-## 移行対象
-
-`SoloLockTargetBinder`、`LockOnTargetGroupBinder`、`TargetingCameraRig`は従来サンプル互換用です。新しい本番構成では使用せず、状態管理は`TargetingController`へ統一します。
-
 検証用Sceneは次です。
 
 ```text
-Assets/SteamMultiRuntime/Samples/Features/TargetingSystem/TargetingSystem_ProductionInput.unity
+Assets/Samples/Steam Multi Runtime/<version>/Targeting System/TargetingSystem.unity
 ```
+
+旧Binder、旧Input、旧Camera Rig、Material差し替え式デバッグ表示は削除済みです。汎用パッケージのBasicは`TargetingSamplePlayerMover`、`TargetMarkerRandomSpawner`、`TargetMarkerRandomMover`を含む最小構成です。SteamMultiRuntime統合側のShowcaseは構築済みCinemachine、Production Input、UI Toolkit Indicatorとこれらの汎用Sample部品を組み合わせます。

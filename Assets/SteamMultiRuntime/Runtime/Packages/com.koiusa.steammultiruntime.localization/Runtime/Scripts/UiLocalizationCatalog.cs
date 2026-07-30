@@ -77,7 +77,7 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("input.action.lock_on", "ロックオン", "Lock On", "LockOn", "Lock On"),
             E("input.action.grapple", "グラップル", "Grapple", "Grapple"),
             E("input.action.reel", "巻き取り", "Reel", "Reel"),
-            E("input.action.strafe_toggle", "ストレイフ切替", "Strafe Toggle", "StrafeToggle", "Strafe Toggle"),
+            E("input.action.strafe", "ストレイフ", "Strafe", "Strafe", "Strafe"),
             E("input.action.camera_zoom", "カメラズーム", "Camera Zoom", "CameraZoom", "Camera Zoom"),
             E("input.action.grapple_fire", "グラップル発射", "Grapple Fire", "GrappleFire", "Grapple Fire"),
             E("input.part.up", "上", "Up", "Up", "up"),

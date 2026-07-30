@@ -113,7 +113,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             return actionName switch
             {
-                "Move" or "Jump" or "Sprint" or "Crouch" or "Dash" or "StrafeToggle" => 0,
+                "Move" or "Jump" or "Sprint" or "Crouch" or "Dash" or "Strafe" => 0,
                 "Attack" or "Guard" or "Heal" or "LockOn" or "Previous" or "Next" => 1,
                 "Grapple" or "GrappleFire" or "Reel" => 2,
                 _ => 3

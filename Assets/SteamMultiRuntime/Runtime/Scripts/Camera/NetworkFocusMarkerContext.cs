@@ -1,3 +1,4 @@
+using System.Collections;
 using System;
 using Unity.Netcode;
 using UnityEngine;
@@ -14,11 +15,13 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private SteamLobbyService lobbyService;
 
         public bool IsActive => lobbyService != null && (lobbyService.IsInLobby || lobbyService.HasLoadedStageScene);
-        public GameObject PlayerObject => NetworkManager.Singleton?.LocalClient?.PlayerObject?.gameObject;
+        public GameObject PlayerObject { get; private set; }
 
         public event Action StateChanged;
 
         private bool wasActive;
+        private NetworkManager subscribedNetworkManager;
+        private Coroutine resolvePlayerRoutine;
 
         private void Awake()
         {
@@ -35,6 +38,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 lobbyService.StateChanged += OnLobbyStateChanged;
             }
+            BindNetworkEvents();
+            BeginResolvePlayer();
         }
 
         private void OnDisable()
@@ -43,23 +48,85 @@ namespace Koiusa.SteamMultiRuntime
             {
                 lobbyService.StateChanged -= OnLobbyStateChanged;
             }
+            UnbindNetworkEvents();
+            StopResolvePlayer();
         }
 
         private void OnLobbyStateChanged()
         {
             wasActive = IsActive;
             StateChanged?.Invoke();
+            BindNetworkEvents();
+            BeginResolvePlayer();
         }
 
-        private void Update()
+        private void BindNetworkEvents()
         {
-            var isActive = IsActive;
-            if (isActive == wasActive)
-            {
-                return;
-            }
+            var manager = NetworkManager.Singleton;
+            if (subscribedNetworkManager == manager) return;
+            UnbindNetworkEvents();
+            subscribedNetworkManager = manager;
+            if (subscribedNetworkManager == null) return;
+            subscribedNetworkManager.OnClientConnectedCallback += OnClientConnected;
+            subscribedNetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+        }
 
-            wasActive = isActive;
+        private void UnbindNetworkEvents()
+        {
+            if (subscribedNetworkManager == null) return;
+            subscribedNetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            subscribedNetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+            subscribedNetworkManager = null;
+        }
+
+        private void OnClientConnected(ulong clientId)
+        {
+            if (subscribedNetworkManager != null && clientId == subscribedNetworkManager.LocalClientId)
+                BeginResolvePlayer();
+        }
+
+        private void OnClientDisconnected(ulong clientId)
+        {
+            if (subscribedNetworkManager == null || clientId != subscribedNetworkManager.LocalClientId) return;
+            StopResolvePlayer();
+            SetPlayer(null);
+        }
+
+        private void BeginResolvePlayer()
+        {
+            StopResolvePlayer();
+            resolvePlayerRoutine = StartCoroutine(ResolvePlayerAfterSpawn());
+        }
+
+        private IEnumerator ResolvePlayerAfterSpawn()
+        {
+            while (isActiveAndEnabled && IsActive)
+            {
+                var player = NetworkManager.Singleton?.LocalClient?.PlayerObject?.gameObject;
+                if (player != null)
+                {
+                    SetPlayer(player);
+                    resolvePlayerRoutine = null;
+                    yield break;
+                }
+                yield return null;
+            }
+            SetPlayer(null);
+            resolvePlayerRoutine = null;
+        }
+
+        private void StopResolvePlayer()
+        {
+            if (resolvePlayerRoutine == null) return;
+            StopCoroutine(resolvePlayerRoutine);
+            resolvePlayerRoutine = null;
+        }
+
+        private void SetPlayer(GameObject player)
+        {
+            if (PlayerObject == player) return;
+            PlayerObject = player;
+            wasActive = IsActive;
             StateChanged?.Invoke();
         }
     }

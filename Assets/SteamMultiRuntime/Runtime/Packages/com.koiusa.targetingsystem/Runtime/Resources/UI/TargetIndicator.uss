@@ -1,64 +1,242 @@
 .target-indicators {
-	position: absolute;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .target-marker {
-	position: absolute;
+    position: absolute;
+    opacity: 0.92;
+    transition-property: scale, opacity;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.target-marker > .marker-circle,
+.target-marker > .marker-inner-ring,
+.target-marker > .marker-center-dot {
+    position: absolute;
+    align-self: center;
+}
+
+.target-marker > .marker-corner {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+}
+
+.target-marker > .marker-corner.top-left {
+    left: -4px;
+    top: -4px;
+    border-left-width: 2px;
+    border-top-width: 2px;
+}
+
+.target-marker > .marker-corner.top-right {
+    right: -4px;
+    top: -4px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+}
+
+.target-marker > .marker-corner.bottom-left {
+    left: -4px;
+    bottom: -4px;
+    border-left-width: 2px;
+    border-bottom-width: 2px;
+}
+
+.target-marker > .marker-corner.bottom-right {
+    right: -4px;
+    bottom: -4px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
 }
 
 .target-marker > .marker-circle {
-	width: 100%;
-	height: 100%;
-	border-top-width: 2px;
-	border-right-width: 2px;
-	border-bottom-width: 2px;
-	border-left-width: 2px;
-	border-top-left-radius: 50%;
-	border-top-right-radius: 50%;
-	border-bottom-left-radius: 50%;
-	border-bottom-right-radius: 50%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+.target-marker > .marker-inner-ring {
+    left: 7px;
+    top: 7px;
+    right: 7px;
+    bottom: 7px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+.target-marker > .marker-center-dot {
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    margin-top: -2px;
+    border-top-left-radius: 50%;
+    border-top-right-radius: 50%;
+    border-bottom-left-radius: 50%;
+    border-bottom-right-radius: 50%;
 }
 
 .target-marker > .marker-label {
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: -25px;
-	font-size: 12px;
-	-unity-text-align: middle-center;
-	white-space: nowrap;
-	color: rgba(255, 255, 255, 0.9);
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    margin-left: -60px;
+    margin-top: 7px;
+    width: 120px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background-color: rgba(8, 13, 22, 0.88);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .target-marker.unfocused > .marker-circle {
-	border-top-color: rgba(128, 179, 255, 0.8);
-	border-right-color: rgba(128, 179, 255, 0.8);
-	border-bottom-color: rgba(128, 179, 255, 0.8);
-	border-left-color: rgba(128, 179, 255, 0.8);
-	background-color: rgba(128, 179, 255, 0.05);
+    border-top-color: rgba(102, 184, 255, 0.9);
+    border-right-color: rgba(102, 184, 255, 0.9);
+    border-bottom-color: rgba(102, 184, 255, 0.9);
+    border-left-color: rgba(102, 184, 255, 0.9);
+    background-color: rgba(45, 132, 214, 0.08);
+}
+
+.target-marker.unfocused > .marker-inner-ring {
+    border-top-color: rgba(102, 184, 255, 0.38);
+    border-right-color: rgba(102, 184, 255, 0.38);
+    border-bottom-color: rgba(102, 184, 255, 0.38);
+    border-left-color: rgba(102, 184, 255, 0.38);
+}
+
+.target-marker.unfocused > .marker-center-dot {
+    background-color: rgb(102, 184, 255);
+}
+
+.target-marker.unfocused > .marker-label {
+    color: rgb(184, 222, 255);
+    border-top-color: rgba(102, 184, 255, 0.55);
+    border-right-color: rgba(102, 184, 255, 0.55);
+    border-bottom-color: rgba(102, 184, 255, 0.55);
+    border-left-color: rgba(102, 184, 255, 0.55);
+}
+
+.target-marker.unfocused > .marker-corner {
+    border-top-color: rgba(102, 184, 255, 0.72);
+    border-right-color: rgba(102, 184, 255, 0.72);
+    border-bottom-color: rgba(102, 184, 255, 0.72);
+    border-left-color: rgba(102, 184, 255, 0.72);
 }
 
 .target-marker.locked > .marker-circle {
-	border-top-color: rgba(255, 89, 89, 1.0);
-	border-right-color: rgba(255, 89, 89, 1.0);
-	border-bottom-color: rgba(255, 89, 89, 1.0);
-	border-left-color: rgba(255, 89, 89, 1.0);
-	background-color: rgba(255, 89, 89, 0.10);
+    border-top-color: rgb(255, 92, 110);
+    border-right-color: rgb(255, 92, 110);
+    border-bottom-color: rgb(255, 92, 110);
+    border-left-color: rgb(255, 92, 110);
+    background-color: rgba(255, 56, 82, 0.1);
+}
+
+.target-marker.locked > .marker-inner-ring {
+    border-top-color: rgba(255, 92, 110, 0.5);
+    border-right-color: rgba(255, 92, 110, 0.5);
+    border-bottom-color: rgba(255, 92, 110, 0.5);
+    border-left-color: rgba(255, 92, 110, 0.5);
+}
+
+.target-marker.locked > .marker-center-dot {
+    background-color: rgb(255, 92, 110);
+}
+
+.target-marker.locked > .marker-label {
+    color: rgb(255, 215, 220);
+    border-top-color: rgba(255, 92, 110, 0.7);
+    border-right-color: rgba(255, 92, 110, 0.7);
+    border-bottom-color: rgba(255, 92, 110, 0.7);
+    border-left-color: rgba(255, 92, 110, 0.7);
+}
+
+.target-marker.locked > .marker-corner {
+    border-top-color: rgb(255, 92, 110);
+    border-right-color: rgb(255, 92, 110);
+    border-bottom-color: rgb(255, 92, 110);
+    border-left-color: rgb(255, 92, 110);
+}
+
+.target-marker.focused {
+    scale: 1.12 1.12;
+    opacity: 1;
 }
 
 .target-marker.focused > .marker-circle {
-	border-top-color: rgba(255, 204, 51, 1.0);
-	border-right-color: rgba(255, 204, 51, 1.0);
-	border-bottom-color: rgba(255, 204, 51, 1.0);
-	border-left-color: rgba(255, 204, 51, 1.0);
-	background-color: rgba(255, 204, 51, 0.15);
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-top-color: rgb(255, 211, 72);
+    border-right-color: rgb(255, 211, 72);
+    border-bottom-color: rgb(255, 211, 72);
+    border-left-color: rgb(255, 211, 72);
+    background-color: rgba(255, 190, 32, 0.13);
 }
 
-.target-marker.locked > .marker-label,
+.target-marker.focused > .marker-inner-ring {
+    border-top-color: rgba(255, 225, 128, 0.72);
+    border-right-color: rgba(255, 225, 128, 0.72);
+    border-bottom-color: rgba(255, 225, 128, 0.72);
+    border-left-color: rgba(255, 225, 128, 0.72);
+}
+
+.target-marker.focused > .marker-center-dot {
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    margin-top: -3px;
+    background-color: rgb(255, 230, 140);
+}
+
 .target-marker.focused > .marker-label {
-	color: rgba(255, 255, 255, 1.0);
+    color: rgb(255, 244, 199);
+    border-top-color: rgb(255, 211, 72);
+    border-right-color: rgb(255, 211, 72);
+    border-bottom-color: rgb(255, 211, 72);
+    border-left-color: rgb(255, 211, 72);
+    background-color: rgba(35, 27, 7, 0.94);
+}
+
+.target-marker.focused > .marker-corner {
+    border-top-color: rgb(255, 230, 140);
+    border-right-color: rgb(255, 230, 140);
+    border-bottom-color: rgb(255, 230, 140);
+    border-left-color: rgb(255, 230, 140);
 }

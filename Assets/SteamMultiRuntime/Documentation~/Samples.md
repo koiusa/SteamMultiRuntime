@@ -12,7 +12,7 @@ Package Managerで`Steam Multi Runtime`を選び、用途に応じて次のサ�
 | `Gameplay Sample` | Stage、`UnityLogo`、`WelcomeScene` |
 | `Steam Multiplayer - Third Person` | Third Person用Lobby／Local Scene |
 | `Keyconfig - Production Input` | 本番Input Actionsを使用するKeyconfig確認Scene |
-| `Targeting System - Production Input` | 本番Input Actionsを使用するTargeting確認Scene |
+| `Targeting System` | 現行TargetingControllerとUI Toolkit Indicatorの自己完結型確認Scene |
 | `Steam Multiplayer - Quarter View` | Quarter View用Lobby／Local Scene |
 | `Steam Multiplayer - Server` | Dedicated Server用Lobby Scene |
 

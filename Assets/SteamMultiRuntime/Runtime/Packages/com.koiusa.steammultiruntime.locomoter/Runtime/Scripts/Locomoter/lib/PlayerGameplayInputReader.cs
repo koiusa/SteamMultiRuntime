@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         private readonly InputAction moveAction;
         private readonly InputAction jumpAction;
-        private readonly InputAction strafeToggleAction;
+        private readonly InputAction strafeAction;
         private readonly InputAction grappleAction;
         private readonly InputAction reelAction;
         private readonly InputAction aimCursorDeltaAction;
@@ -26,7 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool isEnabled;
         private InputActionLease moveLease;
         private InputActionLease jumpLease;
-        private InputActionLease strafeToggleLease;
+        private InputActionLease strafeLease;
         private InputActionLease grappleLease;
         private InputActionLease reelLease;
         private InputActionLease aimCursorDeltaLease;
@@ -51,7 +51,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveAction = profile.FindAction("Player/Move");
             jumpAction = profile.FindAction("Player/Jump");
-            strafeToggleAction = profile.FindAction("Player/StrafeToggle");
+            strafeAction = profile.FindAction("Player/Strafe");
             grappleAction = profile.FindAction("Player/Grapple");
             reelAction = profile.FindAction("Player/Reel");
             aimCursorDeltaAction = profile.FindAction("Player/AimCursorDelta");
@@ -84,10 +84,12 @@ namespace Koiusa.SteamMultiRuntime
                 jumpLease = InputActionLease.Acquire(jumpAction);
             }
 
-            if (strafeToggleAction != null)
+            if (strafeAction != null)
             {
-                strafeToggleAction.performed += OnStrafeTogglePerformed;
-                strafeToggleLease = InputActionLease.Acquire(strafeToggleAction);
+                strafeAction.performed += OnStrafeChanged;
+                strafeAction.canceled += OnStrafeChanged;
+                strafeLease = InputActionLease.Acquire(strafeAction);
+                isStrafeMode = strafeAction.IsPressed();
             }
         }
 
@@ -106,11 +108,13 @@ namespace Koiusa.SteamMultiRuntime
                 jumpLease = null;
             }
 
-            if (strafeToggleAction != null)
+            if (strafeAction != null)
             {
-                strafeToggleAction.performed -= OnStrafeTogglePerformed;
-                strafeToggleLease?.Dispose();
-                strafeToggleLease = null;
+                strafeAction.performed -= OnStrafeChanged;
+                strafeAction.canceled -= OnStrafeChanged;
+                strafeLease?.Dispose();
+                strafeLease = null;
+                isStrafeMode = false;
             }
 
             moveLease?.Dispose();
@@ -253,7 +257,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             return IsActiveGamepadControl(moveAction)
                 || IsActiveGamepadControl(jumpAction)
-                || IsActiveGamepadControl(strafeToggleAction)
+                || IsActiveGamepadControl(strafeAction)
                 || IsActiveGamepadControl(grappleAction)
                 || IsActiveGamepadControl(grappleFireAction)
                 || IsActiveGamepadControl(reelAction)
@@ -284,9 +288,7 @@ namespace Koiusa.SteamMultiRuntime
             jumpToken++;
         }
 
-        private void OnStrafeTogglePerformed(InputAction.CallbackContext context)
-        {
-            isStrafeMode = !isStrafeMode;
-        }
+        private void OnStrafeChanged(InputAction.CallbackContext context) =>
+            isStrafeMode = context.ReadValueAsButton();
     }
 }

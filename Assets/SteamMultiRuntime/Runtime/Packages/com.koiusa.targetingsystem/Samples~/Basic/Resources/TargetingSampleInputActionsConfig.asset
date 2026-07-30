@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d978fe875ed643fc83e268f55cd2c10c, type: 3}
+  m_Name: TargetingSampleInputActionsConfig
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingInputActionsConfig
+  purpose: TargetingSystemパッケージ単体サンプル専用。本番のSteamMultiRuntime入力設定には使用しません。
+  lookActionPath: Player/Look
+  soloLockActionPath: Player/SingleLockOn
+  multiLockActionPath: Player/MultiLockOn
+  promoteToMultiActionPath:
+  clearLockActionPath: Player/ClearLockOn
+  bulkLockActionPath: Player/BulkLockOn
+  previousTargetActionPath: Player/Previous
+  nextTargetActionPath: Player/Next
+  focusActionPath: Player/Focus
+  inputActionAsset: {fileID: -944628639613478452, guid: 2f68f014c29eb9f4ab842fefa9a94a7b, type: 3}

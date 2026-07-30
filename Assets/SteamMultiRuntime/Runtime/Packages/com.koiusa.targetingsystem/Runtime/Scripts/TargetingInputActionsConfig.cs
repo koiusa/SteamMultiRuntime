@@ -13,6 +13,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private string lookActionPath = "Player/Look";
         [SerializeField] private string soloLockActionPath = "Player/SingleLockOn";
         [SerializeField] private string multiLockActionPath = "Player/MultiLockOn";
+        [SerializeField] private string promoteToMultiActionPath = "";
         [SerializeField] private string clearLockActionPath = "Player/ClearLockOn";
         [SerializeField] private string bulkLockActionPath = "Player/BulkLockOn";
         [SerializeField] private string previousTargetActionPath = "Player/Previous";
@@ -24,6 +25,7 @@ namespace Koiusa.TargetingSystem.Runtime
         public override InputAction LookAction => Resolve(lookActionPath);
         public override InputAction SoloLockAction => Resolve(soloLockActionPath);
         public override InputAction MultiLockAction => Resolve(multiLockActionPath);
+        public override InputAction PromoteToMultiAction => Resolve(promoteToMultiActionPath);
         public override InputAction ClearLockAction => Resolve(clearLockActionPath);
         public override InputAction BulkLockAction => Resolve(bulkLockActionPath);
         public override InputAction PreviousTargetAction => Resolve(previousTargetActionPath);

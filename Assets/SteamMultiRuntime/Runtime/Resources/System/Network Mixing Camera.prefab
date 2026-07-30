@@ -365,6 +365,7 @@ MonoBehaviour:
   followCameraIndex: 1
   singleTargetCameraIndex: 2
   multiTargetCameraIndex: 3
+  followCamera: {fileID: 1938429945531210679}
   singleTargetCamera: {fileID: 6566887330324775113}
   multiTargetCamera: {fileID: 1938741661384351923}
   multiTargetGroup: {fileID: 8926894653681633468}

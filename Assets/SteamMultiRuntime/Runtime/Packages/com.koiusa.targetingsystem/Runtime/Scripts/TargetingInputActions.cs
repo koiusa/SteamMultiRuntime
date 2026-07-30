@@ -8,6 +8,7 @@ namespace Koiusa.TargetingSystem.Runtime
         public abstract InputAction LookAction { get; }
         public abstract InputAction SoloLockAction { get; }
         public abstract InputAction MultiLockAction { get; }
+        public abstract InputAction PromoteToMultiAction { get; }
         public abstract InputAction ClearLockAction { get; }
         public abstract InputAction BulkLockAction { get; }
         public abstract InputAction PreviousTargetAction { get; }

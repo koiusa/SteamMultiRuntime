@@ -44,17 +44,6 @@ namespace Koiusa.SteamMultiRuntime
             SetTrackingTarget(null);
         }
 
-        private void Update()
-        {
-            // PlayerObjectは接続通知より後に生成されることがあるため、現在の割り当てを
-            // 軽量な参照比較で監視する。シーン全体のMarker検索は行わない。
-            var player = ResolvePlayerObject();
-            if (player != _activePlayer)
-            {
-                SetTrackingTarget(player);
-            }
-        }
-
         private void RefreshTrackingTarget()
         {
             SetTrackingTarget(ResolvePlayerObject());

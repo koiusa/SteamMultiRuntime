@@ -23,7 +23,7 @@ Samples/
 | 機能 | シーン | 確認できること |
 |---|---|---|
 | Keyconfig | `Features/Keyconfig/Keyconfig_ProductionInput.unity` | 本番Input Actionsを使った入力表示、リバインド、保存、復元 |
-| TargetingSystem | `Features/TargetingSystem/TargetingSystem_ProductionInput.unity` | 本番Input Actionsを使った移動、視点操作、Single／Multi Lock-On、ターゲット切り替え |
+| TargetingSystem | Package Managerの`Targeting System` Sample | 現行TargetingController、Single／Multi選択、UI Toolkit Indicator |
 
 各シーンは単独で開いてPlayできます。詳しい操作方法はリポジトリの
 `Documentation/Keyconfig.md`および`Documentation/TargetingSystem.md`を参照してください。

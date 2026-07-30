@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime",
   "displayName": "Steam Multi Runtime",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Steam Multi Runtime Asset.",
@@ -61,9 +61,9 @@
       "path": "Samples/Features/Keyconfig"
     },
     {
-      "displayName": "Targeting System - Production Input",
-      "description": "Target detection, Solo Lock-On, target switching, and camera control using the production Input Actions asset.",
-      "path": "Samples/Features/TargetingSystem"
+      "displayName": "Targeting System",
+      "description": "Prebuilt Cinemachine and UI Toolkit targeting showcase with randomly spawned targets.",
+      "path": "Runtime/Packages/com.koiusa.steammultiruntime.targetingsystem/Samples~/Showcase"
     },
     {
       "displayName": "Steam Multiplayer - Quarter View",

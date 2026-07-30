@@ -1,7 +1,7 @@
 # Steam Multi Runtime Targeting System Integration
 
 This package owns Steam Multi Runtime-specific targeting adapters. Generic target detection,
-lock-on, camera, input, UI, and sample code remain in `com.koiusa.targetingsystem`.
+lock-on, camera, input, and reusable UI code remain in `com.koiusa.targetingsystem`.
 
 `SteamMultiRuntimeTargetingInputActions` adapts the project's shared `InputActionsConfig` to the
 generic targeting input contract. Add only Steam Multi Runtime-specific adapters here; do not
@@ -20,6 +20,10 @@ gameplay actions. Multi-lock, clear, bulk-lock, and focus remain unassigned unti
 are added to the project's Input Action Asset; leaving a path empty disables that command safely.
 
 Use `Koiusa > Steam Multi Runtime > Targeting > Validate Production Input` to verify every configured
-action path and select the production adapter asset. To exercise targeting behavior, open the generic
-TargetingSystem sample scene, replace its Targeting Camera Rig input config references with the
-production adapter, and enter Play Mode. Do not save that override back into the generic sample.
+action path and select the production adapter asset. The generic Basic sample remains intentionally
+minimal and includes the reusable `TargetingSamplePlayerMover`, `TargetMarkerRandomSpawner`, and
+`TargetMarkerRandomMover`. Import `Targeting Showcase` from this integration package for the prebuilt
+Cinemachine rig, production input, polished UI Toolkit indicators, and moving random targets.
+
+After changing the Showcase composition, regenerate its serialized scene with
+`Tools > SteamMultiRuntime > Targeting > Rebuild Showcase Sample`.

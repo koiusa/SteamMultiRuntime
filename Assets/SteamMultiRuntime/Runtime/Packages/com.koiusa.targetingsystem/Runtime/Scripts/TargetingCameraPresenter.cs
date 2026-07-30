@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -13,17 +12,19 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private CinemachineCamera singleCamera;
         [SerializeField] private CinemachineCamera multiCamera;
         [SerializeField] private CinemachineTargetGroup multiTargetGroup;
+        [SerializeField] private Transform fallbackLookAt;
+        [SerializeField] private TargetingCameraGroupPresenter groupPresenter;
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
         [SerializeField, Min(0f)] private float targetWeight = 1f;
         [SerializeField, Min(0f)] private float targetRadius = 0.5f;
 
-        private readonly List<Transform> groupMembers = new();
         private TargetingMode targetMode;
 
         private void Awake()
         {
             if (controller == null) controller = GetComponentInParent<TargetingController>();
             if (mixingCamera == null) mixingCamera = GetComponent<CinemachineMixingCamera>();
+            ConfigureGroupPresenter();
         }
 
         private void OnEnable()
@@ -34,7 +35,7 @@ namespace Koiusa.TargetingSystem.Runtime
         private void OnDisable()
         {
             UnsubscribeController();
-            ClearGroup();
+            groupPresenter?.Present(TargetingState.Empty);
         }
 
         public void SetController(TargetingController value)
@@ -76,13 +77,11 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void Present(TargetingState state, bool instant)
         {
+            var previousMode = targetMode;
             targetMode = state.Mode;
-            if (singleCamera != null)
-            {
-                singleCamera.LookAt = ResolveAimPoint(state.PrimaryTarget);
-            }
-
-            RebuildGroup(state.SelectedTargets);
+            groupPresenter?.SetPlayerAnchor(fallbackLookAt);
+            groupPresenter?.Present(state);
+            MatchIncomingCamera(previousMode, state.Mode);
             if (instant)
             {
                 SetWeight(freeCamera, state.Mode == TargetingMode.None ? 1f : 0f);
@@ -91,33 +90,38 @@ namespace Koiusa.TargetingSystem.Runtime
             }
         }
 
-        private void RebuildGroup(IReadOnlyList<ITargetable> targets)
+        private void MatchIncomingCamera(TargetingMode previousMode, TargetingMode nextMode)
         {
-            ClearGroup();
-            if (multiTargetGroup == null) return;
-            for (var i = 0; i < targets.Count; i++)
-            {
-                var aimPoint = ResolveAimPoint(targets[i]);
-                if (aimPoint == null) continue;
-                multiTargetGroup.AddMember(aimPoint, targetWeight, targetRadius);
-                groupMembers.Add(aimPoint);
-            }
+            if (previousMode == nextMode) return;
+
+            var source = ResolveModeCamera(previousMode);
+            var destination = ResolveModeCamera(nextMode);
+            if (source == null || destination == null) return;
+
+            var sourceState = source.State;
+            destination.ForceCameraPosition(sourceState.GetFinalPosition(), sourceState.GetFinalOrientation());
         }
 
-        private void ClearGroup()
+        private CinemachineCamera ResolveModeCamera(TargetingMode mode) => mode switch
         {
-            if (multiTargetGroup != null)
-            {
-                foreach (var member in groupMembers)
-                {
-                    if (member != null) multiTargetGroup.RemoveMember(member);
-                }
-            }
-            groupMembers.Clear();
-        }
+            TargetingMode.None => freeCamera,
+            TargetingMode.Single => singleCamera,
+            TargetingMode.Multi => multiCamera,
+            _ => null
+        };
 
-        private static Transform ResolveAimPoint(ITargetable target) =>
-            target?.AimPoint != null ? target.AimPoint : target?.Root;
+        private void ConfigureGroupPresenter()
+        {
+            if (groupPresenter == null)
+            {
+                groupPresenter = GetComponent<TargetingCameraGroupPresenter>();
+            }
+            if (groupPresenter == null)
+            {
+                groupPresenter = gameObject.AddComponent<TargetingCameraGroupPresenter>();
+            }
+            groupPresenter.Configure(singleCamera, multiCamera, multiTargetGroup, targetWeight, targetRadius);
+        }
 
         private float GetWeight(CinemachineCamera camera) =>
             mixingCamera != null && camera != null ? mixingCamera.GetWeight(camera) : 0f;

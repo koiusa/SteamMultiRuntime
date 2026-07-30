@@ -10,38 +10,43 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class LocalFocusMarkerContext : MonoBehaviour, IFocusMarkerContext
     {
-        public GameObject PlayerObject => ResolveLocalPlayerObject();
+        private LocalManager localManager;
+
+        public GameObject PlayerObject { get; private set; }
         public bool IsActive => PlayerObject != null;
 
         public event Action StateChanged;
 
         private void OnEnable()
         {
-            // LocalPlayerController が生成されたタイミングを Update で監視して StateChanged を発火させる
-            _wasActive = IsActive;
-        }
-
-        private bool _wasActive;
-
-        private void Update()
-        {
-            var isActive = IsActive;
-            if (isActive != _wasActive)
+            localManager = LocalManager.Singleton != null
+                ? LocalManager.Singleton
+                : FindFirstObjectByType<LocalManager>();
+            if (localManager != null)
             {
-                _wasActive = isActive;
-                StateChanged?.Invoke();
-            }
-        }
-
-        private static GameObject ResolveLocalPlayerObject()
-        {
-            if (LocalManager.Singleton != null && LocalManager.Singleton.LocalPlayerObject != null)
-            {
-                return LocalManager.Singleton.LocalPlayerObject;
+                localManager.PlayerSpawned -= OnPlayerSpawned;
+                localManager.PlayerSpawned += OnPlayerSpawned;
+                SetPlayer(localManager.LocalPlayerObject);
+                return;
             }
 
             var controller = FindFirstObjectByType<LocalPlayerController>();
-            return controller != null ? controller.gameObject : null;
+            SetPlayer(controller != null ? controller.gameObject : null);
+        }
+
+        private void OnDisable()
+        {
+            if (localManager != null) localManager.PlayerSpawned -= OnPlayerSpawned;
+            localManager = null;
+        }
+
+        private void OnPlayerSpawned(GameObject player) => SetPlayer(player);
+
+        private void SetPlayer(GameObject player)
+        {
+            if (PlayerObject == player) return;
+            PlayerObject = player;
+            StateChanged?.Invoke();
         }
     }
 }

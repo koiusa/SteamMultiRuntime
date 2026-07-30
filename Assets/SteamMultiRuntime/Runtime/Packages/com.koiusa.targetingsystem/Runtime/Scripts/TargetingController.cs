@@ -31,6 +31,19 @@ namespace Koiusa.TargetingSystem.Runtime
         public TargetingState State { get; private set; } = TargetingState.Empty;
         public event Action<TargetingStateChange> StateChanged;
 
+        public void Configure(
+            MonoBehaviour newContextSource,
+            MonoBehaviour newCandidateSource,
+            MonoBehaviour[] newFilters,
+            MonoBehaviour[] newScorers)
+        {
+            contextSource = newContextSource;
+            candidateSource = newCandidateSource;
+            filters = newFilters ?? Array.Empty<MonoBehaviour>();
+            scorers = newScorers ?? Array.Empty<MonoBehaviour>();
+            ResolveDependencies();
+        }
+
         private void Awake()
         {
             ResolveDependencies();
@@ -80,6 +93,14 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private bool EnterSingle()
         {
+            if (mode == TargetingMode.Multi && primaryTarget != null)
+            {
+                selectedTargets.Clear();
+                selectedTargets.Add(primaryTarget);
+                mode = TargetingMode.Single;
+                return true;
+            }
+
             var best = FindBestCandidate(includeSelected: true);
             if (best == null)
             {

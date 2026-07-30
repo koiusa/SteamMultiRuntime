@@ -4,7 +4,8 @@
   "references": [
     "Koiusa.SteamMultiRuntime.TargetingSystem.Runtime",
     "Koiusa.TargetingSystem.Runtime",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.Cinemachine"
   ],
   "includePlatforms": [
     "Editor"

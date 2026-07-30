@@ -4,13 +4,11 @@ using Koiusa.TargetingSystem.Runtime;
 using Unity.Cinemachine;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 {
     public static class ProductionTargetingSetup
     {
-        private const string InputAssetPath = "Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.inputactions";
         private const string InputConfigPath = "Assets/SteamMultiRuntime/Runtime/Configs/Input/GameplayTargetingInputActions.asset";
         private const string SystemPrefabPath = "Assets/SteamMultiRuntime/Runtime/Resources/System/System.prefab";
 
@@ -69,43 +67,16 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 
         private static void ConfigureInput()
         {
-            var inputAsset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputAssetPath);
-            var playerMap = inputAsset?.FindActionMap("Player", false);
-            if (playerMap == null) throw new InvalidOperationException($"Player action map was not found: {InputAssetPath}");
-
-            var multiLock = playerMap.FindAction("MultiLock", false);
-            if (multiLock == null)
-            {
-                multiLock = playerMap.AddAction("MultiLock", InputActionType.Button);
-                multiLock.AddBinding("<Keyboard>/3", groups: "Keyboard&Mouse");
-                multiLock.AddBinding("<Gamepad>/rightStickPress", groups: "Gamepad");
-                EditorUtility.SetDirty(inputAsset);
-            }
-
             var inputConfig = AssetDatabase.LoadAssetAtPath<SteamMultiRuntimeTargetingInputActions>(InputConfigPath);
             if (inputConfig == null) throw new InvalidOperationException($"Targeting input config was not found: {InputConfigPath}");
-            SetObjectProperty(inputConfig, "multiLockActionPath", "Player/MultiLock");
+            SetObjectProperty(inputConfig, "multiLockActionPath", string.Empty);
         }
 
         private static void ValidateInput(ICollection<string> errors)
         {
-            var inputAsset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputAssetPath);
-            var multiLock = inputAsset?.FindAction("Player/MultiLock", false);
-            if (multiLock == null)
-            {
-                errors.Add("Player/MultiLock is missing.");
-                return;
-            }
-
-            var hasKeyboard = false;
-            var hasGamepad = false;
-            foreach (var binding in multiLock.bindings)
-            {
-                hasKeyboard |= binding.path == "<Keyboard>/3";
-                hasGamepad |= binding.path == "<Gamepad>/rightStickPress";
-            }
-            if (!hasKeyboard) errors.Add("Player/MultiLock keyboard binding is missing.");
-            if (!hasGamepad) errors.Add("Player/MultiLock gamepad binding is missing.");
+            var inputConfig = AssetDatabase.LoadAssetAtPath<SteamMultiRuntimeTargetingInputActions>(InputConfigPath);
+            if (inputConfig != null && inputConfig.MultiLockAction != null)
+                errors.Add("Explicit MultiLock input must be unassigned; use Player/Strafe hold promotion instead.");
         }
 
         private static void ValidateSystem(ICollection<string> errors)

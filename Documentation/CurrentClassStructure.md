@@ -42,9 +42,11 @@ FootstepCollider
   → IFootstepReceiver
   → FootstepColliderSpawner
 
-SoloLockTargetSwitchInput
-  → ILockOnTargetBinder
-  → LockOnTargetGroupBinder
+TargetingCommandInput
+  → TargetingController
+  → TargetingStateChange
+      ├─ TargetingCameraPresenter
+      └─ TargetIndicatorController
 ```
 
 ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。例外条件とレビュー方法は[Package Architectureのリフレクション方針](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。

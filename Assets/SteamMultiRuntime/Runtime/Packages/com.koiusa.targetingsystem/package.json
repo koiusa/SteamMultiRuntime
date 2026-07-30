@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.targetingsystem",
   "displayName": "Koiusa Targeting System",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Camera-independent targeting state, selection policies, input commands, and optional Cinemachine presentation for Unity.",
@@ -24,8 +24,8 @@
   "samples": [
     {
       "displayName": "Basic Targeting System",
-      "description": "Playable targeting sample with target detection, Solo and Multi Lock-On, target switching, and camera control.",
-      "path": "Samples/Basic"
+      "description": "Playable current-generation TargetingController sample with Single/Multi selection and UI Toolkit target indicators.",
+      "path": "Samples~/Basic"
     }
   ]
 }

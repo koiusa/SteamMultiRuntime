@@ -23,9 +23,11 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0)] private int multiTargetCameraIndex = 3;
 
         [Header("Targeting")]
+        [SerializeField] private CinemachineCamera followCamera;
         [SerializeField] private CinemachineCamera singleTargetCamera;
         [SerializeField] private CinemachineCamera multiTargetCamera;
         [SerializeField] private CinemachineTargetGroup multiTargetGroup;
+        [SerializeField] private TargetingCameraGroupPresenter targetingGroupPresenter;
         [SerializeField, Min(0f)] private float targetingGroupWeight = 1f;
         [SerializeField, Min(0f)] private float targetingGroupRadius = 0.5f;
 
@@ -56,7 +58,6 @@ namespace Koiusa.SteamMultiRuntime
         private bool appliedCameraCollision;
         private TargetingController targetingController;
         private TargetingMode targetingMode;
-        private readonly List<Transform> targetingGroupMembers = new();
 
         private sealed class CameraCollisionState
         {
@@ -85,6 +86,7 @@ namespace Koiusa.SteamMultiRuntime
 
             ConfigureCameraInputActions();
             ConfigureCameraCollision();
+            ConfigureTargetingGroupPresenter();
 
             context = ResolveContext();
         }
@@ -111,6 +113,10 @@ namespace Koiusa.SteamMultiRuntime
                 context.StateChanged += OnContextStateChanged;
             }
 
+            if (targetingController != null)
+            {
+                ApplyTargetingState(targetingController.State);
+            }
             RefreshTargetWeight(true);
         }
 
@@ -179,6 +185,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnContextStateChanged()
         {
+            if (targetingController != null)
+            {
+                ApplyTargetingState(targetingController.State);
+                return;
+            }
+
+            targetingGroupPresenter?.SetPlayerAnchor(ResolvePlayerAimPoint());
             RefreshTargetWeight(false);
         }
 
@@ -225,38 +238,59 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplyTargetingState(TargetingState state)
         {
+            var previousMode = targetingMode;
             targetingMode = state.Mode;
-            if (singleTargetCamera != null)
-                singleTargetCamera.LookAt = ResolveTargetAimPoint(state.PrimaryTarget);
-            RebuildTargetingGroup(state.SelectedTargets);
+            targetingGroupPresenter?.SetPlayerAnchor(ResolvePlayerAimPoint());
+            targetingGroupPresenter?.Present(state);
+            MatchIncomingCamera(previousMode, state.Mode);
             RefreshTargetWeight(false);
         }
 
-        private void RebuildTargetingGroup(IReadOnlyList<ITargetable> targets)
+        private void MatchIncomingCamera(TargetingMode previousMode, TargetingMode nextMode)
         {
-            ClearTargetingGroup();
-            if (multiTargetGroup == null) return;
-            for (var i = 0; i < targets.Count; i++)
-            {
-                var aimPoint = ResolveTargetAimPoint(targets[i]);
-                if (aimPoint == null) continue;
-                multiTargetGroup.AddMember(aimPoint, targetingGroupWeight, targetingGroupRadius);
-                targetingGroupMembers.Add(aimPoint);
-            }
+            if (previousMode == nextMode) return;
+
+            var source = ResolveModeCamera(previousMode);
+            var destination = ResolveModeCamera(nextMode);
+            if (source == null || destination == null) return;
+
+            var sourceState = source.State;
+            destination.ForceCameraPosition(sourceState.GetFinalPosition(), sourceState.GetFinalOrientation());
         }
 
-        private void ClearTargetingGroup()
+        private CinemachineCamera ResolveModeCamera(TargetingMode mode) => mode switch
         {
-            if (multiTargetGroup != null)
-            {
-                foreach (var member in targetingGroupMembers)
-                    if (member != null) multiTargetGroup.RemoveMember(member);
-            }
-            targetingGroupMembers.Clear();
+            TargetingMode.None => followCamera,
+            TargetingMode.Single => singleTargetCamera,
+            TargetingMode.Multi => multiTargetCamera,
+            _ => null
+        };
+
+        private Transform ResolvePlayerAimPoint()
+        {
+            var playerObject = context?.PlayerObject;
+            if (playerObject == null) return null;
+            var cameraTrackMarker = playerObject.GetComponentInChildren<CameraTrackMarker>(true);
+            return cameraTrackMarker != null ? cameraTrackMarker.transform : playerObject.transform;
         }
 
-        private static Transform ResolveTargetAimPoint(ITargetable target) =>
-            target?.AimPoint != null ? target.AimPoint : target?.Root;
+        private void ConfigureTargetingGroupPresenter()
+        {
+            if (targetingGroupPresenter == null)
+            {
+                targetingGroupPresenter = GetComponent<TargetingCameraGroupPresenter>();
+            }
+            if (targetingGroupPresenter == null)
+            {
+                targetingGroupPresenter = gameObject.AddComponent<TargetingCameraGroupPresenter>();
+            }
+            targetingGroupPresenter.Configure(
+                singleTargetCamera,
+                multiTargetCamera,
+                multiTargetGroup,
+                targetingGroupWeight,
+                targetingGroupRadius);
+        }
 
         private void ConfigureCameraInputActions()
         {

@@ -173,7 +173,7 @@ FootstepCollider
 - `Resources`には`Resources.Load`で動的解決するAssetだけを置く。GUIDで直接参照するPrefabやAnimationは`Runtime/Prefabs`、`Runtime/Animations`、`Runtime/Configs`へ置く。
 - Stage固有のTerrain、NavMesh、演出Assetは対象の`Samples/Gameplay`配下へ置く。
 - Sample SceneからRuntime Assetを参照してよいが、Runtime AssetからSample Assetを参照しない。
-- 汎用パッケージの単体Sample用Input Actionsは、そのパッケージの`Samples/Basic`で所有する。
+- 汎用パッケージの単体Sample用Input Actionsは、そのパッケージの`Samples~/Basic`で所有し、Import前のSample assemblyをコンパイル対象にしない。
 
 ## 関連文書
 

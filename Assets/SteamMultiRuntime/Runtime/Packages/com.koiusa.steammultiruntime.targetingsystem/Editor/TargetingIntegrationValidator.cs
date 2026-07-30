@@ -33,6 +33,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
                 ValidateAction(serializedConfig, "lookActionPath", config.LookAction, path, invalidAssets);
                 ValidateAction(serializedConfig, "soloLockActionPath", config.SoloLockAction, path, invalidAssets);
                 ValidateAction(serializedConfig, "multiLockActionPath", config.MultiLockAction, path, invalidAssets);
+                ValidateAction(serializedConfig, "promoteToMultiActionPath", config.PromoteToMultiAction, path, invalidAssets);
                 ValidateAction(serializedConfig, "clearLockActionPath", config.ClearLockAction, path, invalidAssets);
                 ValidateAction(serializedConfig, "bulkLockActionPath", config.BulkLockAction, path, invalidAssets);
                 ValidateAction(serializedConfig, "previousTargetActionPath", config.PreviousTargetAction, path, invalidAssets);

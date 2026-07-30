@@ -11,5 +11,11 @@ namespace Koiusa.TargetingSystem.Runtime
 
         public VisualTreeAsset TargetIndicatorVisualTree => targetIndicatorVisualTree;
         public StyleSheet TargetIndicatorStyleSheet => targetIndicatorStyleSheet;
+
+        public void Configure(VisualTreeAsset visualTree, StyleSheet styleSheet)
+        {
+            targetIndicatorVisualTree = visualTree;
+            targetIndicatorStyleSheet = styleSheet;
+        }
     }
 }
