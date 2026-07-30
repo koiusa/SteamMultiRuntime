@@ -6,7 +6,6 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
     [DisallowMultipleComponent]
     public sealed class LocalTargetingIndicatorPresenter : MonoBehaviour
     {
-        private static LocalTargetingIndicatorPresenter instance;
         [SerializeField] private GameObject indicatorObject;
         [SerializeField] private TargetIndicatorController indicator;
 
@@ -16,48 +15,12 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
             indicator = indicatorController;
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => instance = null;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void EnsureInstance()
-        {
-            if (instance != null)
-                return;
-
-            instance = FindFirstObjectByType<LocalTargetingIndicatorPresenter>(FindObjectsInactive.Include);
-            if (instance != null)
-            {
-                instance.RestoreRuntime();
-                return;
-            }
-
-            Debug.LogWarning("[Targeting] LocalTargetingIndicatorPresenter is not present in Gameplay System.");
-        }
-
-        private void Awake()
-        {
-            if (instance != null && instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            instance = this;
-        }
-
         private void OnEnable() => RestoreRuntime();
 
         private void OnDisable()
         {
             LocalTargetingControllerRegistry.CurrentChanged -= OnControllerChanged;
             SetController(null);
-        }
-
-        private void OnDestroy()
-        {
-            if (instance == this)
-                instance = null;
         }
 
         private void RestoreRuntime()

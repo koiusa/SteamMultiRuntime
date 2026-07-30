@@ -14,6 +14,13 @@ namespace Koiusa.TargetingSystem.Runtime
 
         public IEnumerable<ITargetable> Targets => targets;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Current = null;
+            CurrentChanged = null;
+        }
+
         private void OnEnable()
         {
             Current = this;

@@ -4,7 +4,7 @@
   "version": "0.3.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
-  "description": "Steam Multi Runtime integration package for the generic Koiusa Targeting System.",
+  "description": "Steam Multi Runtime production input, ownership, camera, UI, and prefab composition for the generic Koiusa Targeting System.",
   "author": {
     "name": "koiusa"
   },

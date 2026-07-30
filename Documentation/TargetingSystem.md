@@ -70,7 +70,7 @@ Camera System
    └─ PrimaryCenteredTargetGroup
 ```
 
-Controllerの状態変更時だけLookAtとTargetGroupを更新し、Camera Weightの補間だけを`Update`で行います。最終Weight決定は既存Camera Controllerへ統合済みです。
+Controllerの`StateChanged`受信時だけLookAt、TargetGroup、Showcase Camera Weightを更新します。`TargetingCameraPresenter`は`Update`や補間Coroutineを持たず、Camera modeをポーリングしません。本番Camera ControllerもTargeting状態はCallbackで受け取り、既存Camera Directorが必要とする連続的なCamera Weight補間だけを一元管理します。
 None／Single／Multiの切替時は、遷移元Cameraの最終位置と向きを遷移先Cameraへ渡してからWeightをブレンドします。ロック解除時もFollow Cameraへ現在姿勢を引き継ぐため、Follow Cameraに残っていた古い軌道角へ急に戻りません。
 実ゲームのSingle／Multi CameraはPlayerと選択Targetを同じ`CinemachineTargetGroup`へ登録し、`CinemachineGroupFraming`で両方を画角へ収めます。Single CameraがTargetだけをLookAtしてPlayerを画角外へ出す構成にはしません。
 Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`TargetingCameraGroupPresenter`が所有します。実ゲームの`CameraMixerWeightControllerBase`とSampleの`TargetingCameraPresenter`は同Componentへ状態を渡し、Camera Weight制御だけを各自で担当します。

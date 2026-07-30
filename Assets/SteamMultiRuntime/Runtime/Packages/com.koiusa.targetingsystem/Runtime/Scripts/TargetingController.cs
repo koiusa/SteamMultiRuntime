@@ -19,7 +19,6 @@ namespace Koiusa.TargetingSystem.Runtime
         private readonly List<ITargetable> candidates = new();
         private readonly List<ITargetable> multiAcquisitionCandidates = new();
         private readonly List<ITargetable> selectedTargets = new();
-        private readonly List<ITargetable> stateTargets = new();
         private readonly List<ITargetFilter> resolvedFilters = new();
         private readonly List<ITargetScorer> resolvedScorers = new();
         private readonly HashSet<ITargetableLifetime> lifetimeSubscriptions = new();
@@ -48,7 +47,7 @@ namespace Koiusa.TargetingSystem.Runtime
         private void Awake()
         {
             ResolveDependencies();
-            Publish(TargetingChangeReason.Command, force: true);
+            Publish(TargetingChangeReason.Command);
         }
 
         private void OnDisable()
@@ -298,7 +297,6 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private bool CollectCandidates()
         {
-            ResolveDependencies();
             candidates.Clear();
             if (resolvedContextSource == null || resolvedCandidateSource == null
                 || !resolvedContextSource.TryGetContext(out var context))
@@ -387,18 +385,13 @@ namespace Koiusa.TargetingSystem.Runtime
             return true;
         }
 
-        private void Publish(TargetingChangeReason reason, bool force = false)
+        private void Publish(TargetingChangeReason reason)
         {
             var previous = State;
             RebuildLifetimeSubscriptions();
-            stateTargets.Clear();
-            stateTargets.AddRange(selectedTargets);
             revision++;
-            State = new TargetingState(mode, primaryTarget, stateTargets.ToArray(), revision);
-            if (force || previous.Revision != State.Revision)
-            {
-                StateChanged?.Invoke(new TargetingStateChange(previous, State, reason));
-            }
+            State = new TargetingState(mode, primaryTarget, selectedTargets.ToArray(), revision);
+            StateChanged?.Invoke(new TargetingStateChange(previous, State, reason));
         }
 
         private void RebuildLifetimeSubscriptions()

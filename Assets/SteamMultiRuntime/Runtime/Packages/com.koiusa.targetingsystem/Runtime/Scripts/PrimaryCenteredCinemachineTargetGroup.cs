@@ -29,6 +29,7 @@ namespace Koiusa.TargetingSystem.Runtime
             primary = newPrimary;
             members = newMembers;
             memberRadius = Mathf.Max(0f, radius);
+            enabled = primary != null && members != null && members.Count > 0;
             UpdateTransform();
         }
 
@@ -36,6 +37,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             primary = null;
             members = null;
+            enabled = false;
         }
 
         private void LateUpdate() => UpdateTransform();

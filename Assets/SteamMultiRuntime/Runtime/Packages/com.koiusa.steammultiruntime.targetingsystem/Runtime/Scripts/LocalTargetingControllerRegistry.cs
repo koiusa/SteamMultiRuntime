@@ -1,5 +1,6 @@
 using System;
 using Koiusa.TargetingSystem.Runtime;
+using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime.TargetingSystem
 {
@@ -7,6 +8,13 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
     {
         public static TargetingController Current { get; private set; }
         public static event Action<TargetingController> CurrentChanged;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Current = null;
+            CurrentChanged = null;
+        }
 
         public static void Register(TargetingController controller)
         {

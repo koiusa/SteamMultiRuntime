@@ -14,6 +14,7 @@ namespace Koiusa.TargetingSystem.Editor
             "lookActionPath",
             "soloLockActionPath",
             "multiLockActionPath",
+            "promoteToMultiActionPath",
             "clearLockActionPath",
             "bulkLockActionPath",
             "previousTargetActionPath",

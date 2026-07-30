@@ -16,7 +16,6 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
         private void Awake()
         {
             ResolveReferences();
-            ApplyOwnership();
         }
 
         private void OnEnable()

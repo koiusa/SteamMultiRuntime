@@ -10,6 +10,7 @@ namespace Koiusa.TargetingSystem.Runtime
         public void SetTarget(Transform newTarget)
         {
             target = newTarget;
+            enabled = target != null;
             UpdateRotation();
         }
 
