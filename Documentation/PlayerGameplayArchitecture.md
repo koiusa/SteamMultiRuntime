@@ -213,6 +213,8 @@ PlayerCharacterCoordinator
 
 ## Skillの呼び出し
 
+`PlayerSkillInputBindings`はLocal／Network Playerで共通の`InputActionsConfig`からAttack、Dash、Guard、Healを解決し、`InputActionBinding`の購読とLeaseのライフタイムを一元管理します。Action Pathはこの共通Bindingが本番Input Actionsの固定契約として保持し、Prefabごとの文字列設定にはしません。Local Controllerは入力をCoordinatorへ直接渡し、Network ControllerはOwner入力をServer RPCへ渡す配送責務だけを個別に持ちます。
+
 入力およびNetworkコードは具象Skillを直接操作せず、次の共通入口を使用します。
 
 ```csharp

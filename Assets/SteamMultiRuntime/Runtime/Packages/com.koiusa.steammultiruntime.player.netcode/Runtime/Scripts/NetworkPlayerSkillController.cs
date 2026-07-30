@@ -1,7 +1,6 @@
 using Koiusa.Input;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -13,10 +12,6 @@ namespace Koiusa.SteamMultiRuntime
         private const float MinimumDirectionSqrMagnitude = 0.0001f;
 
         [SerializeField] private InputActionsConfig inputActionsConfig;
-        [SerializeField] private string attackActionPath = "Combat/Attack";
-        [SerializeField] private string dashActionPath = "Player/Dash";
-        [SerializeField] private string guardActionPath = "Player/Guard";
-        [SerializeField] private string healActionPath = "Player/Heal";
         [SerializeField] private PlayerSkillDefinition attackSkill;
         [SerializeField] private PlayerSkillDefinition dashSkill;
         [SerializeField] private PlayerSkillDefinition guardSkill;
@@ -29,14 +24,7 @@ namespace Koiusa.SteamMultiRuntime
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private PlayerCharacterCoordinator coordinator;
-        private InputAction attackAction;
-        private InputAction dashAction;
-        private InputAction guardAction;
-        private InputAction healAction;
-        private InputActionLease attackLease;
-        private InputActionLease dashLease;
-        private InputActionLease guardLease;
-        private InputActionLease healLease;
+        private PlayerSkillInputBindings inputBindings;
         private bool guardStartedByInput;
         private GuardShieldVisual guardShieldVisual;
 
@@ -48,7 +36,7 @@ namespace Koiusa.SteamMultiRuntime
             coordinator = GetComponent<PlayerCharacterCoordinator>();
             guardShieldVisual = GetComponent<GuardShieldVisual>();
             if (guardShieldVisual == null) guardShieldVisual = gameObject.AddComponent<GuardShieldVisual>();
-            ResolveInput();
+            CreateInputBindings();
         }
 
         public override void OnNetworkSpawn()
@@ -61,7 +49,7 @@ namespace Koiusa.SteamMultiRuntime
                 coordinator.Skills.SkillStarted += OnServerSkillStarted;
                 coordinator.Skills.SkillEnded += OnServerSkillEnded;
             }
-            if (IsOwner) AcquireInput();
+            if (IsOwner) inputBindings.Acquire();
         }
 
         public override void OnNetworkDespawn()
@@ -84,79 +72,27 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            if (IsSpawned && IsOwner) AcquireInput();
+            if (IsSpawned && IsOwner) inputBindings?.Acquire();
         }
 
         private void OnDisable() => ReleaseInput();
 
-        private void ResolveInput()
+        private void CreateInputBindings()
         {
-            attackAction = inputActionsConfig?.FindAction(attackActionPath);
-            dashAction = inputActionsConfig?.FindAction(dashActionPath);
-            guardAction = inputActionsConfig?.FindAction(guardActionPath);
-            healAction = inputActionsConfig?.FindAction(healActionPath);
-        }
-
-        private void AcquireInput()
-        {
-            if (attackAction == null && dashAction == null && guardAction == null && healAction == null) ResolveInput();
-            Acquire(attackAction, ref attackLease, OnAttackPerformed);
-            Acquire(dashAction, ref dashLease, OnDashPerformed);
-            Acquire(healAction, ref healLease, OnHealPerformed);
-            if (guardAction != null && guardLease == null)
-            {
-                guardAction.performed += OnGuardPerformed;
-                guardAction.canceled += OnGuardCanceled;
-                guardLease = InputActionLease.Acquire(guardAction);
-            }
-        }
-
-        private static void Acquire(
-            InputAction action,
-            ref InputActionLease lease,
-            System.Action<InputAction.CallbackContext> callback)
-        {
-            if (action == null || lease != null) return;
-            action.performed += callback;
-            lease = InputActionLease.Acquire(action);
+            inputBindings = new PlayerSkillInputBindings(
+                inputActionsConfig,
+                () => RequestActivate(0, attackSkill),
+                () => RequestActivate(1, dashSkill),
+                () => guardStartedByInput = RequestActivate(2, guardSkill),
+                CancelInputGuard,
+                () => RequestActivate(3, healSkill));
         }
 
         private void ReleaseInput()
         {
-            Release(attackAction, ref attackLease, OnAttackPerformed);
-            Release(dashAction, ref dashLease, OnDashPerformed);
-            Release(healAction, ref healLease, OnHealPerformed);
-            if (guardAction != null)
-            {
-                guardAction.performed -= OnGuardPerformed;
-                guardAction.canceled -= OnGuardCanceled;
-            }
-            if (guardLease != null)
-            {
-                guardLease.Dispose();
-                guardLease = null;
-            }
+            inputBindings?.Dispose();
             CancelInputGuard();
         }
-
-        private static void Release(
-            InputAction action,
-            ref InputActionLease lease,
-            System.Action<InputAction.CallbackContext> callback)
-        {
-            if (action != null) action.performed -= callback;
-            lease?.Dispose();
-            lease = null;
-        }
-
-        private void OnAttackPerformed(InputAction.CallbackContext context) => RequestActivate(0, attackSkill);
-        private void OnDashPerformed(InputAction.CallbackContext context) => RequestActivate(1, dashSkill);
-        private void OnGuardPerformed(InputAction.CallbackContext context)
-        {
-            guardStartedByInput = RequestActivate(2, guardSkill);
-        }
-        private void OnGuardCanceled(InputAction.CallbackContext context) => CancelInputGuard();
-        private void OnHealPerformed(InputAction.CallbackContext context) => RequestActivate(3, healSkill);
 
         private bool RequestActivate(int skillIndex, PlayerSkillDefinition definition)
         {

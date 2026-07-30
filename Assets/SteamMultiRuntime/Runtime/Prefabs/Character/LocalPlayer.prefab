@@ -579,10 +579,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillInputController
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
-  attackActionPath: Combat/Attack
-  dashActionPath: Player/Dash
-  guardActionPath: Player/Guard
-  healActionPath: Player/Heal
   attackSkill: {fileID: 11400000, guid: 3a6446a893e846409f674f5c3178832a, type: 2}
   dashSkill: {fileID: 11400000, guid: 154fd40aee1c43b1adcf990fa97e80fa, type: 2}
   guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
