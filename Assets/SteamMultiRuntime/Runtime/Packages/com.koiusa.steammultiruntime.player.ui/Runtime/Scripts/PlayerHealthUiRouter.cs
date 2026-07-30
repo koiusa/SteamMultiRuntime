@@ -43,16 +43,33 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 
         private void Apply()
         {
+            var isAlive = health == null || health.IsAlive;
             var isLocalOwner = ownership != null && ownership.IsOwnershipResolved && ownership.IsLocalOwner;
             if (overheadHealthUi != null)
-                overheadHealthUi.SetActive(!damageOnlyOverhead && ownership != null && !isLocalOwner);
-            if (localHealthHud != null) localHealthHud.SetActive(isLocalOwner);
+                overheadHealthUi.SetActive(isAlive && !damageOnlyOverhead && ownership != null && !isLocalOwner);
+            if (localHealthHud != null) localHealthHud.SetActive(isAlive && isLocalOwner);
         }
 
         private void OnHealthChanged(float currentHealth, float maxHealth)
         {
+            var previous = previousHealth;
             var tookDamage = currentHealth < previousHealth;
             previousHealth = currentHealth;
+            if (currentHealth <= 0f)
+            {
+                if (npcHideRoutine != null) StopCoroutine(npcHideRoutine);
+                npcHideRoutine = null;
+                if (overheadHealthUi != null) overheadHealthUi.SetActive(false);
+                if (localHealthHud != null) localHealthHud.SetActive(false);
+                return;
+            }
+
+            if (previous <= 0f)
+            {
+                Apply();
+                return;
+            }
+
             if (!damageOnlyOverhead || !tookDamage || overheadHealthUi == null) return;
 
             overheadHealthUi.SetActive(true);

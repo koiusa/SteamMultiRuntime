@@ -29,6 +29,8 @@ GameObject:
   - component: {fileID: 4987499974731793392}
   - component: {fileID: 112213991497632317}
   - component: {fileID: 712213991497632317}
+  - component: {fileID: 612214991497632317}
+  - component: {fileID: 612215991497632317}
   m_Layer: 0
   m_Name: CharacterAgentCore
   m_TagString: Untagged
@@ -36,6 +38,37 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &612214991497632317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 754958c31ce54a3dba17d07a6e65f91b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerRespawnFeature
+  respawnDelay: 3
+--- !u!114 &612215991497632317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96b325c7ba154d4683d8a4a64756596c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerDeathPresentation
+  playDeathEffect: 1
+  dissolveDuration: 1
+  effectLifetime: 1.6
+  dissolveEdgeColor: {r: 0.25, g: 0.8, b: 1, a: 1}
+  effectLocalPosition: {x: 0, y: 0.8, z: 0}
+  effectLocalScale: {x: 1.35, y: 1.8, z: 1.35}
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -68,6 +69,11 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             Physics.SyncTransforms();
+
+            var components = player.GetComponents<MonoBehaviour>();
+            for (var i = 0; i < components.Length; i++)
+                if (components[i] is ISpawnPoseAppliedReceiver receiver)
+                    receiver.OnSpawnPoseApplied(position, rotation);
         }
 
         public static bool TryResolvePose(

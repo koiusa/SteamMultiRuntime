@@ -31,6 +31,7 @@ namespace Koiusa.SteamMultiRuntime
         bool IsAlive { get; }
         float ApplyDamage(PlayerDamageRequest request);
         float Heal(float amount);
+        void RestoreFullHealth();
     }
 
     public interface IPlayerDamageReceiverFeature
@@ -48,5 +49,16 @@ namespace Koiusa.SteamMultiRuntime
         int PerformAreaAttack(Vector3 center, float radius, float damage, Vector3 direction, LayerMask layers);
         void SetIncomingDamageScale(int ownerId, float scale);
         void ClearIncomingDamageScale(int ownerId);
+    }
+
+    public interface IPlayerLifeState
+    {
+        bool IsDead { get; }
+        event Action<bool> LifeStateChanged;
+    }
+
+    public interface IPlayerRespawnPresentationNotifier
+    {
+        event Action<Vector3, Quaternion> RespawnPresentationReady;
     }
 }

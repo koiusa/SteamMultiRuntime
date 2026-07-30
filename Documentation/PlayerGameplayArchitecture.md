@@ -29,6 +29,7 @@ com.koiusa.steammultiruntime.player.netcode
 - `PlayerSkillDefinition` ScriptableObjectによる固定Skill IDと表示名の一元管理
 - `DashSkillFeature`、`SwordAttackSkillFeature`、`GuardSkillFeature`、`HealSkillFeature`の初期実装
 - `PlayerCombatCoordinator`によるHP、被ダメージ倍率、範囲Hit判定の仲介
+- `PlayerRespawnFeature`による死亡確定、3秒後の生成位置への復帰、HP全回復
 - `PlayerHealthFeature`、`PlayerDamageReceiverFeature`、`PlayerHitDetectionFeature`の初期実装
 - `PlayerCharacterCoordinatorEditor`によるMovement、Skill、Combatの論理階層表示と任意Featureの追加
 - 5種類の標準Character PrefabへのCoordinatorおよび初期Featureの適用
@@ -146,6 +147,12 @@ Local／ServerのSkill開始・終了は`PlayerSkillCoordinator`から、Remote 
 Dash TrailはDash本体の0.2秒で新規発生を停止し、0.42秒でEffect Objectを破棄します。移動終了後に長いTrailが残らないよう、発生時間と残像時間を分けて管理します。
 
 `NetworkPlayerCombatState`は`IPlayerCombatProcessGate`としてNetwork CombatのDamage、Heal、Hit DetectionをSpawn済みServerだけに制限し、`PlayerHealthFeature.CurrentHealth`をServer-writeのNetworkVariableで全Clientへ同期します。Clientへの反映は`PlayerHealthFeature.ApplyReplicatedHealth`を通して`HealthChanged`通知を維持します。Local CharacterにはGateを配置せず、従来どおり共通Combatを直接処理します。
+
+HPが0になると`PlayerRespawnFeature`が死亡を確定し、進行中SkillとMotor状態を解除してRigidbodyを停止します。3秒後に生成時の位置・向きへ戻し、HPを最大まで回復して制御を再開します。Network CharacterではServerだけがタイマー、座標復帰、HP回復を実行し、既存のNetwork TransformとHP NetworkVariableを通してClientへ反映します。Local／NetworkのPlayerとNPCは`CharacterAgentCore`から同じ機能を継承します。
+
+生成位置の記録はフレーム待ちに依存しません。`PlayerSpawnService.Place`がTransform／RigidbodyへのPose適用と`Physics.SyncTransforms`を完了した直後、`ISpawnPoseAppliedReceiver.OnSpawnPoseApplied`で`PlayerRespawnFeature`へ通知します。NPCのようにSpawn Serviceを経由せず指定PoseでInstantiateされるCharacterはAwake時のPoseを初期値として保持します。
+
+`PlayerDeathPresentation`は生存状態の変化を購読し、死亡時だけ各Character Rendererの元Materialを保存して共通Dissolve Shaderへ差し替えます。元MaterialのBase Map、Base Color、UV Scale／Offsetを引き継ぎ、発光境界を伴って1秒で完全に消失した直後に光粒子のVFX Graphを再生します。死亡VFXはリスポーン前に終了し、Pose適用完了コールバックを受けた場合は残存Effect Objectも明示的に破棄します。リスポーン時は固定時間を待たず、LocalではPose適用直後の`RespawnPresentationReady`、NetworkではServer同期されたRespawn PoseをClientが適用した直後の同コールバックで元Materialを復元します。これによりHealthとNetworkTransformの到着順に依存せず、死亡地点で再表示されません。
 
 ### 設定クラスの予定
 
@@ -279,6 +286,6 @@ Player表示名は各Playerの`Presentation`配下にあるWorld Space `UIDocume
 
 表示名とHPゲージは別GameObject・別`UIDocument`・別Presenterとして管理します。`PlayerNameOverlayUiDocument`は表示名だけ、`PlayerHealthOverlayUiDocument`はHPだけを所有し、表示位置や有効状態を個別に変更できます。カメラ正対、距離Fade、画面上のサイズ維持は共通の`PlayerWorldSpaceOverlay`を各Objectで再利用します。HP Presenterは`PlayerHealthFeature.HealthChanged`を購読してDamage／Heal／Network同期時だけFill幅、赤から緑への残量色、数値を更新し、HP値を毎フレーム監視しません。
 
-HPの表示先は`PlayerHealthUiRouter`が所有権とCharacter種別に応じて切り替えます。Local Ownerは画面左下の固定HUD、Remote Playerは頭上ゲージを常時表示します。Local／Network NPCは頭上ゲージを通常は隠し、被ダメージ時に3秒間表示します。表示中に再度ダメージを受けた場合は表示時間を3秒へ延長し、回復だけでは表示しません。
+HPの表示先は`PlayerHealthUiRouter`が所有権とCharacter種別に応じて切り替えます。Local Ownerは画面左下の固定HUD、Remote Playerは頭上ゲージを常時表示します。Local／Network NPCは頭上ゲージを通常は隠し、被ダメージ時に3秒間表示します。表示中に再度ダメージを受けた場合は表示時間を3秒へ延長し、回復だけでは表示しません。HPが0になった通知では全表示先を即座に隠し、リスポーン後はPlayerだけ通常の表示先へ戻します。
 
 表示名の変更は`IPlayerDisplayNameNotifier.DisplayNameChanged`で通知します。カメラ正対と距離Fadeだけは、実際にCameraが描画される直前のRender Pipelineコールバックで更新します。Player表示名専用MaterialはDepth Testを無効化し、World Spaceの距離表現を保ったままシーンObjectより手前へ描画します。

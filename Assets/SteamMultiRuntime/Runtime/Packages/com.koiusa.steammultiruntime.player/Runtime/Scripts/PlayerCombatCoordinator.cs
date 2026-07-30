@@ -37,7 +37,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public int PerformAreaAttack(Vector3 center, float radius, float damage, Vector3 direction, LayerMask layers)
         {
-            return CanProcessCombat() && hitDetection != null
+            return CanProcessCombat() && Health?.IsAlive == true && hitDetection != null
                 ? hitDetection.PerformAreaAttack(gameObject, center, radius, damage, direction, layers)
                 : 0;
         }

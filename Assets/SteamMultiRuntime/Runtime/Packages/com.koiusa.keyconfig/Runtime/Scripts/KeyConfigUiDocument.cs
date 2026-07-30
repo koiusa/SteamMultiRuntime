@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Koiusa.Input;
 using UnityEngine;
@@ -33,7 +32,10 @@ namespace Koiusa.Keyconfig.Runtime
         private UiNavigationInputSession navigationSession;
         private InputActionBinding previousSectionBinding;
         private InputActionBinding nextSectionBinding;
-        private Coroutine pendingRebindCoroutine;
+        private InputAction pendingRebindReleaseAction;
+        private Guid pendingRebindActionId;
+        private int pendingRebindBindingIndex;
+        private string pendingRebindBindingGroup;
         private int activeRebindEntryIndex = -1;
         private readonly List<InputAction> suspendedActions = new List<InputAction>();
         private string sessionOverridesJson;
@@ -102,11 +104,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
-            if (pendingRebindCoroutine != null)
-            {
-                StopCoroutine(pendingRebindCoroutine);
-                pendingRebindCoroutine = null;
-            }
+            CancelPendingRebindRelease();
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
             navigationSession?.Dispose();
@@ -254,7 +252,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindRequested(int index)
         {
-            if (rebindController == null || pendingRebindCoroutine != null)
+            if (rebindController == null || pendingRebindReleaseAction != null)
             {
                 return;
             }
@@ -276,24 +274,34 @@ namespace Koiusa.Keyconfig.Runtime
             var submitAction = bindingService.InputActionAsset.FindAction(inputActionsConfig.SubmitActionPath);
             if (submitAction != null && submitAction.IsPressed())
             {
-                pendingRebindCoroutine = StartCoroutine(StartRebindNextFrame(
-                    entry.ActionId,
-                    entry.BindingIndex,
-                    effectiveBindingGroup));
+                pendingRebindActionId = entry.ActionId;
+                pendingRebindBindingIndex = entry.BindingIndex;
+                pendingRebindBindingGroup = effectiveBindingGroup;
+                pendingRebindReleaseAction = submitAction;
+                pendingRebindReleaseAction.canceled += OnPendingRebindSubmitReleased;
                 return;
             }
 
             StartRebind(entry.ActionId, entry.BindingIndex, effectiveBindingGroup);
         }
 
-        private IEnumerator StartRebindNextFrame(
-            Guid actionId,
-            int bindingIndex,
-            string effectiveBindingGroup)
+        private void OnPendingRebindSubmitReleased(InputAction.CallbackContext context)
         {
-            yield return null;
-            pendingRebindCoroutine = null;
-            StartRebind(actionId, bindingIndex, effectiveBindingGroup);
+            var actionId = pendingRebindActionId;
+            var bindingIndex = pendingRebindBindingIndex;
+            var bindingGroup = pendingRebindBindingGroup;
+            CancelPendingRebindRelease();
+            if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, bindingGroup);
+        }
+
+        private void CancelPendingRebindRelease()
+        {
+            if (pendingRebindReleaseAction != null)
+                pendingRebindReleaseAction.canceled -= OnPendingRebindSubmitReleased;
+            pendingRebindReleaseAction = null;
+            pendingRebindActionId = default;
+            pendingRebindBindingIndex = -1;
+            pendingRebindBindingGroup = null;
         }
 
         private void StartRebind(Guid actionId, int bindingIndex, string effectiveBindingGroup)
@@ -415,7 +423,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
+            if (pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(-1);
         }
 
@@ -450,7 +458,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindCoroutine == null && (rebindController == null || !rebindController.IsBusy))
+            if (pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(1);
         }
 

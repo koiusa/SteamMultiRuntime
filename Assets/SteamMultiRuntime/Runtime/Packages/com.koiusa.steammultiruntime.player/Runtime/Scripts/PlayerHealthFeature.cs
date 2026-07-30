@@ -48,6 +48,13 @@ namespace Koiusa.SteamMultiRuntime
             return applied;
         }
 
+        public void RestoreFullHealth()
+        {
+            if (Mathf.Approximately(currentHealth, maxHealth)) return;
+            currentHealth = maxHealth;
+            HealthChanged?.Invoke(currentHealth, maxHealth);
+        }
+
         internal void ApplyReplicatedHealth(float value)
         {
             var replicated = Mathf.Clamp(value, 0f, maxHealth);

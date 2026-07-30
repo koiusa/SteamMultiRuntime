@@ -36,7 +36,7 @@ Samples / Prototype / Integration
 
 | パッケージ | 責務 | 主な型 |
 |---|---|---|
-| `com.koiusa.steammultiruntime.core` | 内部パッケージ間で共有する最小契約と属性 | `ILocalPlayerProvider`, `LocalPlayerProviderRegistry`, `IPreservedLoadedSceneCamera`, `FallRecovery` |
+| `com.koiusa.steammultiruntime.core` | 内部パッケージ間で共有する最小契約と属性 | `ILocalPlayerProvider`, `LocalPlayerProviderRegistry`, `ISpawnPoseAppliedReceiver`, `IPreservedLoadedSceneCamera`, `FallRecovery` |
 | `com.koiusa.steammultiruntime.localization` | 日本語・英語カタログ、Unity Localization連携、導入ツール | `GameLocalization`, `UiLocalizationCatalog` |
 | `com.koiusa.steammultiruntime.keyconfig` | 汎用KeyconfigをSteamMultiRuntimeのLocalizationへ接続 | `SteamMultiRuntimeKeyConfigLocalizer` |
 | `com.koiusa.steammultiruntime.targetingsystem` | 汎用TargetingSystemを共有Input Actions設定へ接続 | `SteamMultiRuntimeTargetingInputActions` |

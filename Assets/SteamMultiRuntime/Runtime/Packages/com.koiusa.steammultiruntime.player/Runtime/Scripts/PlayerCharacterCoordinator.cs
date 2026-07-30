@@ -25,7 +25,9 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool TryActivateSkill(string skillId, Vector3 direction, GameObject target = null)
         {
-            return Skills != null && Skills.TryActivate(skillId, direction, target);
+            return Combat?.Health?.IsAlive == true
+                && Skills != null
+                && Skills.TryActivate(skillId, direction, target);
         }
 
         public bool TryActivateSkill(PlayerSkillDefinition definition, Vector3 direction, GameObject target = null)
