@@ -109,7 +109,7 @@ Gamepad L2の`Player/Strafe`はホールド式です。押している間だけS
 
 `PlayerTargetingOwner`が同じPlayer上の`ILocalPlayerOwnershipNotifier`を解決し、Local OwnerだけでControllerと入力を有効化して`LocalTargetingControllerRegistry`へ登録します。Cameraは`CurrentChanged`を購読します。状態の読み取りだけを提供する`ILocalPlayerOwnership`と、Push通知を提供するNotifierを分離しています。所有権の確定・獲得・喪失・Network Despawnは`OwnershipChanged`で通知され、Frame Pollingは行いません。Remote PlayerとDedicated ServerではLocal Camera Targetingを動作させません。
 
-共通`System.prefab`配下の`Gameplay System.prefab`がゲーム機能のComposition Rootとなり、その子の`Targeting System.prefab`が`TargetMarkerRegistry`と`LocalTargetingIndicatorPresenter`を所有します。Targetingを使わないSceneではLocal Controllerが登録されないため、Indicatorは非表示のまま処理を行いません。PresenterはRegistryを購読し、選択集合とPrimary表示を`TargetingStateChange`で更新します。移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従し、Remote PlayerごとのUIDocumentは生成しません。
+共通`System.prefab`配下の`Gameplay System.prefab`がゲーム機能のComposition Rootとなり、その子の`Targeting System.prefab`が`TargetMarkerRegistry`、`LocalTargetingIndicatorPresenter`、非アクティブな構築済み`Target Indicator UI`を所有します。サンプルとGameplayで同じ`UIDocument`構成を使用し、RuntimeでUI Componentを組み立てません。Targetingを使わないSceneではLocal Controllerが登録されないため、Indicatorは非表示のまま処理を行いません。PresenterはRegistryを購読し、選択集合とPrimary表示を`TargetingStateChange`で更新します。移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従し、Remote PlayerごとのUIDocumentは生成しません。
 
 Network Skillへ対象を渡す場合、Clientの選択結果は入力意図としてだけ扱います。Serverは対象の存在、敵味方、距離、角度、Skill固有条件、Multi対象数を検証し、HitとDamageを確定します。
 
@@ -124,7 +124,7 @@ Player側に次を配置します。
 5. `TargetingCommandInput`
 6. SteamMultiRuntime Playerでは`PlayerTargetingOwner`
 
-上記Componentは標準Local／Network Player Prefabへ適用済みです。全標準Player／NPC Proxyは`TargetMarker`を持ち、`System.prefab`配下の`Targeting System.prefab`にある`TargetMarkerRegistry`へ有効化イベントで登録します。Local／Network Mixing Camera PrefabにはSingle／Multi Camera、Target Group、`LocalTargetingCameraConnector`を適用済みです。
+上記Componentは標準Local／Network Player Prefabへ適用済みです。全標準Player／NPC Proxyは`TargetMarker`を持ち、既存`ForcusTarget`の`CameraTrackMarker` Transformを`AimPoint`として共有します。Indicator、Camera注視、Viewport判定はPlayer Root原点ではなくこの調整済み位置を使用します。Targetは`System.prefab`配下の`Targeting System.prefab`にある`TargetMarkerRegistry`へ有効化イベントで登録します。Local／Network Mixing Camera PrefabにはSingle／Multi Camera、Target Group、`LocalTargetingCameraConnector`を適用済みです。
 
 同じ構成を再生成するEditor操作は`Tools/SteamMultiRuntime/Targeting/Install Production Setup`です。処理はUnityのPrefab／Asset公開APIを使用し、Reflectionは使用しません。
 

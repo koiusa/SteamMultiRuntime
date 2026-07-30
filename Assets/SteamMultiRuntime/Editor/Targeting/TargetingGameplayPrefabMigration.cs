@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 {
@@ -15,6 +16,8 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             "Assets/SteamMultiRuntime/Runtime/Prefabs/System/Gameplay System.prefab";
         private const string SystemPrefabPath =
             "Assets/SteamMultiRuntime/Runtime/Resources/System/System.prefab";
+        private const string IndicatorAssetRoot =
+            "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.targetingsystem/Runtime/Resources/UI/";
 
         [MenuItem("Tools/SteamMultiRuntime/Targeting/Migrate Gameplay Targeting Prefab")]
         public static void Migrate()
@@ -35,7 +38,24 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             try
             {
                 root.AddComponent<TargetMarkerRegistry>();
-                root.AddComponent<LocalTargetingIndicatorPresenter>();
+                var presenter = root.AddComponent<LocalTargetingIndicatorPresenter>();
+
+                var indicatorObject = new GameObject("Target Indicator UI");
+                indicatorObject.transform.SetParent(root.transform, false);
+                var document = indicatorObject.AddComponent<UIDocument>();
+                document.panelSettings = AssetDatabase.LoadAssetAtPath<PanelSettings>(
+                    IndicatorAssetRoot + "TargetIndicator Panel Settings.asset");
+                document.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                    IndicatorAssetRoot + "TargetIndicator.uxml");
+                document.sortingOrder = short.MaxValue - 2;
+
+                var theme = indicatorObject.AddComponent<TargetIndicatorThemeProvider>();
+                theme.Configure(
+                    document.visualTreeAsset,
+                    AssetDatabase.LoadAssetAtPath<StyleSheet>(IndicatorAssetRoot + "TargetIndicator.uss"));
+                var indicator = indicatorObject.AddComponent<TargetIndicatorController>();
+                presenter.Configure(indicatorObject, indicator);
+                indicatorObject.SetActive(false);
                 PrefabUtility.SaveAsPrefabAsset(root, TargetingPrefabPath);
             }
             finally

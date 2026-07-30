@@ -131,7 +131,14 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 
         private static void ConfigureTargetMarker(GameObject root)
         {
-            GetOrAdd<TargetMarker>(root);
+            var targetMarker = GetOrAdd<TargetMarker>(root);
+            var focusMarker = root.GetComponentInChildren<CameraTrackMarker>(true);
+            if (focusMarker == null)
+                throw new InvalidOperationException($"CameraTrackMarker was not found: {root.name}");
+
+            var serialized = new SerializedObject(targetMarker);
+            serialized.FindProperty("aimPoint").objectReferenceValue = focusMarker.transform;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void ConfigurePlayerTargeting(GameObject root)

@@ -780,7 +780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a87a2afb5bfc8da45a6304629062f689, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetMarker
-  aimPoint: {fileID: 0}
+  aimPoint: {fileID: 4729856950231397882}
   priority: 0
   isTargetable: 1
   registry: {fileID: 0}

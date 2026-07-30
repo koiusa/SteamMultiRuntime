@@ -781,7 +781,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a87a2afb5bfc8da45a6304629062f689, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetMarker
-  aimPoint: {fileID: 0}
+  aimPoint: {fileID: 4729856950231397882}
   priority: 0
   isTargetable: 1
   registry: {fileID: 0}
@@ -862,6 +862,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCommandInput
   controller: {fileID: 6391973038834359252}
   inputActions: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
+  multiAddInitialDelay: 0.3
+  multiAddInterval: 0.2
 --- !u!114 &9189569119033002611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -946,6 +948,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
   fadeStartDistance: 8
   fadeEndDistance: 20
+  referenceDistance: 5
+  referenceFieldOfView: 60
+  referenceOrthographicSize: 5
+  screenSizeMultiplier: 1
 --- !u!1 &6633480341467278721
 GameObject:
   m_ObjectHideFlags: 0

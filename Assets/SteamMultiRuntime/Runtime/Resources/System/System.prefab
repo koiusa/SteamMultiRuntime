@@ -163,7 +163,7 @@ Transform:
   m_Children:
   - {fileID: 910000000000000003}
   - {fileID: 910000000000000008}
-  - {fileID: 8053398569862504339}
+  - {fileID: 3206711292698625122}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &427363977603238572
@@ -208,7 +208,7 @@ MonoBehaviour:
   pauseMenuDocument: {fileID: 910000000000000009}
   keyConfigMenu: {fileID: 910000000000000001}
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
---- !u!1001 &2212240973497557978
+--- !u!1001 &6769078237904566315
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -265,8 +265,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c69a7b05f188524281c8b2ae44da241, type: 3}
---- !u!4 &8053398569862504339 stripped
+--- !u!4 &3206711292698625122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8174066469444385865, guid: 8c69a7b05f188524281c8b2ae44da241, type: 3}
-  m_PrefabInstance: {fileID: 2212240973497557978}
+  m_PrefabInstance: {fileID: 6769078237904566315}
   m_PrefabAsset: {fileID: 0}
