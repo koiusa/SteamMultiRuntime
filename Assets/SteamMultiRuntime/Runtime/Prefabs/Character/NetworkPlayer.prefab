@@ -270,6 +270,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6857631922079477508}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 586762532616825491}
   m_SourcePrefab: {fileID: 100100000, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
 --- !u!4 &3075913735347910610 stripped
 Transform:
@@ -836,3 +839,16 @@ MonoBehaviour:
   facingRotationSpeed: 540
   strafeBlendDamping: 0.3
   facingBlendDamping: 0.12
+--- !u!114 &586762532616825491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4251981870738245575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad22626052cf43048e5fe14de1984283, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerCombatState
+  ShowTopMostFoldoutHeaderGroup: 1

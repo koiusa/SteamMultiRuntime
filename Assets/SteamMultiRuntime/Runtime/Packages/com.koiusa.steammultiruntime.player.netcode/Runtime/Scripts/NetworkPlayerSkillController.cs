@@ -8,7 +8,6 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(PlayerCharacterCoordinator))]
     public sealed class NetworkPlayerSkillController : NetworkBehaviour
     {
-        private const int NoActiveSkill = -1;
         private const float MinimumDirectionSqrMagnitude = 0.0001f;
 
         [SerializeField] private InputActionsConfig inputActionsConfig;
@@ -19,14 +18,14 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Transform directionReference;
 
         private readonly NetworkVariable<int> activeSkillIndex = new NetworkVariable<int>(
-            NoActiveSkill, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            (int)PlayerSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<uint> activationSequence = new NetworkVariable<uint>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private PlayerCharacterCoordinator coordinator;
         private PlayerSkillInputBindings inputBindings;
         private bool guardStartedByInput;
-        private GuardShieldVisual guardShieldVisual;
+        private IGuardSkillPresentation guardPresentation;
 
         public int ActiveSkillIndex => activeSkillIndex.Value;
         public uint ActivationSequence => activationSequence.Value;
@@ -34,8 +33,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             coordinator = GetComponent<PlayerCharacterCoordinator>();
-            guardShieldVisual = GetComponent<GuardShieldVisual>();
-            if (guardShieldVisual == null) guardShieldVisual = gameObject.AddComponent<GuardShieldVisual>();
+            guardPresentation = GetComponent<IGuardSkillPresentation>();
             CreateInputBindings();
         }
 
@@ -43,7 +41,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             base.OnNetworkSpawn();
             activeSkillIndex.OnValueChanged += OnActiveSkillIndexChanged;
-            guardShieldVisual?.SetGuarding(activeSkillIndex.Value == 2);
+            ApplyGuardPresentation(activeSkillIndex.Value);
             if (IsServer && coordinator?.Skills != null)
             {
                 coordinator.Skills.SkillStarted += OnServerSkillStarted;
@@ -55,7 +53,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkDespawn()
         {
             activeSkillIndex.OnValueChanged -= OnActiveSkillIndexChanged;
-            guardShieldVisual?.SetGuarding(false);
+            guardPresentation?.SetGuardingPresentation(false);
             ReleaseInput();
             if (coordinator?.Skills != null)
             {
@@ -67,7 +65,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSkillIndexChanged(int previousValue, int newValue)
         {
-            guardShieldVisual?.SetGuarding(newValue == 2);
+            ApplyGuardPresentation(newValue);
         }
 
         private void OnEnable()
@@ -81,11 +79,11 @@ namespace Koiusa.SteamMultiRuntime
         {
             inputBindings = new PlayerSkillInputBindings(
                 inputActionsConfig,
-                () => RequestActivate(0, attackSkill),
-                () => RequestActivate(1, dashSkill),
-                () => guardStartedByInput = RequestActivate(2, guardSkill),
+                () => RequestActivate(PlayerSkillSlot.Attack, attackSkill),
+                () => RequestActivate(PlayerSkillSlot.Dash, dashSkill),
+                () => guardStartedByInput = RequestActivate(PlayerSkillSlot.Guard, guardSkill),
                 CancelInputGuard,
-                () => RequestActivate(3, healSkill));
+                () => RequestActivate(PlayerSkillSlot.Heal, healSkill));
         }
 
         private void ReleaseInput()
@@ -94,25 +92,25 @@ namespace Koiusa.SteamMultiRuntime
             CancelInputGuard();
         }
 
-        private bool RequestActivate(int skillIndex, PlayerSkillDefinition definition)
+        private bool RequestActivate(PlayerSkillSlot skillSlot, PlayerSkillDefinition definition)
         {
             if (!IsSpawned || !IsOwner || definition == null || string.IsNullOrWhiteSpace(definition.Id)) return false;
             var reference = directionReference != null ? directionReference : transform;
             var direction = reference.forward;
-            if (IsServer) return ActivateOnServer(skillIndex, direction);
-            ActivateSkillServerRpc(skillIndex, direction);
+            if (IsServer) return ActivateOnServer(skillSlot, direction);
+            ActivateSkillServerRpc((int)skillSlot, direction);
             return true;
         }
 
         [ServerRpc]
         private void ActivateSkillServerRpc(int skillIndex, Vector3 direction)
         {
-            ActivateOnServer(skillIndex, direction);
+            ActivateOnServer((PlayerSkillSlot)skillIndex, direction);
         }
 
-        private bool ActivateOnServer(int skillIndex, Vector3 direction)
+        private bool ActivateOnServer(PlayerSkillSlot skillSlot, Vector3 direction)
         {
-            var definition = GetDefinition(skillIndex);
+            var definition = GetDefinition(skillSlot);
             return IsServer
                 && definition != null
                 && coordinator != null
@@ -159,35 +157,40 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnServerSkillStarted(IPlayerSkillFeature skill)
         {
-            activeSkillIndex.Value = GetDefinitionIndex(skill.Definition);
+            activeSkillIndex.Value = (int)GetDefinitionSlot(skill.Definition);
             activationSequence.Value++;
         }
 
         private void OnServerSkillEnded(IPlayerSkillFeature skill)
         {
-            if (activeSkillIndex.Value == GetDefinitionIndex(skill.Definition))
-                activeSkillIndex.Value = NoActiveSkill;
+            if (activeSkillIndex.Value == (int)GetDefinitionSlot(skill.Definition))
+                activeSkillIndex.Value = (int)PlayerSkillSlot.None;
         }
 
-        private PlayerSkillDefinition GetDefinition(int index)
+        private PlayerSkillDefinition GetDefinition(PlayerSkillSlot slot)
         {
-            return index switch
+            return slot switch
             {
-                0 => attackSkill,
-                1 => dashSkill,
-                2 => guardSkill,
-                3 => healSkill,
+                PlayerSkillSlot.Attack => attackSkill,
+                PlayerSkillSlot.Dash => dashSkill,
+                PlayerSkillSlot.Guard => guardSkill,
+                PlayerSkillSlot.Heal => healSkill,
                 _ => null
             };
         }
 
-        private int GetDefinitionIndex(PlayerSkillDefinition definition)
+        private PlayerSkillSlot GetDefinitionSlot(PlayerSkillDefinition definition)
         {
-            if (definition == attackSkill) return 0;
-            if (definition == dashSkill) return 1;
-            if (definition == guardSkill) return 2;
-            if (definition == healSkill) return 3;
-            return NoActiveSkill;
+            if (definition == attackSkill) return PlayerSkillSlot.Attack;
+            if (definition == dashSkill) return PlayerSkillSlot.Dash;
+            if (definition == guardSkill) return PlayerSkillSlot.Guard;
+            if (definition == healSkill) return PlayerSkillSlot.Heal;
+            return PlayerSkillSlot.None;
+        }
+
+        private void ApplyGuardPresentation(int skillIndex)
+        {
+            guardPresentation?.SetGuardingPresentation(skillIndex == (int)PlayerSkillSlot.Guard);
         }
     }
 }

@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    internal interface IPlayerCombatProcessGate
+    {
+        bool CanProcessCombat { get; }
+    }
+
     public readonly struct PlayerDamageRequest
     {
         public PlayerDamageRequest(GameObject source, float amount, Vector3 point, Vector3 direction)

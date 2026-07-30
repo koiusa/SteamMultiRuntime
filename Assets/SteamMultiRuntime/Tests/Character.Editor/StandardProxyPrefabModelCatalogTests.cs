@@ -79,6 +79,17 @@ namespace Koiusa.SteamMultiRuntime.Tests
             }
         }
 
+        [Test]
+        public void NetworkProxyPrefabs_HaveServerAuthoritativeCombatState()
+        {
+            foreach (var prefabPath in NetworkProxyPaths)
+            {
+                var prefab = LoadPrefab(prefabPath);
+                Assert.That(prefab.GetComponent<NetworkPlayerCombatState>(), Is.Not.Null,
+                    $"NetworkPlayerCombatState is missing: {prefabPath}");
+            }
+        }
+
         private static CharacterModelIdList LoadExpectedCatalog()
         {
             var catalogPath = AssetDatabase.GUIDToAssetPath(ModelCatalogGuid);

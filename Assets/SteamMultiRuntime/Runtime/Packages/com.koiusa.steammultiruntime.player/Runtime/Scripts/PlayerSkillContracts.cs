@@ -2,6 +2,20 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    internal enum PlayerSkillSlot
+    {
+        None = -1,
+        Attack = 0,
+        Dash = 1,
+        Guard = 2,
+        Heal = 3
+    }
+
+    internal interface IGuardSkillPresentation
+    {
+        void SetGuardingPresentation(bool guarding);
+    }
+
     public readonly struct PlayerSkillContext
     {
         public PlayerSkillContext(GameObject owner, Vector3 direction, GameObject target = null)

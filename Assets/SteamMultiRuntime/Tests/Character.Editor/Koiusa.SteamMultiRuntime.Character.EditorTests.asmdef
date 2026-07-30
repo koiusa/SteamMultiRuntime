@@ -5,6 +5,7 @@
         "Koiusa.SteamMultiRuntime.Character.Runtime",
         "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
         "Koiusa.SteamMultiRuntime.Integration.Runtime",
+        "Koiusa.SteamMultiRuntime.Player.Netcode.Runtime",
         "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class GuardSkillFeature : PlayerSkillFeature
+    public sealed class GuardSkillFeature : PlayerSkillFeature, IGuardSkillPresentation
     {
         [SerializeField, Range(0f, 1f)] private float incomingDamageScale = 0.25f;
         private IPlayerCombatCoordinator combat;
@@ -22,20 +22,25 @@ namespace Koiusa.SteamMultiRuntime
             if (combat == null) combat = GetComponent<IPlayerCombatCoordinator>();
             if (combat == null) return false;
             combat.SetIncomingDamageScale(GetInstanceID(), incomingDamageScale);
-            shieldVisual?.SetGuarding(true);
+            SetGuardingPresentation(true);
             return true;
         }
 
-        protected override void OnCompleted()
+        public void SetGuardingPresentation(bool guarding)
         {
-            combat?.ClearIncomingDamageScale(GetInstanceID());
-            shieldVisual?.SetGuarding(false);
+            if (shieldVisual == null) shieldVisual = GetComponent<GuardShieldVisual>();
+            if (shieldVisual == null) shieldVisual = gameObject.AddComponent<GuardShieldVisual>();
+            shieldVisual.SetGuarding(guarding);
         }
 
-        protected override void OnCancelled()
+        protected override void OnCompleted() => EndGuard();
+
+        protected override void OnCancelled() => EndGuard();
+
+        private void EndGuard()
         {
             combat?.ClearIncomingDamageScale(GetInstanceID());
-            shieldVisual?.SetGuarding(false);
+            SetGuardingPresentation(false);
         }
     }
 }

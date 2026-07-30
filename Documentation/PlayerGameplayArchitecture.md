@@ -139,7 +139,9 @@ Network Player
 
 Local／NetworkともSkill Featureを直接呼ばず、`PlayerCharacterCoordinator`または`IPlayerSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
 
-`ActiveSkillIndex`はAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。Guardの表示状態は`ActiveSkillIndex`から全Clientの`GuardShieldVisual`へ反映します。その他のSkill Animation／Effect再生は未接続です。
+`ActiveSkillIndex`は`PlayerSkillSlot`によりAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加します。両方とも全Clientから読み取り可能ですが、書き込みはServerだけが行います。Guardの表示状態は`ActiveSkillIndex`から`IGuardSkillPresentation`へ通知し、`GuardSkillFeature`が全Clientの`GuardShieldVisual`を一元管理します。その他のSkill Animation／Effect再生は未接続です。
+
+`NetworkPlayerCombatState`は`IPlayerCombatProcessGate`としてNetwork CombatのDamage、Heal、Hit DetectionをSpawn済みServerだけに制限し、`PlayerHealthFeature.CurrentHealth`をServer-writeのNetworkVariableで全Clientへ同期します。Clientへの反映は`PlayerHealthFeature.ApplyReplicatedHealth`を通して`HealthChanged`通知を維持します。Local CharacterにはGateを配置せず、従来どおり共通Combatを直接処理します。
 
 ### 設定クラスの予定
 
@@ -259,7 +261,7 @@ Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付き�
 - 攻撃命中は`PlayerDamageRequest.Point`を中心とするRingで表示する
 - 環境との交差はURP Scene Depthを比較して表示する
 - 環境交差のためPC／Mobile双方のURP AssetでDepth Textureを有効にする
-- Network Playerでは`ActiveSkillIndex == 2`を全Clientへ反映する
+- Network Playerでは`PlayerSkillSlot.Guard`の同期状態を全Clientへ反映する
 
 > [!CAUTION]
 > Combat関連クラスとPrefab設定は存在しますが、現時点では動作未確認です。この節の動作説明はコード上の意図を示すもので、検証済み仕様ではありません。
