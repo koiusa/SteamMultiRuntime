@@ -17,6 +17,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField, Min(1)] private int maximumTargets = 8;
 
         private readonly List<ITargetable> candidates = new();
+        private readonly List<ITargetable> multiAcquisitionCandidates = new();
         private readonly List<ITargetable> selectedTargets = new();
         private readonly List<ITargetable> stateTargets = new();
         private readonly List<ITargetFilter> resolvedFilters = new();
@@ -93,6 +94,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private bool EnterSingle()
         {
+            multiAcquisitionCandidates.Clear();
             if (mode == TargetingMode.Multi && primaryTarget != null)
             {
                 selectedTargets.Clear();
@@ -118,6 +120,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (mode == TargetingMode.Single && primaryTarget != null)
             {
+                CaptureMultiAcquisitionCandidates();
                 mode = TargetingMode.Multi;
                 return true;
             }
@@ -131,6 +134,7 @@ namespace Koiusa.TargetingSystem.Runtime
             selectedTargets.Clear();
             selectedTargets.Add(best);
             primaryTarget = best;
+            CaptureCurrentCandidatesForMulti();
             mode = TargetingMode.Multi;
             return true;
         }
@@ -142,7 +146,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return false;
             }
 
-            var best = FindBestCandidate(includeSelected: false);
+            var best = FindBestMultiAcquisitionCandidate(includeSelected: false);
             if (best == null)
             {
                 return false;
@@ -160,7 +164,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return false;
             }
 
-            var best = FindBestCandidate(includeSelected: true);
+            var best = FindBestMultiAcquisitionCandidate(includeSelected: true);
             if (best == null)
             {
                 return false;
@@ -183,14 +187,13 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private bool SelectAllCandidates()
         {
-            if (mode != TargetingMode.Multi || !CollectCandidates())
+            if (mode != TargetingMode.Multi || multiAcquisitionCandidates.Count == 0)
             {
                 return false;
             }
 
-            SortCandidates();
             var changed = false;
-            foreach (var target in candidates)
+            foreach (var target in multiAcquisitionCandidates)
             {
                 if (selectedTargets.Count >= maximumTargets)
                 {
@@ -261,6 +264,36 @@ namespace Koiusa.TargetingSystem.Runtime
                 }
             }
             return null;
+        }
+
+        private ITargetable FindBestMultiAcquisitionCandidate(bool includeSelected)
+        {
+            for (var i = 0; i < multiAcquisitionCandidates.Count; i++)
+            {
+                var target = multiAcquisitionCandidates[i];
+                if (!IsValid(target)) continue;
+                if (includeSelected || !selectedTargets.Contains(target)) return target;
+            }
+            return null;
+        }
+
+        private void CaptureMultiAcquisitionCandidates()
+        {
+            if (CollectCandidates()) SortCandidates();
+            CaptureCurrentCandidatesForMulti();
+        }
+
+        private void CaptureCurrentCandidatesForMulti()
+        {
+            multiAcquisitionCandidates.Clear();
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var target = candidates[i];
+                if (IsValid(target) && !multiAcquisitionCandidates.Contains(target))
+                    multiAcquisitionCandidates.Add(target);
+            }
+            if (IsValid(primaryTarget) && !multiAcquisitionCandidates.Contains(primaryTarget))
+                multiAcquisitionCandidates.Insert(0, primaryTarget);
         }
 
         private bool CollectCandidates()
@@ -347,6 +380,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (mode == TargetingMode.None && selectedTargets.Count == 0 && primaryTarget == null) return false;
             selectedTargets.Clear();
+            multiAcquisitionCandidates.Clear();
             primaryTarget = null;
             mode = TargetingMode.None;
             Publish(reason);

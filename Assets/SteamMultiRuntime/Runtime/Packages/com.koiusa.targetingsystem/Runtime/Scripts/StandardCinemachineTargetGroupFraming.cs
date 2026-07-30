@@ -14,8 +14,10 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void Awake()
         {
-            if (targetGroup == null) targetGroup = GetComponent<CinemachineTargetGroup>();
+            ResolveTargetGroup();
         }
+
+        public void Configure(CinemachineTargetGroup value) => targetGroup = value;
 
         public void SetMembers(
             Transform primary,
@@ -24,6 +26,7 @@ namespace Koiusa.TargetingSystem.Runtime
             float memberRadius)
         {
             Clear();
+            ResolveTargetGroup();
             if (targetGroup == null || members == null) return;
             for (var i = 0; i < members.Count; i++)
             {
@@ -47,5 +50,10 @@ namespace Koiusa.TargetingSystem.Runtime
         }
 
         private void OnDisable() => Clear();
+
+        private void ResolveTargetGroup()
+        {
+            if (targetGroup == null) targetGroup = GetComponent<CinemachineTargetGroup>();
+        }
     }
 }

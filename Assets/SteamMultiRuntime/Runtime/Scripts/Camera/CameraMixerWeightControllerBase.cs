@@ -28,6 +28,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private CinemachineCamera multiTargetCamera;
         [SerializeField] private CinemachineTargetGroup multiTargetGroup;
         [SerializeField] private TargetingCameraGroupPresenter targetingGroupPresenter;
+        [SerializeField] private TargetingCameraFramingMode targetingFramingMode = TargetingCameraFramingMode.PrimaryCentered;
         [SerializeField, Min(0f)] private float targetingGroupWeight = 1f;
         [SerializeField, Min(0f)] private float targetingGroupRadius = 0.5f;
 
@@ -282,12 +283,16 @@ namespace Koiusa.SteamMultiRuntime
             }
             if (targetingGroupPresenter == null)
             {
-                targetingGroupPresenter = gameObject.AddComponent<TargetingCameraGroupPresenter>();
+                Debug.LogWarning(
+                    "Targeting camera requires a preconfigured TargetingCameraGroupPresenter.",
+                    this);
+                return;
             }
             targetingGroupPresenter.Configure(
                 singleTargetCamera,
                 multiTargetCamera,
                 multiTargetGroup,
+                targetingFramingMode,
                 targetingGroupWeight,
                 targetingGroupRadius);
         }
@@ -343,29 +348,29 @@ namespace Koiusa.SteamMultiRuntime
             foreach (var camera in GetComponentsInChildren<CinemachineCamera>(true))
             {
                 var deoccluder = camera.GetComponent<CinemachineDeoccluder>();
-                var addedDeoccluder = deoccluder == null;
                 if (deoccluder == null)
                 {
-                    deoccluder = camera.gameObject.AddComponent<CinemachineDeoccluder>();
+                    Debug.LogWarning($"{camera.name} requires a preconfigured CinemachineDeoccluder.", camera);
+                    continue;
                 }
 
                 var decollider = camera.GetComponent<CinemachineDecollider>();
-                var addedDecollider = decollider == null;
                 if (decollider == null)
                 {
-                    decollider = camera.gameObject.AddComponent<CinemachineDecollider>();
+                    Debug.LogWarning($"{camera.name} requires a preconfigured CinemachineDecollider.", camera);
+                    continue;
                 }
 
                 cameraCollisionStates.Add(new CameraCollisionState
                 {
                     Deoccluder = deoccluder,
-                    AddedDeoccluder = addedDeoccluder,
+                    AddedDeoccluder = false,
                     DeoccluderEnabled = deoccluder.enabled,
                     CollideAgainst = deoccluder.CollideAgainst,
                     MinimumDistanceFromTarget = deoccluder.MinimumDistanceFromTarget,
                     AvoidObstacles = deoccluder.AvoidObstacles,
                     Decollider = decollider,
-                    AddedDecollider = addedDecollider,
+                    AddedDecollider = false,
                     DecolliderEnabled = decollider.enabled,
                     CameraRadius = decollider.CameraRadius,
                     Decollision = decollider.Decollision,

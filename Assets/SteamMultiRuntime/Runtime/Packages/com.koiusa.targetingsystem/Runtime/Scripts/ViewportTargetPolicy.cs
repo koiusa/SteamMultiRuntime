@@ -19,7 +19,8 @@ namespace Koiusa.TargetingSystem.Runtime
                 return false;
             }
 
-            var offset = aimPoint.position - context.Origin;
+            var acquisitionOrigin = context.Owner != null ? context.Owner.position : context.Origin;
+            var offset = aimPoint.position - acquisitionOrigin;
             if (offset.sqrMagnitude > acquisitionDistance * acquisitionDistance)
             {
                 return false;
@@ -46,7 +47,8 @@ namespace Koiusa.TargetingSystem.Runtime
                 return float.PositiveInfinity;
             }
 
-            var offset = aimPoint.position - context.Origin;
+            var acquisitionOrigin = context.Owner != null ? context.Owner.position : context.Origin;
+            var offset = aimPoint.position - acquisitionOrigin;
             var normalizedDistance = acquisitionDistance > 0f
                 ? Mathf.Clamp01(offset.magnitude / acquisitionDistance)
                 : 0f;

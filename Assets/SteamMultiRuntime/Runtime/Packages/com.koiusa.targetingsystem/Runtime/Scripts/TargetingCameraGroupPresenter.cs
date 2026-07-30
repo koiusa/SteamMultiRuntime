@@ -10,7 +10,9 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private CinemachineCamera singleCamera;
         [SerializeField] private CinemachineCamera multiCamera;
         [SerializeField] private CinemachineTargetGroup targetGroup;
+        [SerializeField] private TargetingCameraFramingMode framingMode = TargetingCameraFramingMode.PrimaryCentered;
         [SerializeField] private MonoBehaviour framingGroupSource;
+        [SerializeField] private TargetingCameraRuntimeObjectFactory runtimeObjectFactory;
         [SerializeField, Min(0f)] private float memberWeight = 1f;
         [SerializeField, Min(0f)] private float memberRadius = 0.5f;
 
@@ -31,6 +33,7 @@ namespace Koiusa.TargetingSystem.Runtime
             CinemachineCamera newSingleCamera,
             CinemachineCamera newMultiCamera,
             CinemachineTargetGroup newTargetGroup,
+            TargetingCameraFramingMode newFramingMode,
             float newMemberWeight,
             float newMemberRadius)
         {
@@ -38,12 +41,14 @@ namespace Koiusa.TargetingSystem.Runtime
             multiCamera = newMultiCamera;
             CaptureDefaultTargets();
             targetGroup = newTargetGroup;
+            framingMode = newFramingMode;
             if (targetGroup != null)
             {
                 targetGroup.PositionMode = CinemachineTargetGroup.PositionModes.GroupCenter;
             }
             memberWeight = Mathf.Max(0f, newMemberWeight);
             memberRadius = Mathf.Max(0f, newMemberRadius);
+            if (runtimeObjectFactory == null) runtimeObjectFactory = GetComponent<TargetingCameraRuntimeObjectFactory>();
             ResolveFramingGroup();
             SetGroupFramingEnabled(singleCamera, false);
             EnsureGroupFraming(multiCamera);
@@ -85,7 +90,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnDestroy()
         {
-            if (lookAtAnchor != null) Destroy(lookAtAnchor.gameObject);
+            runtimeObjectFactory?.Release(lookAtAnchor);
         }
 
         private void AddMember(Transform member)
@@ -129,6 +134,39 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void ResolveFramingGroup()
         {
+            if (framingMode == TargetingCameraFramingMode.PrimaryCentered)
+            {
+                framingGroup = GetComponentInChildren<PrimaryCenteredCinemachineTargetGroup>(true);
+                if (framingGroup == null)
+                {
+                    Debug.LogWarning(
+                        "Primary Centered framing requires a preconfigured PrimaryCenteredCinemachineTargetGroup.",
+                        this);
+                    framingGroupSource = null;
+                    return;
+                }
+                framingGroupSource = framingGroup as MonoBehaviour;
+                return;
+            }
+
+            if (framingMode == TargetingCameraFramingMode.GroupCentered)
+            {
+                var standardGroup = GetComponentInChildren<StandardCinemachineTargetGroupFraming>(true);
+                if (standardGroup == null)
+                {
+                    Debug.LogWarning(
+                        "Group Centered framing requires a preconfigured StandardCinemachineTargetGroupFraming.",
+                        this);
+                    framingGroupSource = null;
+                    framingGroup = null;
+                    return;
+                }
+                standardGroup.Configure(targetGroup);
+                framingGroupSource = standardGroup;
+                framingGroup = standardGroup;
+                return;
+            }
+
             framingGroup = framingGroupSource as ITargetingCameraFramingGroup;
             if (framingGroup != null) return;
 
@@ -140,11 +178,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
             }
 
-            var groupObject = new GameObject("Primary Centered Target Group");
-            groupObject.transform.SetParent(transform, false);
-            var defaultGroup = groupObject.AddComponent<PrimaryCenteredCinemachineTargetGroup>();
-            framingGroupSource = defaultGroup;
-            framingGroup = defaultGroup;
+            Debug.LogWarning("Custom camera framing requires a component implementing ITargetingCameraFramingGroup.", this);
         }
 
         private void EnsureLookAtAnchor()
@@ -158,13 +192,17 @@ namespace Koiusa.TargetingSystem.Runtime
             {
                 var oldAnchor = lookAtAnchor;
                 lookAtAnchor = null;
-                Destroy(oldAnchor.gameObject);
+                runtimeObjectFactory?.Release(oldAnchor);
             }
             if (playerAnchor == null) return;
-
-            var anchorObject = new GameObject("Targeting Camera Follow Target");
-            anchorObject.transform.SetParent(playerAnchor, false);
-            lookAtAnchor = anchorObject.AddComponent<TargetingCameraLookAtAnchor>();
+            if (runtimeObjectFactory == null)
+            {
+                Debug.LogWarning(
+                    "Targeting camera follow target requires a preconfigured TargetingCameraRuntimeObjectFactory.",
+                    this);
+                return;
+            }
+            lookAtAnchor = runtimeObjectFactory.CreateFollowTarget(playerAnchor);
         }
 
         private void CaptureDefaultTargets()
@@ -203,7 +241,11 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (camera == null) return;
             var framing = camera.GetComponent<CinemachineGroupFraming>();
-            if (framing == null) framing = camera.gameObject.AddComponent<CinemachineGroupFraming>();
+            if (framing == null)
+            {
+                Debug.LogWarning($"{camera.name} requires a preconfigured CinemachineGroupFraming.", camera);
+                return;
+            }
             framing.enabled = true;
         }
 

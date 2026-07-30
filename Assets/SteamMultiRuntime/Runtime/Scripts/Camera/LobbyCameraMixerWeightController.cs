@@ -6,7 +6,6 @@ namespace Koiusa.SteamMultiRuntime
     public class LobbyCameraMixerWeightController : CameraMixerWeightControllerBase
     {
         [SerializeField] private NetworkFocusMarkerContext networkContext;
-        [SerializeField] private SteamLobbyService lobbyService;
 
         protected override IFocusMarkerContext ResolveContext()
         {
@@ -27,25 +26,10 @@ namespace Koiusa.SteamMultiRuntime
                 return networkContext;
             }
 
-            if (lobbyService == null)
-            {
-                lobbyService = FindFirstObjectByType<SteamLobbyService>();
-            }
-
-            if (lobbyService == null)
-            {
-                return null;
-            }
-
-            var autoContext = lobbyService.GetComponent<NetworkFocusMarkerContext>();
-            if (autoContext != null)
-            {
-                networkContext = autoContext;
-                return networkContext;
-            }
-
-            networkContext = lobbyService.gameObject.AddComponent<NetworkFocusMarkerContext>();
-            return networkContext;
+            Debug.LogWarning(
+                "Lobby camera requires a preconfigured NetworkFocusMarkerContext.",
+                this);
+            return null;
         }
     }
 }

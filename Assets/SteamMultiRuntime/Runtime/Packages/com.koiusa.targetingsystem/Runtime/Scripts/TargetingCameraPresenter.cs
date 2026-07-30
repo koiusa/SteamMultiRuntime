@@ -14,6 +14,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private CinemachineTargetGroup multiTargetGroup;
         [SerializeField] private Transform fallbackLookAt;
         [SerializeField] private TargetingCameraGroupPresenter groupPresenter;
+        [SerializeField] private TargetingCameraFramingMode framingMode = TargetingCameraFramingMode.PrimaryCentered;
         [SerializeField, Min(0f)] private float transitionSpeed = 10f;
         [SerializeField, Min(0f)] private float targetWeight = 1f;
         [SerializeField, Min(0f)] private float targetRadius = 0.5f;
@@ -118,9 +119,12 @@ namespace Koiusa.TargetingSystem.Runtime
             }
             if (groupPresenter == null)
             {
-                groupPresenter = gameObject.AddComponent<TargetingCameraGroupPresenter>();
+                Debug.LogWarning(
+                    "Targeting camera requires a preconfigured TargetingCameraGroupPresenter.",
+                    this);
+                return;
             }
-            groupPresenter.Configure(singleCamera, multiCamera, multiTargetGroup, targetWeight, targetRadius);
+            groupPresenter.Configure(singleCamera, multiCamera, multiTargetGroup, framingMode, targetWeight, targetRadius);
         }
 
         private float GetWeight(CinemachineCamera camera) =>

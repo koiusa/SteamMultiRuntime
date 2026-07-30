@@ -113,6 +113,9 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             if (FindCamera(prefab, "SingleTargetCamera") == null) errors.Add($"SingleTargetCamera: {path}");
             if (FindCamera(prefab, "MultiTargetCamera") == null) errors.Add($"MultiTargetCamera: {path}");
             if (prefab.GetComponentInChildren<CinemachineTargetGroup>(true) == null) errors.Add($"CinemachineTargetGroup: {path}");
+            if (prefab.GetComponentInChildren<PrimaryCenteredCinemachineTargetGroup>(true) == null) errors.Add($"PrimaryCenteredCinemachineTargetGroup: {path}");
+            if (prefab.GetComponentInChildren<StandardCinemachineTargetGroupFraming>(true) == null) errors.Add($"StandardCinemachineTargetGroupFraming: {path}");
+            if (prefab.GetComponent<TargetingCameraRuntimeObjectFactory>() == null) errors.Add($"TargetingCameraRuntimeObjectFactory: {path}");
             if (prefab.GetComponent<LocalTargetingCameraConnector>() == null) errors.Add($"LocalTargetingCameraConnector: {path}");
         }
 
@@ -176,6 +179,15 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             var multiCamera = GetOrCreateTargetCamera(mixingCamera.transform, followCamera, "MultiTargetCamera");
             var targetGroup = GetOrCreateTargetGroup(mixingCamera.transform);
             multiCamera.LookAt = targetGroup.transform;
+            GetOrAdd<CinemachineGroupFraming>(multiCamera.gameObject);
+            var groupPresenter = GetOrAdd<TargetingCameraGroupPresenter>(root);
+            groupPresenter.Configure(
+                singleCamera,
+                multiCamera,
+                targetGroup,
+                TargetingCameraFramingMode.PrimaryCentered,
+                1f,
+                0.5f);
 
             defaultCamera.transform.SetSiblingIndex(0);
             followCamera.transform.SetSiblingIndex(1);
@@ -187,9 +199,11 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             serialized.FindProperty("followCameraIndex").intValue = 1;
             serialized.FindProperty("singleTargetCameraIndex").intValue = 2;
             serialized.FindProperty("multiTargetCameraIndex").intValue = 3;
+            serialized.FindProperty("followCamera").objectReferenceValue = followCamera;
             serialized.FindProperty("singleTargetCamera").objectReferenceValue = singleCamera;
             serialized.FindProperty("multiTargetCamera").objectReferenceValue = multiCamera;
             serialized.FindProperty("multiTargetGroup").objectReferenceValue = targetGroup;
+            serialized.FindProperty("targetingGroupPresenter").objectReferenceValue = groupPresenter;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             GetOrAdd<LocalTargetingCameraConnector>(root);
@@ -216,10 +230,28 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         private static CinemachineTargetGroup GetOrCreateTargetGroup(Transform parent)
         {
             var existing = parent.GetComponentInChildren<CinemachineTargetGroup>(true);
-            if (existing != null) return existing;
-            var groupObject = new GameObject("TargetingTargetGroup");
-            groupObject.transform.SetParent(parent, false);
-            return groupObject.AddComponent<CinemachineTargetGroup>();
+            if (existing == null)
+            {
+                var groupObject = new GameObject("TargetingTargetGroup");
+                groupObject.transform.SetParent(parent, false);
+                existing = groupObject.AddComponent<CinemachineTargetGroup>();
+            }
+            var primaryOnStandardGroup = existing.GetComponent<PrimaryCenteredCinemachineTargetGroup>();
+            if (primaryOnStandardGroup != null)
+            {
+                UnityEngine.Object.DestroyImmediate(primaryOnStandardGroup);
+            }
+            var primary = parent.GetComponentInChildren<PrimaryCenteredCinemachineTargetGroup>(true);
+            if (primary == null)
+            {
+                var primaryObject = new GameObject("PrimaryCenteredTargetGroup");
+                primaryObject.transform.SetParent(parent, false);
+                primaryObject.AddComponent<PrimaryCenteredCinemachineTargetGroup>();
+            }
+            var standard = GetOrAdd<StandardCinemachineTargetGroupFraming>(existing.gameObject);
+            standard.Configure(existing);
+            GetOrAdd<TargetingCameraRuntimeObjectFactory>(parent.gameObject);
+            return existing;
         }
 
         private static CinemachineCamera FindCamera(GameObject root, string name)

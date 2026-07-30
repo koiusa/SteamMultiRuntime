@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 7357919562320602132}
   - component: {fileID: 3167704487536520562}
   - component: {fileID: 2634572614409532140}
+  - component: {fileID: 7001000000000000001}
+  - component: {fileID: 7001000000000000002}
   m_Layer: 0
   m_Name: Local Mixing Camera
   m_TagString: Untagged
@@ -39,6 +41,7 @@ Transform:
   - {fileID: 8723776102249308470}
   - {fileID: 4340599703143882565}
   - {fileID: 1619678086345704910}
+  - {fileID: 7011000000000000002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1191692261035717989
@@ -106,6 +109,8 @@ MonoBehaviour:
   singleTargetCamera: {fileID: 601386825254902533}
   multiTargetCamera: {fileID: 7887742580758126193}
   multiTargetGroup: {fileID: 5989281774076646605}
+  targetingGroupPresenter: {fileID: 7001000000000000002}
+  targetingFramingMode: 0
   targetingGroupWeight: 1
   targetingGroupRadius: 0.5
   transitionSpeed: 10
@@ -157,6 +162,7 @@ GameObject:
   - component: {fileID: 8975141725731586158}
   - component: {fileID: 4109708712590287626}
   - component: {fileID: 4943035948584259084}
+  - component: {fileID: 7001000000000000004}
   m_Layer: 0
   m_Name: MultiTargetCamera
   m_TagString: Untagged
@@ -164,6 +170,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7001000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135760140632229623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb4843bae7d24943842ea23130dcd55, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineGroupFraming
+  FramingMode: 2
+  FramingSize: 0.8
+  CenterOffset: {x: 0, y: 0}
+  Damping: 2
+  SizeAdjustment: 2
+  LateralAdjustment: 0
+  FovRange: {x: 1, y: 100}
+  DollyRange: {x: -100, y: 100}
+  OrthoSizeRange: {x: 1, y: 1000}
 --- !u!4 &8723776102249308470
 Transform:
   m_ObjectHideFlags: 0
@@ -969,6 +996,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1619678086345704910}
   - component: {fileID: 5989281774076646605}
+  - component: {fileID: 7001000000000000003}
   m_Layer: 0
   m_Name: TargetingTargetGroup
   m_TagString: Untagged
@@ -1008,3 +1036,92 @@ MonoBehaviour:
   UpdateMethod: 2
   Targets: []
   m_LegacyTargets: []
+--- !u!114 &7001000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9105956107568184295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6769427e43f64e70aa27ecfb44ed65fa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.StandardCinemachineTargetGroupFraming
+  targetGroup: {fileID: 5989281774076646605}
+--- !u!114 &7001000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 933075429629948570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61caf55ffbc44e18ec3bbcf4c8c85b0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCameraRuntimeObjectFactory
+--- !u!114 &7001000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 933075429629948570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c014560a3ed5487a889ed36429595ccd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCameraGroupPresenter
+  singleCamera: {fileID: 601386825254902533}
+  multiCamera: {fileID: 7887742580758126193}
+  targetGroup: {fileID: 5989281774076646605}
+  framingMode: 0
+  framingGroupSource: {fileID: 7011000000000000003}
+  runtimeObjectFactory: {fileID: 7001000000000000001}
+  memberWeight: 1
+  memberRadius: 0.5
+--- !u!1 &7011000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7011000000000000002}
+  - component: {fileID: 7011000000000000003}
+  m_Layer: 0
+  m_Name: PrimaryCenteredTargetGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7011000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7011000000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7293016380486018088}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7011000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7011000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7737c86c8a34cbeb5557af67df03e57, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.PrimaryCenteredCinemachineTargetGroup

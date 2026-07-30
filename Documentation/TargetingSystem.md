@@ -45,6 +45,7 @@ SingleとMultiで別々の状態を所有しません。Multi中も`PrimaryTarge
 - `TargetMarker`が無効化またはTarget不可になるとイベントで即時に選択から除外します。
 
 候補探索はCommand実行時だけ行います。Camera補間やWorld座標追従以外の理由で全候補を毎Frame走査しません。
+Multi開始時に、その時点の距離・Viewport条件を通過した候補集合を固定します。長押し追加中にGroup Framingで画角が広がっても候補集合を再収集しないため、Cameraの引きに連鎖して遠方Targetが追加されることはありません。取得距離はCamera位置ではなくPlayer Owner位置を基準にします。
 
 ## Camera
 
@@ -61,6 +62,10 @@ Controllerの状態変更時だけLookAtとTargetGroupを更新し、Camera Weig
 None／Single／Multiの切替時は、遷移元Cameraの最終位置と向きを遷移先Cameraへ渡してからWeightをブレンドします。ロック解除時もFollow Cameraへ現在姿勢を引き継ぐため、Follow Cameraに残っていた古い軌道角へ急に戻りません。
 実ゲームのSingle／Multi CameraはPlayerと選択Targetを同じ`CinemachineTargetGroup`へ登録し、`CinemachineGroupFraming`で両方を画角へ収めます。Single CameraがTargetだけをLookAtしてPlayerを画角外へ出す構成にはしません。
 Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`TargetingCameraGroupPresenter`が所有します。実ゲームの`CameraMixerWeightControllerBase`とSampleの`TargetingCameraPresenter`は同Componentへ状態を渡し、Camera Weight制御だけを各自で担当します。
+Camera Controllerの`Targeting Framing Mode`では、Primaryを画面中心に置く`Primary Centered`、Playerと選択対象全体の中心を使う`Group Centered`、任意の`ITargetingCameraFramingGroup`を指定する`Custom`を選択できます。
+標準Prefabは必要なフレーミングComponentを事前配置し、欠落時はRuntime生成せず警告を出します。Player生成後に必要になるCamera Follow Targetだけは、Camera Rigへ事前配置した`TargetingCameraRuntimeObjectFactory`が生成と破棄を一元管理します。
+`PrimaryCenteredCinemachineTargetGroup`と標準`CinemachineTargetGroup`は別GameObjectへ配置します。同じLookAt Transformに複数の`ICinemachineTargetGroup`を置くとCinemachineのGroup解決が曖昧になるため、併置しません。
+標準Prefabは`TargetingTargetGroup`へPrimary中心方式を事前配置します。必要なフレーミングComponentがない場合、Runtimeでは自動生成せず警告を出します。
 Free／Single Target CameraはPlayerをTracking Target、Player配下の高さ付き`Camera Aim`をLookAtとして分離します。Single未選択時も`Camera Aim`をfallback LookAtとして保持し、無効WeightのRotation Composerから警告が出ないようにします。
 ShowcaseのOrbital Follow、Rotation Composer、Input Axis Controllerは実ゲームの`Local Mixing Camera.prefab`を正本としてコピーし、独自の視点感度処理を持ちません。
 

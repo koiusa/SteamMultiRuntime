@@ -134,6 +134,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             TargetingController controller)
         {
             var rigObject = new GameObject("Current Targeting Cinemachine Rig");
+            rigObject.AddComponent<TargetingCameraRuntimeObjectFactory>();
             var mixer = rigObject.AddComponent<CinemachineMixingCamera>();
             var freeCamera = CreateVirtualCamera(rigObject.transform, "Free Camera", player, playerAim);
             var singleCamera = CreateVirtualCamera(rigObject.transform, "Single Target Camera", player, playerAim);
@@ -145,11 +146,22 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             var groupObject = new GameObject("Multi Target Group");
             groupObject.transform.SetParent(rigObject.transform, false);
             var targetGroup = groupObject.AddComponent<CinemachineTargetGroup>();
+            var standardFraming = groupObject.AddComponent<StandardCinemachineTargetGroupFraming>();
+            standardFraming.Configure(targetGroup);
+            var primaryGroupObject = new GameObject("Primary Centered Target Group");
+            primaryGroupObject.transform.SetParent(rigObject.transform, false);
+            primaryGroupObject.AddComponent<PrimaryCenteredCinemachineTargetGroup>();
             multiCamera.LookAt = targetGroup.transform;
             multiCamera.gameObject.AddComponent<CinemachineGroupFraming>();
 
             var groupPresenter = rigObject.AddComponent<TargetingCameraGroupPresenter>();
-            groupPresenter.Configure(singleCamera, multiCamera, targetGroup, 1f, 0.5f);
+            groupPresenter.Configure(
+                singleCamera,
+                multiCamera,
+                targetGroup,
+                TargetingCameraFramingMode.PrimaryCentered,
+                1f,
+                0.5f);
             groupPresenter.SetPlayerAnchor(playerAim);
 
             var presenter = rigObject.AddComponent<TargetingCameraPresenter>();
