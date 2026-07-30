@@ -620,6 +620,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.SteamLobbyConnectionStatus
   broadcastIntervalSeconds: 1
+  excellentPingMaxMs: 50
+  goodPingMaxMs: 90
+  fairPingMaxMs: 140
+  poorPingMaxMs: 220
+  strengthStepCount: 5
 --- !u!114 &1268765151025071872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -711,6 +716,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::SteamLobbyUiDocument
   lobbyService: {fileID: 3463410417665955121}
+  steamConnection: {fileID: 0}
   sceneLoader:
     mode: 0
     unityReference: {fileID: 5653671864346807292}

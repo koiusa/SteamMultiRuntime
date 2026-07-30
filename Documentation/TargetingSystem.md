@@ -52,6 +52,12 @@ Multi開始時に、その時点の距離・Viewport条件を通過した候補�
 統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が`Camera Mixer`配下の4台を一元管理します。共通`Targeting Camera System.prefab`をLocal／Network Camera PrefabへNested配置し、Outer Prefab OverrideからMixer Controllerと対象Cameraをシリアライズ参照します。
 
 ```text
+System
+└─ Gameplay System (Nested Prefab)
+   └─ Targeting System (Nested Prefab)
+      ├─ TargetMarkerRegistry
+      └─ LocalTargetingIndicatorPresenter
+
 Camera System
 ├─ Camera Mixer
 │  ├─ DefaultCamera
@@ -70,7 +76,7 @@ None／Single／Multiの切替時は、遷移元Cameraの最終位置と向き�
 Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`TargetingCameraGroupPresenter`が所有します。実ゲームの`CameraMixerWeightControllerBase`とSampleの`TargetingCameraPresenter`は同Componentへ状態を渡し、Camera Weight制御だけを各自で担当します。
 Camera Controllerの`Targeting Framing Mode`では、Primaryを画面中心に置く`Primary Centered`、Playerと選択対象全体の中心を使う`Group Centered`、任意の`ITargetingCameraFramingGroup`を指定する`Custom`を選択できます。
 標準Prefabは必要なフレーミングComponentを事前配置し、欠落時はRuntime生成せず警告を出します。Player生成後に必要になるCamera Follow Targetだけは、Camera Rigへ事前配置した`TargetingCameraRuntimeObjectFactory`が生成と破棄を一元管理します。
-共通Prefabの正本は`Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab`です。Local／Network側には共通構成を複製せず、Camera参照だけをNested Prefab Overrideとして保持します。
+Gameplay Composition Rootの正本は`Assets/SteamMultiRuntime/Runtime/Prefabs/System/Gameplay System.prefab`、Targeting常駐部の正本は`Assets/SteamMultiRuntime/Runtime/Prefabs/Targeting/Targeting System.prefab`、Camera連携部品の正本は`Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab`です。Utility用`System.prefab`はGameplay SystemをNested配置し、Local／Network Mixing Camera PrefabはCamera参照のOverrideを保持します。
 `PrimaryCenteredCinemachineTargetGroup`と標準`CinemachineTargetGroup`は別GameObjectへ配置します。同じLookAt Transformに複数の`ICinemachineTargetGroup`を置くとCinemachineのGroup解決が曖昧になるため、併置しません。
 Free／Single Target CameraはPlayerをTracking Target、Player配下の高さ付き`Camera Aim`をLookAtとして分離します。Single未選択時も`Camera Aim`をfallback LookAtとして保持し、無効WeightのRotation Composerから警告が出ないようにします。
 ShowcaseのOrbital Follow、Rotation Composer、Input Axis Controllerは実ゲームの`Local Mixing Camera.prefab`を正本としてコピーし、独自の視点感度処理を持ちません。
@@ -103,7 +109,7 @@ Gamepad L2の`Player/Strafe`はホールド式です。押している間だけS
 
 `PlayerTargetingOwner`が同じPlayer上の`ILocalPlayerOwnershipNotifier`を解決し、Local OwnerだけでControllerと入力を有効化して`LocalTargetingControllerRegistry`へ登録します。Cameraは`CurrentChanged`を購読します。状態の読み取りだけを提供する`ILocalPlayerOwnership`と、Push通知を提供するNotifierを分離しています。所有権の確定・獲得・喪失・Network Despawnは`OwnershipChanged`で通知され、Frame Pollingは行いません。Remote PlayerとDedicated ServerではLocal Camera Targetingを動作させません。
 
-`LocalTargetingIndicatorPresenter`も同じRegistryを購読し、Local Controllerが存在する間だけScreen SpaceのUI Toolkit Indicatorを有効化します。選択集合とPrimary表示は`TargetingStateChange`で更新し、移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従します。Remote PlayerごとのUIDocumentは生成しません。
+共通`System.prefab`配下の`Gameplay System.prefab`がゲーム機能のComposition Rootとなり、その子の`Targeting System.prefab`が`TargetMarkerRegistry`と`LocalTargetingIndicatorPresenter`を所有します。Targetingを使わないSceneではLocal Controllerが登録されないため、Indicatorは非表示のまま処理を行いません。PresenterはRegistryを購読し、選択集合とPrimary表示を`TargetingStateChange`で更新します。移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従し、Remote PlayerごとのUIDocumentは生成しません。
 
 Network Skillへ対象を渡す場合、Clientの選択結果は入力意図としてだけ扱います。Serverは対象の存在、敵味方、距離、角度、Skill固有条件、Multi対象数を検証し、HitとDamageを確定します。
 
@@ -118,7 +124,7 @@ Player側に次を配置します。
 5. `TargetingCommandInput`
 6. SteamMultiRuntime Playerでは`PlayerTargetingOwner`
 
-上記Componentは標準Local／Network Player Prefabへ適用済みです。全標準Player／NPC Proxyは`TargetMarker`を持ち、`System.prefab`の`TargetMarkerRegistry`へ有効化イベントで登録します。Local／Network Mixing Camera PrefabにはSingle／Multi Camera、Target Group、`LocalTargetingCameraConnector`を適用済みです。
+上記Componentは標準Local／Network Player Prefabへ適用済みです。全標準Player／NPC Proxyは`TargetMarker`を持ち、`System.prefab`配下の`Targeting System.prefab`にある`TargetMarkerRegistry`へ有効化イベントで登録します。Local／Network Mixing Camera PrefabにはSingle／Multi Camera、Target Group、`LocalTargetingCameraConnector`を適用済みです。
 
 同じ構成を再生成するEditor操作は`Tools/SteamMultiRuntime/Targeting/Install Production Setup`です。処理はUnityのPrefab／Asset公開APIを使用し、Reflectionは使用しません。
 

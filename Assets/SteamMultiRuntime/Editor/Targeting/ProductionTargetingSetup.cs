@@ -10,8 +10,6 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
     public static class ProductionTargetingSetup
     {
         private const string InputConfigPath = "Assets/SteamMultiRuntime/Runtime/Configs/Input/GameplayTargetingInputActions.asset";
-        private const string SystemPrefabPath = "Assets/SteamMultiRuntime/Runtime/Resources/System/System.prefab";
-
         private static readonly string[] PlayerPrefabPaths =
         {
             "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_WithAnimator.prefab",
@@ -37,9 +35,8 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         [MenuItem("Tools/SteamMultiRuntime/Targeting/Install Production Setup")]
         public static void InstallProductionSetup()
         {
-            TargetingCameraPrefabMigration.Migrate();
+            TargetingGameplayPrefabMigration.Migrate();
             ConfigureInput();
-            EditPrefab(SystemPrefabPath, ConfigureSystemPrefab);
 
             foreach (var path in TargetPrefabPaths) EditPrefab(path, ConfigureTargetMarker);
             foreach (var path in PlayerPrefabPaths) EditPrefab(path, ConfigurePlayerTargeting);
@@ -82,7 +79,9 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 
         private static void ValidateSystem(ICollection<string> errors)
         {
-            ValidateComponent<TargetMarkerRegistry>(SystemPrefabPath, errors);
+            ValidateChildComponent<TargetMarkerRegistry>(TargetingGameplayPrefabMigration.TargetingPrefabPath, errors);
+            ValidateChildComponent<LocalTargetingIndicatorPresenter>(TargetingGameplayPrefabMigration.TargetingPrefabPath, errors);
+            ValidateChildComponent<TargetMarkerRegistry>(TargetingGameplayPrefabMigration.GameplaySystemPrefabPath, errors);
         }
 
         private static void ValidatePlayer(string path, ICollection<string> errors)
@@ -113,16 +112,8 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 
             if (FindCamera(prefab, "SingleTargetCamera") == null) errors.Add($"SingleTargetCamera: {path}");
             if (FindCamera(prefab, "MultiTargetCamera") == null) errors.Add($"MultiTargetCamera: {path}");
-            if (prefab.GetComponentInChildren<CinemachineTargetGroup>(true) == null) errors.Add($"CinemachineTargetGroup: {path}");
-            if (prefab.GetComponentInChildren<PrimaryCenteredCinemachineTargetGroup>(true) == null) errors.Add($"PrimaryCenteredCinemachineTargetGroup: {path}");
-            if (prefab.GetComponentInChildren<StandardCinemachineTargetGroupFraming>(true) == null) errors.Add($"StandardCinemachineTargetGroupFraming: {path}");
-            if (prefab.GetComponentInChildren<TargetingCameraRuntimeObjectFactory>(true) == null) errors.Add($"TargetingCameraRuntimeObjectFactory: {path}");
             var mixer = prefab.GetComponentInChildren<CinemachineMixingCamera>(true);
-            var presenter = prefab.GetComponentInChildren<TargetingCameraGroupPresenter>(true);
             if (mixer == null || mixer.transform.parent != prefab.transform) errors.Add($"Camera Mixer hierarchy: {path}");
-            if (presenter == null || presenter.transform.parent != prefab.transform || presenter.transform == mixer?.transform)
-                errors.Add($"Targeting System hierarchy: {path}");
-            if (prefab.GetComponentInChildren<LocalTargetingCameraConnector>(true) == null) errors.Add($"LocalTargetingCameraConnector: {path}");
         }
 
         private static void ValidateComponent<T>(string path, ICollection<string> errors) where T : Component
@@ -131,9 +122,11 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             if (prefab == null || prefab.GetComponent<T>() == null) errors.Add($"Required component is missing: {path}");
         }
 
-        private static void ConfigureSystemPrefab(GameObject root)
+        private static void ValidateChildComponent<T>(string path, ICollection<string> errors) where T : Component
         {
-            GetOrAdd<TargetMarkerRegistry>(root);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null || prefab.GetComponentInChildren<T>(true) == null)
+                errors.Add($"Required child component is missing: {path}");
         }
 
         private static void ConfigureTargetMarker(GameObject root)

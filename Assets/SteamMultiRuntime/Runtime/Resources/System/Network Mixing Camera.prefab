@@ -296,7 +296,7 @@ Transform:
   m_Children:
   - {fileID: 8021000000000000002}
   - {fileID: 7472188075951320273}
-  - {fileID: 6265508385564662630}
+  - {fileID: 8162740032568120087}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5649759960531656290
@@ -320,8 +320,8 @@ MonoBehaviour:
   followCamera: {fileID: 1938429945531210679}
   singleTargetCamera: {fileID: 6566887330324775113}
   multiTargetCamera: {fileID: 1938741661384351923}
-  multiTargetGroup: {fileID: 1733473497663096065}
-  targetingGroupPresenter: {fileID: 8846494696817978684}
+  multiTargetGroup: {fileID: 4592236309728595312}
+  targetingGroupPresenter: {fileID: 6733301936037242189}
   targetingFramingMode: 0
   targetingGroupWeight: 1
   targetingGroupRadius: 0.5
@@ -1003,7 +1003,7 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
---- !u!1001 &1151792446903262430
+--- !u!1001 &2904702193089172655
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -1072,10 +1072,10 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a1fe8061f5845b4f990e4f5c2ff3a94, type: 3}
---- !u!114 &1733473497663096065 stripped
+--- !u!114 &4592236309728595312 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1726415598233508319, guid: 5a1fe8061f5845b4f990e4f5c2ff3a94, type: 3}
-  m_PrefabInstance: {fileID: 1151792446903262430}
+  m_PrefabInstance: {fileID: 2904702193089172655}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -1083,15 +1083,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5eb80d8e62d9d145bb50fb783c0f731, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineTargetGroup
---- !u!4 &6265508385564662630 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6415504727180937144, guid: 5a1fe8061f5845b4f990e4f5c2ff3a94, type: 3}
-  m_PrefabInstance: {fileID: 1151792446903262430}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8846494696817978684 stripped
+--- !u!114 &6733301936037242189 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8448450735293854178, guid: 5a1fe8061f5845b4f990e4f5c2ff3a94, type: 3}
-  m_PrefabInstance: {fileID: 1151792446903262430}
+  m_PrefabInstance: {fileID: 2904702193089172655}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -1099,3 +1094,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c014560a3ed5487a889ed36429595ccd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCameraGroupPresenter
+--- !u!4 &8162740032568120087 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6415504727180937144, guid: 5a1fe8061f5845b4f990e4f5c2ff3a94, type: 3}
+  m_PrefabInstance: {fileID: 2904702193089172655}
+  m_PrefabAsset: {fileID: 0}

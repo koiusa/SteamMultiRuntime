@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace Koiusa.SteamMultiRuntime.TargetingSystem
 {
     [DisallowMultipleComponent]
-    internal sealed class LocalTargetingIndicatorPresenter : MonoBehaviour
+    public sealed class LocalTargetingIndicatorPresenter : MonoBehaviour
     {
         private const string PanelSettingsPath = "UI/TargetIndicator Panel Settings";
         private const string VisualTreePath = "UI/TargetIndicator";
