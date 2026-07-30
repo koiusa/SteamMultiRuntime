@@ -87,7 +87,7 @@ SteamMultiRuntime
 │  └─ Character Prefab Loader
 │
 ├─ Presentation
-│  ├─ PlayerAnimatorStateDriver
+│  ├─ ActorAnimatorStateDriver
 │  ├─ PhysicsPresentationSmoother
 │  ├─ GuardShieldVisual
 │  ├─ Camera Mixer / Focus Marker
@@ -104,17 +104,17 @@ SteamMultiRuntime
 ### クラス構成
 
 ```text
-IPlayerController
+IActorController
 ├─ LocalPlayerController（Local Player）
 │  ├─ PlayerGameplayInputReader : IPlayerInputSource
 │  └─ PlayerCompositeMotor
 │
-└─ PlayerControllerAdapter（Network Player / 全NPC）
-   └─ IPlayerLocomotionState
+└─ ActorControllerAdapter（Network Player / 全NPC）
+   └─ IActorLocomotionState
       ├─ ServerDrivenPlayerController : NetworkBehaviour
       └─ NpcNavMeshController : INpcLocomotionState
 
-ServerDrivenPlayerController : NetworkBehaviour, IPlayerLocomotionState
+ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState
 │  ├─ IPlayerInputSource
 │  │  ├─ PlayerGameplayInputReader（Network Player）
 │  │  └─ AiPlayerInputSource（Network NPC）
@@ -125,7 +125,7 @@ ServerDrivenPlayerController : NetworkBehaviour, IPlayerLocomotionState
 │     ├─ PlayerMovementFlagsState
 │     └─ WireSwingNetworkState
 
-Local／Network NPCはいずれもPlayerControllerAdapterだけがIPlayerControllerを実装する。
+Local／Network NPCはいずれもActorControllerAdapterだけがIActorControllerを実装する。
 Adapterの状態SourceはLocalではNpcNavMeshController、NetworkではServerDrivenPlayerControllerになる。
 
 PlayerCompositeMotor : IPlayerMoveInputReceiver
@@ -156,8 +156,8 @@ Steam Lobby、Local Stage選択、Dedicated Server、Scene Loader、Loading Spla
 ## Animatorと表示
 
 ```text
-PlayerAnimatorStateDriver : IPlayerAnimatorStateDriver
-├─ IPlayerController
+ActorAnimatorStateDriver : IActorAnimatorStateDriver
+├─ IActorController
 ├─ IPlayerTraversalCoordinator
 └─ Animator
 
@@ -173,7 +173,7 @@ Camera
 └─ FocusMarkerUtility
 ```
 
-`PlayerAnimatorStateDriver`は入力を再判定せず、ControllerとCoordinatorが公開する確定済み状態をAnimatorパラメータへ変換します。
+`ActorAnimatorStateDriver`は入力を再判定せず、ControllerとCoordinatorが公開する確定済み状態をAnimatorパラメータへ変換します。
 
 Camera Mixer、Focus Marker、入力割り当て、障害物回避の詳細は[CameraArchitecture.md](CameraArchitecture.md)を正本とします。
 

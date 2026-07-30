@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal interface ICharacterDebugSnapshotSource
     {
-        bool Matches(Transform root, IPlayerController controller, Rigidbody body, Animator bodyAnimator,
+        bool Matches(Transform root, IActorController controller, Rigidbody body, Animator bodyAnimator,
             Animator faceAnimator, NetworkBehaviour networkBehaviour, int faceLayer);
         void Capture(CharacterDebugSnapshot destination);
     }
@@ -63,7 +63,7 @@ namespace Koiusa.SteamMultiRuntime
     internal sealed class CharacterDebugSnapshotSource : ICharacterDebugSnapshotSource
     {
         private readonly Transform root;
-        private readonly IPlayerController controller;
+        private readonly IActorController controller;
         private readonly Rigidbody body;
         private readonly Animator bodyAnimator;
         private readonly Animator faceAnimator;
@@ -73,7 +73,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly List<AnimatorClipInfo> bodyClips = new();
         private readonly List<AnimatorClipInfo> faceClips = new();
 
-        public CharacterDebugSnapshotSource(Transform root, IPlayerController controller, Rigidbody body,
+        public CharacterDebugSnapshotSource(Transform root, IActorController controller, Rigidbody body,
             Animator bodyAnimator, Animator faceAnimator, NetworkBehaviour networkBehaviour, int faceLayer)
         {
             this.root = root;
@@ -97,7 +97,7 @@ namespace Koiusa.SteamMultiRuntime
             CaptureAnimator(faceAnimator, faceLayer, null, faceClips, destination.FaceAnimator);
         }
 
-        public bool Matches(Transform candidateRoot, IPlayerController candidateController, Rigidbody candidateBody,
+        public bool Matches(Transform candidateRoot, IActorController candidateController, Rigidbody candidateBody,
             Animator candidateBodyAnimator, Animator candidateFaceAnimator, NetworkBehaviour candidateNetworkBehaviour,
             int candidateFaceLayer)
         {

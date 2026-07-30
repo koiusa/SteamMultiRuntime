@@ -40,7 +40,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private readonly List<LabelBinding> labelBindings = new();
         private readonly CharacterDebugSnapshot debugSnapshot = new();
-        private IPlayerController playerController;
+        private IActorController playerController;
         private ICharacterDebugSnapshotSource snapshotSource;
         private NetworkBehaviour targetNetworkBehaviour;
         private CharacterDebugDisplayScope displayScope;
@@ -119,7 +119,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             var root = targetRoot != null ? targetRoot : FindPlayerRoot();
             displayScope = GetComponentInParent<CharacterDebugDisplayScope>();
-            playerController = root.GetComponent<IPlayerController>();
+            playerController = root.GetComponent<IActorController>();
             targetNetworkBehaviour = root.GetComponent<NetworkBehaviour>();
             if (targetRigidbody == null) targetRigidbody = root.GetComponent<Rigidbody>();
             if (targetAnimator == null) targetAnimator = FindBodyAnimator(root);
@@ -372,7 +372,7 @@ namespace Koiusa.SteamMultiRuntime
         private void BindControllerLabels(VisualElement parent, CharacterDebugOverlay target)
         {
             var snapshot = target.debugSnapshot;
-            if (!snapshot.HasController) { parent.Add(new Label("IPlayerController: not found")); return; }
+            if (!snapshot.HasController) { parent.Add(new Label("IActorController: not found")); return; }
             BindLabel(parent, "Grounded", () => snapshot.Grounded.ToString());
             BindLabel(parent, "Jumping", () => snapshot.Jumping.ToString());
             BindLabel(parent, "Freefall", () => snapshot.Freefall.ToString());
@@ -550,7 +550,7 @@ namespace Koiusa.SteamMultiRuntime
         private Transform FindPlayerRoot()
         {
             for (var current = transform; current != null; current = current.parent)
-                if (current.GetComponent<IPlayerController>() != null) return current;
+                if (current.GetComponent<IActorController>() != null) return current;
             for (var current = transform; current != null; current = current.parent)
                 if (current.GetComponent<Rigidbody>() != null || current.GetComponent<NetworkBehaviour>() != null) return current;
             return transform;

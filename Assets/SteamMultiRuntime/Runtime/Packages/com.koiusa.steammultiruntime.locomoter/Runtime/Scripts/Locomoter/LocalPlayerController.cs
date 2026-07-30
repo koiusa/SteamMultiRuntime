@@ -7,7 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(PlayerCompositeMotor))]
-    public class LocalPlayerController : MonoBehaviour, IPlayerController
+    public class LocalPlayerController : MonoBehaviour, IActorController
     {
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;

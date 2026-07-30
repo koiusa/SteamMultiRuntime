@@ -747,7 +747,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 220a1975a3d0fbf48a3cce33e1edf677, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.PlayerAnimatorStateDriver
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.AnimationDriver.Runtime::Koiusa.SteamMultiRuntime.ActorAnimatorStateDriver
   targetAnimator: {fileID: 95902892598462830}
   targetRigidbody: {fileID: 0}
   horizontalSpeedParameter: Speed

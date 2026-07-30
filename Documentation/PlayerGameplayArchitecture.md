@@ -251,7 +251,7 @@ SkillFeature
     └─→ IPlayerCombatCoordinator
 ```
 
-Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付きモーションを要求します。通常時は入力Controllerから渡された基準方向を使用し、Strafe中に移動入力がある場合は`IPlayerLocomotionState.MoveDirection`を優先します。これにより、注視方向を維持したまま前後左右および斜めへDashできます。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
+Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付きモーションを要求します。通常時は入力Controllerから渡された基準方向を使用し、Strafe中に移動入力がある場合は`IActorLocomotionState.MoveDirection`を優先します。これにより、注視方向を維持したまま前後左右および斜めへDashできます。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
 
 ## 初期Skill
 

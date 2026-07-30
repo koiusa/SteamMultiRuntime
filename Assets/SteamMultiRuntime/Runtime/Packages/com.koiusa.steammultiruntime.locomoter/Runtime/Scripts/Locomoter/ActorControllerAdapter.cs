@@ -3,15 +3,15 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     /// <summary>
-    /// Gives consumers one stable IPlayerController regardless of whether the
+    /// Gives consumers one stable IActorController regardless of whether the
     /// underlying state is produced locally, by NPC navigation, or by netcode.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class PlayerControllerAdapter : MonoBehaviour, IPlayerController, IPlayerLadderState, IPlayerWallRunState
+    public sealed class ActorControllerAdapter : MonoBehaviour, IActorController, IPlayerLadderState, IPlayerWallRunState
     {
         [SerializeField] private MonoBehaviour stateSource;
 
-        private IPlayerLocomotionState source;
+        private IActorLocomotionState source;
         private IPlayerLadderState ladderState;
         private IPlayerWallRunState wallRunState;
 
@@ -43,7 +43,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveSource()
         {
-            source = stateSource as IPlayerLocomotionState;
+            source = stateSource as IActorLocomotionState;
             ladderState = null;
             wallRunState = null;
 
@@ -51,12 +51,12 @@ namespace Koiusa.SteamMultiRuntime
             {
                 foreach (var component in GetComponents<MonoBehaviour>())
                 {
-                    if (component == null || component == this || !(component is IPlayerLocomotionState candidate))
+                    if (component == null || component == this || !(component is IActorLocomotionState candidate))
                         continue;
 
                     if (source != null)
                     {
-                        Debug.LogError("Multiple state sources found. Assign PlayerControllerAdapter.stateSource explicitly.", this);
+                        Debug.LogError("Multiple state sources found. Assign ActorControllerAdapter.stateSource explicitly.", this);
                         source = null;
                         return;
                     }
@@ -69,7 +69,7 @@ namespace Koiusa.SteamMultiRuntime
             wallRunState = source as IPlayerWallRunState;
 
             if (source == null && Application.isPlaying)
-                Debug.LogError("PlayerControllerAdapter could not find an IPlayerLocomotionState source.", this);
+                Debug.LogError("ActorControllerAdapter could not find an IActorLocomotionState source.", this);
         }
     }
 }

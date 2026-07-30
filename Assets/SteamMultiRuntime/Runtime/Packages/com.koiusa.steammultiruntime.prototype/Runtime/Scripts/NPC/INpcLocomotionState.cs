@@ -5,7 +5,7 @@ namespace Koiusa.SteamMultiRuntime
     /// This contract deliberately does not identify the component as the
     /// authoritative player controller on networked NPCs.
     /// </summary>
-    public interface INpcLocomotionState : IPlayerLocomotionState
+    public interface INpcLocomotionState : IActorLocomotionState
     {
         bool HasPath { get; }
         bool IsMoving { get; }

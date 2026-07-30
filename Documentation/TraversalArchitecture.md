@@ -315,7 +315,7 @@ Minimum Rope Length: 2 m
 
 ## Animator
 
-`PlayerAnimatorStateDriver`がMotorとCoordinatorの状態をAnimatorパラメータへ変換します。
+`ActorAnimatorStateDriver`がMotorとCoordinatorの状態をAnimatorパラメータへ変換します。
 
 接地Locomotionの`Speed`と`MotionSpeed`には水平速度だけでなく、水平速度と鉛直速度の合成値を使用します。
 

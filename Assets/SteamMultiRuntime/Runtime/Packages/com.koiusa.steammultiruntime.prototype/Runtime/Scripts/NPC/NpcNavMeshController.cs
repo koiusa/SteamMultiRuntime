@@ -538,7 +538,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (alreadyAdded)
                     continue;
 
-                var other = col.GetComponentInParent<IPlayerController>();
+                var other = col.GetComponentInParent<IActorController>();
                 if (other == null)
                     continue;
 

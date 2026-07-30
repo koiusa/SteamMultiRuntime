@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
     }
 
     [DisallowMultipleComponent]
-    public class PlayerAnimatorStateDriver : MonoBehaviour, IPlayerAnimatorStateDriver
+    public class ActorAnimatorStateDriver : MonoBehaviour, IActorAnimatorStateDriver
     {
         [Header("References")]
         [SerializeField] private Animator targetAnimator;
@@ -41,7 +41,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
         private RuntimeAnimatorController cachedAnimatorController;
-        private IPlayerController playerController;
+        private IActorController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
         private IPlayerLadderState playerLadderState;
         private IPlayerWallRunState playerWallRunState;
@@ -70,7 +70,7 @@ namespace Koiusa.SteamMultiRuntime
                 targetRigidbody = GetComponentInParent<Rigidbody>();
             }
 
-            playerController = GetComponentInParent<IPlayerController>();
+            playerController = GetComponentInParent<IActorController>();
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
             playerLadderState = playerController as IPlayerLadderState;
             playerWallRunState = playerController as IPlayerWallRunState;

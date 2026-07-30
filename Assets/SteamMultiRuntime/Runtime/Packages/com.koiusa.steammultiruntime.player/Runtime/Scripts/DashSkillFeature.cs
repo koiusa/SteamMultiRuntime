@@ -10,20 +10,20 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private bool useFacingWhenDirectionIsEmpty = true;
 
         private IPlayerMotorMotionSink motor;
-        private IPlayerLocomotionState locomotionState;
+        private IActorLocomotionState locomotionState;
         protected override float ActiveDuration => duration;
 
         private void Awake()
         {
             motor = GetComponent<IPlayerMotorMotionSink>();
-            locomotionState = GetComponent<IPlayerLocomotionState>();
+            locomotionState = GetComponent<IActorLocomotionState>();
         }
 
         protected override bool OnActivate(PlayerSkillContext context)
         {
             if (motor == null) motor = GetComponent<IPlayerMotorMotionSink>();
             var direction = context.Direction;
-            if (locomotionState == null) locomotionState = GetComponent<IPlayerLocomotionState>();
+            if (locomotionState == null) locomotionState = GetComponent<IActorLocomotionState>();
             if (locomotionState != null
                 && locomotionState.IsStrafeMode
                 && locomotionState.MoveDirection.sqrMagnitude > 0.0001f)

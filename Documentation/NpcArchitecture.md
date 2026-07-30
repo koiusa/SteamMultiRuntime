@@ -68,21 +68,21 @@ Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、
 ## Controller契約の分離
 
 NPCの経路・移動状態は`INpcLocomotionState`、Network同期状態は
-`IPlayerLocomotionState`として公開し、`IPlayerController`は共通Adapterだけが実装します。
+`IActorLocomotionState`として公開し、`IActorController`は共通Adapterだけが実装します。
 
 ```text
 NetworkNPC
-├─ ServerDrivenPlayerController : IPlayerLocomotionState
+├─ ServerDrivenPlayerController : IActorLocomotionState
 ├─ NpcNavMeshController : INpcLocomotionState
-└─ PlayerControllerAdapter : IPlayerController
+└─ ActorControllerAdapter : IActorController
 
 LocalNPC
 ├─ NpcNavMeshController : INpcLocomotionState
-└─ PlayerControllerAdapter : IPlayerController
+└─ ActorControllerAdapter : IActorController
 ```
 
-`PlayerControllerAdapter`はLocalではNPC状態、Networkでは同期済み状態を共通のPlayer Controller契約へ変換します。
-Local／Networkとも構成が同じになり、Animatorなどが行う`GetComponent<IPlayerController>()`の結果も一意です。
+`ActorControllerAdapter`はLocalではNPC状態、Networkでは同期済み状態を共通のPlayer Controller契約へ変換します。
+Local／Networkとも構成が同じになり、Animatorなどが行う`GetComponent<IActorController>()`の結果も一意です。
 
 ## 表示補間と移動床
 
