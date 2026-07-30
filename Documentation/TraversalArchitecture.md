@@ -294,6 +294,7 @@ WireAimCursorOverlay / WireAttachAction
 `WireAimResult`は表示と発射で共有し、`RequestedPoint`、実際の`AttachPoint`、`AnchorTransform`を保持します。これにより、カーソル表示時と発射時で別々の判定結果を使うことを避けています。照準地点が変化した場合は、発射処理の直前にも再評価します。
 
 `WireAimCursorOverlay`の既定表示は、`Valid`がシアンの十字、`Obstructed`がオレンジの斜線付きダイヤ、`Invalid`が赤いダイヤです。`Obstructed`も`CanAttach`であり、画面上のポインタ地点ではなく手前の障害物へ接続します。
+このCursorは専用のRuntime `UIDocument`を遅延生成し、UI Toolkitで描画します。Document Rootから各図形要素まで`PickingMode.Ignore`とし、GameplayやMenuのPointer入力を遮断しません。`UiNavigationInputSession`がSystem Cursor表示をLeaseしている間だけ描画を抑止し、復元済みまたはEditor由来の`Cursor.visible`値だけでは非表示にしません。
 
 ### WireLineVisualFeature
 

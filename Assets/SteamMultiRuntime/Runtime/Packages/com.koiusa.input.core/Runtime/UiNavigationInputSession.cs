@@ -29,6 +29,7 @@ namespace Koiusa.Input
         public const float DefaultThreshold = 0.5f;
         public const float DefaultRepeatDelay = 0.4f;
         public const float DefaultRepeatInterval = 0.1f;
+        public static bool OwnsCursorVisibility => cursorVisibilityLeaseCount > 0;
 
         private readonly Action<UiNavigationDirection> move;
         private readonly float threshold;
