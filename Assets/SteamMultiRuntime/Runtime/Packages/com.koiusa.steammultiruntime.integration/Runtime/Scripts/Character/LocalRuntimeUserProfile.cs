@@ -1,5 +1,6 @@
 using Koiusa.SteamMultiRuntime.Network;
 using Koiusa.SteamMultiRuntime.Character;
+using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -79,7 +80,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            localManager = LocalManager.Singleton ?? FindFirstObjectByType<LocalManager>();
+            localManager = LocalManager.Singleton;
         }
 
         private bool TryResolveLocalPlayerObject(out GameObject target)
@@ -90,17 +91,10 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            var localSync = FindFirstObjectByType<LocalPlayerModelSync>();
-            if (localSync != null)
+            var provider = LocalPlayerProviderRegistry.Current;
+            if (provider?.LocalPlayerObject != null)
             {
-                target = localSync.gameObject;
-                return true;
-            }
-
-            var localController = FindFirstObjectByType<LocalPlayerController>();
-            if (localController != null)
-            {
-                target = localController.gameObject;
+                target = provider.LocalPlayerObject;
                 return true;
             }
 

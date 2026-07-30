@@ -10,25 +10,83 @@ Local／NetworkでPlayer MotorとSkill Coordinatorを共有し、Netcode、Steam
 
 一方、Network境界の入力検証、非同期処理のライフタイム、World Space UI基盤のフォールバックには、異常系や利用側Projectで顕在化する懸念があります。優先度順に以下を推奨します。
 
+## 対応チェックリスト
+
+- [ ] P1 Skill ServerRpcの方向Vector検証
+  - [x] Server入口でNaN／Infinityを拒否
+  - [x] 非ゼロ方向をServer側で正規化
+  - [x] 方向検証のPlayMode Testを追加
+  - [ ] Host／Client RPC経路のPlayMode Testを追加・実行
+- [ ] P1 Scene非同期処理のライフタイムと例外処理
+  - [x] 共通Scene待機へCancellationTokenを追加
+  - [x] Local Loader、Stage UI、Dedicated Serverの破棄・無効化キャンセルを接続
+  - [x] 起動系`async void`の例外捕捉とLoading通知の`try/finally`化
+  - [x] 事前キャンセルとLoading通知対称性のPlayMode Testを追加
+  - [x] Local／Dedicated ServerのStage一覧GUIDとBuild Settings登録を確認
+  - [x] `Windows_Alpha`をDedicated Server用Scene Listへ整合
+  - [x] Unity 6000.3.9f1でWindows Dedicated Server Buildを実行
+  - [ ] Dedicated ServerのScene切替実行確認
+  - ⏸ Pending: Local Scene切替PlayMode Test
+- [x] P1 World Space UIのLayer枯渇時フォールバック
+  - [x] 使用中Layer 31の強制利用を廃止
+  - [x] 空きLayerなしでは元Camera描画を維持
+  - [x] 全User Layer使用済み構成のPlayMode Testを追加
+  - [x] Player UI PlayMode Testを実行
+- [ ] P2 Render Pipeline Adapter差し替え時の解放
+  - [x] Camera Stateへ適用済みAdapterを保持
+  - [x] Adapter登録・解除・差し替え時に旧構成をReleaseして再構築
+  - [x] Adapter差し替えと旧構成解放のPlayMode Testを追加
+  - [x] Player UI PlayMode Testを実行
+  - [x] Domain Reload／Scene Reload無効設定でPlayer UI PlayMode Testを実行
+  - ⏸ Pending: 同一Editor SessionでPlay開始・停止を反復確認
+- [ ] P2 Scene Loader契約の責務分割
+  - [x] Stage一覧を`IStageSceneCatalog`へ分離
+  - [x] Local Loaderから未対応Lobby操作を削除
+  - [x] Steam側からLocal Loaderへのfallback探索を削除
+  - [x] 旧`sceneLoader`シリアライズ値の移行属性を追加
+  - [ ] Steam LobbyのHost／Client実行確認
+  - ⏸ Pending: Local Stage SelectのPlayMode Test
+- [ ] P2 Scene-wide fallback探索の縮小
+  - [x] Character SelectのProfile探索を削除
+  - [x] Local Camera MixerのScene-wide Context探索を削除
+  - [x] Focus Markerを`IFocusMarkerContext.PlayerObject`へ統一
+  - [x] Compassの任意Camera選択を一意性判定へ変更
+  - [x] Character／Stage／Steam Lobby MenuのPrefab参照を必須化
+  - [x] Local／Steam LoadingとLobby UIをComposition Root内探索へ限定
+  - [x] Pause MenuとNetwork Camera Contextの型付きRegistry接続
+  - [x] Local Runtime Profile／Model SyncのProvider・明示参照化
+  - [x] Dedicated ServerとLoading SplashのScene-wide探索を削除
+  - [x] 標準Local／Network Proxy PrefabのModel Catalog Editor Testを追加
+  - [ ] Network CameraとCharacter SelectのHost／Client実行確認
+  - ⏸ Pending: Local CameraとCharacter SelectのPlayMode Test
+- [x] P2 主要境界の自動テスト拡充
+  - [x] Network Skill方向検証（NaN／Infinity／Zero／過大値／正規化）
+  - [x] Scene待機の事前キャンセルとLocal Loading通知の対称性
+  - [x] Additive SceneのCamera／AudioListener保護ポリシー
+  - [x] 標準Proxy PrefabのCharacterModelIdListシリアライズ参照
+  - [x] 保持したEditor／PlayMode Testを実行
+
+親項目は実装と必要なUnity検証が完了した時点でチェックします。環境上実行できない検証が残る場合は、子項目を未チェックのまま引き継ぎます。
+`⏸ Pending`はWindows Dedicated Serverの現在の完了条件には含めず、対象PlatformやLocal配布、負荷要件が決まった段階で再開します。
+
 ## Findings
 
-### P1: Skill ServerRpcが非有限方向ベクトルを受け入れる
+### 対応済み: Skill ServerRpcの方向ベクトル検証
 
 対象:
 
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.netcode/Runtime/Scripts/NetworkPlayerSkillController.cs:171`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player/Runtime/Scripts/DashSkillFeature.cs:25`
 
-Ownerは`ActivateSkillServerRpc(int, Vector3)`へ任意の`Vector3`を送信できます。ServerはSkill Indexの範囲とDefinitionの存在を実質的に検証しますが、方向が有限値か、長さが妥当かを検証せずSkillへ渡します。`NaN`を含むVectorはゼロ判定を通過し、DashのMotor Motionへ到達し得ます。物理位置やNetwork同期状態へ非有限値が混入すると、そのPlayerの復旧が困難になります。
+Ownerが送信する方向Vectorは、Server入口で各成分と二乗長の有限性を検証し、非ゼロ方向を正規化してからCoordinatorへ渡すよう修正しました。`NaN`／Infinityは拒否し、Zeroは各Skillの既存フォールバック処理で扱います。Player Netcode用PlayModeテストアセンブリを追加し、非有限成分、二乗長のOverflow、Zero、有限な非ゼロ方向の正規化を直接検証します。
 
-推奨対応:
+残る改善候補:
 
-1. RPC入口で各成分の`float.IsFinite`を検証する。
-2. 水平面などSkillが許可する空間へ射影し、Server側で正規化する。
-3. 不正値は拒否し、必要ならClient単位で頻度制限または診断カウンターを持つ。
-4. `NaN`、Infinity、Zero、極端な長さを送るNetwork Testを追加する。
+1. Skillごとに水平面など許可する方向空間が決まった段階で、Server側の射影Policyを追加する。
+2. Client単位のRPC頻度制限または診断カウンターを追加する。
+3. Host／Clientを起動し、不正値がRPC経路からCoordinatorへ到達しないことを確認する統合テストを追加する。
 
-### P1: Scene起動処理の`async void`にキャンセルと統一的な例外処理がない
+### 対応中: Scene非同期処理のライフタイムと例外処理
 
 対象:
 
@@ -37,37 +95,38 @@ Ownerは`ActivateSkillServerRpc(int, Vector3)`へ任意の`Vector3`を送信で�
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby.steam/Runtime/Scripts/Network/SteamLobbyService/SteamLobbyService/SteamLobbyDedicatedServer.cs:74`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby/Runtime/Scripts/LocalStageSelectUIDocument.cs:161`
 
-Unity Messageの`Start`やUI CallbackからTaskを直接awaitしていますが、GameObject破棄・Scene切替・Application終了に連動するCancellationTokenがありません。`LocalStageSelectUIDocument`だけは例外を捕捉しますが、起動系3箇所は未捕捉です。また`SteamLobbyDedicatedServer.LoadLobbySceneOnEnteredAsync`は`finally`を使わないため、例外時に`LoadingFinished`が通知されません。
+共通`AsyncOperation`待機へCancellationTokenを追加し、Local LoaderとDedicated Serverは`destroyCancellationToken`、Stage UIはEnable期間のCancellationTokenへ接続しました。起動系`async void`はキャンセルを正常終了として扱い、それ以外の例外を記録します。Loading通知も`try/finally`で対にしました。
 
-影響:
+Serialized構成では、`LocalManager.prefab`が`StageSceneList`（GUID `7ae2856614ff5574a8e2259452ab3c1d`）、Server Sample Sceneが`ServerSceneList`（GUID `a3476e62f9db54749a534eb4f3b3e3e5`）を参照します。両GUIDの実Asset解決と、一覧内の`PlayGroundScene`／`SandBoxScene`／`NPCVillage`／`ServerScene`がEditor Build Settingsへ登録済みであることを確認しました。
 
-- Scene切替中に所有Objectが破棄されても後続処理が継続する。
-- 例外が`async void`からSynchronizationContextへ送出され、呼出側が失敗を観測できない。
-- Loading Splashが終了通知を受け取れず残留する可能性がある。
+`Assets/Settings/Build Profiles/Windows_Alpha.asset`はDedicated Server用であることを確認し、固有Scene ListをServer用`SampleLobbyScene_Server`、`ServerSceneList`に登録された`ServerScene`／`NPCVillage`へ整合しました。Client用Lobby、Client用Stage、`UnityLogo`はDedicated Server Buildから除外しています。
 
-推奨対応:
+残る確認事項:
 
-1. 実処理を`Task`返却メソッドへ集約し、Unity Messageは例外を記録する薄い入口にする。
-2. `destroyCancellationToken`または明示的なlifetime CTSをScene待機処理へ渡す。
-3. `LoadingStarted`／`LoadingFinished`を必ず`try/finally`で対にする。
-4. 二重開始を防ぐTaskまたは状態を共有し、同一Sceneの競合ロードをテストする。
+- Sceneの`AsyncOperation`自体はUnity API上キャンセルできないため、Token取消後もUnity内部のLoad／Unload完了までは進行する。後続のScene操作だけを停止する設計である。
+- Steam Lobby作成などScene API外の非同期処理は、各外部APIがCancellationTokenを受け取れる段階で別途接続する。
 
-### P1: World Space UIのLayer枯渇時にLayer 31を強制使用する
+必要な検証:
+
+1. Scene Load中のObject破棄、Stage UI Close、Application終了で例外が出ないこと。
+2. 事前キャンセルとScene未設定の正常スキップで`LoadingStarted`／`LoadingFinished`が対になるPlayModeテストを追加した。実Sceneの成功・失敗・途中キャンセルでLoading Splashが残留しないことは実行確認が残る。
+3. 二重開始を防ぐTaskまたは状態を共有し、同一Sceneの競合ロードをテストする。
+
+### 対応中: World Space UIのLayer枯渇時フォールバック
 
 対象:
 
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.ui/Runtime/Scripts/WorldSpaceUiOverlayCamera.cs:179`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.ui/Runtime/Scripts/WorldSpaceUiOverlayCamera.cs:188`
 
-未使用User Layerがなければ警告後にLayer 31を選び、Player Name OverlayをそのLayerへ変更します。利用側ProjectがLayer 31をGameplay、Post Processing、Camera、Physicsに使用している場合、同LayerのObjectがOverlay Cameraへ映る、または元CameraのCulling Maskから除外される可能性があります。現在のRepositoryでは空きLayerがあるため直ちには発生しませんが、配布Packageとしては利用側設定を破壊し得ます。
+未使用User Layerがなければ既存Layerを変更せず、専用Overlay Cameraを作成しないよう修正しました。Player Name Overlayは元のLayerと元Cameraによる通常描画を維持するため、利用側ProjectのLayer、Culling Mask、Physics設定を侵食しません。フォールバック時はDepth分離による常時前面表示を保証しない点を警告とArchitecture文書へ明記しています。
 
-推奨対応:
+残る確認事項:
 
-1. 空きLayerがない場合は専用Overlayを無効化し、元Camera描画へ安全にフォールバックする。
-2. または明示的なLayer設定を要求し、起動時Validatorで競合をエラーにする。
-3. Layer選択結果と競合Object数をEditor Validatorで確認できるようにする。
+1. 全User Layer使用済みを注入したPlayModeテストで、既存ObjectのLayer、Camera Culling Mask、Camera数が変化しないことを確認済み。
+2. Layer選択結果をEditor Validatorで事前確認できるようにする。
 
-### P2: Render Pipeline Adapterの差し替え時に旧Adapterを解放できない
+### 対応中: Render Pipeline Adapter差し替え時の解放
 
 対象:
 
@@ -75,30 +134,28 @@ Unity Messageの`Start`やUI CallbackからTaskを直接awaitしていますが�
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.ui/Runtime/Scripts/WorldSpaceUiOverlayCamera.cs:215`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.player.ui/Runtime/Scripts/WorldSpaceUiOverlayCamera.cs:17`
 
-CameraStateは`UsesDedicatedOverlay`だけを保持し、構成に使ったAdapter自体を保持しません。Registryの`Current`が解除・差し替えされた後は、旧Adapterではなく新しい`Current`へ`Release`を要求します。URP Adapterが消えた場合は`null`へReleaseするため、Base CameraのCamera StackからOverlay Cameraを明示的に除去できません。
+Camera Stateへ実際に構成へ使用したAdapterを保持するよう修正しました。Registryの登録、解除、差し替え時は、現在のCamera Stateを適用済み旧AdapterでReleaseしてから、対象となるGame Cameraを新しいAdapterで再構築します。解放処理はRegistryの現在値に依存しません。
 
-推奨対応:
+残る確認事項:
 
-- CameraStateへ適用済みAdapterを保存し、差し替え前にそのInstanceへ`Release`する。
-- RegistryのRegister／Unregister時に既存CameraStateを再構成する通知を発行する。
-- Domain Reload無効、Adapter再登録、UI Scene再生成の組合せをPlayMode Testへ追加する。
+- Adapter差し替え時に旧AdapterをReleaseして新Overlay Cameraを構築し、最終解除時にLayerとCulling Maskを復元するPlayModeテストは、Enter Play Mode Options有効かつDomain Reload／Scene Reload無効（`m_EnterPlayModeOptions: 3`）のProject設定で成功した。同一Editor SessionでのPlay開始・停止反復とUI Scene再生成の確認は残る。
+- URP Camera Stackに破棄済みOverlay Camera参照が残らないことを確認する。
 
-### P2: `ISteamLobbySceneLoader`がLocal実装へ不要なLobby操作を要求する
+### 対応中: Scene Loader契約の責務分割
 
 対象:
 
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby/Runtime/Scripts/ISteamLobbySceneLoader.cs`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby/Runtime/Scripts/LocalSceneFlowLoader.cs:93`
 
-`LocalSceneFlowLoader`はStage一覧をUIへ提供するため同Interfaceを実装していますが、Lobby関連4操作は警告して失敗するだけです。一方、複数のLobby/UIクラスはScene内から同Interfaceを探索します。誤ったCompositionでもコンパイルが通り、実行時に初めてLobby遷移が失敗します。
+Stage一覧だけを公開する`IStageSceneCatalog`を追加し、`ISteamLobbySceneLoader`はこの契約を継承してLobby Lifecycleを追加する構成へ分割しました。`LocalSceneFlowLoader`とLocal Stage UIはStage Catalogだけを使用し、警告して失敗していたLobby操作を削除しました。Steam UI／Serviceのfallback探索もSteam Lobby LoaderとDedicated Serverだけに限定しました。
 
-推奨対応:
+残る確認事項:
 
-- Stage Catalog、Presentation Scene切替、Lobby Lifecycleを小さな契約へ分割する。
-- Local UIはStage用契約だけを参照し、Steam LobbyはLobby Lifecycle契約を必須化する。
+- `FormerlySerializedAs("sceneLoader")`によるLocal Prefab参照の移行をUnity Importで確認する。
 - Composition RootのValidatorで実行モードとLoader実装の組合せを確認する。
 
-### P2: Scene-wide fallback探索が複数Runtime構成で曖昧になる
+### 対応中: Scene-wide fallback探索の縮小
 
 対象例:
 
@@ -107,13 +164,12 @@ CameraStateは`UsesDedicatedOverlay`だけを保持し、構成に使ったAdapt
 - `PlayerCompassHud`の`FindFirstObjectByType<Camera>()`
 - Camera Context群のLocalManager／Controller探索
 
-多くはInspector参照が欠けた場合のフォールバックですが、Local Player、Remote Player、Lobby Camera、Stage Cameraが同居する構成では「最初」の意味が安定しません。Prefabのシリアライズ参照が正常なら回避できますが、派生PrefabやAdditive Sceneで誤接続を隠す可能性があります。
+本番Prefabで参照済みのCharacter Profile、Menu、Lobby UI／Service、Loading Source、Local Camera Contextは、Scene-wide fallbackを削除して設定不備をエラーにしました。Focus MarkerはLocal／Network具象を探索せず`IFocusMarkerContext.PlayerObject`を正本とします。Compassは`Camera.main`を優先し、Tagがない場合も有効なGame Cameraが一意な場合だけ採用します。Dedicated Serverは明示参照、同一Composition Root、型付きRegistry、`NetworkManager.Singleton`だけを使用します。Loading Splashは他画面の`UIDocument`から設定を借りず、専用`PanelSettings`または自身が所有するRuntime設定を使用します。Runtime本体の`FindFirstObjectByType`／`FindAnyObjectByType`は0件です。
 
-推奨対応:
+残る改善対象:
 
-- 本番Prefabでは必須参照をValidatorで保証し、曖昧なfallbackを開発時エラーへ寄せる。
-- Local Playerは既存の`ILocalPlayerProvider`／ownership registryを利用する。
-- Cameraは役割を示す型付きRegistryまたはComposition Rootから注入する。
+- 5種類のStandard Proxy Prefabは、Unity Import後のPrefab AssetからLocal／Network Model Syncと標準`CharacterModelIdList`参照を検証するEditorテストに成功した。GUID `53fb10e1957573c44be834f0809a3752`はAssetDatabaseで実Assetへ解決され、全Prefabの参照と一致する。Profile選択値の実Playerへの適用はLocal／Network PlayMode確認が残る。
+- Character Select、Camera、Lobby Compositionの必須参照はPrefabの手動確認対象とし、設定値だけを重複確認するEditorテストは保持しない。
 
 ### P2: 自動テストが主要境界の回帰を十分に保護していない
 
@@ -123,7 +179,7 @@ CameraStateは`UsesDedicatedOverlay`だけを保持し、構成に使ったAdapt
 2. Host／Client／Dedicated ServerでのSpawn、Despawn、途中参加、Ownership変更。
 3. Single／Multi TargetingとFacing PriorityのNetwork一致。
 4. Domain Reload／Scene Reload無効時のWorld Space UI再登録。
-5. Additive Scene切替中のCamera、AudioListener、Loading Splash。
+5. Additive Sceneの通常Camera／AudioListener停止と`IPreservedLoadedSceneCamera`保護はPlayModeテスト追加済み。実Scene切替中のLoading Splashは実行確認が残る。
 6. UI Menu StackとInput Action Leaseの開閉反復。
 7. NPC多数時のNavMesh／回避／Network同期負荷。
 
@@ -155,13 +211,24 @@ CameraStateは`UsesDedicatedOverlay`だけを保持し、構成に使ったAdapt
 - JSON／asmdef／Input Actionsの構文確認: 85ファイル正常
 - Documentation内リンク確認: リンク切れなし
 - First-party Runtimeの禁止Reflection: 検出なし
+- Unity 6000.3.9f1 EditMode Test: 3/3成功（本件2件、依存Package 1件）
+- Unity 6000.3.9f1 PlayMode Test: 14/14成功
+- Enter Play Mode Options: Domain Reload／Scene Reload無効（設定値3）でPlayer UI PlayMode Test成功
+- `CharacterModelIdList` GUID: AssetDatabaseによる実Asset解決とStandard Proxy Prefab 5種の参照一致を確認
+- Stage Scene List GUID: Local／Server両Assetへの解決と全Scene名のEditor Build Settings登録を確認
+- Build Profile: `Windows_Alpha`をDedicated Server用Lobby／Stage 2件へ整合
+- Windows Dedicated Server Build: Unity 6000.3.9f1で成功（Server Lobby、`ServerScene`、`NPCVillage`）
 
 ## 未検証
 
-- Unity Editorでの再ImportとConsoleエラー
-- EditMode／PlayMode Test Runner
 - Host／Client／Dedicated Server通し動作
 - Steam Lobby作成、参加、退出、再接続
-- Domain Reload／Scene Reload無効での連続Play
-- Windows／macOS／Linux Player Build
+- Windows Dedicated ServerのSteam Lobby作成とStage遷移を含む実行確認
+
+## Pending（現在は必須外）
+
+- Local Stage Select／Local Scene切替
+- Local Camera／Character SelectのPlayMode確認
+- Domain Reload／Scene Reload無効の同一Editor Sessionでの連続Play
+- macOS／Linux Player Build
 - 多数NPC、Target、World Space UIのProfiler計測

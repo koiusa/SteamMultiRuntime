@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
   ShowTopMostFoldoutHeaderGroup: 1
-  modelIdList: {fileID: 0}
+  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   SelectedModelIndex:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

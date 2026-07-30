@@ -83,10 +83,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var loader = GetComponent<ISteamLobbySceneLoader>()
-                ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                ?? FindFirstObjectByType<SteamLobbySceneLoader>() as ISteamLobbySceneLoader
-                ?? FindFirstObjectByType<Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
-                ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+                ?? GetComponentInChildren<ISteamLobbySceneLoader>(true);
 
             if (loader != null)
             {
@@ -102,10 +99,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
-            {
-                networkManager = FindFirstObjectByType<NetworkManager>();
-            }
         }
 
         private void SubscribeLoaderEvents()
@@ -146,8 +139,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SubscribeExitEvents()
         {
-            var source = GetComponentInParent<Network.ILobbyExitEventSource>()
-                ?? FindFirstObjectByType<SteamLobbyService>(FindObjectsInactive.Include) as Network.ILobbyExitEventSource;
+            var source = GetComponentInParent<Network.ILobbyExitEventSource>();
             if (source == null || subscribedExitEventSource == source)
             {
                 return;
@@ -262,12 +254,6 @@ namespace Koiusa.SteamMultiRuntime
             if (splashSettings != null && splashSettings.PanelSettings != null)
             {
                 return splashSettings.PanelSettings;
-            }
-
-            var existingDocument = FindFirstObjectByType<UIDocument>();
-            if (existingDocument != null && existingDocument.panelSettings != null)
-            {
-                return existingDocument.panelSettings;
             }
 
             runtimeSplashPanelSettings = ScriptableObject.CreateInstance<PanelSettings>();

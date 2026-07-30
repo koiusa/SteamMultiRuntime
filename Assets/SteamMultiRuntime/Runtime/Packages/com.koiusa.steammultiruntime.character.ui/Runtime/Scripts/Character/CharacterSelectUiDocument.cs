@@ -52,13 +52,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             view = new CharacterSelectView(uiDocument, layoutAsset, styleSheet);
 
             if (UserProfile == null)
-            {
-                var profile = FindFirstObjectByType<PlayerModelProfileBase>();
-                if (profile != null)
-                {
-                    userProfile = new SerializableInterface<IRuntimeUserProfileModelSource>(profile);
-                }
-            }
+                Debug.LogError("CharacterSelectUiDocument requires an explicit userProfile reference.", this);
         }
 
         private void OnEnable()
@@ -116,15 +110,6 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private CharacterModelIdList ResolveModelIdList()
         {
-            if (UserProfile == null)
-            {
-                var profile = FindFirstObjectByType<PlayerModelProfileBase>();
-                if (profile != null)
-                {
-                    userProfile = new SerializableInterface<IRuntimeUserProfileModelSource>(profile);
-                }
-            }
-
             return UserProfile != null ? UserProfile.ModelIdList : null;
         }
 

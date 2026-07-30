@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TNRD;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -13,7 +14,8 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class LocalStageSelector : MonoBehaviour
     {
-        [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
+        [FormerlySerializedAs("sceneLoader")]
+        [SerializeField] private SerializableInterface<IStageSceneCatalog> stageSceneCatalog;
 
         private string selectedStageName = string.Empty;
 
@@ -21,50 +23,49 @@ namespace Koiusa.SteamMultiRuntime
 
         public string SelectedStageName => selectedStageName;
 
-        private ISteamLobbySceneLoader SceneLoader => sceneLoader != null ? sceneLoader.Value : null;
+        private IStageSceneCatalog StageSceneCatalog => stageSceneCatalog != null ? stageSceneCatalog.Value : null;
 
         public IReadOnlyList<string> AvailableStageNames =>
-            SceneLoader != null ? SceneLoader.CreatableStageSceneNames : new List<string>();
+            StageSceneCatalog != null ? StageSceneCatalog.CreatableStageSceneNames : new List<string>();
 
         private void OnEnable()
         {
             ResolveSceneLoader();
 
-            if (SceneLoader != null && SceneLoader.CreatableStageSceneNames.Count > 0)
+            if (StageSceneCatalog != null && StageSceneCatalog.CreatableStageSceneNames.Count > 0)
             {
                 var preferredStageName = StageSelectionPreferences.SelectedStageName;
-                selectedStageName = SceneLoader.CreatableStageSceneNames.Contains(preferredStageName)
+                selectedStageName = StageSceneCatalog.CreatableStageSceneNames.Contains(preferredStageName)
                     ? preferredStageName
-                    : SceneLoader.CreatableStageSceneNames[0];
+                    : StageSceneCatalog.CreatableStageSceneNames[0];
             }
         }
 
         private void ResolveSceneLoader()
         {
-            if (SceneLoader != null)
+            if (StageSceneCatalog != null)
             {
                 return;
             }
 
-            var loader = GetComponent<ISteamLobbySceneLoader>()
-                ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+            var loader = GetComponent<IStageSceneCatalog>()
+                ?? GetComponentInChildren<IStageSceneCatalog>(true);
 
             if (loader != null)
             {
-                sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
+                stageSceneCatalog = new SerializableInterface<IStageSceneCatalog>(loader);
             }
         }
 
         public bool TrySelectStage(string stageName)
         {
-            if (SceneLoader == null)
+            if (StageSceneCatalog == null)
             {
-                Debug.LogError("LocalStageSelector: sceneLoader is not set.");
+                Debug.LogError("LocalStageSelector: stageSceneCatalog is not set.");
                 return false;
             }
 
-            var availableStages = SceneLoader.CreatableStageSceneNames;
+            var availableStages = StageSceneCatalog.CreatableStageSceneNames;
             if (availableStages == null || availableStages.Count == 0)
             {
                 Debug.LogError("LocalStageSelector: No stages available.");
@@ -85,7 +86,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SelectNextStage()
         {
-            var availableStages = SceneLoader?.CreatableStageSceneNames;
+            var availableStages = StageSceneCatalog?.CreatableStageSceneNames;
             if (availableStages == null || availableStages.Count == 0)
             {
                 return;
@@ -98,7 +99,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SelectPreviousStage()
         {
-            var availableStages = SceneLoader?.CreatableStageSceneNames;
+            var availableStages = StageSceneCatalog?.CreatableStageSceneNames;
             if (availableStages == null || availableStages.Count == 0)
             {
                 return;

@@ -56,9 +56,9 @@ characterCoordinator.ResetState();
 - Sword AttackのLight／Heavy／Combo Action
 - Guard Counter Action
 - Cooldown、Active Duration、Skill固有値の設定アセットへの分離
-- Player Gameplay用のRuntime／Editor自動テスト
+- Host／Client RPC経路、Server Authority、Skill Featureを含むPlayer Gameplay自動テストの拡充
 
-Local Playerの各Skill入力は`TryActivateSkill(...)`を直接呼び出します。Network PlayerではOwnerだけが入力を取得し、ServerRpcを経由してServer上の同じ入口を呼び出します。HostはRPCを経由せずServer処理を直接実行します。Guardは入力押下中だけ継続し、入力解放時にLocalまたはServer上のActive Skillをキャンセルします。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作については継続して確認が必要です。
+Local Playerの各Skill入力は`TryActivateSkill(...)`を直接呼び出します。Network PlayerではOwnerだけが入力を取得し、ServerRpcを経由してServer上の同じ入口を呼び出します。HostはRPCを経由せずServer処理を直接実行します。Server入口では方向Vectorの各成分が有限値であることを検証し、非ゼロ方向を正規化してからCoordinatorへ渡します。Player NetcodeのPlayModeテストは、この入口と同じ正規化関数に対してNaN、Infinity、二乗長のOverflow、Zero、通常Vectorを検証します。Guardは入力押下中だけ継続し、入力解放時にLocalまたはServer上のActive Skillをキャンセルします。Unity Editor上でのコンパイル、Prefabロード、Play Mode動作、およびHost／Client RPC統合テストについては継続して確認が必要です。
 
 Player Action Mapには以下のSkill入力を定義しています。
 

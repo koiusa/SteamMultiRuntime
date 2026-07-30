@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -48,9 +49,14 @@ namespace Koiusa.SteamMultiRuntime.Network
         public async Task<bool> LoadLobbySceneOnEnteredAsync()
         {
             LoadingStarted?.Invoke();
-            var result = await LoadStartupSceneIfConfiguredAsync();
-            LoadingFinished?.Invoke();
-            return result;
+            try
+            {
+                return await LoadStartupSceneIfConfiguredAsync(destroyCancellationToken);
+            }
+            finally
+            {
+                LoadingFinished?.Invoke();
+            }
         }
 
         public void UnloadLobbySceneOnLeft() { }
@@ -80,7 +86,17 @@ namespace Koiusa.SteamMultiRuntime.Network
 
             started = true;
             ResolveLobbyService();
-            await BootstrapDedicatedServerAsync();
+            try
+            {
+                await BootstrapDedicatedServerAsync(destroyCancellationToken);
+            }
+            catch (OperationCanceledException) when (destroyCancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
         }
 
         private void ResolveLobbyService()
@@ -90,18 +106,16 @@ namespace Koiusa.SteamMultiRuntime.Network
                 return;
             }
 
-            lobbyService = GetComponent<SteamLobbyService>();
-            if (lobbyService == null)
-            {
-                lobbyService = FindFirstObjectByType<SteamLobbyService>(FindObjectsInactive.Include);
-            }
+            lobbyService = GetComponent<SteamLobbyService>()
+                ?? GetComponentInChildren<SteamLobbyService>(true)
+                ?? SteamLobbyServiceRegistry.Current;
         }
 
-        private async Task BootstrapDedicatedServerAsync()
+        private async Task BootstrapDedicatedServerAsync(CancellationToken cancellationToken)
         {
             if (loadStartupScene)
             {
-                var loaded = await LoadStartupSceneIfConfiguredAsync();
+                var loaded = await LoadStartupSceneIfConfiguredAsync(cancellationToken);
                 if (!loaded && failStartupWhenSceneCannotLoad)
                 {
                     return;
@@ -141,9 +155,10 @@ namespace Koiusa.SteamMultiRuntime.Network
             }
         }
 
-        private Task<bool> LoadStartupSceneIfConfiguredAsync()
+        private Task<bool> LoadStartupSceneIfConfiguredAsync(CancellationToken cancellationToken = default)
         {
-            return StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(SteamLobbyDedicatedServer), Log);
+            return StageStartupSceneLoader.LoadStartupSceneAsync(
+                this, this, nameof(SteamLobbyDedicatedServer), Log, cancellationToken);
         }
 
         private void TryStartDedicatedServer()
@@ -179,12 +194,7 @@ namespace Koiusa.SteamMultiRuntime.Network
                 return networkManager;
             }
 
-            if (NetworkManager.Singleton != null)
-            {
-                return NetworkManager.Singleton;
-            }
-
-            networkManager = FindFirstObjectByType<NetworkManager>(FindObjectsInactive.Include);
+            networkManager = NetworkManager.Singleton;
             return networkManager;
         }
 

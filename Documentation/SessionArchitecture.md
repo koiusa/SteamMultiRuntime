@@ -27,10 +27,11 @@ Steam Lobby
 └─ SteamLobbyMenuToggle
 
 Scene Flow
-├─ ISteamLobbySceneLoader
-│  ├─ SteamLobbySceneLoader
-│  ├─ SteamLobbyDedicatedServer
-│  └─ LocalSceneFlowLoader
+├─ IStageSceneCatalog
+│  ├─ LocalSceneFlowLoader
+│  └─ ISteamLobbySceneLoader
+│     ├─ SteamLobbySceneLoader
+│     └─ SteamLobbyDedicatedServer
 ├─ StageSceneList : ScriptableObject
 ├─ LocalStartupSceneLoader
 ├─ LocalStageSelectUIDocument
@@ -66,18 +67,24 @@ Lobby一覧の再検索・再描画では、選択中のLobby IDが引き続き�
 
 ```text
 Lobby UI / Stage Select UI / Startup Loader
-  → ISteamLobbySceneLoader
-  → SteamLobbySceneLoader / LocalSceneFlowLoader / DedicatedServer
+  ├─ Local Stage Select → IStageSceneCatalog → LocalSceneFlowLoader
+  └─ Steam Lobby → ISteamLobbySceneLoader → SteamLobbySceneLoader / DedicatedServer
   → StageSceneListからSceneを解決
   → Scene Load
 ```
 
 - Network Lobbyでは`SteamLobbySceneLoader`がLobbyとStage間の遷移を管理する
-- Local実行では`LocalSceneFlowLoader`が同じScene Loader契約を実装する
+- `IStageSceneCatalog`は選択可能なStage一覧だけを公開し、Local UIとSteam Lobby Loaderで共有する
+- `ISteamLobbySceneLoader`は`IStageSceneCatalog`を継承し、Lobby入退室のScene Lifecycleを追加する
+- Local実行の`LocalSceneFlowLoader`は`IStageSceneCatalog`だけを実装し、未対応のLobby操作を公開しない
+- LocalManager PrefabのStage Selectは`LocalSceneFlowLoader`をCatalogとして参照し、SteamConnection PrefabのLobby UI／Serviceは`SteamLobbySceneLoader`を参照する
 - Local Stage Selectは`UiNavigationInputSession`を使い、UI Navigate上下／左右でStage候補を循環し、Submitで選択中のStageを読み込む
 - Dedicated ServerはUIを経由せず起動対象Stageを決定する
 - Scene参照の一覧は`StageSceneList`へ集約する
-- Stage Scene Cameraの無効化では`IPreservedLoadedSceneCamera`を持つUI基盤Cameraを除外する
+- Stage Scene Cameraの無効化では`IPreservedLoadedSceneCamera`を持つUI基盤Cameraを除外する。通常Camera／AudioListenerの停止と保護Camera維持は動的一時SceneのPlayModeテストで確認する
+- Sceneの非同期待機はLoaderまたはUIのライフタイムCancellationTokenを受け取り、所有Objectの破棄・UI無効化後に後続処理を継続しない
+- `LoadingStarted`と`LoadingFinished`は`try/finally`で対にし、起動用Unity Messageの`async void`入口ではキャンセル以外の例外を記録する
+- 事前キャンセル時の即時伝播と、キャンセル／Scene未設定スキップ時のLoading通知対称性はPlayModeテストで保護する
 
 パッケージ使用側ではSample SceneをImportしただけではBuild Settingsへ追加されません。
 Build Profile固有のScene一覧と、パッケージ更新時の旧Sample削除については
@@ -100,7 +107,7 @@ Scene Loader / Stage Select
 
 1. UIはLobbyやScene状態を直接所有しない
 2. Lobby操作は`SteamLobbyService`を外部窓口とする
-3. Scene遷移要求は`ISteamLobbySceneLoader`へ集約する
+3. Stage一覧は`IStageSceneCatalog`、Steam Lobby遷移要求は`ISteamLobbySceneLoader`へ分離する
 4. Local、Network、Dedicated ServerでLoader実装を分ける
 5. SceneとModelの準備が完了するまでLoading表示を維持する
 6. 調査用Editor WindowからRuntime状態を変更しない

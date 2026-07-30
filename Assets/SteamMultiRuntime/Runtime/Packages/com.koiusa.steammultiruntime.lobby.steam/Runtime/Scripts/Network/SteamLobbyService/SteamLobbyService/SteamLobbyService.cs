@@ -12,6 +12,36 @@ using Koiusa.SteamMultiRuntime.Network.Lobby;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public static class SteamLobbyServiceRegistry
+    {
+        public static SteamLobbyService Current { get; private set; }
+        public static event Action<SteamLobbyService> CurrentChanged;
+
+        public static void Register(SteamLobbyService service)
+        {
+            if (service == null || Current == service)
+                return;
+
+            if (Current != null)
+            {
+                Debug.LogError("Multiple active SteamLobbyService instances are not supported.", service);
+                return;
+            }
+
+            Current = service;
+            CurrentChanged?.Invoke(Current);
+        }
+
+        public static void Unregister(SteamLobbyService service)
+        {
+            if (Current != service)
+                return;
+
+            Current = null;
+            CurrentChanged?.Invoke(null);
+        }
+    }
+
     [DisallowMultipleComponent]
     public class SteamLobbyService : MonoBehaviour, Network.ILobbyExitEventSource
     {
@@ -88,10 +118,7 @@ namespace Koiusa.SteamMultiRuntime
             if (SceneLoader == null)
             {
                 var loader = GetComponent<ISteamLobbySceneLoader>()
-                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                    ?? FindFirstObjectByType<SteamLobbySceneLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
-                    ?? FindFirstObjectByType<Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
-                    ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true);
 
                 if (loader != null)
                 {
@@ -109,10 +136,8 @@ namespace Koiusa.SteamMultiRuntime
                 connectionStatus = GetComponentInChildren<SteamLobbyConnectionStatus>(true);
             }
 
-            if (connectionStatus == null)
-            {
-                connectionStatus = FindFirstObjectByType<SteamLobbyConnectionStatus>(FindObjectsInactive.Include);
-            }
+            if (SceneLoader == null || connectionStatus == null)
+                Debug.LogError("SteamLobbyService requires Scene Loader and Connection Status within its composition root.", this);
 
             networkFacade = new LobbyNetworkSessionController(useAdditiveClientSynchronization);
             networkFacade.ClientDisconnected += OnClientDisconnected;
@@ -146,11 +171,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            SteamLobbyServiceRegistry.Register(this);
             SubscribeLobbyEvents();
         }
 
         private void OnDisable()
         {
+            SteamLobbyServiceRegistry.Unregister(this);
             UnsubscribeLobbyEvents();
         }
 

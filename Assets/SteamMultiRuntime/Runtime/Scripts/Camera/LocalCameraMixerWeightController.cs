@@ -26,8 +26,8 @@ namespace Koiusa.SteamMultiRuntime
                 return localContext;
             }
 
-            localContext = FindFirstObjectByType<LocalFocusMarkerContext>();
-            return localContext;
+            Debug.LogError("LocalCameraMixerWeightController requires a LocalFocusMarkerContext on itself or a child.", this);
+            return null;
         }
     }
 }

@@ -198,7 +198,24 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         {
             if (current != null && current.isActiveAndEnabled) return current;
             if (Camera.main != null && Camera.main.isActiveAndEnabled) return Camera.main;
-            return FindFirstObjectByType<Camera>();
+
+            Camera resolved = null;
+            var cameras = Camera.allCameras;
+            for (var i = 0; i < cameras.Length; i++)
+            {
+                var candidate = cameras[i];
+                if (candidate == null || !candidate.isActiveAndEnabled
+                    || candidate.cameraType != CameraType.Game
+                    || candidate.GetComponent<WorldSpaceUiOverlayCameraMarker>() != null)
+                    continue;
+
+                if (resolved != null)
+                    return null;
+
+                resolved = candidate;
+            }
+
+            return resolved;
         }
     }
 }

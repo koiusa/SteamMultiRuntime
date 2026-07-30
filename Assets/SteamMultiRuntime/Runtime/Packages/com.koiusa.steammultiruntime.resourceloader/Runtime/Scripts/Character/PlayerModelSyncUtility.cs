@@ -12,11 +12,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var profile = Object.FindFirstObjectByType<PlayerModelProfileBase>() as IRuntimeUserProfileModelSource;
-            if (profile != null)
-            {
-                modelIdList = profile.ModelIdList;
-            }
+            Debug.LogError("Player Model Sync requires an explicit CharacterModelIdList reference.");
         }
 
         public static void EnsurePrefabLoader(GameObject owner, ref ICharacterPrefabLoader prefabLoaderBehaviour)

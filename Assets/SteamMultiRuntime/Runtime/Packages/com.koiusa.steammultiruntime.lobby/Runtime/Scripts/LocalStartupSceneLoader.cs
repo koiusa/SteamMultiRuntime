@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,15 +33,26 @@ namespace Koiusa.SteamMultiRuntime.Network
                 return;
             }
 
-            await LoadStartupSceneAsync();
+            try
+            {
+                await LoadStartupSceneAsync(destroyCancellationToken);
+            }
+            catch (OperationCanceledException) when (destroyCancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
         }
 
-        public async Task<bool> LoadStartupSceneAsync()
+        public async Task<bool> LoadStartupSceneAsync(CancellationToken cancellationToken = default)
         {
             LoadingStarted?.Invoke();
             try
             {
-                var loaded = await StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalStartupSceneLoader));
+                var loaded = await StageStartupSceneLoader.LoadStartupSceneAsync(
+                    this, this, nameof(LocalStartupSceneLoader), cancellationToken: cancellationToken);
                 if (!loaded || !disableCamerasInLoadedScenes)
                 {
                     return loaded;

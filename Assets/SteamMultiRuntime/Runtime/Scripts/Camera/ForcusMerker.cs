@@ -1,6 +1,5 @@
 using TNRD;
 using Unity.Cinemachine;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -51,23 +50,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private GameObject ResolvePlayerObject()
         {
-            if (_context != null && !_context.IsActive)
-            {
-                return null;
-            }
-
-            if (_context is NetworkFocusMarkerContext)
-            {
-                return NetworkManager.Singleton?.LocalClient?.PlayerObject?.gameObject;
-            }
-
-            if (LocalManager.Singleton != null && LocalManager.Singleton.LocalPlayerObject != null)
-            {
-                return LocalManager.Singleton.LocalPlayerObject;
-            }
-
-            var controller = FindFirstObjectByType<LocalPlayerController>();
-            return controller != null ? controller.gameObject : null;
+            return _context != null && _context.IsActive
+                ? _context.PlayerObject
+                : null;
         }
 
         private void SetTrackingTarget(GameObject player)

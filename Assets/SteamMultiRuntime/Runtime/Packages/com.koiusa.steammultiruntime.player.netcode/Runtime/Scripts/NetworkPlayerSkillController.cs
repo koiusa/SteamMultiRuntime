@@ -10,6 +10,7 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class NetworkPlayerSkillController : NetworkBehaviour
     {
         private const int NoActiveSkill = -1;
+        private const float MinimumDirectionSqrMagnitude = 0.0001f;
 
         [SerializeField] private InputActionsConfig inputActionsConfig;
         [SerializeField] private string attackActionPath = "Combat/Attack";
@@ -179,8 +180,28 @@ namespace Koiusa.SteamMultiRuntime
             return IsServer
                 && definition != null
                 && coordinator != null
-                && coordinator.TryActivateSkill(definition, direction);
+                && TryNormalizeDirection(direction, out var normalizedDirection)
+                && coordinator.TryActivateSkill(definition, normalizedDirection);
         }
+
+        internal static bool TryNormalizeDirection(Vector3 direction, out Vector3 normalizedDirection)
+        {
+            normalizedDirection = Vector3.zero;
+            if (!IsFinite(direction.x) || !IsFinite(direction.y) || !IsFinite(direction.z))
+                return false;
+
+            var sqrMagnitude = direction.sqrMagnitude;
+            if (float.IsNaN(sqrMagnitude) || float.IsInfinity(sqrMagnitude))
+                return false;
+
+            if (sqrMagnitude <= MinimumDirectionSqrMagnitude)
+                return true;
+
+            normalizedDirection = direction / Mathf.Sqrt(sqrMagnitude);
+            return true;
+        }
+
+        private static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
 
         private void CancelInputGuard()
         {

@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,8 +25,14 @@ namespace Koiusa.SteamMultiRuntime.Network
             return !string.IsNullOrWhiteSpace(resolved) ? resolved : sceneName;
         }
 
-        public static async Task<bool> LoadStartupSceneAsync(IStartupStageSceneLoaderContext context, Object owner, string logPrefix, System.Action<string> logAction = null)
+        public static async Task<bool> LoadStartupSceneAsync(
+            IStartupStageSceneLoaderContext context,
+            Object owner,
+            string logPrefix,
+            System.Action<string> logAction = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var startupScene = ResolveStartupSceneReference(context, owner, logPrefix);
             if (string.IsNullOrWhiteSpace(startupScene))
             {
@@ -58,7 +65,7 @@ namespace Koiusa.SteamMultiRuntime.Network
                 return false;
             }
 
-            await SceneUtilityEx.WaitForOperationAsync(operation);
+            await SceneUtilityEx.WaitForOperationAsync(operation, cancellationToken);
 
             if (context.SetLoadedSceneAsActive)
             {

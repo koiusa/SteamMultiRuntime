@@ -44,33 +44,28 @@ namespace Koiusa.SteamMultiRuntime
 
             if (inputActionsConfig == null)
             {
-                var menuToggle = GetComponent<SteamLobbyMenuToggle>()
-                    ?? FindFirstObjectByType<SteamLobbyMenuToggle>(FindObjectsInactive.Include);
+                var menuToggle = GetComponent<SteamLobbyMenuToggle>();
                 inputActionsConfig = menuToggle?.InputActionsConfig;
             }
 
             if (lobbyService == null)
-            {
-                lobbyService = FindFirstObjectByType<SteamLobbyService>();
-            }
+                lobbyService = GetComponent<SteamLobbyService>();
 
             if (steamConnection == null)
-            {
-                steamConnection = FindFirstObjectByType<SteamConnection>(FindObjectsInactive.Include);
-            }
+                steamConnection = GetComponent<SteamConnection>();
 
             if (SceneLoader == null)
             {
                 var loader = GetComponent<ISteamLobbySceneLoader>()
-                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                    ?? FindFirstObjectByType<SteamLobbySceneLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
-                    ?? FindFirstObjectByType<Koiusa.SteamMultiRuntime.Network.SteamLobbyDedicatedServer>(FindObjectsInactive.Include) as ISteamLobbySceneLoader
-                    ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+                    ?? GetComponentInChildren<ISteamLobbySceneLoader>(true);
                 if (loader != null)
                 {
                     sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
                 }
             }
+
+            if (lobbyService == null || steamConnection == null || SceneLoader == null)
+                Debug.LogError("SteamLobbyUiDocument requires explicit Lobby Service, Steam Connection, and Scene Loader references.", this);
 
             uiAssets?.EnsureDefaultsLoaded();
         }

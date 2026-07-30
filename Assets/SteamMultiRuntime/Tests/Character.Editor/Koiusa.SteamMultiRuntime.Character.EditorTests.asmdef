@@ -1,0 +1,24 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.Character.EditorTests",
+    "rootNamespace": "Koiusa.SteamMultiRuntime.Tests",
+    "references": [
+        "Koiusa.SteamMultiRuntime.Character.Runtime",
+        "Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
+        "Koiusa.SteamMultiRuntime.Integration.Runtime",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

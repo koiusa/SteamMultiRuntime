@@ -22,20 +22,25 @@ namespace Koiusa.SteamMultiRuntime
         private bool wasActive;
         private NetworkManager subscribedNetworkManager;
         private Coroutine resolvePlayerRoutine;
+        private bool resolveLobbyServiceFromRegistry;
 
         private void Awake()
         {
-            if (lobbyService == null)
-            {
-                lobbyService = FindFirstObjectByType<SteamLobbyService>();
-            }
+            resolveLobbyServiceFromRegistry = lobbyService == null;
         }
 
         private void OnEnable()
         {
+            if (resolveLobbyServiceFromRegistry)
+            {
+                SteamLobbyServiceRegistry.CurrentChanged += OnLobbyServiceChanged;
+                SetLobbyService(SteamLobbyServiceRegistry.Current);
+            }
+
             wasActive = IsActive;
             if (lobbyService != null)
             {
+                lobbyService.StateChanged -= OnLobbyStateChanged;
                 lobbyService.StateChanged += OnLobbyStateChanged;
             }
             BindNetworkEvents();
@@ -44,12 +49,36 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            SteamLobbyServiceRegistry.CurrentChanged -= OnLobbyServiceChanged;
             if (lobbyService != null)
             {
                 lobbyService.StateChanged -= OnLobbyStateChanged;
             }
             UnbindNetworkEvents();
             StopResolvePlayer();
+        }
+
+        private void OnLobbyServiceChanged(SteamLobbyService service)
+        {
+            if (!resolveLobbyServiceFromRegistry)
+                return;
+
+            SetLobbyService(service);
+            OnLobbyStateChanged();
+        }
+
+        private void SetLobbyService(SteamLobbyService service)
+        {
+            if (lobbyService == service)
+                return;
+
+            if (isActiveAndEnabled && lobbyService != null)
+                lobbyService.StateChanged -= OnLobbyStateChanged;
+
+            lobbyService = service;
+
+            if (isActiveAndEnabled && lobbyService != null)
+                lobbyService.StateChanged += OnLobbyStateChanged;
         }
 
         private void OnLobbyStateChanged()

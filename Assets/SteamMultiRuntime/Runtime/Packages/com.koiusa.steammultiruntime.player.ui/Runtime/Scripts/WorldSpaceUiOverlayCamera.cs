@@ -16,12 +16,19 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
     {
         public static IWorldSpaceUiOverlayCameraAdapter Current { get; private set; }
 
-        public static void Register(IWorldSpaceUiOverlayCameraAdapter adapter) => Current = adapter;
+        public static void Register(IWorldSpaceUiOverlayCameraAdapter adapter)
+        {
+            Current = adapter;
+            WorldSpaceUiOverlayCamera.OnAdapterChanged();
+        }
 
         public static void Unregister(IWorldSpaceUiOverlayCameraAdapter adapter)
         {
-            if (Current == adapter)
-                Current = null;
+            if (!object.ReferenceEquals(Current, adapter))
+                return;
+
+            Current = null;
+            WorldSpaceUiOverlayCamera.OnAdapterChanged();
         }
     }
 
@@ -39,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             public Camera Overlay;
             public bool SourceOriginallyRenderedOverlayLayer;
             public bool UsesDedicatedOverlay;
+            public IWorldSpaceUiOverlayCameraAdapter AppliedAdapter;
         }
 
         private static readonly Dictionary<int, CameraState> CameraStates = new();
@@ -46,6 +54,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         private static readonly List<int> InvalidCameraIds = new();
         private static int registrationCount;
         private static int overlayLayer = -1;
+        private static bool overlayLayerResolved;
         private static Transform host;
         private static int OverlayMask => 1 << overlayLayer;
 
@@ -57,6 +66,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             InvalidCameraIds.Clear();
             registrationCount = 0;
             overlayLayer = -1;
+            overlayLayerResolved = false;
             host = null;
         }
 
@@ -78,16 +88,23 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 
         internal static void Register(GameObject surface, int originalLayer)
         {
-            if (surface == null)
+            Register(surface, originalLayer, TryResolveOverlayLayer);
+        }
+
+        internal static void Register(GameObject surface, int originalLayer, System.Func<bool> tryResolveOverlayLayer)
+        {
+            if (surface == null || tryResolveOverlayLayer == null)
                 return;
 
             var id = surface.GetInstanceID();
             if (SurfaceLayers.ContainsKey(id))
                 return;
 
-            EnsureOverlayLayer();
-            WorldSpaceUiOverlaySceneRoot.EnsureAvailable();
             SurfaceLayers.Add(id, originalLayer);
+            if (!tryResolveOverlayLayer())
+                return;
+
+            WorldSpaceUiOverlaySceneRoot.EnsureAvailable();
             surface.layer = overlayLayer;
             registrationCount++;
             if (registrationCount != 1)
@@ -104,6 +121,9 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 
             if (surface.layer == overlayLayer)
                 surface.layer = originalLayer;
+
+            if (overlayLayer < 0)
+                return;
 
             registrationCount = Mathf.Max(0, registrationCount - 1);
             if (registrationCount != 0)
@@ -171,22 +191,44 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             return state;
         }
 
-        private static void EnsureOverlayLayer()
+        private static bool TryResolveOverlayLayer()
         {
+            if (overlayLayerResolved)
+                return overlayLayer >= 0;
+
+            overlayLayerResolved = true;
+
+            overlayLayer = FindHighestUnnamedUserLayer(LayerMask.LayerToName);
             if (overlayLayer >= 0)
-                return;
+                return true;
+
+            Debug.LogWarning(
+                "WorldSpaceUiOverlayCamera: No unnamed user layer is available. "
+                + "The source camera will render world-space UI without a dedicated depth-cleared overlay.");
+            return false;
+        }
+
+        internal static int FindHighestUnnamedUserLayer(System.Func<int, string> layerNameResolver)
+        {
+            if (layerNameResolver == null)
+                return -1;
 
             for (var layer = HighestUserLayer; layer >= 8; layer--)
             {
-                if (string.IsNullOrEmpty(LayerMask.LayerToName(layer)))
-                {
-                    overlayLayer = layer;
-                    return;
-                }
+                if (string.IsNullOrEmpty(layerNameResolver(layer)))
+                    return layer;
             }
 
-            overlayLayer = HighestUserLayer;
-            Debug.LogWarning("WorldSpaceUiOverlayCamera: No unnamed user layer is available. Layer 31 will be used.");
+            return -1;
+        }
+
+        internal static void OnAdapterChanged()
+        {
+            if (registrationCount == 0)
+                return;
+
+            ReleaseAllCameras();
+            RegisterExistingGameCameras();
         }
 
         private static void Synchronize(CameraState state)
@@ -206,8 +248,17 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             overlay.useOcclusionCulling = false;
             overlay.enabled = source.isActiveAndEnabled;
             var adapter = WorldSpaceUiOverlayCameraAdapterRegistry.Current;
+            var appliedAdapter = state.AppliedAdapter;
+            if (appliedAdapter != null && !object.ReferenceEquals(appliedAdapter, adapter))
+            {
+                appliedAdapter.Release(source, overlay);
+                state.AppliedAdapter = null;
+                state.UsesDedicatedOverlay = false;
+            }
+
             var previouslyUsedDedicatedOverlay = state.UsesDedicatedOverlay;
             state.UsesDedicatedOverlay = adapter != null && adapter.Configure(source, overlay);
+            state.AppliedAdapter = state.UsesDedicatedOverlay ? adapter : null;
 
             if (state.UsesDedicatedOverlay)
             {
@@ -216,7 +267,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             else
             {
                 if (previouslyUsedDedicatedOverlay)
-                    adapter?.Release(source, overlay);
+                    appliedAdapter?.Release(source, overlay);
 
                 // Never make the UI disappear when a renderer/pipeline cannot provide
                 // a depth-cleared overlay path. The source camera remains the fallback.
@@ -239,8 +290,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
                 }
                 if (state.Overlay != null)
                 {
-                    if (state.UsesDedicatedOverlay)
-                        WorldSpaceUiOverlayCameraAdapterRegistry.Current?.Release(state.Source, state.Overlay);
+                    state.AppliedAdapter?.Release(state.Source, state.Overlay);
                     Object.Destroy(state.Overlay.gameObject);
                 }
             }
@@ -264,8 +314,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
                     continue;
                 if (state.Overlay != null)
                 {
-                    if (state.UsesDedicatedOverlay)
-                        WorldSpaceUiOverlayCameraAdapterRegistry.Current?.Release(state.Source, state.Overlay);
+                    state.AppliedAdapter?.Release(state.Source, state.Overlay);
                     Object.Destroy(state.Overlay.gameObject);
                 }
             }

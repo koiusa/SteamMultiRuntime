@@ -1,6 +1,7 @@
 using Koiusa.SteamMultiRuntime.Network;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
     /// SteamロビーなどのNetwork機能は含まない
     /// </summary>
     [DisallowMultipleComponent]
-    public class LocalSceneFlowLoader : MonoBehaviour, ISceneLoadContext, ILoadingSplashEventSource, ISteamLobbySceneLoader, Network.IStartupStageSceneLoaderContext
+    public class LocalSceneFlowLoader : MonoBehaviour, ISceneLoadContext, ILoadingSplashEventSource, IStageSceneCatalog, Network.IStartupStageSceneLoaderContext
     {
         [Header("Startup Scene")]
         [SerializeField] private bool loadOnStart = true;
@@ -38,7 +39,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool LoadDefaultSceneOnLobbyLeft => false;
         public bool ShouldUnloadLobbySceneOnLeft => false;
 
-        // ISteamLobbySceneLoader implementation
+        // IStageSceneCatalog implementation
         public IReadOnlyList<string> CreatableStageSceneNames
         {
             get
@@ -65,15 +66,26 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            await LoadStartupSceneAsync();
+            try
+            {
+                await LoadStartupSceneAsync(destroyCancellationToken);
+            }
+            catch (OperationCanceledException) when (destroyCancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
         }
 
-        public async Task<bool> LoadStartupSceneAsync()
+        public async Task<bool> LoadStartupSceneAsync(CancellationToken cancellationToken = default)
         {
             LoadingStarted?.Invoke();
             try
             {
-                var loaded = await Network.StageStartupSceneLoader.LoadStartupSceneAsync(this, this, nameof(LocalSceneFlowLoader));
+                var loaded = await Network.StageStartupSceneLoader.LoadStartupSceneAsync(
+                    this, this, nameof(LocalSceneFlowLoader), cancellationToken: cancellationToken);
                 if (!loaded || !disableCamerasInLoadedScenes)
                 {
                     return loaded;
@@ -90,27 +102,5 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        // ISteamLobbySceneLoader implementation (not used in Local version)
-        public Task<bool> LoadLobbySceneOnEnteredAsync()
-        {
-            Debug.LogWarning("LocalSceneFlowLoader: LoadLobbySceneOnEnteredAsync is not implemented for Local version.");
-            return Task.FromResult(false);
-        }
-
-        public void UnloadLobbySceneOnLeft()
-        {
-            Debug.LogWarning("LocalSceneFlowLoader: UnloadLobbySceneOnLeft is not implemented for Local version.");
-        }
-
-        public async Task HandleLobbyLeftAsync(string sceneNameToUnload)
-        {
-            Debug.LogWarning("LocalSceneFlowLoader: HandleLobbyLeftAsync is not implemented for Local version.");
-            await Task.CompletedTask;
-        }
-
-        public void SetLobbySceneName(string sceneName)
-        {
-            Debug.LogWarning("LocalSceneFlowLoader: SetLobbySceneName is not implemented for Local version.");
-        }
     }
 }

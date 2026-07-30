@@ -1,5 +1,6 @@
 using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -9,26 +10,38 @@ namespace Koiusa.SteamMultiRuntime
 {
     public static class SceneUtilityEx
     {
-        public static Task WaitForOperationAsync(AsyncOperation operation)
+        public static Task WaitForOperationAsync(AsyncOperation operation, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (operation == null || operation.isDone)
             {
                 return Task.CompletedTask;
             }
 
-            var completionSource = new TaskCompletionSource<bool>();
+            var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationTokenRegistration cancellationRegistration = default;
 
             void OnCompleted(AsyncOperation completedOperation)
             {
                 operation.completed -= OnCompleted;
+                cancellationRegistration.Dispose();
                 completionSource.TrySetResult(true);
             }
 
+            void OnCancelled()
+            {
+                operation.completed -= OnCompleted;
+                completionSource.TrySetCanceled(cancellationToken);
+            }
+
             operation.completed += OnCompleted;
+            if (cancellationToken.CanBeCanceled)
+                cancellationRegistration = cancellationToken.Register(OnCancelled);
 
             if (operation.isDone)
             {
                 operation.completed -= OnCompleted;
+                cancellationRegistration.Dispose();
                 return Task.CompletedTask;
             }
 

@@ -96,10 +96,6 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
-            {
-                networkManager = FindFirstObjectByType<NetworkManager>();
-            }
         }
 
         private void SubscribeNetworkEvents()

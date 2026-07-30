@@ -6,6 +6,31 @@ using Koiusa.UI.Common;
 
 namespace Koiusa.SteamMultiRuntime.Character.UI
 {
+    public static class CharacterSelectMenuRegistry
+    {
+        public static CharacterSelectMenuToggle Current { get; private set; }
+
+        public static void Register(CharacterSelectMenuToggle menu)
+        {
+            if (menu == null || Current == menu)
+                return;
+
+            if (Current != null)
+            {
+                Debug.LogError("Multiple active CharacterSelectMenuToggle instances are not supported.", menu);
+                return;
+            }
+
+            Current = menu;
+        }
+
+        public static void Unregister(CharacterSelectMenuToggle menu)
+        {
+            if (Current == menu)
+                Current = null;
+        }
+    }
+
     [DisallowMultipleComponent]
     public class CharacterSelectMenuToggle : MonoBehaviour, IUiMenu
     {
@@ -27,9 +52,7 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             }
 
             if (characterSelectUiDocument == null)
-            {
-                characterSelectUiDocument = FindFirstObjectByType<CharacterSelectUiDocument>(FindObjectsInactive.Include);
-            }
+                Debug.LogError("CharacterSelectMenuToggle requires CharacterSelectUiDocument on itself or by explicit reference.", this);
 
             characterSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
             characterSelectUiDocument?.ConfigureClose(() => UiMenuNavigator.Back(this));
@@ -37,12 +60,14 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
 
         private void OnEnable()
         {
+            CharacterSelectMenuRegistry.Register(this);
             toggleBinding = InputActionBinding.Bind(inputActionsConfig?.FindAction("UI/CharacterMenuToggle"), OnTogglePerformed);
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
         }
 
         private void OnDisable()
         {
+            CharacterSelectMenuRegistry.Unregister(this);
             toggleBinding?.Dispose();
             toggleBinding = null;
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;

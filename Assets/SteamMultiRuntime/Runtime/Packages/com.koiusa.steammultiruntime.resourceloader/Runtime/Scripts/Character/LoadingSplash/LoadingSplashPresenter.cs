@@ -162,12 +162,6 @@ namespace Koiusa.SteamMultiRuntime
                 return splashSettings.PanelSettings;
             }
 
-            var existingDocument = Object.FindFirstObjectByType<UIDocument>();
-            if (existingDocument != null && existingDocument.panelSettings != null)
-            {
-                return existingDocument.panelSettings;
-            }
-
             runtimeSplashPanelSettings = ScriptableObject.CreateInstance<PanelSettings>();
             return runtimeSplashPanelSettings;
         }

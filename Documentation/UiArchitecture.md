@@ -18,6 +18,8 @@
 
 Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、子画面を決定またはCancelで閉じるとPause Menuを再表示します。Character Select、Stage Select、Steam Lobbyをショートカットから直接開く場合はRootとして表示します。
 
+Pause MenuからCharacter SelectをPushするときは`CharacterSelectMenuRegistry.Current`を使用します。Character Select Menuは有効期間だけRegistryへ登録し、複数の有効Menuが存在する設定をエラーにします。Pause MenuはScene全体から任意のMenuを探索しません。Registryは最初の有効Instanceを保持し、別Instanceによる重複登録や解除では現在値を変更しません。
+
 ## 共通入力
 
 `com.koiusa.input.core` が次を所有します。
@@ -53,6 +55,8 @@ Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、�
 - Input Action名、リピート、Event消費を各UIにコピーしません。
 
 ## デバッグUI
+
+本番のCharacter Select、Stage Select、Steam Lobby Menu／Document／Loading Splashは、同一Composition Root内のシリアライズ参照または親子Componentだけを使用します。参照欠落時に別Sceneや別Runtime ProfileのUI／Serviceを`FindFirstObjectByType`で選びません。設定不備は起動時エラーとして扱います。Loading Splashの`PanelSettings`は専用設定を優先し、未設定時も他画面の`UIDocument`から借用せず、Splash自身がRuntime設定を所有します。
 
 - Input GuideはF1入力を`InputActionBinding`で所有し、疑似デバイス表示とOperationパネルを同じInputActionAssetから構築します。`InputGuideOverlay`は入力監視と表示モードを、`InputGuideOperationPanel`はBinding Groupで絞った操作一覧の生成とデバイス別表示を所有します。
 - Character DebugのF2購読は`CharacterDebugToggleController`が所有し、NPC Spawn ManagerはNPC群の表示状態だけを所有します。

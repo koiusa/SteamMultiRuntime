@@ -55,8 +55,6 @@ namespace Koiusa.SteamMultiRuntime
                 TrySubscribe(src);
             }
 
-            TrySubscribe(FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
-            TrySubscribe(FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include) as ILoadingSplashEventSource);
         }
 
         private void TrySubscribe(ILoadingSplashEventSource source)

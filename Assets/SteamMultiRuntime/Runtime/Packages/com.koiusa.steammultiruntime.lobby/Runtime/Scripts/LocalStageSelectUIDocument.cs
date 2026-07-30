@@ -1,8 +1,10 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Koiusa.Input;
 using TNRD;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Koiusa.SteamMultiRuntime.Network;
 using Koiusa.SteamMultiRuntime.Localization;
@@ -18,7 +20,8 @@ namespace Koiusa.SteamMultiRuntime
     public class LocalStageSelectUIDocument : MonoBehaviour, ILoadingSplashEventSource
     {
         [SerializeField] private StageSelectUiAssets uiAssets;
-        [SerializeField] private SerializableInterface<ISteamLobbySceneLoader> sceneLoader;
+        [FormerlySerializedAs("sceneLoader")]
+        [SerializeField] private SerializableInterface<IStageSceneCatalog> stageSceneCatalog;
         [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private UIDocument uiDocument;
@@ -27,11 +30,12 @@ namespace Koiusa.SteamMultiRuntime
         private LocalizedVisualTree localizedTree;
         private UiNavigationInputSession inputSession;
         private Action closeRequested;
+        private CancellationTokenSource enableCancellation;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
 
-        private ISteamLobbySceneLoader SceneLoader => sceneLoader?.Value;
+        private IStageSceneCatalog StageSceneCatalog => stageSceneCatalog?.Value;
 
         private void Awake()
         {
@@ -40,12 +44,17 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            enableCancellation?.Dispose();
+            enableCancellation = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
             ResolveSceneLoader();
             BuildUI();
         }
 
         private void OnDisable()
         {
+            enableCancellation?.Cancel();
+            enableCancellation?.Dispose();
+            enableCancellation = null;
             inputSession?.Dispose();
             inputSession = null;
             UnbindUI();
@@ -62,24 +71,23 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveSceneLoader()
         {
-            if (SceneLoader != null)
+            if (StageSceneCatalog != null)
             {
                 return;
             }
 
-            // ISteamLobbySceneLoaderを実装するローダーを探す
+            // IStageSceneCatalogを実装するローダーを探す
             // 優先順: 同じGameObject → 子要素 → LocalSceneFlowLoader
-            var loader = GetComponent<ISteamLobbySceneLoader>()
-                ?? GetComponentInChildren<ISteamLobbySceneLoader>(true)
-                ?? FindFirstObjectByType<LocalSceneFlowLoader>(FindObjectsInactive.Include) as ISteamLobbySceneLoader;
+            var loader = GetComponent<IStageSceneCatalog>()
+                ?? GetComponentInChildren<IStageSceneCatalog>(true);
 
             if (loader == null)
             {
-                Debug.LogWarning("LocalStageSelectUIDocument: ISteamLobbySceneLoader not found. Stage selection will not be available.");
+                Debug.LogWarning("LocalStageSelectUIDocument: IStageSceneCatalog not found. Stage selection will not be available.");
                 return;
             }
 
-            sceneLoader = new SerializableInterface<ISteamLobbySceneLoader>(loader);
+            stageSceneCatalog = new SerializableInterface<IStageSceneCatalog>(loader);
             Debug.Log($"LocalStageSelectUIDocument: Found {loader.GetType().Name} as SceneLoader");
         }
 
@@ -128,13 +136,13 @@ namespace Koiusa.SteamMultiRuntime
             stageSelectUI.Build("stage-scene-field");
 
             // ステージ一覧をUIに反映（StageSelected購読前に行うことで初期値セット時のイベント発火を防ぐ）
-            if (SceneLoader != null)
+            if (StageSceneCatalog != null)
             {
-                stageSelectUI.PopulateStageScenes(SceneLoader.CreatableStageSceneNames);
+                stageSelectUI.PopulateStageScenes(StageSceneCatalog.CreatableStageSceneNames);
             }
             else
             {
-                Debug.LogWarning("LocalStageSelectUIDocument: SceneLoader is null. No stages will be populated.");
+                Debug.LogWarning("LocalStageSelectUIDocument: StageSceneCatalog is null. No stages will be populated.");
             }
 
             stageSelectUI.StageSelected += OnStageSelected;
@@ -166,9 +174,9 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            if (SceneLoader == null)
+            if (StageSceneCatalog == null)
             {
-                Debug.LogError("LocalStageSelectUIDocument: SceneLoader is not available.");
+                Debug.LogError("LocalStageSelectUIDocument: StageSceneCatalog is not available.");
                 return;
             }
 
@@ -177,16 +185,21 @@ namespace Koiusa.SteamMultiRuntime
 
             try
             {
+                var cancellationToken = enableCancellation?.Token ?? destroyCancellationToken;
                 var loaded = await SceneLoadUtility.SwitchPresentationSceneAsync(
                     stageName,
-                    SceneLoader.CreatableStageSceneNames,
+                    StageSceneCatalog.CreatableStageSceneNames,
                     true,
                     this,
-                    nameof(LocalStageSelectUIDocument));
+                    nameof(LocalStageSelectUIDocument),
+                    cancellationToken);
                 if (!loaded)
                 {
                     Debug.LogError($"LocalStageSelectUIDocument: Failed to load stage '{stageName}'.");
                 }
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (Exception ex)
             {

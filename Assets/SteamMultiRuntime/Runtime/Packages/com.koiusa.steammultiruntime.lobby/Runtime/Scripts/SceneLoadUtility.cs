@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
@@ -9,8 +10,13 @@ namespace Koiusa.SteamMultiRuntime
 {
     public static class SceneLoadUtility
     {
-        public static async Task<bool> LoadSceneAdditiveAsync(string sceneReference, UnityEngine.Object owner, string logPrefix)
+        public static async Task<bool> LoadSceneAdditiveAsync(
+            string sceneReference,
+            UnityEngine.Object owner,
+            string logPrefix,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrWhiteSpace(sceneReference))
             {
                 return false;
@@ -32,20 +38,32 @@ namespace Koiusa.SteamMultiRuntime
                     return false;
                 }
 
-                await SceneUtilityEx.WaitForOperationAsync(operation);
+                await SceneUtilityEx.WaitForOperationAsync(operation, cancellationToken);
                 loadedScene = SceneUtilityEx.GetLoadedScene(sceneReference);
             }
 
             return loadedScene.IsValid() && loadedScene.isLoaded;
         }
 
-        public static async Task<bool> LoadPresentationSceneAsync(string sceneReference, ISceneLoadContext context, UnityEngine.Object owner, string logPrefix)
+        public static async Task<bool> LoadPresentationSceneAsync(
+            string sceneReference,
+            ISceneLoadContext context,
+            UnityEngine.Object owner,
+            string logPrefix,
+            CancellationToken cancellationToken = default)
         {
-            return await LoadPresentationSceneWithCameraPolicyAsync(sceneReference, context.DisableCamerasInLoadedScenes, owner, logPrefix);
+            return await LoadPresentationSceneWithCameraPolicyAsync(
+                sceneReference, context.DisableCamerasInLoadedScenes, owner, logPrefix, cancellationToken);
         }
 
-        private static async Task<bool> LoadPresentationSceneWithCameraPolicyAsync(string sceneReference, bool disableCamerasInLoadedScenes, UnityEngine.Object owner, string logPrefix)
+        private static async Task<bool> LoadPresentationSceneWithCameraPolicyAsync(
+            string sceneReference,
+            bool disableCamerasInLoadedScenes,
+            UnityEngine.Object owner,
+            string logPrefix,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var existingScene = SceneUtilityEx.GetLoadedScene(sceneReference);
             if (existingScene.IsValid()
                 && existingScene.isLoaded
@@ -58,7 +76,7 @@ namespace Koiusa.SteamMultiRuntime
                 return true;
             }
 
-            if (!await LoadSceneAdditiveAsync(sceneReference, owner, logPrefix))
+            if (!await LoadSceneAdditiveAsync(sceneReference, owner, logPrefix, cancellationToken))
             {
                 return false;
             }
@@ -74,9 +92,11 @@ namespace Koiusa.SteamMultiRuntime
             IEnumerable<string> previousSceneReferences,
             bool disableCamerasInLoadedScenes,
             UnityEngine.Object owner,
-            string logPrefix)
+            string logPrefix,
+            CancellationToken cancellationToken = default)
         {
-            if (!await LoadPresentationSceneWithCameraPolicyAsync(targetSceneReference, disableCamerasInLoadedScenes, owner, logPrefix))
+            if (!await LoadPresentationSceneWithCameraPolicyAsync(
+                    targetSceneReference, disableCamerasInLoadedScenes, owner, logPrefix, cancellationToken))
             {
                 return false;
             }
@@ -94,14 +114,17 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
 
-                await UnloadSceneAsync(previousSceneReference);
+                await UnloadSceneAsync(previousSceneReference, cancellationToken);
             }
 
             return true;
         }
 
-        public static async Task<bool> UnloadSceneAsync(string sceneReference)
+        public static async Task<bool> UnloadSceneAsync(
+            string sceneReference,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var scene = SceneUtilityEx.GetLoadedScene(sceneReference);
             if (!scene.IsValid() || !scene.isLoaded)
             {
@@ -114,7 +137,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            await SceneUtilityEx.WaitForOperationAsync(operation);
+            await SceneUtilityEx.WaitForOperationAsync(operation, cancellationToken);
             return true;
         }
 

@@ -1,0 +1,20 @@
+{
+    "name": "Koiusa.SteamMultiRuntime.Lobby.PlayModeTests",
+    "rootNamespace": "Koiusa.SteamMultiRuntime.Tests",
+    "references": [
+        "Koiusa.SteamMultiRuntime.Lobby.Runtime",
+        "Koiusa.SteamMultiRuntime.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

@@ -19,9 +19,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            localManager = LocalManager.Singleton != null
-                ? LocalManager.Singleton
-                : FindFirstObjectByType<LocalManager>();
+            localManager = LocalManager.Singleton;
             if (localManager != null)
             {
                 localManager.PlayerSpawned -= OnPlayerSpawned;
@@ -30,8 +28,8 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var controller = FindFirstObjectByType<LocalPlayerController>();
-            SetPlayer(controller != null ? controller.gameObject : null);
+            Debug.LogError("LocalFocusMarkerContext requires an active LocalManager.", this);
+            SetPlayer(null);
         }
 
         private void OnDisable()

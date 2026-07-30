@@ -4,14 +4,17 @@ using System.Threading.Tasks;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public interface ISteamLobbySceneLoader
+    public interface IStageSceneCatalog
+    {
+        IReadOnlyList<string> CreatableStageSceneNames { get; }
+    }
+
+    public interface ISteamLobbySceneLoader : IStageSceneCatalog
     {
         event Action LoadingStarted;
         event Action LoadingFinished;
 
         string LobbySceneName { get; }
-        IReadOnlyList<string> CreatableStageSceneNames { get; }
-
         Task<bool> LoadLobbySceneOnEnteredAsync();
         void UnloadLobbySceneOnLeft();
         Task HandleLobbyLeftAsync(string sceneNameToUnload);

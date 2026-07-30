@@ -31,18 +31,14 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             if (lobbyUiDocument == null)
-            {
-                lobbyUiDocument = FindFirstObjectByType<SteamLobbyUiDocument>(FindObjectsInactive.Include);
-            }
+                Debug.LogError("SteamLobbyMenuToggle requires SteamLobbyUiDocument on itself or by explicit reference.", this);
 
             lobbyService = lobbyUiDocument != null
                 ? lobbyUiDocument.GetComponent<SteamLobbyService>()
                 : GetComponent<SteamLobbyService>();
 
             if (lobbyService == null)
-            {
-                lobbyService = FindFirstObjectByType<SteamLobbyService>();
-            }
+                Debug.LogError("SteamLobbyMenuToggle requires SteamLobbyService on the configured UI root.", this);
         }
 
         private void OnEnable()

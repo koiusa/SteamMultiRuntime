@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 525f933077a5f794580f2a1fbc2779d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerModelSync
-  modelIdList: {fileID: 0}
+  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   selectedModelIndex: 0
 --- !u!114 &4003174539648773126
 MonoBehaviour:

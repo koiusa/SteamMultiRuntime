@@ -192,10 +192,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ResolveCharacterMenu()
         {
-            if (characterMenu == null)
-            {
-                characterMenu = FindFirstObjectByType<CharacterSelectMenuToggle>(FindObjectsInactive.Include);
-            }
+            characterMenu = CharacterSelectMenuRegistry.Current;
         }
 
         private void OpenKeyConfig()

@@ -23,6 +23,8 @@ Focus Marker
 
 `CameraMixerWeightControllerBase`が共通処理を持ち、派生クラスは利用する`IFocusMarkerContext`の解決だけを担当します。Contextは`IsActive`に加えて、Cameraが追従するローカル`PlayerObject`を公開します。Camera入力の制御では、このPlayerObjectから`IPlayerTraversalCoordinator`を解決し、対象プレイヤー自身のWire接続状態を参照します。
 
+`ForcusMerker`はLocalManagerやNetworkManagerからPlayerを再探索せず、割り当て済み`IFocusMarkerContext.PlayerObject`だけを追従対象とします。Local／Network Mixing Cameraは同一Prefab内の対応する`LocalFocusMarkerContext`／`NetworkFocusMarkerContext`を明示参照し、Scene全体から別Contextを選びません。Compassは`Camera.main`を優先し、Tagがない場合は有効なGame Cameraが一意なときだけ使用します。複数候補から任意のCameraを選択しません。
+
 ## Camera切替
 
 `CinemachineMixingCamera`内の4台を重みで切り替えます。Camera Weightの最終決定は`CameraMixerWeightControllerBase`だけが担当し、Targeting側から並行してWeightを書き込みません。
@@ -36,6 +38,8 @@ Focus Marker
 Contextの`StateChanged`を購読し、`IsActive`が変わると目標Weightを更新します。Enable直後は現在状態を即時反映し、その後の切替は毎Frame補間します。
 
 `LocalTargetingCameraConnector`は`LocalTargetingControllerRegistry.CurrentChanged`を購読し、Local Ownerの`TargetingController`をCameraへ接続します。Single Cameraは`PrimaryTarget`、Multi Cameraは`CinemachineTargetGroup`をLookAtに使用します。登録・所有権変更・Targeting状態変更はイベント駆動です。
+
+Network Cameraの`NetworkFocusMarkerContext`は、Prefabで`SteamLobbyService`を直接参照できない構成では`SteamLobbyServiceRegistry.CurrentChanged`を購読します。CameraとServiceの生成順に依存せず、Service破棄時は購読を解除してPlayer Contextを無効化します。Scene全体から任意のLobby Serviceを探索しません。
 
 ## Camera入力
 

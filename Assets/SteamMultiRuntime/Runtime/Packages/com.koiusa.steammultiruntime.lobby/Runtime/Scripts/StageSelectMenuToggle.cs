@@ -31,9 +31,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             if (stageSelectUiDocument == null)
-            {
-                stageSelectUiDocument = FindFirstObjectByType<LocalStageSelectUIDocument>(FindObjectsInactive.Include);
-            }
+                Debug.LogError("StageSelectMenuToggle requires LocalStageSelectUIDocument on itself or by explicit reference.", this);
 
             stageSelectUiDocument?.ConfigureInputActions(inputActionsConfig);
             stageSelectUiDocument?.ConfigureClose(() => UiMenuNavigator.Back(this));
