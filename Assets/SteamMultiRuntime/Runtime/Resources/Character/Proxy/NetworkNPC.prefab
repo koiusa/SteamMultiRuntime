@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 6060138165297009169}
   - component: {fileID: 3119765523294881944}
   m_Layer: 0
-  m_Name: NetworkPlayer_NPC
+  m_Name: NetworkNPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -12,12 +12,8 @@ GameObject:
   - component: {fileID: 6580791355322641124}
   - component: {fileID: 7866116347518461925}
   - component: {fileID: 3488588548170026997}
-  - component: {fileID: -2727450833852221789}
-  - component: {fileID: 4823061881352527643}
-  - component: {fileID: 2404645661678682767}
-  - component: {fileID: 8293643381823499549}
-  - component: {fileID: 2070585055845636041}
-  - component: {fileID: 940000000000000001}
+  - component: {fileID: 3060642578519988868}
+  - component: {fileID: 4003174539648773126}
   - component: {fileID: 324244260282127880}
   - component: {fileID: 3613120474214503031}
   - component: {fileID: 626167900066496392}
@@ -26,49 +22,48 @@ GameObject:
   - component: {fileID: 7364711086840703048}
   - component: {fileID: 5341095656457548464}
   - component: {fileID: 6962452901085774379}
-  - component: {fileID: 7872827304047197062}
-  - component: {fileID: 2911529315059979141}
-  - component: {fileID: 2387919757285863628}
-  - component: {fileID: 1497320286697587687}
+  - component: {fileID: 4331762846265168320}
+  - component: {fileID: 2504532941486712691}
+  - component: {fileID: 937887151947646620}
   - component: {fileID: 6842739510264837102}
   - component: {fileID: 810000000000000001}
   - component: {fileID: 810000000000000002}
-  - component: {fileID: 8127349056123478901}
+  - component: {fileID: -3038119161856350272}
   - component: {fileID: 810000000000000003}
   - component: {fileID: 810000000000000004}
   - component: {fileID: 810000000000000005}
   - component: {fileID: 810000000000000006}
-  - component: {fileID: 5263148204889952332}
-  - component: {fileID: 8614854242963659131}
-  - component: {fileID: 2331075215400263561}
-  - component: {fileID: 8795846172813051235}
-  - component: {fileID: 5344976606437911070}
-  - component: {fileID: 955000000000000002}
-  - component: {fileID: 7320923782889463785}
-  - component: {fileID: 2379218126333780387}
-  - component: {fileID: 1393020944998710847}
-  - component: {fileID: 4260784599833354618}
-  - component: {fileID: 7089439013901326093}
-  - component: {fileID: 8195108195719462464}
-  - component: {fileID: 8227191135859388872}
-  - component: {fileID: 523081178672285465}
-  - component: {fileID: 880000000000000001}
-  - component: {fileID: 8771968859321804269}
-  - component: {fileID: 6356302631187881392}
-  - component: {fileID: 102919932978272801}
-  - component: {fileID: 6185773807512086423}
-  - component: {fileID: 8432028457617207974}
-  - component: {fileID: 1101672648987096014}
-  - component: {fileID: 2656909865762548813}
-  - component: {fileID: 956000000000000002}
+  - component: {fileID: 930000000000000001}
+  - component: {fileID: 930000000000000002}
+  - component: {fileID: 930000000000000003}
+  - component: {fileID: 2277333357111400412}
+  - component: {fileID: 8786606430057324570}
+  - component: {fileID: 7952957115265635708}
+  - component: {fileID: 7099575249746740329}
+  - component: {fileID: 804400954607604548}
+  - component: {fileID: 5809044861996414448}
+  - component: {fileID: 9080776807677726674}
+  - component: {fileID: 955000000000000001}
+  - component: {fileID: 4387352645211788965}
+  - component: {fileID: 566156994252057087}
+  - component: {fileID: 4987499974731793392}
+  - component: {fileID: 7184251149495578003}
+  - component: {fileID: 112213991497632317}
+  - component: {fileID: 7567111365404684786}
+  - component: {fileID: 1027245250009642170}
+  - component: {fileID: 3981566098031501758}
+  - component: {fileID: 6391973038834359252}
+  - component: {fileID: 7245833128013572585}
+  - component: {fileID: 9189569119033002611}
+  - component: {fileID: 956000000000000001}
   m_Layer: 0
-  m_Name: NetworkPlayer_WithAnimator
+  m_Name: LocalPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &956000000000000002
+--- !u!114 &956000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -143,7 +138,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!136 &3488588548170026997
@@ -169,7 +164,7 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.5, z: 0}
---- !u!114 &-2727450833852221789
+--- !u!114 &3060642578519988868
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -178,23 +173,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: 525f933077a5f794580f2a1fbc2779d3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 520936048
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
---- !u!114 &4823061881352527643
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerModelSync
+  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
+  selectedModelIndex: 0
+--- !u!114 &4003174539648773126
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -203,117 +187,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Script: {fileID: 11500000, guid: dd7d4202b2015d04191edc1b521bb2ed, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkAnimatorExpanded: 0
-  AuthorityMode: 0
-  m_Animator: {fileID: 6580791355322641124}
-  TransitionStateInfoList: []
-  AnimatorParameterEntries:
-    ParameterEntries:
-    - name: Speed
-      NameHash: -823668238
-      Synchronize: 1
-      ParameterType: 1
-    - name: VerticalVelocity
-      NameHash: -1380605809
-      Synchronize: 1
-      ParameterType: 1
-    - name: MotionSpeed
-      NameHash: 1939466105
-      Synchronize: 1
-      ParameterType: 1
-    - name: LocomotionMode
-      NameHash: 1467996341
-      Synchronize: 1
-      ParameterType: 3
-    - name: AirState
-      NameHash: 2090971652
-      Synchronize: 1
-      ParameterType: 3
-    - name: WallRunSide
-      NameHash: 1382291222
-      Synchronize: 1
-      ParameterType: 3
-  AnimatorParametersExpanded: 0
---- !u!114 &2404645661678682767
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
-  AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
-  PositionLerpSmoothing: 1
-  PositionMaxInterpolationTime: 0.1
-  RotationLerpSmoothing: 1
-  RotationMaxInterpolationTime: 0.1
-  ScaleLerpSmoothing: 1
-  ScaleMaxInterpolationTime: 0.1
-  AuthorityMode: 0
-  TickSyncChildren: 0
-  UseUnreliableDeltas: 1
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 0
-  SyncScaleY: 0
-  SyncScaleZ: 0
-  PositionThreshold: 0.005
-  RotAngleThreshold: 0.1
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 1
-  InLocalSpace: 0
-  SwitchTransformSpaceWhenParented: 0
-  Interpolate: 1
-  SlerpPosition: 0
---- !u!114 &8293643381823499549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
-  ShowTopMostFoldoutHeaderGroup: 1
-  NetworkRigidbodyBaseExpanded: 0
-  UseRigidBodyForMotion: 0
-  AutoUpdateKinematicState: 1
-  AutoSetKinematicOnDespawn: 1
---- !u!114 &2070585055845636041
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8352a4e8966d8334eb2dd58957290b57, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
-  ShowTopMostFoldoutHeaderGroup: 1
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerController
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   gamepadAimCursorSettings:
     mode: 0
@@ -323,20 +199,6 @@ MonoBehaviour:
     rememberLastRelativePosition: 1
     syncSystemPointerPosition: 1
   cameraTransform: {fileID: 0}
-  controlMode: 0
---- !u!114 &940000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b46b4dcc8f8e473ea02c68cc8993ae42, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerControllerAdapter
-  stateSource: {fileID: 2070585055845636041}
 --- !u!114 &324244260282127880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,7 +306,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78810bb3b75b24945b59408c3ea69138, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallRunTraversalFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallRunAction
   settings:
     WallRunSpeed: 7
     WallRunAcceleration: 20
@@ -475,7 +337,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f07ec851fddbe8442b9e9dc78968eb8d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallJumpTraversalFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallJumpAction
   settings:
     WallMaxUpDot: 0.2
     WallJumpUpForce: 6.5
@@ -495,7 +357,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4725918b45dda4247833b2ba741a1d6b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallSlideTraversalFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallSlideAction
   settings:
     WallMaxUpDot: 0.2
     WallSlideGravityMultiplier: 0.5
@@ -518,7 +380,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
   logStateTransitions: 0
---- !u!114 &7872827304047197062
+--- !u!114 &4331762846265168320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a07ce9300863a0e468414a13e3b93327, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.CharacterPrefabLoader
+--- !u!114 &2504532941486712691
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -545,7 +419,7 @@ MonoBehaviour:
     LateralMoveSpeed: 0
     LateralMoveAcceleration: 0
     LateralEdgePadding: 0
---- !u!114 &2911529315059979141
+--- !u!114 &937887151947646620
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -560,41 +434,10 @@ MonoBehaviour:
   recoverBelowY: -30
   recoveryPoint: {fileID: 0}
   recoveryOffset: {x: 0, y: 1, z: 0}
-  processGate: {fileID: -2727450833852221789}
+  processGate: {fileID: 0}
   onRecovered:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &2387919757285863628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56d1d518974365843a70fa21709b25ce, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkServerFallRecoveryProcessGate
---- !u!114 &1497320286697587687
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3e6ce34ea7d6fb4795d8c4428f7d17d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.Network.NetworkPlayerModelSync
-  ShowTopMostFoldoutHeaderGroup: 1
-  modelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
-  SelectedModelIndex:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!114 &6842739510264837102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -604,10 +447,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 632cc389dbb945f8be3c91bd47dba841, type: 3}
+  m_Script: {fileID: 11500000, guid: 443490f804254816902f9e95af5f1a5b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerDisplayName
-  ShowTopMostFoldoutHeaderGroup: 1
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.ResourceLoader.Runtime::Koiusa.SteamMultiRuntime.LocalPlayerDisplayName
 --- !u!114 &810000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -643,7 +485,7 @@ MonoBehaviour:
   wireMaterial: {fileID: 0}
   wireWidth: 0.035
   wireColor: {r: 1, g: 1, b: 1, a: 1}
---- !u!114 &8127349056123478901
+--- !u!114 &-3038119161856350272
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -654,7 +496,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireConnectionFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireTraversalFeature
   visual: {fileID: 810000000000000002}
   constraintMode: 0
   elasticStretchLimit: 1.5
@@ -723,7 +565,7 @@ MonoBehaviour:
   facingRotationSpeed: 540
   strafeBlendDamping: 0.3
   facingBlendDamping: 0.12
---- !u!114 &5263148204889952332
+--- !u!114 &930000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -734,8 +576,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6907f93f7aba43b798ed7a5427378da2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
---- !u!114 &8614854242963659131
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
+--- !u!114 &930000000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -746,8 +588,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5bbcc5fbc3845d599340678b032cd71, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
---- !u!114 &2331075215400263561
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
+--- !u!114 &930000000000000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -758,8 +600,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d2f9f7930211461ea57ae185dc840b1e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction
---- !u!114 &8795846172813051235
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction
+--- !u!114 &2277333357111400412
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -771,7 +613,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillCoordinator
---- !u!114 &5344976606437911070
+--- !u!114 &8786606430057324570
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -783,19 +625,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCombatCoordinator
---- !u!114 &955000000000000002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 481874b64bf84ca6a059a5ecdfc913c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerCompassHudOwner
---- !u!114 &7320923782889463785
+--- !u!114 &7952957115265635708
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -807,7 +637,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000014, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCharacterCoordinator
---- !u!114 &2379218126333780387
+--- !u!114 &7099575249746740329
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -825,7 +655,7 @@ MonoBehaviour:
   speed: 12
   duration: 0.2
   useFacingWhenDirectionIsEmpty: 1
---- !u!114 &1393020944998710847
+--- !u!114 &804400954607604548
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -846,7 +676,7 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &4260784599833354618
+--- !u!114 &5809044861996414448
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -862,7 +692,7 @@ MonoBehaviour:
   cooldown: 1
   activeDuration: 0.2
   incomingDamageScale: 0.25
---- !u!114 &7089439013901326093
+--- !u!114 &9080776807677726674
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -878,7 +708,19 @@ MonoBehaviour:
   cooldown: 1
   activeDuration: 0.2
   amount: 25
---- !u!114 &8195108195719462464
+--- !u!114 &955000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 481874b64bf84ca6a059a5ecdfc913c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerCompassHudOwner
+--- !u!114 &4387352645211788965
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -893,7 +735,7 @@ MonoBehaviour:
   maxHealth: 100
   restoreOnEnable: 1
   currentHealth: 0
---- !u!114 &8227191135859388872
+--- !u!114 &566156994252057087
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -906,7 +748,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerDamageReceiverFeature
   invincible: 0
---- !u!114 &523081178672285465
+--- !u!114 &4987499974731793392
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -918,7 +760,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
---- !u!114 &880000000000000001
+--- !u!114 &7184251149495578003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -927,10 +769,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3003735386717007390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8931c22a2d64645a6e23b12e05d3732, type: 3}
+  m_Script: {fileID: 11500000, guid: 66a72990ab334434a3552d5f3aec4d0b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerSkillController
-  ShowTopMostFoldoutHeaderGroup: 1
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillInputController
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
   attackActionPath: Combat/Attack
   dashActionPath: Player/Dash
@@ -941,7 +782,7 @@ MonoBehaviour:
   guardSkill: {fileID: 11400000, guid: eb881be673ac4fafbde67b53682898a0, type: 2}
   healSkill: {fileID: 11400000, guid: 5192792dc67d44c8a2003719d17e9e0a, type: 2}
   directionReference: {fileID: 4035978081068949003}
---- !u!114 &8771968859321804269
+--- !u!114 &112213991497632317
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -957,7 +798,7 @@ MonoBehaviour:
   priority: 0
   isTargetable: 1
   registry: {fileID: 0}
---- !u!114 &6356302631187881392
+--- !u!114 &7567111365404684786
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -971,7 +812,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingContextProvider
   owner: {fileID: 0}
   viewCamera: {fileID: 0}
---- !u!114 &102919932978272801
+--- !u!114 &1027245250009642170
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -984,7 +825,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.RegistryTargetCandidateSource
   registry: {fileID: 0}
---- !u!114 &6185773807512086423
+--- !u!114 &3981566098031501758
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1001,7 +842,7 @@ MonoBehaviour:
   centerWeight: 1
   distanceWeight: 0.25
   priorityWeight: 1
---- !u!114 &8432028457617207974
+--- !u!114 &6391973038834359252
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1013,14 +854,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed688a20c1884df98484b3f5e57990e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingController
-  contextSource: {fileID: 6356302631187881392}
-  candidateSource: {fileID: 102919932978272801}
+  contextSource: {fileID: 7567111365404684786}
+  candidateSource: {fileID: 1027245250009642170}
   filters:
-  - {fileID: 6185773807512086423}
+  - {fileID: 3981566098031501758}
   scorers:
-  - {fileID: 6185773807512086423}
+  - {fileID: 3981566098031501758}
   maximumTargets: 8
---- !u!114 &1101672648987096014
+--- !u!114 &7245833128013572585
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1032,11 +873,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c772dd50ab434a498257125e93c89387, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.TargetingSystem.Runtime::Koiusa.TargetingSystem.Runtime.TargetingCommandInput
-  controller: {fileID: 8432028457617207974}
+  controller: {fileID: 6391973038834359252}
   inputActions: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
   multiAddInitialDelay: 0.3
   multiAddInterval: 0.2
---- !u!114 &2656909865762548813
+--- !u!114 &9189569119033002611
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1048,8 +889,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fd58be4cf8f498da35ea88d6357e5e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.TargetingSystem.Runtime::Koiusa.SteamMultiRuntime.TargetingSystem.PlayerTargetingOwner
-  controller: {fileID: 8432028457617207974}
-  input: {fileID: 1101672648987096014}
+  controller: {fileID: 6391973038834359252}
+  input: {fileID: 7245833128013572585}
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -1060,7 +901,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3338000546656025210}
   - component: {fileID: 3918581909359559565}
-  - component: {fileID: 2062928683736366048}
+  - component: {fileID: 7715437038174053402}
   m_Layer: 0
   m_Name: CharacterHeadupUI
   m_TagString: Untagged
@@ -1106,7 +947,7 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &2062928683736366048
+--- !u!114 &7715437038174053402
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

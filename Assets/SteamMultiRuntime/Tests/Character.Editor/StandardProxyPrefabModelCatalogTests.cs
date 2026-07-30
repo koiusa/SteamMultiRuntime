@@ -12,15 +12,14 @@ namespace Koiusa.SteamMultiRuntime.Tests
 
         private static readonly string[] LocalProxyPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_NPC.prefab"
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalNPC.prefab"
         };
 
         private static readonly string[] NetworkProxyPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_Runtime.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_NPC.prefab"
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkNPC.prefab"
         };
 
         [Test]

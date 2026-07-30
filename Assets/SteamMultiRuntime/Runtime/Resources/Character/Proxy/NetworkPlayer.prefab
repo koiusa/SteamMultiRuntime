@@ -52,25 +52,20 @@ GameObject:
   - component: {fileID: 2333227148447976475}
   - component: {fileID: 7942950129131282800}
   - component: {fileID: 956000000000000003}
+  - component: {fileID: 1471862859953347916}
+  - component: {fileID: 8313110425467509842}
+  - component: {fileID: 4258562325649193894}
+  - component: {fileID: 5635126242409578485}
+  - component: {fileID: 7438523029432849730}
+  - component: {fileID: 1684865938520485866}
+  - component: {fileID: 6857631922079477508}
   m_Layer: 0
-  m_Name: NetworkPlayer_Runtime
+  m_Name: NetworkPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &956000000000000003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3003735386717007390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f2e063b0e646968d97cd36c1ba7e7e, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0
@@ -846,6 +841,7 @@ MonoBehaviour:
   inputActions: {fileID: 11400000, guid: c25045eb752f43b78cf6fff124c1f0e4, type: 2}
   multiAddInitialDelay: 0.3
   multiAddInterval: 0.2
+  directionalSelectionDeadzone: 0.35
 --- !u!114 &7942950129131282800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,6 +856,133 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.TargetingSystem.Runtime::Koiusa.SteamMultiRuntime.TargetingSystem.PlayerTargetingOwner
   controller: {fileID: 3703049516710170246}
   input: {fileID: 2333227148447976475}
+--- !u!114 &956000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f2e063b0e646968d97cd36c1ba7e7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1471862859953347916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ae9e3279ba4d07a61f2633528fe124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireLineVisualFeature
+  wireOrigin: {fileID: 0}
+  lineRenderer: {fileID: 0}
+  wireMaterial: {fileID: 0}
+  wireWidth: 0.035
+  wireColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &8313110425467509842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireTraversalFeature
+  visual: {fileID: 1471862859953347916}
+  constraintMode: 0
+  elasticStretchLimit: 1.5
+  minimumRopeLength: 2
+  maximumRopeLength: 20
+  excessReelSpeed: 12
+  ropeSlack: 0.15
+  pullAcceleration: 55
+  radialVelocityDamping: 1
+--- !u!114 &4258562325649193894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6bb8109e634dce9e88d9cc8a73df01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGrappleTargetingFeature
+  aimTransform: {fileID: 0}
+  maximumRange: 45
+  grappleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  triggerInteraction: 1
+--- !u!114 &5635126242409578485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1498a24b344a47e3ac327ca5a749574c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireAttachAction
+--- !u!114 &7438523029432849730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0bfe2db5b7f48ea981c40c8527f8873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingAction
+  swingAcceleration: 16
+  maximumInputSwingSpeed: 8
+--- !u!114 &1684865938520485866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14337169162a44d8bd110162076d8a2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireReelAction
+  reelSpeed: 12
+  stepDistance: 1.5
+--- !u!114 &6857631922079477508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3003735386717007390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 967f4462d4f94edc899f064c3af77f29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGroundAction
+  objectSwingAcceleration: 12
+  maximumObjectSwingSpeed: 10
+  objectPullAcceleration: 55
+  outwardVelocityDamping: 1
+  facingRotationSpeed: 540
+  strafeBlendDamping: 0.3
+  facingBlendDamping: 0.12
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0

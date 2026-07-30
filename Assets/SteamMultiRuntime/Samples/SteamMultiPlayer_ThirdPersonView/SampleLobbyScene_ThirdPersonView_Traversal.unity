@@ -699,7 +699,7 @@ PrefabInstance:
     - target: {fileID: 384021173469697096, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: NetworkConfig.PlayerPrefab
       value: 
-      objectReference: {fileID: 3003735386717007390, guid: ad5712ba124a66c4db5bd2714218603a, type: 3}
+      objectReference: {fileID: 3003735386717007390, guid: 8d16d30956a17324296197f57efae3cb, type: 3}
     - target: {fileID: 384021173469697096, guid: b48925bd6b8b6a743b788ad62a668362, type: 3}
       propertyPath: NetworkConfig.EnableSceneManagement
       value: 1

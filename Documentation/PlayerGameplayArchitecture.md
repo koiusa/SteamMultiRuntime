@@ -172,11 +172,10 @@ AttackSkillSettings                                     [予定]
 
 以下のProxy Prefabには、`PlayerCharacterCoordinator`、Skill／Combat Coordinator、初期Skill／Combat Featureを標準構成として適用します。
 
-- `LocalPlayer_WithAnimator`
-- `NetworkPlayer_WithAnimator`
-- `NetworkPlayer_Runtime`
-- `LocalPlayer_NPC`
-- `NetworkPlayer_NPC`
+- `LocalPlayer`
+- `LocalNPC`
+- `NetworkPlayer`
+- `NetworkNPC`
 
 各Prefabは必要なComponentとSO参照を直接保持します。起動時の自動移行、固定Prefabパス、Asset検索パスは使用しません。Inspectorの設定補助は、同じGameObject上のControllerとSkill Featureから参照を取得します。
 

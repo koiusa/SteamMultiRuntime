@@ -71,12 +71,12 @@ NPCの経路・移動状態は`INpcLocomotionState`、Network同期状態は
 `IPlayerLocomotionState`として公開し、`IPlayerController`は共通Adapterだけが実装します。
 
 ```text
-NetworkPlayer_NPC
+NetworkNPC
 ├─ ServerDrivenPlayerController : IPlayerLocomotionState
 ├─ NpcNavMeshController : INpcLocomotionState
 └─ PlayerControllerAdapter : IPlayerController
 
-LocalPlayer_NPC
+LocalNPC
 ├─ NpcNavMeshController : INpcLocomotionState
 └─ PlayerControllerAdapter : IPlayerController
 ```

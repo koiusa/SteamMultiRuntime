@@ -12,18 +12,16 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         private const string InputConfigPath = "Assets/SteamMultiRuntime/Runtime/Configs/Input/GameplayTargetingInputActions.asset";
         private static readonly string[] PlayerPrefabPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_Runtime.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer.prefab",
         };
 
         private static readonly string[] TargetPrefabPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_WithAnimator.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_Runtime.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer_NPC.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer_NPC.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalNPC.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkNPC.prefab",
         };
 
         private static readonly string[] CameraPrefabPaths =

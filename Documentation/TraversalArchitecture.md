@@ -374,10 +374,10 @@ Custom Inspectorの論理階層、Add／Repair操作の詳細は[EditorSpecifica
 
 主要Player Prefabは次の構成へ対応しています。
 
-- `LocalPlayer_WithAnimator`
-- `NetworkPlayer_WithAnimator`
-- `LocalPlayer_NPC`
-- `NetworkPlayer_Runtime`
+- `LocalPlayer`
+- `LocalNPC`
+- `NetworkPlayer`
+- `NetworkNPC`
 
 ## 依存方向
 
