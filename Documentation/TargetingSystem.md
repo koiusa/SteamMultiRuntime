@@ -49,13 +49,19 @@ Multi開始時に、その時点の距離・Viewport条件を通過した候補�
 
 ## Camera
 
-統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が同じ`CinemachineMixingCamera`配下の4台を一元管理します。
+統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が`Camera Mixer`配下の4台を一元管理します。Prefab Rootの`Camera System`直下で`Camera Mixer`と`Targeting System`をSiblingに分け、Targeting側からMixerと対象Cameraをシリアライズ参照します。
 
 ```text
-Default Camera
-Follow Camera
-SingleTargetCamera
-MultiTargetCamera -> CinemachineTargetGroup
+Camera System
+├─ Camera Mixer
+│  ├─ DefaultCamera
+│  ├─ FollowCamera
+│  ├─ SingleTargetCamera
+│  └─ MultiTargetCamera
+├─ CameraAnchors
+└─ Targeting System
+   ├─ TargetingTargetGroup
+   └─ PrimaryCenteredTargetGroup
 ```
 
 Controllerの状態変更時だけLookAtとTargetGroupを更新し、Camera Weightの補間だけを`Update`で行います。最終Weight決定は既存Camera Controllerへ統合済みです。
@@ -65,7 +71,6 @@ Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`Targe
 Camera Controllerの`Targeting Framing Mode`では、Primaryを画面中心に置く`Primary Centered`、Playerと選択対象全体の中心を使う`Group Centered`、任意の`ITargetingCameraFramingGroup`を指定する`Custom`を選択できます。
 標準Prefabは必要なフレーミングComponentを事前配置し、欠落時はRuntime生成せず警告を出します。Player生成後に必要になるCamera Follow Targetだけは、Camera Rigへ事前配置した`TargetingCameraRuntimeObjectFactory`が生成と破棄を一元管理します。
 `PrimaryCenteredCinemachineTargetGroup`と標準`CinemachineTargetGroup`は別GameObjectへ配置します。同じLookAt Transformに複数の`ICinemachineTargetGroup`を置くとCinemachineのGroup解決が曖昧になるため、併置しません。
-標準Prefabは`TargetingTargetGroup`へPrimary中心方式を事前配置します。必要なフレーミングComponentがない場合、Runtimeでは自動生成せず警告を出します。
 Free／Single Target CameraはPlayerをTracking Target、Player配下の高さ付き`Camera Aim`をLookAtとして分離します。Single未選択時も`Camera Aim`をfallback LookAtとして保持し、無効WeightのRotation Composerから警告が出ないようにします。
 ShowcaseのOrbital Follow、Rotation Composer、Input Axis Controllerは実ゲームの`Local Mixing Camera.prefab`を正本としてコピーし、独自の視点感度処理を持ちません。
 

@@ -115,8 +115,13 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             if (prefab.GetComponentInChildren<CinemachineTargetGroup>(true) == null) errors.Add($"CinemachineTargetGroup: {path}");
             if (prefab.GetComponentInChildren<PrimaryCenteredCinemachineTargetGroup>(true) == null) errors.Add($"PrimaryCenteredCinemachineTargetGroup: {path}");
             if (prefab.GetComponentInChildren<StandardCinemachineTargetGroupFraming>(true) == null) errors.Add($"StandardCinemachineTargetGroupFraming: {path}");
-            if (prefab.GetComponent<TargetingCameraRuntimeObjectFactory>() == null) errors.Add($"TargetingCameraRuntimeObjectFactory: {path}");
-            if (prefab.GetComponent<LocalTargetingCameraConnector>() == null) errors.Add($"LocalTargetingCameraConnector: {path}");
+            if (prefab.GetComponentInChildren<TargetingCameraRuntimeObjectFactory>(true) == null) errors.Add($"TargetingCameraRuntimeObjectFactory: {path}");
+            var mixer = prefab.GetComponentInChildren<CinemachineMixingCamera>(true);
+            var presenter = prefab.GetComponentInChildren<TargetingCameraGroupPresenter>(true);
+            if (mixer == null || mixer.transform.parent != prefab.transform) errors.Add($"Camera Mixer hierarchy: {path}");
+            if (presenter == null || presenter.transform.parent != prefab.transform || presenter.transform == mixer?.transform)
+                errors.Add($"Targeting System hierarchy: {path}");
+            if (prefab.GetComponentInChildren<LocalTargetingCameraConnector>(true) == null) errors.Add($"LocalTargetingCameraConnector: {path}");
         }
 
         private static void ValidateComponent<T>(string path, ICollection<string> errors) where T : Component
@@ -165,7 +170,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 
         private static void ConfigureCameraTargeting(GameObject root)
         {
-            var mixingCamera = root.GetComponent<CinemachineMixingCamera>();
+            var mixingCamera = root.GetComponentInChildren<CinemachineMixingCamera>(true);
             var controller = root.GetComponent<CameraMixerWeightControllerBase>();
             if (mixingCamera == null || controller == null)
                 throw new InvalidOperationException($"Camera prefab is missing its mixer/controller: {root.name}");
@@ -175,12 +180,18 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             if (defaultCamera == null || followCamera == null)
                 throw new InvalidOperationException($"Default/Follow camera was not found: {root.name}");
 
+            var existingPresenter = root.GetComponentInChildren<TargetingCameraGroupPresenter>(true);
+            var targetingSystem = existingPresenter != null
+                ? existingPresenter.gameObject
+                : new GameObject("Targeting System");
+            if (targetingSystem.transform.parent == null) targetingSystem.transform.SetParent(root.transform, false);
+
             var singleCamera = GetOrCreateTargetCamera(mixingCamera.transform, followCamera, "SingleTargetCamera");
             var multiCamera = GetOrCreateTargetCamera(mixingCamera.transform, followCamera, "MultiTargetCamera");
-            var targetGroup = GetOrCreateTargetGroup(mixingCamera.transform);
+            var targetGroup = GetOrCreateTargetGroup(targetingSystem.transform);
             multiCamera.LookAt = targetGroup.transform;
             GetOrAdd<CinemachineGroupFraming>(multiCamera.gameObject);
-            var groupPresenter = GetOrAdd<TargetingCameraGroupPresenter>(root);
+            var groupPresenter = GetOrAdd<TargetingCameraGroupPresenter>(targetingSystem);
             groupPresenter.Configure(
                 singleCamera,
                 multiCamera,
@@ -206,7 +217,10 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             serialized.FindProperty("targetingGroupPresenter").objectReferenceValue = groupPresenter;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
-            GetOrAdd<LocalTargetingCameraConnector>(root);
+            var connector = GetOrAdd<LocalTargetingCameraConnector>(targetingSystem);
+            var connectorObject = new SerializedObject(connector);
+            connectorObject.FindProperty("consumerSource").objectReferenceValue = controller;
+            connectorObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static CinemachineCamera GetOrCreateTargetCamera(Transform parent, CinemachineCamera source, string name)

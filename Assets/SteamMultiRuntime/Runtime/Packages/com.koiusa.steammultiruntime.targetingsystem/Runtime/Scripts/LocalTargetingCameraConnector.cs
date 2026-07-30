@@ -5,6 +5,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
     [DisallowMultipleComponent]
     public sealed class LocalTargetingCameraConnector : MonoBehaviour
     {
+        [SerializeField] private MonoBehaviour consumerSource;
         private ILocalTargetingCameraConsumer consumer;
 
         private void Awake()
@@ -31,12 +32,16 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
 
         private void ResolveConsumer()
         {
-            var components = GetComponents<MonoBehaviour>();
+            consumer = consumerSource as ILocalTargetingCameraConsumer;
+            if (consumer != null) return;
+
+            var components = GetComponentsInParent<MonoBehaviour>(true);
             for (var i = 0; i < components.Length; i++)
             {
                 if (components[i] is ILocalTargetingCameraConsumer source)
                 {
                     consumer = source;
+                    consumerSource = source as MonoBehaviour;
                     return;
                 }
             }
