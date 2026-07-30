@@ -183,7 +183,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnApplicationQuit()
         {
-            PerformExitCleanup();
+            PerformExitCleanup(shutdownNetwork: false);
         }
 
         private void OnDestroy()
@@ -194,15 +194,15 @@ namespace Koiusa.SteamMultiRuntime
                 networkFacade.ClientDisconnected -= OnClientDisconnected;
                 networkFacade.RemoteSessionEnding -= OnRemoteSessionEnding;
             }
-            PerformExitCleanup();
+            PerformExitCleanup(shutdownNetwork: true);
         }
 
         private void OnApplicationQuitting()
         {
-            PerformExitCleanup();
+            PerformExitCleanup(shutdownNetwork: false);
         }
 
-        private void PerformExitCleanup()
+        private void PerformExitCleanup(bool shutdownNetwork)
         {
             if (hasPerformedExitCleanup)
             {
@@ -215,8 +215,11 @@ namespace Koiusa.SteamMultiRuntime
             // ホストの場合は参加不可・非公開・Closed を設定してから Leave する。
             lobbyManager?.LeaveCurrentLobbyImmediately();
 
+            // Application終了時はNetworkManager自身のOnApplicationQuitが同期的に
+            // ShutdownInternalを実行する。ここでもShutdownを開始するとNGO 2.11.2の
+            // NetworkSceneManager.Disposeが二重実行されるため、通常破棄時だけ停止する。
             var networkManager = NetworkManager.Singleton;
-            if (networkManager != null && networkManager.IsListening)
+            if (shutdownNetwork && networkManager != null && networkManager.IsListening)
             {
                 networkManager.Shutdown(discardMessageQueue: true);
             }

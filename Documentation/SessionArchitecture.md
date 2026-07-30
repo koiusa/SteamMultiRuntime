@@ -74,6 +74,7 @@ Lobby UI / Stage Select UI / Startup Loader
 ```
 
 - Network Lobbyでは`SteamLobbySceneLoader`がLobbyとStage間の遷移を管理する
+- Application終了時のNetwork停止は`NetworkManager.OnApplicationQuit`へ一元化する。`SteamLobbyService`はLobby退出を先に完了するが、終了通知から`NetworkManager.Shutdown`を重ねて呼ばない
 - `IStageSceneCatalog`は選択可能なStage一覧だけを公開し、Local UIとSteam Lobby Loaderで共有する
 - `ISteamLobbySceneLoader`は`IStageSceneCatalog`を継承し、Lobby入退室のScene Lifecycleを追加する
 - Local実行の`LocalSceneFlowLoader`は`IStageSceneCatalog`だけを実装し、未対応のLobby操作を公開しない
