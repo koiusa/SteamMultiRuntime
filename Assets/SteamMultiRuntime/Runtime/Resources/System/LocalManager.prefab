@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf7cd29784e9d09428c60faf64b57ec3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Network.Runtime::Koiusa.SteamMultiRuntime.LocalManager
-  playerPrefab: {fileID: 3003735386717007390, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
+  playerPrefab: {fileID: 181898395951536820, guid: 66436ddb063570c49a30ead3d2eafb58, type: 3}
 --- !u!114 &3387406875687767959
 MonoBehaviour:
   m_ObjectHideFlags: 0

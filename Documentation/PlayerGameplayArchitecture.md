@@ -170,14 +170,16 @@ AttackSkillSettings                                     [予定]
 
 ## 標準Character Prefab
 
-以下のProxy Prefabには、`PlayerCharacterCoordinator`、Skill／Combat Coordinator、初期Skill／Combat Featureを標準構成として適用します。
+`Runtime/Prefabs/Character/CharacterAgentCore.prefab`を共通基底とし、以下の4つをPrefab Variantとして提供します。
 
 - `LocalPlayer`
 - `LocalNPC`
 - `NetworkPlayer`
 - `NetworkNPC`
 
-各Prefabは必要なComponentとSO参照を直接保持します。起動時の自動移行、固定Prefabパス、Asset検索パスは使用しません。Inspectorの設定補助は、同じGameObject上のControllerとSkill Featureから参照を取得します。
+`CharacterAgentCore`はRigidbody、Collider、Motor、共通Traversal Coordinator、Skill／Combat、共通Targetingを保持します。Local／NetworkおよびPlayer／NPC固有のController、入力、NavMesh、所有権、同期Componentは各Variantの追加Componentとして保持します。Coreは継承専用でSceneへ配置せず、Network Prefab Listにも登録しません。
+
+VariantではCore Componentを削除または無効化せず、固有Componentの追加と必要最小限のProperty Overrideだけを行います。Inspectorの設定補助は、同じGameObject上のControllerとSkill Featureから参照を取得します。
 
 ## 現在の基本構成
 

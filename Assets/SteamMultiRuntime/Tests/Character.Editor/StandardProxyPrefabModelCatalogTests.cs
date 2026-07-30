@@ -9,18 +9,43 @@ namespace Koiusa.SteamMultiRuntime.Tests
     public sealed class StandardProxyPrefabModelCatalogTests
     {
         private const string ModelCatalogGuid = "53fb10e1957573c44be834f0809a3752";
+        private const string CorePrefabPath =
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/CharacterAgentCore.prefab";
+
+        private static readonly string[] AllProxyPaths =
+        {
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalNPC.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkNPC.prefab"
+        };
 
         private static readonly string[] LocalProxyPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalPlayer.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/LocalNPC.prefab"
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalNPC.prefab"
         };
 
         private static readonly string[] NetworkProxyPaths =
         {
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkPlayer.prefab",
-            "Assets/SteamMultiRuntime/Runtime/Resources/Character/Proxy/NetworkNPC.prefab"
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkPlayer.prefab",
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkNPC.prefab"
         };
+
+        [Test]
+        public void StandardProxyPrefabs_AreVariantsOfCharacterAgentCore()
+        {
+            foreach (var prefabPath in AllProxyPaths)
+            {
+                var prefab = LoadPrefab(prefabPath);
+                Assert.That(PrefabUtility.GetPrefabAssetType(prefab), Is.EqualTo(PrefabAssetType.Variant),
+                    $"Standard proxy prefab must be a variant: {prefabPath}");
+
+                var source = PrefabUtility.GetCorrespondingObjectFromSource(prefab);
+                Assert.That(AssetDatabase.GetAssetPath(source), Is.EqualTo(CorePrefabPath),
+                    $"Unexpected Character Agent Core: {prefabPath}");
+            }
+        }
 
         [Test]
         public void LocalProxyPrefabs_ReferenceStandardCharacterModelCatalog()
