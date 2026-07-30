@@ -49,7 +49,7 @@ Multi開始時に、その時点の距離・Viewport条件を通過した候補�
 
 ## Camera
 
-統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が`Camera Mixer`配下の4台を一元管理します。Prefab Rootの`Camera System`直下で`Camera Mixer`と`Targeting System`をSiblingに分け、Targeting側からMixerと対象Cameraをシリアライズ参照します。
+統合パッケージのShowcaseでは`TargetingCameraPresenter`を使用します。本番SteamMultiRuntimeでは既存`CameraMixerWeightControllerBase`が`Camera Mixer`配下の4台を一元管理します。共通`Targeting Camera System.prefab`をLocal／Network Camera PrefabへNested配置し、Outer Prefab OverrideからMixer Controllerと対象Cameraをシリアライズ参照します。
 
 ```text
 Camera System
@@ -59,7 +59,7 @@ Camera System
 │  ├─ SingleTargetCamera
 │  └─ MultiTargetCamera
 ├─ CameraAnchors
-└─ Targeting System
+└─ Targeting Camera System (Nested Prefab)
    ├─ TargetingTargetGroup
    └─ PrimaryCenteredTargetGroup
 ```
@@ -70,6 +70,7 @@ None／Single／Multiの切替時は、遷移元Cameraの最終位置と向き�
 Target Groupの再構築、Single LookAt、Group Framingの保証は汎用`TargetingCameraGroupPresenter`が所有します。実ゲームの`CameraMixerWeightControllerBase`とSampleの`TargetingCameraPresenter`は同Componentへ状態を渡し、Camera Weight制御だけを各自で担当します。
 Camera Controllerの`Targeting Framing Mode`では、Primaryを画面中心に置く`Primary Centered`、Playerと選択対象全体の中心を使う`Group Centered`、任意の`ITargetingCameraFramingGroup`を指定する`Custom`を選択できます。
 標準Prefabは必要なフレーミングComponentを事前配置し、欠落時はRuntime生成せず警告を出します。Player生成後に必要になるCamera Follow Targetだけは、Camera Rigへ事前配置した`TargetingCameraRuntimeObjectFactory`が生成と破棄を一元管理します。
+共通Prefabの正本は`Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab`です。Local／Network側には共通構成を複製せず、Camera参照だけをNested Prefab Overrideとして保持します。
 `PrimaryCenteredCinemachineTargetGroup`と標準`CinemachineTargetGroup`は別GameObjectへ配置します。同じLookAt Transformに複数の`ICinemachineTargetGroup`を置くとCinemachineのGroup解決が曖昧になるため、併置しません。
 Free／Single Target CameraはPlayerをTracking Target、Player配下の高さ付き`Camera Aim`をLookAtとして分離します。Single未選択時も`Camera Aim`をfallback LookAtとして保持し、無効WeightのRotation Composerから警告が出ないようにします。
 ShowcaseのOrbital Follow、Rotation Composer、Input Axis Controllerは実ゲームの`Local Mixing Camera.prefab`を正本としてコピーし、独自の視点感度処理を持ちません。

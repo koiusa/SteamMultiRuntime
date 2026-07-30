@@ -14,6 +14,8 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         private const string GenericPackageRoot = "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.targetingsystem";
         private const string SampleRoot = "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.targetingsystem/Samples~/Showcase";
         private const string TemporaryRoot = "Assets/__TargetingSampleAuthoring";
+        private const string TargetingCameraPrefabPath =
+            "Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab";
 
         [MenuItem("Tools/SteamMultiRuntime/Targeting/Rebuild Showcase Sample")]
         public static void Rebuild()
@@ -136,9 +138,11 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             var cameraSystem = new GameObject("Camera System");
             var rigObject = new GameObject("Camera Mixer");
             rigObject.transform.SetParent(cameraSystem.transform, false);
-            var targetingSystem = new GameObject("Targeting System");
+            var targetingPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(TargetingCameraPrefabPath);
+            if (targetingPrefab == null)
+                throw new FileNotFoundException("Targeting camera prefab was not found.", TargetingCameraPrefabPath);
+            var targetingSystem = (GameObject)PrefabUtility.InstantiatePrefab(targetingPrefab);
             targetingSystem.transform.SetParent(cameraSystem.transform, false);
-            targetingSystem.AddComponent<TargetingCameraRuntimeObjectFactory>();
             var mixer = rigObject.AddComponent<CinemachineMixingCamera>();
             var freeCamera = CreateVirtualCamera(rigObject.transform, "Free Camera", player, playerAim);
             var singleCamera = CreateVirtualCamera(rigObject.transform, "Single Target Camera", player, playerAim);
@@ -147,18 +151,11 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             CopyProductionCameraSettings(singleCamera, "SingleTargetCamera", copyInput: false);
             CopyProductionCameraSettings(multiCamera, "MultiTargetCamera", copyInput: false);
 
-            var groupObject = new GameObject("Multi Target Group");
-            groupObject.transform.SetParent(targetingSystem.transform, false);
-            var targetGroup = groupObject.AddComponent<CinemachineTargetGroup>();
-            var standardFraming = groupObject.AddComponent<StandardCinemachineTargetGroupFraming>();
-            standardFraming.Configure(targetGroup);
-            var primaryGroupObject = new GameObject("Primary Centered Target Group");
-            primaryGroupObject.transform.SetParent(targetingSystem.transform, false);
-            primaryGroupObject.AddComponent<PrimaryCenteredCinemachineTargetGroup>();
+            var targetGroup = targetingSystem.GetComponentInChildren<CinemachineTargetGroup>(true);
             multiCamera.LookAt = targetGroup.transform;
             multiCamera.gameObject.AddComponent<CinemachineGroupFraming>();
 
-            var groupPresenter = targetingSystem.AddComponent<TargetingCameraGroupPresenter>();
+            var groupPresenter = targetingSystem.GetComponent<TargetingCameraGroupPresenter>();
             groupPresenter.Configure(
                 singleCamera,
                 multiCamera,

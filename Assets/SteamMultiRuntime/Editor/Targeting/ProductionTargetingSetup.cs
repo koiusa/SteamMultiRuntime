@@ -37,6 +37,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         [MenuItem("Tools/SteamMultiRuntime/Targeting/Install Production Setup")]
         public static void InstallProductionSetup()
         {
+            TargetingCameraPrefabMigration.Migrate();
             ConfigureInput();
             EditPrefab(SystemPrefabPath, ConfigureSystemPrefab);
 
@@ -181,10 +182,9 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
                 throw new InvalidOperationException($"Default/Follow camera was not found: {root.name}");
 
             var existingPresenter = root.GetComponentInChildren<TargetingCameraGroupPresenter>(true);
-            var targetingSystem = existingPresenter != null
-                ? existingPresenter.gameObject
-                : new GameObject("Targeting System");
-            if (targetingSystem.transform.parent == null) targetingSystem.transform.SetParent(root.transform, false);
+            if (existingPresenter == null)
+                throw new InvalidOperationException("Shared Targeting Camera System prefab is not nested under the camera prefab.");
+            var targetingSystem = existingPresenter.gameObject;
 
             var singleCamera = GetOrCreateTargetCamera(mixingCamera.transform, followCamera, "SingleTargetCamera");
             var multiCamera = GetOrCreateTargetCamera(mixingCamera.transform, followCamera, "MultiTargetCamera");
