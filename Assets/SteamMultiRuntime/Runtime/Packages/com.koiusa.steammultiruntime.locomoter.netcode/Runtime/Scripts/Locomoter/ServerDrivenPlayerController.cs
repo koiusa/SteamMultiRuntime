@@ -7,7 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    [RequireComponent(typeof(PlayerCompositeMotor))]
+    [RequireComponent(typeof(ActorCompositeMotor))]
     public class ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState, IPlayerLadderState, IPlayerWallRunState
     {
         [Header("Input")]
@@ -24,9 +24,9 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerGameplayInputReader baseInputSource;
         private IPlayerInputSource activeInputSource;
         private Transform injectedInputReferenceTransform;
-        private PlayerCompositeMotor motor;
-        private IPlayerMoveInputReceiver moveInputReceiver;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private ActorCompositeMotor motor;
+        private IActorMoveInputReceiver moveInputReceiver;
+        private IActorTraversalCoordinator traversalCoordinator;
         private PlayerFacingRequestResolver facingRequestResolver;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
@@ -48,7 +48,7 @@ namespace Koiusa.SteamMultiRuntime
             new PlayerInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         // Settings Sync (Server -> All Clients)
-        private readonly NetworkVariable<PlayerMotorSettingsNetData> netPlayerMotorSettings = new NetworkVariable<PlayerMotorSettingsNetData>(
+        private readonly NetworkVariable<ActorMotorSettingsNetData> netActorMotorSettings = new NetworkVariable<ActorMotorSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<TraversalFeatureSettingsNetData> netTraversalFeatureSettings = new NetworkVariable<TraversalFeatureSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -142,14 +142,14 @@ namespace Koiusa.SteamMultiRuntime
             }
             presentationSmoother.Initialize(targetRigidbody);
 
-            motor = GetComponent<PlayerCompositeMotor>();
+            motor = GetComponent<ActorCompositeMotor>();
             if (motor == null)
             {
-                motor = gameObject.AddComponent<PlayerCompositeMotor>();
+                motor = gameObject.AddComponent<ActorCompositeMotor>();
             }
 
-            moveInputReceiver = motor as IPlayerMoveInputReceiver;
-            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            moveInputReceiver = motor as IActorMoveInputReceiver;
+            traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
             facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
@@ -176,7 +176,7 @@ namespace Koiusa.SteamMultiRuntime
             // Sync motor settings from server on first spawn
             if (IsServer && motor != null && !hasInitializedSettings)
             {
-                var baseMotor = motor.GetComponent<IPlayerMotor>();
+                var baseMotor = motor.GetComponent<IActorMotor>();
                 if (baseMotor != null)
                 {
                     // Initialize network variables with current motor settings
@@ -188,7 +188,7 @@ namespace Koiusa.SteamMultiRuntime
             // Subscribe to settings changes on clients
             if (!IsServer)
             {
-                netPlayerMotorSettings.OnValueChanged += OnPlayerMotorSettingsChanged;
+                netActorMotorSettings.OnValueChanged += OnActorMotorSettingsChanged;
                 netTraversalFeatureSettings.OnValueChanged += OnTraversalFeatureSettingsChanged;
                 netWireSwingState.OnValueChanged += OnWireSwingStateChanged;
                 ApplyWireSwingState(netWireSwingState.Value);
@@ -210,7 +210,7 @@ namespace Koiusa.SteamMultiRuntime
             // Unsubscribe from settings changes
             if (!IsServer)
             {
-                netPlayerMotorSettings.OnValueChanged -= OnPlayerMotorSettingsChanged;
+                netActorMotorSettings.OnValueChanged -= OnActorMotorSettingsChanged;
                 netTraversalFeatureSettings.OnValueChanged -= OnTraversalFeatureSettingsChanged;
                 netWireSwingState.OnValueChanged -= OnWireSwingStateChanged;
             }
@@ -309,7 +309,7 @@ namespace Koiusa.SteamMultiRuntime
             var referenceTransform = injectedInputReferenceTransform != null
                 ? injectedInputReferenceTransform
                 : cameraTransform != null ? cameraTransform : transform;
-            var moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, moveInput);
+            var moveDirection = ActorMotor.GetMoveDirection(referenceTransform, moveInput);
 
             if (inputState.JumpPressed)
             {
@@ -514,11 +514,11 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SyncMotorSettingsToNetwork()
         {
-            var baseMotor = motor?.GetComponent<IPlayerMotor>();
+            var baseMotor = motor?.GetComponent<IActorMotor>();
             if (baseMotor == null)
                 return;
 
-            netPlayerMotorSettings.Value = PlayerMotorSettingsNetData.FromCore(baseMotor.GetSettings());
+            netActorMotorSettings.Value = ActorMotorSettingsNetData.FromCore(baseMotor.GetSettings());
 
             var traversalSettings = TraversalFeatureSettings.CreateDefault();
             var traversalSettingsSyncs = motor.GetComponents<ITraversalSettingsSync>();
@@ -530,11 +530,11 @@ namespace Koiusa.SteamMultiRuntime
             netTraversalFeatureSettings.Value = TraversalFeatureSettingsNetData.FromCore(traversalSettings);
         }
 
-        private void OnPlayerMotorSettingsChanged(PlayerMotorSettingsNetData oldValue, PlayerMotorSettingsNetData newValue)
+        private void OnActorMotorSettingsChanged(ActorMotorSettingsNetData oldValue, ActorMotorSettingsNetData newValue)
         {
             if (motor != null)
             {
-                var baseMotor = motor.GetComponent<IPlayerMotor>();
+                var baseMotor = motor.GetComponent<IActorMotor>();
                 if (baseMotor != null)
                 {
                     var currentSettings = baseMotor.GetSettings();

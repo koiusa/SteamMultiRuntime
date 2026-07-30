@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public readonly struct PlayerMotorMotionRequest
+    public readonly struct ActorMotorMotionRequest
     {
-        public PlayerMotorMotionRequest(int ownerId, Vector3 direction, float speed, float duration, int priority = 100)
+        public ActorMotorMotionRequest(int ownerId, Vector3 direction, float speed, float duration, int priority = 100)
         {
             OwnerId = ownerId;
             Direction = direction;
@@ -20,9 +20,9 @@ namespace Koiusa.SteamMultiRuntime
         public int Priority { get; }
     }
 
-    public interface IPlayerMotorMotionSink
+    public interface IActorMotorMotionSink
     {
-        bool TryStartMotion(PlayerMotorMotionRequest request);
+        bool TryStartMotion(ActorMotorMotionRequest request);
         void StopMotion(int ownerId);
     }
 }

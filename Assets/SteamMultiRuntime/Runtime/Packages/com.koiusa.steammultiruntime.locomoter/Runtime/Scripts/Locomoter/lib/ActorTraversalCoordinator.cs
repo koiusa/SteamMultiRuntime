@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
-    public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext,
+    public sealed class ActorTraversalCoordinator : MonoBehaviour, IActorTraversalCoordinator, ITraversalIntentContext,
         IPlayerFacingRequestSource,
         ITraversalCoordinatorDebugSnapshotSource
     {
@@ -36,7 +36,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public TraversalIntentFlags CurrentIntentFlags { get; private set; }
         public bool IsEnabled => isActiveAndEnabled;
-        public PlayerTraversalState CurrentState { get; private set; } = PlayerTraversalState.Grounded;
+        public ActorTraversalState CurrentState { get; private set; } = ActorTraversalState.Grounded;
         public float StateElapsedTime => Mathf.Max(0f, Time.time - stateEnteredAt);
         public bool IsOnLadder => ladderFeature != null && ladderFeature.IsEnabled && ladderFeature.IsOnLadder;
         public float LadderSpeed => IsOnLadder ? ladderFeature.ClimbSpeed : 0f;
@@ -101,9 +101,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             get
             {
-                return IsEnabled && (CurrentState == PlayerTraversalState.WallRun
-                    || CurrentState == PlayerTraversalState.WallSlide
-                    || CurrentState == PlayerTraversalState.Ladder
+                return IsEnabled && (CurrentState == ActorTraversalState.WallRun
+                    || CurrentState == ActorTraversalState.WallSlide
+                    || CurrentState == ActorTraversalState.Ladder
                     || IsWireAttached);
             }
         }
@@ -114,7 +114,7 @@ namespace Koiusa.SteamMultiRuntime
             wallTraversalBlockedUntilTime = 0f;
             wallRunBlockedUntilWallExit = false;
             lastIsGrounded = false;
-            SetState(PlayerTraversalState.Grounded);
+            SetState(ActorTraversalState.Grounded);
             wallRunAction?.ResetState();
             wallJumpAction?.ResetState();
             wallSlideAction?.ResetState();
@@ -243,13 +243,13 @@ namespace Koiusa.SteamMultiRuntime
                 activeWallRunFeature?.ResetState();
                 activeWallJumpFeature?.ResetState();
                 activeWallSlideFeature?.ResetState();
-                SetState(PlayerTraversalState.WireSwing);
+                SetState(ActorTraversalState.WireSwing);
                 return;
             }
 
             if (!hasFeatureTraversal)
             {
-                SetState(isGrounded ? PlayerTraversalState.Grounded : PlayerTraversalState.Airborne);
+                SetState(isGrounded ? ActorTraversalState.Grounded : ActorTraversalState.Airborne);
                 return;
             }
 
@@ -267,7 +267,7 @@ namespace Koiusa.SteamMultiRuntime
                         activeWallRunFeature?.ResetState();
                         activeWallJumpFeature?.ResetState();
                         activeWallSlideFeature?.ResetState();
-                        SetState(PlayerTraversalState.Cooldown);
+                        SetState(ActorTraversalState.Cooldown);
                     }
                     else if (activeLadderFeature.IsOnLadder)
                     {
@@ -276,7 +276,7 @@ namespace Koiusa.SteamMultiRuntime
                         activeWallRunFeature?.ResetState();
                         activeWallJumpFeature?.ResetState();
                         activeWallSlideFeature?.ResetState();
-                        SetState(PlayerTraversalState.Ladder);
+                        SetState(ActorTraversalState.Ladder);
                     }
                     else
                     {
@@ -287,7 +287,7 @@ namespace Koiusa.SteamMultiRuntime
                         activeWallRunFeature?.ResetState();
                         activeWallJumpFeature?.ResetState();
                         activeWallSlideFeature?.ResetState();
-                        SetState(PlayerTraversalState.Cooldown);
+                        SetState(ActorTraversalState.Cooldown);
                     }
 
                     return;
@@ -300,7 +300,7 @@ namespace Koiusa.SteamMultiRuntime
                 activeWallRunFeature?.ResetState();
                 activeWallJumpFeature?.ResetState();
                 activeWallSlideFeature?.ResetState();
-                SetState(PlayerTraversalState.Grounded);
+                SetState(ActorTraversalState.Grounded);
                 return;
             }
 
@@ -316,7 +316,7 @@ namespace Koiusa.SteamMultiRuntime
                 activeWallRunFeature?.ResetState();
                 activeWallSlideFeature?.ResetState();
                 rb.linearVelocity = velocity;
-                SetState(PlayerTraversalState.Cooldown);
+                SetState(ActorTraversalState.Cooldown);
                 return;
             }
 
@@ -330,7 +330,7 @@ namespace Koiusa.SteamMultiRuntime
                 activeWallSlideFeature?.ResetState();
                 slopeContactResolver?.Clear();
                 groundMotionTracker?.ClearGroundContacts();
-                SetState(PlayerTraversalState.WallJump);
+                SetState(ActorTraversalState.WallJump);
             }
             else if (!wallRunBlockedUntilWallExit
                 && CanProcessWallRun(CurrentState)
@@ -340,7 +340,7 @@ namespace Koiusa.SteamMultiRuntime
                 velocity = wallVelocity;
                 wallRunApplied = true;
                 activeWallSlideFeature?.ResetState();
-                SetState(PlayerTraversalState.WallRun);
+                SetState(ActorTraversalState.WallRun);
             }
 
             if (wallRunApplied && activeWallRunFeature != null)
@@ -351,11 +351,11 @@ namespace Koiusa.SteamMultiRuntime
             {
                 velocity = wallSlideVelocity;
                 wallRunBlockedUntilWallExit = true;
-                SetState(PlayerTraversalState.WallSlide);
+                SetState(ActorTraversalState.WallSlide);
             }
             else if (!wallJumped)
             {
-                SetState(PlayerTraversalState.Airborne);
+                SetState(ActorTraversalState.Airborne);
             }
 
             rb.linearVelocity = velocity;
@@ -376,7 +376,7 @@ namespace Koiusa.SteamMultiRuntime
             wireGroundAction = GetComponent<IWireGroundAction>();
         }
 
-        private void SetState(PlayerTraversalState nextState)
+        private void SetState(ActorTraversalState nextState)
         {
             if (CurrentState == nextState)
             {
@@ -397,13 +397,13 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private static bool CanProcessWallRun(PlayerTraversalState state)
+        private static bool CanProcessWallRun(ActorTraversalState state)
         {
             // WallSlideは壁との接触中にラッチする。カメラ相対入力の向きが変化しても
             // WallRunへ自動昇格させず、壁を離れてAirborneへ戻ってから再判定する。
             // Ladder/Cooldownからの直接遷移も禁止する。
-            return state == PlayerTraversalState.Airborne
-                || state == PlayerTraversalState.WallRun;
+            return state == ActorTraversalState.Airborne
+                || state == ActorTraversalState.WallRun;
         }
 
         private static TraversalIntentFlags BuildIntentFlags(

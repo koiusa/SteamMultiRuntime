@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [System.Serializable]
-    public partial struct PlayerMotorSettings
+    public partial struct ActorMotorSettings
     {
         [Unit("m/s", "移動時の最大速度")]
         public float MoveSpeed;
@@ -47,7 +47,7 @@ namespace Koiusa.SteamMultiRuntime
         [Unit("ドット積", "段差として扱う障害物の最大上方向成分（0.0-1.0）")]
         public float StepAssistObstacleUpDot;
 
-        public PlayerMotorSettings(
+        public ActorMotorSettings(
             float moveSpeed,
             float groundAcceleration,
             float airAcceleration,
@@ -91,9 +91,9 @@ namespace Koiusa.SteamMultiRuntime
             StepAssistObstacleUpDot = stepAssistObstacleUpDot;
         }
 
-        public static PlayerMotorSettings CreateDefault()
+        public static ActorMotorSettings CreateDefault()
         {
-            return new PlayerMotorSettings(
+            return new ActorMotorSettings(
                 moveSpeed: 5f,
                 groundAcceleration: 30f,
                 airAcceleration: 10f,

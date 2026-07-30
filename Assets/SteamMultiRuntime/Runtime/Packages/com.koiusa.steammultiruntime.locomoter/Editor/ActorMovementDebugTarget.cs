@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal interface IPlayerMovementDebugTarget
+    internal interface IActorMovementDebugTarget
     {
         Object Context { get; }
         bool IsValid { get; }
@@ -15,9 +15,9 @@ namespace Koiusa.SteamMultiRuntime
         float HorizontalVelocity { get; }
         float VerticalVelocity { get; }
         Vector3 InheritedGroundVelocity { get; }
-        PlayerCompositeMotorDebugSnapshot Composite { get; }
-        IPlayerMotor BaseMotor { get; }
-        IPlayerTraversalCoordinator Traversal { get; }
+        ActorCompositeMotorDebugSnapshot Composite { get; }
+        IActorMotor BaseMotor { get; }
+        IActorTraversalCoordinator Traversal { get; }
         TraversalCoordinatorDebugSnapshot TraversalDebug { get; }
         bool HasTraversalCoordinator { get; }
         IWallTraversalFeature Wall { get; }
@@ -48,12 +48,12 @@ namespace Koiusa.SteamMultiRuntime
         void SetStateTransitionLogging(bool enabled);
     }
 
-    internal sealed class PlayerMovementDebugTarget : IPlayerMovementDebugTarget
+    internal sealed class ActorMovementDebugTarget : IActorMovementDebugTarget
     {
-        private readonly PlayerCompositeMotor composite;
-        private readonly IPlayerCompositeMotorDebugSnapshotSource compositeDebugSource;
-        private readonly IPlayerMotor motor;
-        private readonly IPlayerTraversalCoordinator coordinator;
+        private readonly ActorCompositeMotor composite;
+        private readonly IActorCompositeMotorDebugSnapshotSource compositeDebugSource;
+        private readonly IActorMotor motor;
+        private readonly IActorTraversalCoordinator coordinator;
         private readonly ITraversalCoordinatorDebugSnapshotSource coordinatorDebugSource;
         private readonly IWallTraversalFeature wall;
         private readonly IWallTraversalDebugSnapshotSource wallDebugSource;
@@ -72,12 +72,12 @@ namespace Koiusa.SteamMultiRuntime
         private readonly IWireReelDebugSnapshotSource wireReelDebugSource;
         private readonly IWireGroundAction wireGround;
 
-        public PlayerMovementDebugTarget(PlayerCompositeMotor composite)
+        public ActorMovementDebugTarget(ActorCompositeMotor composite)
         {
             this.composite = composite;
-            compositeDebugSource = composite.GetComponent<IPlayerCompositeMotorDebugSnapshotSource>();
-            motor = composite.GetComponent<IPlayerMotor>();
-            coordinator = composite.GetComponent<IPlayerTraversalCoordinator>();
+            compositeDebugSource = composite.GetComponent<IActorCompositeMotorDebugSnapshotSource>();
+            motor = composite.GetComponent<IActorMotor>();
+            coordinator = composite.GetComponent<IActorTraversalCoordinator>();
             coordinatorDebugSource = composite.GetComponent<ITraversalCoordinatorDebugSnapshotSource>();
             wall = composite.GetComponent<IWallTraversalFeature>();
             wallDebugSource = composite.GetComponent<IWallTraversalDebugSnapshotSource>();
@@ -108,11 +108,11 @@ namespace Koiusa.SteamMultiRuntime
         public float HorizontalVelocity => composite != null ? composite.HorizontalVelocity : 0f;
         public float VerticalVelocity => composite != null ? composite.VerticalVelocity : 0f;
         public Vector3 InheritedGroundVelocity => composite != null ? composite.InheritedGroundVelocity : Vector3.zero;
-        public PlayerCompositeMotorDebugSnapshot Composite => IsAlive(compositeDebugSource)
+        public ActorCompositeMotorDebugSnapshot Composite => IsAlive(compositeDebugSource)
             ? compositeDebugSource.GetDebugSnapshot()
             : default;
-        public IPlayerMotor BaseMotor => IsAlive(motor) ? motor : null;
-        public IPlayerTraversalCoordinator Traversal => IsAlive(coordinator) ? coordinator : null;
+        public IActorMotor BaseMotor => IsAlive(motor) ? motor : null;
+        public IActorTraversalCoordinator Traversal => IsAlive(coordinator) ? coordinator : null;
         public TraversalCoordinatorDebugSnapshot TraversalDebug => IsAlive(coordinatorDebugSource)
             ? coordinatorDebugSource.GetDebugSnapshot()
             : default;

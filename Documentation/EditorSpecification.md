@@ -25,11 +25,11 @@ Skill Featureには紫の専用アイコンを表示します。
 
 | 対象 | Editor | 主な仕様 |
 |---|---|---|
-| `LocalPlayerController` | `LocalPlayerControllerEditor` | 使用中の`PlayerCompositeMotor`を表示する |
+| `LocalPlayerController` | `LocalPlayerControllerEditor` | 使用中の`ActorCompositeMotor`を表示する |
 | `ServerDrivenPlayerController` | `ServerDrivenPlayerControllerEditor` | Composite MotorとControl Mode別の同期方針を表示する |
-| `PlayerCompositeMotor` | `PlayerCompositeMotorEditor` | Motor、Coordinator、Traversal Feature／Actionの装着状況を階層表示し、不足Featureを追加できる |
-| `PlayerTraversalCoordinator` | `PlayerTraversalCoordinatorEditor` | 管理対象Featureを表示し、Play中の状態、Wire接続、Blend値を読み取り専用表示する |
-| Player Movement Debugger | `PlayerMovementDebuggerWindow` | 選択したPlayerのComposite／Base Motor、Coordinator全体、Wall／Ladder／Wire Feature・Actionの実行状態を一覧監視する |
+| `ActorCompositeMotor` | `ActorCompositeMotorEditor` | Motor、Coordinator、Traversal Feature／Actionの装着状況を階層表示し、不足Featureを追加できる |
+| `ActorTraversalCoordinator` | `ActorTraversalCoordinatorEditor` | 管理対象Featureを表示し、Play中の状態、Wire接続、Blend値を読み取り専用表示する |
+| Player Movement Debugger | `ActorMovementDebuggerWindow` | 選択したPlayerのComposite／Base Motor、Coordinator全体、Wall／Ladder／Wire Feature・Actionの実行状態を一覧監視する |
 | Physics Contact Debugger | `PhysicsContactDebuggerWindow` | `GroundContactDebugDisplay`が収集した接触点、法線、Ground判定、Layer分類をPlay Mode中に一覧監視する |
 | `WallTraversalFeature` | `WallTraversalFeatureEditor` | Wall ActionとResolverの不足を検出し、`Repair Wall Feature`で補完する |
 | `LadderTraversalFeature` | `LadderTraversalFeatureEditor` | Climb／Detach Actionの不足を検出し、`Repair Ladder Feature`で補完する |
@@ -56,7 +56,7 @@ WireTraversalFeature
 
 設定Structには専用Property Drawerがあります。
 
-- `PlayerMotorSettings`
+- `ActorMotorSettings`
 - `WallRunTraversalSettings`
 - `WallJumpTraversalSettings`
 - `WallSlideTraversalSettings`

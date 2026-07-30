@@ -41,8 +41,8 @@ NpcNavMeshController : INpcLocomotionState
 NPC Modules
   → NpcNavMeshController
   → AiPlayerInputSource
-  → PlayerCompositeMotor
-  → PlayerMotor / PlayerTraversalCoordinator
+  → ActorCompositeMotor
+  → ActorMotor / ActorTraversalCoordinator
 ```
 
 ### Network NPC
@@ -52,7 +52,7 @@ NPC Modules（Serverのみ更新）
   → NpcNavMeshController
   → SetInputSource(AiPlayerInputSource, npcTransform)
   → ServerDrivenPlayerController
-  → PlayerCompositeMotor（Server Physics Tick）
+  → ActorCompositeMotor（Server Physics Tick）
   → NetworkVariable / NetworkTransformでClientへ同期
 ```
 
@@ -88,7 +88,7 @@ Local／Networkとも構成が同じになり、Animatorなどが行う`GetCompo
 
 Local／Network NPCはPlayerと同じ`PhysicsPresentationSmoother`を使用します。Physics RootのRigidbody補間は`None`とし、Character Modelなどの表示階層だけを`Presentation`上で補間します。Network Clientは物理Simulationを行わず、`NetworkTransform`の補間結果を表示します。
 
-移動床上では`GroundMotionTracker`が`IGroundMotionSnapshotSource`から速度、変位、回転を一括取得します。床の移動行列はNPCごとに再計算せずPhysics tick単位で共有します。床変位は`PlayerMotor`が一度だけ適用し、物理押し出しとの二重適用は行いません。
+移動床上では`GroundMotionTracker`が`IGroundMotionSnapshotSource`から速度、変位、回転を一括取得します。床の移動行列はNPCごとに再計算せずPhysics tick単位で共有します。床変位は`ActorMotor`が一度だけ適用し、物理押し出しとの二重適用は行いません。
 
 ## 変更時の確認項目
 

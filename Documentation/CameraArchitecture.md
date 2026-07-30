@@ -21,7 +21,7 @@ Focus Marker
 └─ FocusMarkerUtility
 ```
 
-`CameraMixerWeightControllerBase`が共通処理を持ち、派生クラスは利用する`IFocusMarkerContext`の解決だけを担当します。Contextは`IsActive`に加えて、Cameraが追従するローカル`PlayerObject`を公開します。Camera入力の制御では、このPlayerObjectから`IPlayerTraversalCoordinator`を解決し、対象プレイヤー自身のWire接続状態を参照します。
+`CameraMixerWeightControllerBase`が共通処理を持ち、派生クラスは利用する`IFocusMarkerContext`の解決だけを担当します。Contextは`IsActive`に加えて、Cameraが追従するローカル`PlayerObject`を公開します。Camera入力の制御では、このPlayerObjectから`IActorTraversalCoordinator`を解決し、対象プレイヤー自身のWire接続状態を参照します。
 
 `ForcusMerker`はLocalManagerやNetworkManagerからPlayerを再探索せず、割り当て済み`IFocusMarkerContext.PlayerObject`だけを追従対象とします。Local／Network Mixing Cameraは同一Prefab内の対応する`LocalFocusMarkerContext`／`NetworkFocusMarkerContext`を明示参照し、Scene全体から別Contextを選びません。Compassは`Camera.main`を優先し、Tagがない場合は有効なGame Cameraが一意なときだけ使用します。複数候補から任意のCameraを選択しません。
 
@@ -61,7 +61,7 @@ Camera入力の有効状態は次の条件で切り替えます。
 | Grapple入力中、Wire未接続 | 無効 | Wire照準と視点操作の競合を防止 |
 | Grapple入力中、Wire接続済み | 有効 | Wire接続を維持したまま視点操作 |
 
-Wire接続判定には追従対象PlayerObjectの`IPlayerTraversalCoordinator.IsWireAttached`を使用します。このため、Lobby内の別プレイヤーがWire接続してもローカルCamera入力には影響しません。生成したAction ReferenceはDestroy時に破棄します。
+Wire接続判定には追従対象PlayerObjectの`IActorTraversalCoordinator.IsWireAttached`を使用します。このため、Lobby内の別プレイヤーがWire接続してもローカルCamera入力には影響しません。生成したAction ReferenceはDestroy時に破棄します。
 
 ## 障害物回避
 

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal interface IPlayerCompositeMotorDebugSnapshotSource { PlayerCompositeMotorDebugSnapshot GetDebugSnapshot(); }
+    internal interface IActorCompositeMotorDebugSnapshotSource { ActorCompositeMotorDebugSnapshot GetDebugSnapshot(); }
     internal interface ITraversalCoordinatorDebugSnapshotSource
     {
         TraversalCoordinatorDebugSnapshot GetDebugSnapshot();
@@ -17,14 +17,14 @@ namespace Koiusa.SteamMultiRuntime
         WireReelDebugSnapshot GetDebugSnapshot();
     }
 
-    internal readonly struct PlayerCompositeMotorDebugSnapshot
+    internal readonly struct ActorCompositeMotorDebugSnapshot
     {
         public readonly Vector2 RawMoveInput;
         public readonly Quaternion MoveReferenceRotation;
         public readonly bool HasActiveExternalMotion;
         public readonly float ActiveExternalMotionRemaining;
 
-        public PlayerCompositeMotorDebugSnapshot(Vector2 input, Quaternion rotation, bool active, float remaining)
+        public ActorCompositeMotorDebugSnapshot(Vector2 input, Quaternion rotation, bool active, float remaining)
         {
             RawMoveInput = input;
             MoveReferenceRotation = rotation;

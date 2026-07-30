@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomEditor(typeof(PlayerTraversalCoordinator))]
+    [CustomEditor(typeof(ActorTraversalCoordinator))]
     [CanEditMultipleObjects]
-    public sealed class PlayerTraversalCoordinatorEditor : UnityEditor.Editor
+    public sealed class ActorTraversalCoordinatorEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -20,7 +20,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var coordinator = (PlayerTraversalCoordinator)target;
+            var coordinator = (ActorTraversalCoordinator)target;
             var gameObject = coordinator.gameObject;
 
             DrawRuntimeState(coordinator);
@@ -68,7 +68,7 @@ namespace Koiusa.SteamMultiRuntime
             DrawDefaultInspector();
         }
 
-        private static void DrawRuntimeState(PlayerTraversalCoordinator coordinator)
+        private static void DrawRuntimeState(ActorTraversalCoordinator coordinator)
         {
             EditorGUILayout.LabelField("Coordinator State", EditorStyles.boldLabel);
             using (new EditorGUI.DisabledScope(true))

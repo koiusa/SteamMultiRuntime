@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomPropertyDrawer(typeof(PlayerMotorSettings))]
-    public class PlayerMotorSettingsPropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(ActorMotorSettings))]
+    public class ActorMotorSettingsPropertyDrawer : PropertyDrawer
     {
         private string GetFoldoutKey(SerializedProperty property, string foldoutName)
         {
@@ -33,7 +33,7 @@ namespace Koiusa.SteamMultiRuntime
             var resetButtonRect = new Rect(position.x, currentY, position.width, lineHeight);
             if (GUI.Button(resetButtonRect, "Reset to Default", EditorStyles.miniButton))
             {
-                var defaultSettings = PlayerMotorSettings.CreateDefault();
+                var defaultSettings = ActorMotorSettings.CreateDefault();
                 ApplySettingsToProperty(property, defaultSettings);
                 property.serializedObject.ApplyModifiedProperties();
             }
@@ -100,7 +100,7 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUI.EndProperty();
         }
 
-        private void ApplySettingsToProperty(SerializedProperty property, PlayerMotorSettings settings)
+        private void ApplySettingsToProperty(SerializedProperty property, ActorMotorSettings settings)
         {
             property.FindPropertyRelative("MoveSpeed").floatValue = settings.MoveSpeed;
             property.FindPropertyRelative("GroundAcceleration").floatValue = settings.GroundAcceleration;

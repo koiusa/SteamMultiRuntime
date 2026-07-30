@@ -5,15 +5,15 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    public sealed class PlayerCompositeMotor : MonoBehaviour, IPlayerMoveInputReceiver, IPlayerMotorMotionSink,
-        IPlayerCompositeMotorDebugSnapshotSource
+    public sealed class ActorCompositeMotor : MonoBehaviour, IActorMoveInputReceiver, IActorMotorMotionSink,
+        IActorCompositeMotorDebugSnapshotSource
     {
         private Rigidbody rb;
-        private IPlayerMotor baseMotor;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private IActorMotor baseMotor;
+        private IActorTraversalCoordinator traversalCoordinator;
         private Vector2 rawMoveInput;
         private Quaternion moveReferenceRotation;
-        private PlayerMotorMotionRequest activeMotion;
+        private ActorMotorMotionRequest activeMotion;
         private float activeMotionEndsAt;
         private bool hasActiveMotion;
 
@@ -21,8 +21,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             EnsureRequiredComponents();
             rb = GetComponent<Rigidbody>();
-            baseMotor = GetComponent<IPlayerMotor>();
-            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            baseMotor = GetComponent<IActorMotor>();
+            traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
             moveReferenceRotation = transform.rotation;
         }
 
@@ -31,25 +31,25 @@ namespace Koiusa.SteamMultiRuntime
             EnsureRequiredComponents();
         }
 
-        private void EnsurePlayerMotor()
+        private void EnsureActorMotor()
         {
-            if (GetComponent<IPlayerMotor>() == null)
+            if (GetComponent<IActorMotor>() == null)
             {
-                gameObject.AddComponent<PlayerMotor>();
+                gameObject.AddComponent<ActorMotor>();
             }
         }
 
         private void EnsureTraversalCoordinator()
         {
-            if (GetComponent<IPlayerTraversalCoordinator>() == null)
+            if (GetComponent<IActorTraversalCoordinator>() == null)
             {
-                gameObject.AddComponent<PlayerTraversalCoordinator>();
+                gameObject.AddComponent<ActorTraversalCoordinator>();
             }
         }
 
         private void EnsureRequiredComponents()
         {
-            EnsurePlayerMotor();
+            EnsureActorMotor();
             EnsureTraversalCoordinator();
 
             if (GetComponent<Rigidbody>() == null)
@@ -77,10 +77,10 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsFreefall => baseMotor != null && baseMotor.IsEnabled && baseMotor.IsFreefall && !IsTraversalActive;
         public Vector3 InheritedGroundVelocity => baseMotor != null && baseMotor.IsEnabled ? baseMotor.InheritedGroundVelocity : Vector3.zero;
 
-        PlayerCompositeMotorDebugSnapshot IPlayerCompositeMotorDebugSnapshotSource.GetDebugSnapshot()
+        ActorCompositeMotorDebugSnapshot IActorCompositeMotorDebugSnapshotSource.GetDebugSnapshot()
         {
             var hasActiveExternalMotion = hasActiveMotion && Time.time < activeMotionEndsAt;
-            return new PlayerCompositeMotorDebugSnapshot(
+            return new ActorCompositeMotorDebugSnapshot(
                 rawMoveInput,
                 moveReferenceRotation,
                 hasActiveExternalMotion,
@@ -171,7 +171,7 @@ namespace Koiusa.SteamMultiRuntime
             ApplyActiveMotion();
         }
 
-        public bool TryStartMotion(PlayerMotorMotionRequest request)
+        public bool TryStartMotion(ActorMotorMotionRequest request)
         {
             if (!isActiveAndEnabled || request.Direction.sqrMagnitude <= 0.0001f || request.Duration <= 0f)
             {

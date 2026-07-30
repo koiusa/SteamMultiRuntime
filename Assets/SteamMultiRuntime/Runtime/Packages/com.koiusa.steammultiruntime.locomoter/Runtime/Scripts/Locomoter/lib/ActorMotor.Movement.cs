@@ -6,14 +6,14 @@ namespace Koiusa.SteamMultiRuntime
     /// プレイヤー移動に関する速度計算と向き計算をまとめたユーティリティです。
     /// 地上・急斜面・空中での加速処理と、接地補助（段差アシスト）を提供します。
     /// </summary>
-    public static class PlayerMotorMovementLogic
+    public static class ActorMotorMovementLogic
     {
         public static Vector3 AccelerateOnGround(
             Vector3 velocity,
             Vector3 moveDirection,
             Vector3 upAxis,
             SlopeContactResolver slopeContactResolver,
-            PlayerMotorSettings settings,
+            ActorMotorSettings settings,
             float strafeBlend)
         {
             var groundNormal = slopeContactResolver.GetGroundNormal(upAxis);
@@ -36,7 +36,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 moveDirection,
             Vector3 upAxis,
             SlopeContactResolver slopeContactResolver,
-            PlayerMotorSettings settings,
+            ActorMotorSettings settings,
             float strafeBlend)
         {
             var slopeNormal = slopeContactResolver.GetSteepSlopeNormal(upAxis);
@@ -69,7 +69,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 upAxis,
             Vector3 inheritedGroundVelocity,
             SlopeContactResolver slopeContactResolver,
-            PlayerMotorSettings settings,
+            ActorMotorSettings settings,
             float strafeBlend)
         {
             var currentRelativeHorizontalVelocity = Vector3.ProjectOnPlane(velocity - inheritedGroundVelocity, upAxis);
@@ -87,7 +87,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 moveDirection,
             Vector3 upAxis,
             Quaternion groundRotationDelta,
-            PlayerMotorSettings settings,
+            ActorMotorSettings settings,
             float strafeBlend)
         {
             var rotatedForward = groundRotationDelta * (currentRotation * Vector3.forward);
@@ -126,7 +126,7 @@ namespace Koiusa.SteamMultiRuntime
             Rigidbody rb,
             Collider bodyCollider,
             SlopeContactResolver slopeContactResolver,
-            PlayerMotorSettings settings,
+            ActorMotorSettings settings,
             float strafeBlend)
         {
             if (!settings.EnableStepAssist || settings.StepAssistMaxHeight <= 0f || rb == null || bodyCollider == null)

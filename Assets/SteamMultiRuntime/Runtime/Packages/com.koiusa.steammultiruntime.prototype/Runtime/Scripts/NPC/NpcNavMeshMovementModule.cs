@@ -85,7 +85,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             _moveCenter = _transform.position;
 
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             SmoothedMoveDirection = GetRandomPlanarDirection(upAxis);
             _nextRepathAllowedTime = Time.time + Random.Range(0f, path.initialDelayMax);
             _consecutiveDestinationFailures = 0;
@@ -99,7 +99,7 @@ namespace Koiusa.SteamMultiRuntime
                 _agent = GetComponent<NavMeshAgent>();
             if (_transform == null)
                 _transform = transform;
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             if (SmoothedMoveDirection.sqrMagnitude <= 0.0001f)
                 SmoothedMoveDirection = GetRandomPlanarDirection(upAxis);
             _nextRepathAllowedTime = Time.time + Random.Range(0f, path.initialDelayMax);
@@ -197,7 +197,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void UpdateReturnToCenterState()
         {
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             var toCenter = Vector3.ProjectOnPlane(_moveCenter - _transform.position, upAxis);
             var distance = toCenter.magnitude;
 
@@ -233,7 +233,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool SetCenterDestination()
         {
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             var target = _moveCenter;
             if (returnToCenter.targetRadius > 0.001f)
                 target += GetRandomPlanarDirection(upAxis) * Random.Range(0f, returnToCenter.targetRadius);
@@ -276,7 +276,7 @@ namespace Koiusa.SteamMultiRuntime
                 var shouldRepathByNoMovement = UpdateNoMovementStuckState();
 
                 var shouldRepathByLowSpeed = false;
-                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, PlayerMotor.GetUpAxis()).magnitude;
+                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, ActorMotor.GetUpAxis()).magnitude;
                 if (_agent.remainingDistance > _agent.stoppingDistance + path.reachedBuffer && planarSpeed <= stuck.speedThreshold)
                 {
                     _lowSpeedDuration += Time.deltaTime;
@@ -321,7 +321,7 @@ namespace Koiusa.SteamMultiRuntime
                 var shouldRepathByNoMovement = UpdateNoMovementStuckState();
 
                 var shouldRepathByLowSpeed = false;
-                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, PlayerMotor.GetUpAxis()).magnitude;
+                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, ActorMotor.GetUpAxis()).magnitude;
                 if (_agent.remainingDistance > _agent.stoppingDistance + path.reachedBuffer && planarSpeed <= stuck.speedThreshold)
                 {
                     _lowSpeedDuration += Time.deltaTime;
@@ -381,7 +381,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private bool TrySetRandomDestination()
         {
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             if (!TryResolveDesiredDirection(upAxis, out var desiredDirection))
                 return false;
 
@@ -572,7 +572,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             var desiredPlanarSpeed = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis).magnitude;
             if (desiredPlanarSpeed < stuck.minDesiredSpeedForMovementCheck)
             {

@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    [RequireComponent(typeof(PlayerCompositeMotor))]
+    [RequireComponent(typeof(ActorCompositeMotor))]
     public class LocalPlayerController : MonoBehaviour, IActorController
     {
         [Header("Input")]
@@ -18,10 +18,10 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody targetRigidbody;
         private PlayerGameplayInputReader inputSource;
-        private PlayerCompositeMotor motor;
+        private ActorCompositeMotor motor;
         private PhysicsPresentationSmoother presentationSmoother;
-        private IPlayerMoveInputReceiver moveInputReceiver;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private IActorMoveInputReceiver moveInputReceiver;
+        private IActorTraversalCoordinator traversalCoordinator;
         private PlayerFacingRequestResolver facingRequestResolver;
         private Vector3 moveDirection;
         private Vector2 moveInput;
@@ -85,14 +85,14 @@ namespace Koiusa.SteamMultiRuntime
             }
             presentationSmoother.Initialize(targetRigidbody);
 
-            motor = GetComponent<PlayerCompositeMotor>();
+            motor = GetComponent<ActorCompositeMotor>();
             if (motor == null)
             {
-                motor = gameObject.AddComponent<PlayerCompositeMotor>();
+                motor = gameObject.AddComponent<ActorCompositeMotor>();
             }
 
-            moveInputReceiver = motor as IPlayerMoveInputReceiver;
-            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            moveInputReceiver = motor as IActorMoveInputReceiver;
+            traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
             facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
@@ -143,7 +143,7 @@ namespace Koiusa.SteamMultiRuntime
             var inputState = inputSource.ReadState();
             moveInput = inputState.Move;
             Transform referenceTransform = cameraTransform != null ? cameraTransform : transform;
-            moveDirection = PlayerMotor.GetMoveDirection(referenceTransform, inputState.Move);
+            moveDirection = ActorMotor.GetMoveDirection(referenceTransform, inputState.Move);
             grappleHeld = inputState.GrappleHeld;
             grappleFireRequested |= inputState.GrappleFirePressed;
             reelInput = inputState.ReelInput;

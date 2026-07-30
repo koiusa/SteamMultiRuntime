@@ -9,14 +9,14 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnInspectorGUI()
         {
             EditorGUILayout.HelpBox(
-                "このコントローラーは PlayerCompositeMotor で駆動しています。",
+                "このコントローラーは ActorCompositeMotor で駆動しています。",
                 MessageType.Info);
 
             EditorGUILayout.Space();
 
             var controller = (LocalPlayerController)target;
-            var compositeMotor = controller.GetComponent<PlayerCompositeMotor>();
-            EditorGUILayout.ObjectField("PlayerCompositeMotor", compositeMotor, typeof(PlayerCompositeMotor), allowSceneObjects: true);
+            var compositeMotor = controller.GetComponent<ActorCompositeMotor>();
+            EditorGUILayout.ObjectField("ActorCompositeMotor", compositeMotor, typeof(ActorCompositeMotor), allowSceneObjects: true);
 
             EditorGUILayout.Space();
 

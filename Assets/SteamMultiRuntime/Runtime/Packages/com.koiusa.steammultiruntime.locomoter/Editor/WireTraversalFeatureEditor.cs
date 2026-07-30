@@ -28,11 +28,11 @@ namespace Koiusa.SteamMultiRuntime
         [MenuItem("Tools/SteamMultiRuntime/Setup Wire Actions On Selected Player", priority = 120)]
         private static void Setup() { if (Selection.activeGameObject != null) EnsureStack(Selection.activeGameObject); }
         [MenuItem("Tools/SteamMultiRuntime/Setup Wire Actions On Selected Player", true)]
-        private static bool ValidateSetup() => Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<PlayerMotor>() != null;
+        private static bool ValidateSetup() => Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<ActorMotor>() != null;
 
         public static void EnsureStack(GameObject gameObject)
         {
-            Ensure<PlayerTraversalCoordinator>(gameObject); Ensure<WireGrappleTargetingFeature>(gameObject); Ensure<WireLineVisualFeature>(gameObject);
+            Ensure<ActorTraversalCoordinator>(gameObject); Ensure<WireGrappleTargetingFeature>(gameObject); Ensure<WireLineVisualFeature>(gameObject);
             var connection = Ensure<WireTraversalFeature>(gameObject); Ensure<WireAttachAction>(gameObject); Ensure<WireSwingAction>(gameObject); Ensure<WireReelAction>(gameObject); Ensure<WireGroundAction>(gameObject);
             Selection.activeObject = connection; EditorUtility.SetDirty(gameObject);
             if (!Application.isPlaying && gameObject.scene.IsValid()) EditorSceneManager.MarkSceneDirty(gameObject.scene);

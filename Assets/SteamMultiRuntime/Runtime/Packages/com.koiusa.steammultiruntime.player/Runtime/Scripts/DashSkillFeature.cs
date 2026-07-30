@@ -9,19 +9,19 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0.01f)] private float duration = 0.2f;
         [SerializeField] private bool useFacingWhenDirectionIsEmpty = true;
 
-        private IPlayerMotorMotionSink motor;
+        private IActorMotorMotionSink motor;
         private IActorLocomotionState locomotionState;
         protected override float ActiveDuration => duration;
 
         private void Awake()
         {
-            motor = GetComponent<IPlayerMotorMotionSink>();
+            motor = GetComponent<IActorMotorMotionSink>();
             locomotionState = GetComponent<IActorLocomotionState>();
         }
 
         protected override bool OnActivate(PlayerSkillContext context)
         {
-            if (motor == null) motor = GetComponent<IPlayerMotorMotionSink>();
+            if (motor == null) motor = GetComponent<IActorMotorMotionSink>();
             var direction = context.Direction;
             if (locomotionState == null) locomotionState = GetComponent<IActorLocomotionState>();
             if (locomotionState != null
@@ -32,7 +32,7 @@ namespace Koiusa.SteamMultiRuntime
             }
             if (direction.sqrMagnitude <= 0.0001f && useFacingWhenDirectionIsEmpty) direction = transform.forward;
             return motor != null && motor.TryStartMotion(
-                new PlayerMotorMotionRequest(GetInstanceID(), direction, speed, duration));
+                new ActorMotorMotionRequest(GetInstanceID(), direction, speed, duration));
         }
 
         protected override void OnCompleted() => motor?.StopMotion(GetInstanceID());

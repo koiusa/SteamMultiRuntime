@@ -24,13 +24,13 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         private NavMeshAgent _agent;
-        private IPlayerMotor _motor;
+        private IActorMotor _motor;
         private float _moveSpeedScale = 1f;
 
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
-            _motor = GetComponent<IPlayerMotor>();
+            _motor = GetComponent<IActorMotor>();
             RandomizeForSegment();
         }
 
@@ -39,7 +39,7 @@ namespace Koiusa.SteamMultiRuntime
             if (_agent == null)
                 _agent = GetComponent<NavMeshAgent>();
             if (_motor == null)
-                _motor = GetComponent<IPlayerMotor>();
+                _motor = GetComponent<IActorMotor>();
             ApplyAgentSpeedScale();
         }
 

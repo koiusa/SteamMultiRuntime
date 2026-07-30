@@ -12,9 +12,9 @@ Traversal関連コンポーネントは、同じPlayer GameObjectへ配置しま
 
 ```text
 Controller
-└─ PlayerCompositeMotor
-   ├─ PlayerMotor
-   └─ PlayerTraversalCoordinator
+└─ ActorCompositeMotor
+   ├─ ActorMotor
+   └─ ActorTraversalCoordinator
       ├─ WallTraversalFeature
       │  ├─ WallRunAction
       │  ├─ WallSlideAction
@@ -65,7 +65,7 @@ Actionは、入力やCoordinatorからの要求に対応する具体的な動作
 
 ### Coordinator
 
-`PlayerTraversalCoordinator`は、Traversal間の排他制御と状態遷移を担当します。
+`ActorTraversalCoordinator`は、Traversal間の排他制御と状態遷移を担当します。
 
 - Wall、Ladder、Wireの優先順位を決める
 - Controllerから入力済みの値を受け取る
@@ -82,9 +82,9 @@ PlayerGameplayInputReader
   ↓ PlayerInputState
 LocalPlayerController / ServerDrivenPlayerController
   ↓
-PlayerCompositeMotor
-  ├─ PlayerMotor
-  └─ PlayerTraversalCoordinator
+ActorCompositeMotor
+  ├─ ActorMotor
+  └─ ActorTraversalCoordinator
        ↓
      各Traversal Action
 ```
@@ -95,15 +95,15 @@ LocalではControllerが入力を直接Physics Tickへ渡します。Networkで�
 
 ## Core Motor
 
-### PlayerCompositeMotor
+### ActorCompositeMotor
 
 プレイヤー移動の外部窓口です。
 
-- `PlayerMotor`と`PlayerTraversalCoordinator`を統合する
+- `ActorMotor`と`ActorTraversalCoordinator`を統合する
 - Controllerが個別Traversal実装へ依存しないようにする
 - Strafe設定や移動入力を基礎Motorへ転送する
 
-### PlayerMotor
+### ActorMotor
 
 通常の地上移動、空中移動、ジャンプ、回転を担当します。
 
@@ -116,15 +116,15 @@ LocalではControllerが入力を直接Physics Tickへ渡します。Networkで�
 
 ### Facing Request
 
-向き制御はLocomoterの`IPlayerFacingRequestSource`へ統一します。Controllerは起動時に同じPlayer上のSourceを一度だけ収集し、既存の移動Tickで最もPriorityが高いRequestを解決して`PlayerMotor`へ渡します。離散的なTarget変更は各SourceがCallbackで保持し、動く対象への方向だけを物理処理に合わせて再計算します。
+向き制御はLocomoterの`IPlayerFacingRequestSource`へ統一します。Controllerは起動時に同じPlayer上のSourceを一度だけ収集し、既存の移動Tickで最もPriorityが高いRequestを解決して`ActorMotor`へ渡します。離散的なTarget変更は各SourceがCallbackで保持し、動く対象への方向だけを物理処理に合わせて再計算します。
 
 Requestの`RotationSpeed`が未指定（0）の場合はMotorの通常`RotationSpeed`を使用します。`StrafeRotationSpeed`が0でも、Targetingなど明示的なFacing Requestによる旋回は停止しません。
 
 標準Priorityは`Wire Ground > Targeting > 通常移動`です。WallRunの向き固定はMotor側のTraversal制約としてすべてのRequestより優先します。NetworkではOwner由来のRequestを入力状態へ含めつつ、Wire GroundはServerの接続状態から再解決して上書きします。CombatやInteractはLocomoterへ具象依存を追加せず、新しいSourceとして接続します。
 
-### PlayerTraversalCoordinator
+### ActorTraversalCoordinator
 
-現在状態は`PlayerTraversalState`で公開します。
+現在状態は`ActorTraversalState`で公開します。
 
 ```text
 Grounded
@@ -137,17 +137,17 @@ WireSwing
 Cooldown
 ```
 
-主な公開契約は`IPlayerTraversalCoordinator`です。
+主な公開契約は`IActorTraversalCoordinator`です。
 
 `Tools > SteamMultiRuntime > Debug > Player Movement Debugger`から専用のEditorWindowを開けます。実行中の
-`PlayerCompositeMotor`を対象に、Composite MotorとBase Motor、その配下の`PlayerTraversalCoordinator`の
+`ActorCompositeMotor`を対象に、Composite MotorとBase Motor、その配下の`ActorTraversalCoordinator`の
 State、Intent、Wall制限、Wire照準結果と、Wall／Ladder／Wireの
 各FeatureおよびActionの状態をまとめて監視します。診断値はFeatureごとのinternalな
 `GetDebugSnapshot()`で一括取得します。`InternalsVisibleTo`でlocomoterのEditor assemblyだけに公開し、
 Gameplayのpublic APIを増やさず、Editor側からprivate実装も探索しません。Composite、Coordinator、各Feature、
 Reel ActionのSnapshot取得はそれぞれinternalなSnapshot Source契約を使用し、Editor Adapterは具体実装へ依存しません。
-Windowは具体Componentを直接列挙せず、Editor側の`IPlayerMovementDebugTarget`を受け取ります。
-`PlayerMovementDebugTarget` AdapterがComponent参照の解決とSnapshot取得を担当し、構成変更時はWindow上部の
+Windowは具体Componentを直接列挙せず、Editor側の`IActorMovementDebugTarget`を受け取ります。
+`ActorMovementDebugTarget` AdapterがComponent参照の解決とSnapshot取得を担当し、構成変更時はWindow上部の
 `Refresh`で参照を再構築できます。
 Coordinator全体ビューの`Console Log`を有効にすると、そのPlayerのState遷移だけを、遷移前の滞在時間と
 現在Intent付きでUnity Consoleへ出力します。ログ操作もEditor assemblyに限定し、既定は無効です。
@@ -248,7 +248,7 @@ Grapple入力を保持している間、Wire未接続時は照準操作を優先
 
 - Q／負軸入力で巻き取る
 - E／正軸入力で繰り出す
-- 入力値の反映は独立した`FixedUpdate`ではなく、`PlayerTraversalCoordinator.ApplyTraversal`から呼ばれる権威側の物理Tickで行う
+- 入力値の反映は独立した`FixedUpdate`ではなく、`ActorTraversalCoordinator.ApplyTraversal`から呼ばれる権威側の物理Tickで行う
 - Wire接続中の空中ジャンプ入力は、現在の実距離まで余剰Slackを除去してから1ステップ巻き取る
 - 巻き取り中はElasticでも伸びない制約を要求する
 - GroundからJumpした後も現在距離から巻き取る
@@ -281,7 +281,7 @@ Facing Blend Damping: 0.12 sec
 ```text
 PlayerPointerAim
   ↓ requested target point
-PlayerTraversalCoordinator
+ActorTraversalCoordinator
   ↓ WireGrappleTargetingFeature.EvaluateTarget
 WireAimResult
   ├─ Invalid: 接続不可
@@ -350,7 +350,7 @@ Motor、Collider、Network同期は補間前のPhysics Rootを参照します。
 
 ## 移動床
 
-`PrototypeMotionMover`はPhysics tickでCollider Transformを更新し、子の`Presentation`だけを描画Frame間で補間します。Player／NPCの床追従は物理押し出しではなく`IGroundMotionSource`の変位を`PlayerMotor`が一度だけ適用します。
+`PrototypeMotionMover`はPhysics tickでCollider Transformを更新し、子の`Presentation`だけを描画Frame間で補間します。Player／NPCの床追従は物理押し出しではなく`IGroundMotionSource`の変位を`ActorMotor`が一度だけ適用します。
 
 `IGroundMotionSnapshotSource`対応床は、前回／現在の移動行列、逆行列、回転差をPhysics tickごとに一度だけキャッシュします。`GroundMotionTracker`は速度、変位、回転を個別に再計算せず、1回のSnapshot取得で受け取ります。キャッシュは呼び出し時の`Time.fixedTime`で更新するため、Script Execution Orderには依存しません。
 
@@ -360,7 +360,7 @@ Networkプレイヤーの物理処理はServer Authorityです。
 
 - Ownerが入力を読み取る
 - `PlayerInputSyncState`でServerへ送信する
-- Serverの`PlayerTraversalCoordinator`と各Actionが物理処理を行う
+- Serverの`ActorTraversalCoordinator`と各Actionが物理処理を行う
 - Wire接続状態とロープ長をClientへ同期する
 - Traversal設定は`ITraversalSettingsSync`から収集・適用する
 
@@ -385,7 +385,7 @@ Custom Inspectorの論理階層、Add／Repair操作の詳細は[EditorSpecifica
 
 ```text
 Controller
-  → IPlayerCompositeMotor / IPlayerTraversalCoordinator
+  → IActorCompositeMotor / IActorTraversalCoordinator
 
 Coordinator
   → Feature・Actionのインターフェース

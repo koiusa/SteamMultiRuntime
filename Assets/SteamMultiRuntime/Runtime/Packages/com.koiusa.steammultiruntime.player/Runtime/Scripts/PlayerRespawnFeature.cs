@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private PlayerHealthFeature health;
         private PlayerCharacterCoordinator coordinator;
-        private PlayerCompositeMotor motor;
+        private ActorCompositeMotor motor;
         private IPlayerCombatProcessGate processGate;
         private Rigidbody body;
         private Coroutine respawnRoutine;
@@ -33,7 +33,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             health = GetComponent<PlayerHealthFeature>();
             coordinator = GetComponent<PlayerCharacterCoordinator>();
-            motor = GetComponent<PlayerCompositeMotor>();
+            motor = GetComponent<ActorCompositeMotor>();
             processGate = GetComponent<IPlayerCombatProcessGate>();
             body = GetComponent<Rigidbody>();
             wasDead = !health.IsAlive;

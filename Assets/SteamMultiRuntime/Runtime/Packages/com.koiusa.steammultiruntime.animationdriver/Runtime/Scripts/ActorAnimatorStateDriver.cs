@@ -46,7 +46,7 @@ namespace Koiusa.SteamMultiRuntime
         private IPlayerLadderState playerLadderState;
         private IPlayerWallRunState playerWallRunState;
         private IWallRunAction wallRunAction;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private IActorTraversalCoordinator traversalCoordinator;
         private Renderer[] targetRenderers;
         private Vector3 previousPosition;
 
@@ -75,7 +75,7 @@ namespace Koiusa.SteamMultiRuntime
             playerLadderState = playerController as IPlayerLadderState;
             playerWallRunState = playerController as IPlayerWallRunState;
             wallRunAction = GetComponentInParent<IWallRunAction>();
-            traversalCoordinator = GetComponentInParent<IPlayerTraversalCoordinator>();
+            traversalCoordinator = GetComponentInParent<IActorTraversalCoordinator>();
             targetRenderers = targetAnimator != null
                 ? targetAnimator.GetComponentsInChildren<Renderer>(true)
                 : System.Array.Empty<Renderer>();
@@ -101,7 +101,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var velocity = GetEstimatedVelocity();
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
 
             var horizontalSpeed = playerController != null ? playerController.HorizontalVelocity : Vector3.ProjectOnPlane(velocity, upAxis).magnitude;
             var verticalSpeed = playerController != null ? playerController.VerticalVelocity : Vector3.Dot(velocity, upAxis);
@@ -120,12 +120,12 @@ namespace Koiusa.SteamMultiRuntime
             var hasTraversalCoordinator = traversalCoordinator != null;
             var isWireSwinging = hasTraversalCoordinator
                 && traversalCoordinator.IsEnabled
-                && traversalCoordinator.CurrentState == PlayerTraversalState.WireSwing
+                && traversalCoordinator.CurrentState == ActorTraversalState.WireSwing
                 && !traversalCoordinator.IsWireGroundActionActive;
             var isLadder = playerLadderState != null
                 ? playerLadderState.IsOnLadder
                 : hasTraversalCoordinator
-                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.Ladder
+                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == ActorTraversalState.Ladder
                     : ladderTraversalFeature != null && ladderTraversalFeature.IsOnLadder;
             var ladderSpeed = playerLadderState != null
                 ? playerLadderState.LadderSpeed
@@ -133,7 +133,7 @@ namespace Koiusa.SteamMultiRuntime
             var isWallRunning = playerWallRunState != null
                 ? playerWallRunState.IsWallRunning
                 : hasTraversalCoordinator
-                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun
+                    ? traversalCoordinator.IsEnabled && traversalCoordinator.CurrentState == ActorTraversalState.WallRun
                     : wallRunAction != null && wallRunAction.IsWallRunning;
             var wallNormal = isWallRunning
                 ? playerWallRunState != null

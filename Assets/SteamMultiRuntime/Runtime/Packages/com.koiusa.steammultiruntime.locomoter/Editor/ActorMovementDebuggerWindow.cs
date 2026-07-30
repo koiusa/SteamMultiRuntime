@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public sealed class PlayerMovementDebuggerWindow : EditorWindow
+    public sealed class ActorMovementDebuggerWindow : EditorWindow
     {
-        private PlayerCompositeMotor selectedPlayer;
-        private IPlayerMovementDebugTarget target;
+        private ActorCompositeMotor selectedActor;
+        private IActorMovementDebugTarget target;
         private Vector2 scroll;
         private bool coordinatorOpen = true;
         private bool wallOpen = true;
@@ -16,7 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private const float HierarchyIndent = 22f;
 
         [MenuItem("Tools/SteamMultiRuntime/Debug/Player Movement Debugger")]
-        private static void Open() => GetWindow<PlayerMovementDebuggerWindow>("Movement Debugger");
+        private static void Open() => GetWindow<ActorMovementDebuggerWindow>("Movement Debugger");
 
         private void OnEnable()
         {
@@ -41,7 +41,7 @@ namespace Koiusa.SteamMultiRuntime
             if (target == null || !target.IsValid)
             {
                 if (target != null) SetTarget(null);
-                EditorGUILayout.HelpBox("PlayerCompositeMotor を選択してください。Hierarchy の子を選択して Use Selection を押すこともできます。", MessageType.Info);
+                EditorGUILayout.HelpBox("ActorCompositeMotor を選択してください。Hierarchy の子を選択して Use Selection を押すこともできます。", MessageType.Info);
                 return;
             }
 
@@ -63,12 +63,12 @@ namespace Koiusa.SteamMultiRuntime
         {
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                var nextPlayer = (PlayerCompositeMotor)EditorGUILayout.ObjectField(selectedPlayer, typeof(PlayerCompositeMotor), true);
-                if (nextPlayer != selectedPlayer) SetTarget(nextPlayer);
+                var nextActor = (ActorCompositeMotor)EditorGUILayout.ObjectField(selectedActor, typeof(ActorCompositeMotor), true);
+                if (nextActor != selectedActor) SetTarget(nextActor);
                 if (GUILayout.Button("Use Selection", EditorStyles.toolbarButton, GUILayout.Width(90f)))
                     SetTarget(FindFromSelection());
-                if (GUILayout.Button("Refresh", EditorStyles.toolbarButton, GUILayout.Width(55f)) && selectedPlayer != null)
-                    SetTarget(selectedPlayer);
+                if (GUILayout.Button("Refresh", EditorStyles.toolbarButton, GUILayout.Width(55f)) && selectedActor != null)
+                    SetTarget(selectedActor);
                 if (GUILayout.Button("Ping", EditorStyles.toolbarButton, GUILayout.Width(40f)) && target != null)
                     EditorGUIUtility.PingObject(target.Context);
             }
@@ -95,7 +95,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             BeginPanel("BASE MOTOR", 1, "├");
             var motor = target.BaseMotor;
-            StatusValue("PlayerMotor", motor != null, motor != null && motor.IsEnabled);
+            StatusValue("ActorMotor", motor != null, motor != null && motor.IsEnabled);
             if (motor != null)
             {
                 Value("Grounded / Airborne From Jump", $"{motor.IsGrounded} / {motor.IsAirborneFromJump}");
@@ -289,18 +289,18 @@ namespace Koiusa.SteamMultiRuntime
             EditorGUILayout.Space(2f);
         }
 
-        private static PlayerCompositeMotor FindFromSelection()
+        private static ActorCompositeMotor FindFromSelection()
         {
             var selected = Selection.activeGameObject;
             if (selected == null) return null;
-            return selected.GetComponentInParent<PlayerCompositeMotor>()
-                ?? selected.GetComponentInChildren<PlayerCompositeMotor>(true);
+            return selected.GetComponentInParent<ActorCompositeMotor>()
+                ?? selected.GetComponentInChildren<ActorCompositeMotor>(true);
         }
 
-        private void SetTarget(PlayerCompositeMotor player)
+        private void SetTarget(ActorCompositeMotor actor)
         {
-            selectedPlayer = player;
-            target = player != null ? new PlayerMovementDebugTarget(player) : null;
+            selectedActor = actor;
+            target = actor != null ? new ActorMovementDebugTarget(actor) : null;
             Repaint();
         }
 

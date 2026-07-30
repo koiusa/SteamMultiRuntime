@@ -3,10 +3,10 @@ using Unity.Netcode;
 namespace Koiusa.SteamMultiRuntime
 {
     /// <summary>
-    /// <see cref="PlayerMotorSettings"/> のネットワーク同期用ラッパー。
+    /// <see cref="ActorMotorSettings"/> のネットワーク同期用ラッパー。
     /// INetworkSerializable はネットコードパッケージ側で実装し、コアパッケージを Netcode フリーに保つ。
     /// </summary>
-    internal struct PlayerMotorSettingsNetData : INetworkSerializable
+    internal struct ActorMotorSettingsNetData : INetworkSerializable
     {
         public float MoveSpeed;
         public float GroundAcceleration;
@@ -28,9 +28,9 @@ namespace Koiusa.SteamMultiRuntime
         public float StepAssistMinMoveSpeed;
         public float StepAssistObstacleUpDot;
 
-        public static PlayerMotorSettingsNetData FromCore(PlayerMotorSettings s)
+        public static ActorMotorSettingsNetData FromCore(ActorMotorSettings s)
         {
-            return new PlayerMotorSettingsNetData
+            return new ActorMotorSettingsNetData
             {
                 MoveSpeed = s.MoveSpeed,
                 GroundAcceleration = s.GroundAcceleration,
@@ -54,9 +54,9 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        public PlayerMotorSettings ToCore(UnityEngine.LayerMask groundLayer)
+        public ActorMotorSettings ToCore(UnityEngine.LayerMask groundLayer)
         {
-            return new PlayerMotorSettings(
+            return new ActorMotorSettings(
                 moveSpeed: MoveSpeed,
                 groundAcceleration: GroundAcceleration,
                 airAcceleration: AirAcceleration,

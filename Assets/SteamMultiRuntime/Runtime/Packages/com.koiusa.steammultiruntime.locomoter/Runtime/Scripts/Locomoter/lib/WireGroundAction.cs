@@ -38,7 +38,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool BlocksSwing => HandlesConnectionPhysics || (HasConnection && IsPlayerGrounded);
         public bool HandlesConnectionPhysics => HasDynamicAnchor;
         public bool UsesStrafeMovement => HasConnection && IsPlayerGrounded && !HasDynamicAnchor;
-        // Keep exposing the damped value after Wire Ground ends so PlayerMotor can
+        // Keep exposing the damped value after Wire Ground ends so ActorMotor can
         // blend back to normal movement instead of snapping in a single tick.
         public float StrafeBlend => strafeBlend;
         public float FacingBlend => UsesStrafeMovement ? facingBlend : 0f;

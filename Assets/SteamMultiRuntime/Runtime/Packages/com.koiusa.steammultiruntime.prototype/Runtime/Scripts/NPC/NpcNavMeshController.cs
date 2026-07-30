@@ -7,7 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
-    [RequireComponent(typeof(PlayerCompositeMotor))]
+    [RequireComponent(typeof(ActorCompositeMotor))]
     public partial class NpcNavMeshController : MonoBehaviour, INpcLocomotionState
     {
 
@@ -49,9 +49,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private NavMeshAgent _agent;
         private Rigidbody _rigidbody;
-        private PlayerCompositeMotor _motor;
-        private IPlayerMoveInputReceiver _moveInputReceiver;
-        private IPlayerMotor _baseMotor;
+        private ActorCompositeMotor _motor;
+        private IActorMoveInputReceiver _moveInputReceiver;
+        private IActorMotor _baseMotor;
         private AiPlayerInputSource _inputSource;
         private ServerDrivenPlayerController _networkPlayerController;
         private PhysicsPresentationSmoother _presentationSmoother;
@@ -112,9 +112,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             _agent = GetComponent<NavMeshAgent>();
             _rigidbody = GetComponent<Rigidbody>();
-            _motor = GetComponent<PlayerCompositeMotor>();
-            _moveInputReceiver = _motor as IPlayerMoveInputReceiver;
-            _baseMotor = GetComponent<IPlayerMotor>();
+            _motor = GetComponent<ActorCompositeMotor>();
+            _moveInputReceiver = _motor as IActorMoveInputReceiver;
+            _baseMotor = GetComponent<IActorMotor>();
             _inputSource = new AiPlayerInputSource();
             _networkPlayerController = GetComponent<ServerDrivenPlayerController>();
             _presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
@@ -252,7 +252,7 @@ namespace Koiusa.SteamMultiRuntime
 
             var inputState = _inputSource.ReadState();
             _moveInput = inputState.Move;
-            _moveDirection = PlayerMotor.GetMoveDirection(transform, _moveInput);
+            _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
 
             if (inputState.JumpPressed)
                 _jumpToken++;
@@ -337,7 +337,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 // Path extraction and neighborhood queries stay rate-limited. Their result is
                 // consumed by the inexpensive filter below on every player-loop update.
-                var planningUpAxis = PlayerMotor.GetUpAxis();
+                var planningUpAxis = ActorMotor.GetUpAxis();
                 _cachedTargetPlanarVelocity = BuildTargetPlanarVelocity(planningUpAxis);
                 _cachedRawSteeringPlanar = _cachedTargetPlanarVelocity;
                 if (avoidance != null && avoidance.isActiveAndEnabled)
@@ -354,7 +354,7 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            var upAxis = PlayerMotor.GetUpAxis();
+            var upAxis = ActorMotor.GetUpAxis();
             var steeringPlanar = ApplySteeringLowPass(upAxis, _cachedRawSteeringPlanar);
             steeringPlanar = ApplySteeringTurnRateLimit(upAxis, steeringPlanar);
             steeringPlanar = ApplySteeringDeadband(steeringPlanar);
@@ -366,7 +366,7 @@ namespace Koiusa.SteamMultiRuntime
                 nextMoveInput = nextMoveInput.normalized;
 
             _moveInput = nextMoveInput;
-            _moveDirection = PlayerMotor.GetMoveDirection(transform, nextMoveInput);
+            _moveDirection = ActorMotor.GetMoveDirection(transform, nextMoveInput);
             _inputSource.SetMove(nextMoveInput);
 
             if (steeringPlanUpdated && jump != null

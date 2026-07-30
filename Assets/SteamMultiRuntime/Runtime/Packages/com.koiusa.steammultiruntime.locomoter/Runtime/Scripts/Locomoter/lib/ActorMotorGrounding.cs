@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal sealed class PlayerMotorGrounding
+    internal sealed class ActorMotorGrounding
     {
         private const float NearbyGroundProbeOffset = 0.05f;
         private const float GroundedGraceMaxUpwardSpeed = 1.5f;
@@ -23,7 +23,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 upAxis,
             Rigidbody rb,
             Collider bodyCollider,
-            PlayerMotorSettings settings)
+            ActorMotorSettings settings)
         {
             if (hasGroundContact)
             {
@@ -47,7 +47,7 @@ namespace Koiusa.SteamMultiRuntime
             Vector3 velocity,
             Vector3 upAxis,
             Collider bodyCollider,
-            PlayerMotorSettings settings)
+            ActorMotorSettings settings)
         {
             if (bodyCollider == null || settings.NearbyGroundDistance <= 0f)
             {
@@ -62,7 +62,7 @@ namespace Koiusa.SteamMultiRuntime
             bool isAirborneFromJump,
             Vector3 velocity,
             Vector3 upAxis,
-            PlayerMotorSettings settings)
+            ActorMotorSettings settings)
         {
             return CanUseGroundedGrace(canUseGroundContacts, isAirborneFromJump, velocity, upAxis, settings);
         }
@@ -72,7 +72,7 @@ namespace Koiusa.SteamMultiRuntime
             bool isAirborneFromJump,
             Vector3 velocity,
             Vector3 upAxis,
-            PlayerMotorSettings settings)
+            ActorMotorSettings settings)
         {
             if (!canUseGroundContacts || isAirborneFromJump || settings.GroundedGraceTime <= 0f)
             {
@@ -87,7 +87,7 @@ namespace Koiusa.SteamMultiRuntime
             return Vector3.Dot(velocity, upAxis) <= GroundedGraceMaxUpwardSpeed;
         }
 
-        private bool TryGetNearbyGround(Vector3 upAxis, Rigidbody rb, Collider bodyCollider, PlayerMotorSettings settings)
+        private bool TryGetNearbyGround(Vector3 upAxis, Rigidbody rb, Collider bodyCollider, ActorMotorSettings settings)
         {
             if (!TryGetNearbyGroundCapsule(bodyCollider, upAxis, out var point1, out var point2, out var radius))
             {

@@ -60,7 +60,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             // Limit the convention to this package so unrelated *Action components
             // (for example Input System components) do not receive a traversal badge.
-            if (componentType.Namespace != typeof(PlayerCompositeMotor).Namespace)
+            if (componentType.Namespace != typeof(ActorCompositeMotor).Namespace)
             {
                 icon = null;
                 return false;

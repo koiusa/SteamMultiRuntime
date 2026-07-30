@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public enum PlayerTraversalState
+    public enum ActorTraversalState
     {
         Grounded = 0,
         Airborne = 1,
@@ -14,10 +14,10 @@ namespace Koiusa.SteamMultiRuntime
         Cooldown = 7,
     }
 
-    public interface IPlayerTraversalCoordinator
+    public interface IActorTraversalCoordinator
     {
         bool IsEnabled { get; }
-        PlayerTraversalState CurrentState { get; }
+        ActorTraversalState CurrentState { get; }
         float StateElapsedTime { get; }
         bool IsTraversalActive { get; }
         bool IsOnLadder { get; }

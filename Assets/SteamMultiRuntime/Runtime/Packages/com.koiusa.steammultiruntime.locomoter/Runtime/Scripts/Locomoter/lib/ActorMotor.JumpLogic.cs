@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public static class PlayerMotorJumpLogic
+    public static class ActorMotorJumpLogic
     {
         public readonly struct JumpUpdateResult
         {

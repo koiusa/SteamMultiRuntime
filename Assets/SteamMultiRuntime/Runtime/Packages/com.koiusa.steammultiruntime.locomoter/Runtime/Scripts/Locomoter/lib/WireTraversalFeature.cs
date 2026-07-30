@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(PlayerTraversalCoordinator))]
+    [RequireComponent(typeof(ActorTraversalCoordinator))]
     [RequireComponent(typeof(WireLineVisualFeature))]
     [DisallowMultipleComponent]
     public sealed class WireTraversalFeature : MonoBehaviour, IWireConnection, IWireTraversalDebugSnapshotSource

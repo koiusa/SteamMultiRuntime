@@ -77,9 +77,9 @@ Player Action Mapには以下のSkill入力を定義しています。
 ```text
 Player
 └─ PlayerCharacterCoordinator                           [実装済]
-   ├─ PlayerCompositeMotor : IPlayerMotorMotionSink     [実装済]
-   │  ├─ PlayerMotor : IPlayerMotor                     [実装済]
-   │  └─ PlayerTraversalCoordinator                     [実装済]
+   ├─ ActorCompositeMotor : IActorMotorMotionSink     [実装済]
+   │  ├─ ActorMotor : IActorMotor                     [実装済]
+   │  └─ ActorTraversalCoordinator                     [実装済]
    │     ├─ WallTraversalFeature                        [実装済]
    │     │  ├─ WallRunAction                            [実装済]
    │     │  ├─ WallSlideAction                          [実装済]
@@ -198,9 +198,9 @@ VariantではCore Componentを削除または無効化せず、固有Component�
 
 ```text
 PlayerCharacterCoordinator
-├─ PlayerCompositeMotor
-│  ├─ PlayerMotor
-│  └─ PlayerTraversalCoordinator
+├─ ActorCompositeMotor
+│  ├─ ActorMotor
+│  └─ ActorTraversalCoordinator
 │     ├─ WallTraversalFeature
 │     ├─ LadderTraversalFeature
 │     └─ WireTraversalFeature
@@ -218,7 +218,7 @@ PlayerCharacterCoordinator
 ## 責務
 
 - `PlayerCharacterCoordinator`は3領域への共通アクセスポイントです。
-- `PlayerCompositeMotor`は通常移動、Traversal、外部モーション要求を処理します。
+- `ActorCompositeMotor`は通常移動、Traversal、外部モーション要求を処理します。
 - `PlayerSkillCoordinator`は装着済みSkillの検索、排他実行、キャンセルを処理します。
 - `PlayerCombatCoordinator`はHP、被ダメージ倍率、範囲Hit判定を仲介します。
 - `Feature`はPlayerへ個別に付け外しできる機能単位です。
@@ -247,11 +247,11 @@ PlayerCharacterCoordinator
 PlayerSkillCoordinator
     ↓
 SkillFeature
-    ├─→ IPlayerMotorMotionSink
+    ├─→ IActorMotorMotionSink
     └─→ IPlayerCombatCoordinator
 ```
 
-Dashは`Rigidbody`を直接更新せず、`PlayerCompositeMotor`へ期限付きモーションを要求します。通常時は入力Controllerから渡された基準方向を使用し、Strafe中に移動入力がある場合は`IActorLocomotionState.MoveDirection`を優先します。これにより、注視方向を維持したまま前後左右および斜めへDashできます。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
+Dashは`Rigidbody`を直接更新せず、`ActorCompositeMotor`へ期限付きモーションを要求します。通常時は入力Controllerから渡された基準方向を使用し、Strafe中に移動入力がある場合は`IActorLocomotionState.MoveDirection`を優先します。これにより、注視方向を維持したまま前後左右および斜めへDashできます。攻撃、Guard、Healは`PlayerCombatCoordinator`を経由します。
 
 ## 初期Skill
 

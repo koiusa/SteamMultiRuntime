@@ -7,16 +7,16 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
-    public sealed class PlayerMotor : MonoBehaviour, IPlayerMotor
+    public sealed class ActorMotor : MonoBehaviour, IActorMotor
     {
-        [SerializeField] private PlayerMotorSettings settings;
+        [SerializeField] private ActorMotorSettings settings;
 
         private Rigidbody rb;
         private Collider bodyCollider;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
-        private PlayerMotorGrounding grounding;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private ActorMotorGrounding grounding;
+        private IActorTraversalCoordinator traversalCoordinator;
 
         private float jumpDetachUntilTime;
         private Vector3 inheritedGroundVelocity;
@@ -26,7 +26,7 @@ namespace Koiusa.SteamMultiRuntime
 
         [SerializeField]
         [HideInInspector]
-        private PlayerMotorSettings initialSettings;
+        private ActorMotorSettings initialSettings;
         private bool wasInitialized;
 
         public bool IsGrounded { get; private set; }
@@ -49,12 +49,12 @@ namespace Koiusa.SteamMultiRuntime
             bodyCollider = GetComponent<Collider>();
             groundMotionTracker = GetComponent<GroundMotionTracker>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
-            grounding = new PlayerMotorGrounding();
-            traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            grounding = new ActorMotorGrounding();
+            traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
 
             if (IsSettingsEmpty(settings))
             {
-                settings = PlayerMotorSettings.CreateDefault();
+                settings = ActorMotorSettings.CreateDefault();
             }
 
             if (!wasInitialized)
@@ -64,7 +64,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private static bool IsSettingsEmpty(PlayerMotorSettings s)
+        private static bool IsSettingsEmpty(ActorMotorSettings s)
         {
             return s.MoveSpeed == 0f && s.GroundAcceleration == 0f && s.JumpForce == 0f;
         }
@@ -73,7 +73,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (IsSettingsEmpty(settings))
             {
-                settings = PlayerMotorSettings.CreateDefault();
+                settings = ActorMotorSettings.CreateDefault();
             }
         }
 
@@ -117,18 +117,18 @@ namespace Koiusa.SteamMultiRuntime
             facingRequest = request;
         }
 
-        public PlayerMotorSettings GetSettings() => settings;
+        public ActorMotorSettings GetSettings() => settings;
 
-        public void ApplySettings(PlayerMotorSettings newSettings)
+        public void ApplySettings(ActorMotorSettings newSettings)
         {
             settings = newSettings;
         }
 
-        public PlayerMotorTickResult Tick(Vector3 moveDirection, bool jumpRequested)
+        public ActorMotorTickResult Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (!IsEnabled)
             {
-                return new PlayerMotorTickResult(false);
+                return new ActorMotorTickResult(false);
             }
 
             if (rb == null || rb.isKinematic)
@@ -137,7 +137,7 @@ namespace Koiusa.SteamMultiRuntime
                 isAirborneFromJump = false;
                 HorizontalVelocity = 0f;
                 VerticalVelocity = 0f;
-                return new PlayerMotorTickResult(false);
+                return new ActorMotorTickResult(false);
             }
 
             var upAxis = GetUpAxis();
@@ -184,14 +184,14 @@ namespace Koiusa.SteamMultiRuntime
                 inheritedGroundVelocity = Vector3.zero;
                 groundMotionTracker.TryGetGroundMotion(rb.position, out groundVelocity, out groundDisplacement, out groundRotationDelta);
                 rb.MovePosition(rb.position + groundDisplacement);
-                velocity = PlayerMotorMovementLogic.AccelerateOnGround(
+                velocity = ActorMotorMovementLogic.AccelerateOnGround(
                     velocity,
                     moveDirection,
                     upAxis,
                     slopeContactResolver,
                     settings,
                     effectiveStrafeBlend);
-                velocity = PlayerMotorMovementLogic.ApplyGroundStepAssist(
+                velocity = ActorMotorMovementLogic.ApplyGroundStepAssist(
                     velocity,
                     moveDirection,
                     upAxis,
@@ -209,7 +209,7 @@ namespace Koiusa.SteamMultiRuntime
                     groundMotionTracker.TryGetGroundMotion(rb.position, out groundVelocity, out _, out _);
                 }
 
-                velocity = PlayerMotorMovementLogic.AccelerateOnSteepSlope(
+                velocity = ActorMotorMovementLogic.AccelerateOnSteepSlope(
                     velocity,
                     moveDirection,
                     upAxis,
@@ -220,7 +220,7 @@ namespace Koiusa.SteamMultiRuntime
             else if (!isWireSwinging
                 && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive))
             {
-                velocity = PlayerMotorMovementLogic.AccelerateInAir(
+                velocity = ActorMotorMovementLogic.AccelerateInAir(
                     velocity,
                     moveDirection,
                     upAxis,
@@ -232,10 +232,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var preserveWallRunFacing = traversalCoordinator != null
                 && traversalCoordinator.IsEnabled
-                && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun;
+                && traversalCoordinator.CurrentState == ActorTraversalState.WallRun;
             if (!preserveWallRunFacing)
             {
-                var normalRotation = PlayerMotorMovementLogic.CalculateRotation(
+                var normalRotation = ActorMotorMovementLogic.CalculateRotation(
                     rb.rotation,
                     moveDirection,
                     upAxis,
@@ -263,7 +263,7 @@ namespace Koiusa.SteamMultiRuntime
                 rb.MoveRotation(nextRotation);
             }
 
-            var jumpResult = PlayerMotorJumpLogic.ApplyJumpIfRequested(
+            var jumpResult = ActorMotorJumpLogic.ApplyJumpIfRequested(
                 jumpRequested,
                 canJump,
                 upAxis,
@@ -283,7 +283,7 @@ namespace Koiusa.SteamMultiRuntime
             inheritedGroundVelocity = jumpResult.InheritedGroundVelocity;
             isAirborneFromJump = jumpResult.IsAirborneFromJump;
 
-            velocity = PlayerMotorJumpLogic.ApplyExtraFallGravity(
+            velocity = ActorMotorJumpLogic.ApplyExtraFallGravity(
                 !isGrounded
                     && !isWireSwinging
                     && (traversalCoordinator == null || !traversalCoordinator.IsTraversalActive),
@@ -295,7 +295,7 @@ namespace Koiusa.SteamMultiRuntime
             rb.linearVelocity = velocity;
             HorizontalVelocity = Vector3.ProjectOnPlane(velocity - inheritedGroundVelocity, upAxis).magnitude;
             VerticalVelocity = Vector3.Dot(velocity, upAxis);
-            return new PlayerMotorTickResult(jumpConsumed);
+            return new ActorMotorTickResult(jumpConsumed);
         }
 
         public void OnCollisionEnter(Collision collision)

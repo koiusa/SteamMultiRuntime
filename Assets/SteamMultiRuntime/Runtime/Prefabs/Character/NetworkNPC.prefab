@@ -101,7 +101,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 626167900066496392, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: m_EditorClassIdentifier
-      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerCompositeMotor
+      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.ActorCompositeMotor
       objectReference: {fileID: 0}
     - target: {fileID: 937887151947646620, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: processGate
@@ -161,7 +161,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5229924168628369383, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: m_EditorClassIdentifier
-      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerMotor
+      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.ActorMotor
       objectReference: {fileID: 0}
     - target: {fileID: 5229924168628369383, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: initialSettings.JumpForce
@@ -209,7 +209,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6962452901085774379, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: m_EditorClassIdentifier
-      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.PlayerTraversalCoordinator
+      value: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.ActorTraversalCoordinator
       objectReference: {fileID: 0}
     - target: {fileID: 7866116347518461925, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       propertyPath: m_Constraints

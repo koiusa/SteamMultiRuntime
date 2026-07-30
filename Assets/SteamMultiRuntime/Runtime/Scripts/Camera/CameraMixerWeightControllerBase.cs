@@ -52,7 +52,7 @@ namespace Koiusa.SteamMultiRuntime
         private IFocusMarkerContext context;
         private CinemachineInputAxisController inputAxisController;
         private InputAction grappleAction;
-        private IPlayerTraversalCoordinator traversalCoordinator;
+        private IActorTraversalCoordinator traversalCoordinator;
         private GameObject traversalPlayerObject;
         private readonly List<InputActionReference> runtimeActionReferences = new();
         private readonly List<CameraCollisionState> cameraCollisionStates = new();
@@ -178,7 +178,7 @@ namespace Koiusa.SteamMultiRuntime
             if (traversalPlayerObject != playerObject)
             {
                 traversalPlayerObject = playerObject;
-                traversalCoordinator = playerObject.GetComponentInChildren<IPlayerTraversalCoordinator>(true);
+                traversalCoordinator = playerObject.GetComponentInChildren<IActorTraversalCoordinator>(true);
             }
 
             return traversalCoordinator != null && traversalCoordinator.IsWireAttached;

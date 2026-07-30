@@ -22,11 +22,11 @@ PlayerとNPCが共有するRuntime機能では`Actor`を使い、ユーザー入
 
 ### Phase 3: 共通Motor／Traversal
 
-- [ ] `PlayerCompositeMotor`を`ActorCompositeMotor`へ変更
-- [ ] `PlayerMotor`と関連する共通型を`ActorMotor`系へ変更
-- [ ] `PlayerTraversalCoordinator`と契約を`ActorTraversalCoordinator`系へ変更
-- [ ] Editor、Debug Window、テストの参照を更新
-- [ ] Local／NetworkのPrefabとScene参照を更新
+- [x] `PlayerCompositeMotor`を`ActorCompositeMotor`へ変更
+- [x] `PlayerMotor`と関連する共通型を`ActorMotor`系へ変更
+- [x] `PlayerTraversalCoordinator`と契約を`ActorTraversalCoordinator`系へ変更
+- [x] Editor、Debug Window、テストの参照を更新
+- [x] Local／NetworkのPrefabとScene参照を更新
 
 ### Phase 4: 入力契約の境界整理
 
@@ -44,13 +44,13 @@ PlayerとNPCが共有するRuntime機能では`Actor`を使い、ユーザー入
 
 - [x] 完了済みPhaseの旧型名がFirst-party Runtime、Editor、Prefab、Scene、文書に残っていない
 - [ ] 旧型名の意図しない参照がFirst-party Runtime、Editor、Prefab、Scene、文書に残っていない
-- [ ] 移動したUnity Assetの`.meta` GUIDが変更されていない
-- [ ] Local Player PrefabのComponent参照がMissingにならない
-- [ ] Network Player PrefabのComponent参照がMissingにならない
-- [ ] Local NPC PrefabのComponent参照がMissingにならない
-- [ ] Network NPC PrefabのComponent参照がMissingにならない
-- [ ] Character Model PrefabのAnimator Driver参照がMissingにならない
-- [ ] C# project／Unity script compilationが成功する
+- [x] 移動したUnity Assetの`.meta` GUIDが変更されていない
+- [x] Local Player PrefabのComponent参照がMissingにならない
+- [x] Network Player PrefabのComponent参照がMissingにならない
+- [x] Local NPC PrefabのComponent参照がMissingにならない
+- [x] Network NPC PrefabのComponent参照がMissingにならない
+- [x] Character Model PrefabのAnimator Driver参照がMissingにならない
+- [x] C# project／Unity script compilationが成功する
 - [ ] Local Play Modeで移動、Jump、Traversal、Animationを確認
 - [ ] Host／ClientでPlayer移動とAnimation同期を確認
 - [ ] Network NPCがServer駆動され、ClientでAnimation表示されることを確認

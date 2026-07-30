@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomEditor(typeof(PlayerCompositeMotor))]
-    public class PlayerCompositeMotorEditor : UnityEditor.Editor
+    [CustomEditor(typeof(ActorCompositeMotor))]
+    public class ActorCompositeMotorEditor : UnityEditor.Editor
     {
         private bool traversalFeaturesExpanded = true;
         private bool wireFeatureExpanded = true;
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             EditorGUILayout.HelpBox(
                 "Motorコンポーネントを追加してプレイヤーの移動機能を拡張できます。\n\n" +
-                "• PlayerMotor - 基本的な移動（自動でアタッチされます）\n" +
+                "• ActorMotor - 基本的な移動（自動でアタッチされます）\n" +
                 "• WallTraversalFeature + Wall Actions - 壁移動（オプション）\n" +
                 "• LadderTraversalFeature - 梯子昇降（オプション）\n" +
                 "• WireTraversalFeature + Wire Actions - ワイヤー接続と操作（オプション）",
@@ -22,20 +22,20 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.Space();
 
-            var compositeMotor = (PlayerCompositeMotor)target;
+            var compositeMotor = (ActorCompositeMotor)target;
             var gameObject = compositeMotor.gameObject;
 
             EditorGUILayout.LabelField("Attached Components", EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
 
-            var playerMotor = gameObject.GetComponent<PlayerMotor>();
-            if (playerMotor != null)
+            var actorMotor = gameObject.GetComponent<ActorMotor>();
+            if (actorMotor != null)
             {
-                EditorGUILayout.ObjectField("PlayerMotor", playerMotor, typeof(PlayerMotor), allowSceneObjects: true);
+                EditorGUILayout.ObjectField("ActorMotor", actorMotor, typeof(ActorMotor), allowSceneObjects: true);
             }
 
-            var traversalCoordinator = gameObject.GetComponent<PlayerTraversalCoordinator>();
-            DrawComponentRow<PlayerTraversalCoordinator>(gameObject, "Traversal Coordinator");
+            var traversalCoordinator = gameObject.GetComponent<ActorTraversalCoordinator>();
+            DrawComponentRow<ActorTraversalCoordinator>(gameObject, "Traversal Coordinator");
 
             if (Application.isPlaying && traversalCoordinator != null)
             {

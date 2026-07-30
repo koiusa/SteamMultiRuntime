@@ -67,9 +67,9 @@ SteamMultiRuntime
 │  ├─ Controller
 │  │  ├─ LocalPlayerController
 │  │  └─ ServerDrivenPlayerController
-│  ├─ PlayerCompositeMotor
-│  ├─ PlayerMotor
-│  └─ PlayerTraversalCoordinator
+│  ├─ ActorCompositeMotor
+│  ├─ ActorMotor
+│  └─ ActorTraversalCoordinator
 │
 ├─ Traversal
 │  ├─ Wall
@@ -107,7 +107,7 @@ SteamMultiRuntime
 IActorController
 ├─ LocalPlayerController（Local Player）
 │  ├─ PlayerGameplayInputReader : IPlayerInputSource
-│  └─ PlayerCompositeMotor
+│  └─ ActorCompositeMotor
 │
 └─ ActorControllerAdapter（Network Player / 全NPC）
    └─ IActorLocomotionState
@@ -118,7 +118,7 @@ ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState
 │  ├─ IPlayerInputSource
 │  │  ├─ PlayerGameplayInputReader（Network Player）
 │  │  └─ AiPlayerInputSource（Network NPC）
-│  ├─ PlayerCompositeMotor
+│  ├─ ActorCompositeMotor
 │  └─ Network同期状態
 │     ├─ PlayerInputSyncState
 │     ├─ PlayerKinematicState
@@ -128,10 +128,10 @@ ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState
 Local／Network NPCはいずれもActorControllerAdapterだけがIActorControllerを実装する。
 Adapterの状態SourceはLocalではNpcNavMeshController、NetworkではServerDrivenPlayerControllerになる。
 
-PlayerCompositeMotor : IPlayerMoveInputReceiver
-├─ PlayerMotor : IPlayerMotor
-└─ PlayerTraversalCoordinator
-   ├─ IPlayerTraversalCoordinator
+ActorCompositeMotor : IActorMoveInputReceiver
+├─ ActorMotor : IActorMotor
+└─ ActorTraversalCoordinator
+   ├─ IActorTraversalCoordinator
    └─ ITraversalIntentContext
 ```
 
@@ -158,7 +158,7 @@ Steam Lobby、Local Stage選択、Dedicated Server、Scene Loader、Loading Spla
 ```text
 ActorAnimatorStateDriver : IActorAnimatorStateDriver
 ├─ IActorController
-├─ IPlayerTraversalCoordinator
+├─ IActorTraversalCoordinator
 └─ Animator
 
 Camera

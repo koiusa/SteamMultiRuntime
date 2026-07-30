@@ -35,9 +35,9 @@ namespace Koiusa.SteamMultiRuntime
             if (movementExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawReadOnly<PlayerCompositeMotor>(owner, "Composite Motor");
-                DrawReadOnly<PlayerMotor>(owner, "Player Motor");
-                DrawReadOnly<PlayerTraversalCoordinator>(owner, "Traversal Coordinator");
+                DrawReadOnly<ActorCompositeMotor>(owner, "Composite Motor");
+                DrawReadOnly<ActorMotor>(owner, "Player Motor");
+                DrawReadOnly<ActorTraversalCoordinator>(owner, "Traversal Coordinator");
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
