@@ -31,19 +31,19 @@ namespace Koiusa.TargetingSystem.Runtime
         /// </summary>
         public VisualElement CreateTargetMarker(string targetName, float size, IndicatorVisualState state)
         {
-            var marker = new VisualElement();
+            var marker = CreateNonPickingElement();
             marker.AddToClassList(MarkerClassName);
             marker.style.width = size;
             marker.style.height = size;
             marker.style.position = Position.Absolute;
 
-            var circle = new VisualElement();
+            var circle = CreateNonPickingElement();
             circle.AddToClassList(CircleClassName);
 
-            var innerRing = new VisualElement();
+            var innerRing = CreateNonPickingElement();
             innerRing.AddToClassList(InnerRingClassName);
 
-            var centerDot = new VisualElement();
+            var centerDot = CreateNonPickingElement();
             centerDot.AddToClassList(CenterDotClassName);
 
             var topLeft = CreateCorner("top-left");
@@ -51,7 +51,7 @@ namespace Koiusa.TargetingSystem.Runtime
             var bottomLeft = CreateCorner("bottom-left");
             var bottomRight = CreateCorner("bottom-right");
 
-            var label = new Label(targetName);
+            var label = new Label(targetName) { pickingMode = PickingMode.Ignore };
             label.AddToClassList(LabelClassName);
 
             marker.Add(circle);
@@ -69,11 +69,16 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private static VisualElement CreateCorner(string positionClassName)
         {
-            var corner = new VisualElement();
+            var corner = CreateNonPickingElement();
             corner.AddToClassList(CornerClassName);
             corner.AddToClassList(positionClassName);
             return corner;
         }
+
+        private static VisualElement CreateNonPickingElement() => new()
+        {
+            pickingMode = PickingMode.Ignore
+        };
 
         public void UpdateMarkerVisualState(VisualElement marker, IndicatorVisualState state)
         {

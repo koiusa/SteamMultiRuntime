@@ -112,6 +112,8 @@ Multi Lock中はStrafe入力の有無にかかわらず、移動入力方向で�
 
 共通`System.prefab`配下の`Gameplay System.prefab`がゲーム機能のComposition Rootとなり、その子の`Targeting System.prefab`が`TargetMarkerRegistry`、`LocalTargetingIndicatorPresenter`、非アクティブな構築済み`Target Indicator UI`を所有します。サンプルとGameplayで同じ`UIDocument`構成を使用し、RuntimeでUI Componentを組み立てません。Targetingを使わないSceneではLocal Controllerが登録されないため、Indicatorは非表示のまま処理を行いません。PresenterはRegistryを購読し、選択集合とPrimary表示を`TargetingStateChange`で更新します。移動対象の画面位置だけを1つの`TargetIndicatorController`がまとめて追従し、Remote PlayerごとのUIDocumentは生成しません。
 
+Target Indicatorは表示専用UIです。Document Root、Marker Container、および動的生成する全Marker要素を`PickingMode.Ignore`にし、Pause Menuなど操作UIへのPointer Raycastを遮断しません。
+
 Network Skillへ対象を渡す場合、Clientの選択結果は入力意図としてだけ扱います。Serverは対象の存在、敵味方、距離、角度、Skill固有条件、Multi対象数を検証し、HitとDamageを確定します。
 
 ## 本番Prefab設定

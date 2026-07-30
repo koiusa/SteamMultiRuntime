@@ -82,7 +82,7 @@ Lobby UI / Stage Select UI / Startup Loader
 - Dedicated ServerはUIを経由せず起動対象Stageを決定する
 - Scene参照の一覧は`StageSceneList`へ集約する
 - Stage Scene Cameraの無効化では`IPreservedLoadedSceneCamera`を持つUI基盤Cameraを除外する。通常Camera／AudioListenerの停止と保護Camera維持は動的一時SceneのPlayModeテストで確認する
-- Sceneの非同期待機はLoaderまたはUIのライフタイムCancellationTokenを受け取り、所有Objectの破棄・UI無効化後に後続処理を継続しない
+- Sceneの非同期待機は所有ObjectのライフタイムCancellationTokenを受け取り、所有Objectの破棄後に後続処理を継続しない。Local Stage切替はActive Scene変更時にStage Select UIが自動で閉じても、新Stageの有効化と旧StageのUnloadを1つの切替処理として最後まで完了する
 - `LoadingStarted`と`LoadingFinished`は`try/finally`で対にし、起動用Unity Messageの`async void`入口ではキャンセル以外の例外を記録する
 - 事前キャンセル時の即時伝播と、キャンセル／Scene未設定スキップ時のLoading通知対称性はPlayModeテストで保護する
 

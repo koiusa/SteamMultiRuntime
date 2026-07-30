@@ -12,62 +12,10 @@ Local／NetworkでPlayer MotorとSkill Coordinatorを共有し、Netcode、Steam
 
 ## 対応チェックリスト
 
-- [ ] P1 Skill ServerRpcの方向Vector検証
-  - [x] Server入口でNaN／Infinityを拒否
-  - [x] 非ゼロ方向をServer側で正規化
-  - [x] 方向検証のPlayMode Testを追加
-  - [ ] Host／Client RPC経路のPlayMode Testを追加・実行
-- [ ] P1 Scene非同期処理のライフタイムと例外処理
-  - [x] 共通Scene待機へCancellationTokenを追加
-  - [x] Local Loader、Stage UI、Dedicated Serverの破棄・無効化キャンセルを接続
-  - [x] 起動系`async void`の例外捕捉とLoading通知の`try/finally`化
-  - [x] 事前キャンセルとLoading通知対称性のPlayMode Testを追加
-  - [x] Local／Dedicated ServerのStage一覧GUIDとBuild Settings登録を確認
-  - [x] `Windows_Alpha`をDedicated Server用Scene Listへ整合
-  - [x] Unity 6000.3.9f1でWindows Dedicated Server Buildを実行
-  - [ ] Dedicated ServerのScene切替実行確認
-  - ⏸ Pending: Local Scene切替PlayMode Test
-- [x] P1 World Space UIのLayer枯渇時フォールバック
-  - [x] 使用中Layer 31の強制利用を廃止
-  - [x] 空きLayerなしでは元Camera描画を維持
-  - [x] 全User Layer使用済み構成のPlayMode Testを追加
-  - [x] Player UI PlayMode Testを実行
-- [ ] P2 Render Pipeline Adapter差し替え時の解放
-  - [x] Camera Stateへ適用済みAdapterを保持
-  - [x] Adapter登録・解除・差し替え時に旧構成をReleaseして再構築
-  - [x] Adapter差し替えと旧構成解放のPlayMode Testを追加
-  - [x] Player UI PlayMode Testを実行
-  - [x] Domain Reload／Scene Reload無効設定でPlayer UI PlayMode Testを実行
-  - ⏸ Pending: 同一Editor SessionでPlay開始・停止を反復確認
-- [ ] P2 Scene Loader契約の責務分割
-  - [x] Stage一覧を`IStageSceneCatalog`へ分離
-  - [x] Local Loaderから未対応Lobby操作を削除
-  - [x] Steam側からLocal Loaderへのfallback探索を削除
-  - [x] 旧`sceneLoader`シリアライズ値の移行属性を追加
-  - [ ] Steam LobbyのHost／Client実行確認
-  - ⏸ Pending: Local Stage SelectのPlayMode Test
-- [ ] P2 Scene-wide fallback探索の縮小
-  - [x] Character SelectのProfile探索を削除
-  - [x] Local Camera MixerのScene-wide Context探索を削除
-  - [x] Focus Markerを`IFocusMarkerContext.PlayerObject`へ統一
-  - [x] Compassの任意Camera選択を一意性判定へ変更
-  - [x] Character／Stage／Steam Lobby MenuのPrefab参照を必須化
-  - [x] Local／Steam LoadingとLobby UIをComposition Root内探索へ限定
-  - [x] Pause MenuとNetwork Camera Contextの型付きRegistry接続
-  - [x] Local Runtime Profile／Model SyncのProvider・明示参照化
-  - [x] Dedicated ServerとLoading SplashのScene-wide探索を削除
-  - [x] 標準Local／Network Proxy PrefabのModel Catalog Editor Testを追加
-  - [ ] Network CameraとCharacter SelectのHost／Client実行確認
-  - ⏸ Pending: Local CameraとCharacter SelectのPlayMode Test
-- [x] P2 主要境界の自動テスト拡充
-  - [x] Network Skill方向検証（NaN／Infinity／Zero／過大値／正規化）
-  - [x] Scene待機の事前キャンセルとLocal Loading通知の対称性
-  - [x] Additive SceneのCamera／AudioListener保護ポリシー
-  - [x] 標準Proxy PrefabのCharacterModelIdListシリアライズ参照
-  - [x] 保持したEditor／PlayMode Testを実行
-
-親項目は実装と必要なUnity検証が完了した時点でチェックします。環境上実行できない検証が残る場合は、子項目を未チェックのまま引き継ぎます。
-`⏸ Pending`はWindows Dedicated Serverの現在の完了条件には含めず、対象PlatformやLocal配布、負荷要件が決まった段階で再開します。
+- [ ] Dedicated ServerのScene切替を実行確認
+- [ ] Steam LobbyのClient参加・退出・Stage切替を実行確認
+- [ ] Client側のNetwork CameraとCharacter Selectを実行確認
+- [ ] Local CameraがPlayer生成後に追従することを実行確認
 
 ## Findings
 
@@ -95,7 +43,7 @@ Ownerが送信する方向Vectorは、Server入口で各成分と二乗長の有
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby.steam/Runtime/Scripts/Network/SteamLobbyService/SteamLobbyService/SteamLobbyDedicatedServer.cs:74`
 - `Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.steammultiruntime.lobby/Runtime/Scripts/LocalStageSelectUIDocument.cs:161`
 
-共通`AsyncOperation`待機へCancellationTokenを追加し、Local LoaderとDedicated Serverは`destroyCancellationToken`、Stage UIはEnable期間のCancellationTokenへ接続しました。起動系`async void`はキャンセルを正常終了として扱い、それ以外の例外を記録します。Loading通知も`try/finally`で対にしました。
+共通`AsyncOperation`待機へCancellationTokenを追加し、Local Loader、Dedicated Server、Stage UIは所有Objectの`destroyCancellationToken`へ接続しました。Local Stage切替はActive Scene変更によるUI無効化ではキャンセルせず、新Stageの有効化後に旧StageをUnloadするところまで完了します。起動系`async void`はキャンセルを正常終了として扱い、それ以外の例外を記録します。Loading通知も`try/finally`で対にしました。
 
 Serialized構成では、`LocalManager.prefab`が`StageSceneList`（GUID `7ae2856614ff5574a8e2259452ab3c1d`）、Server Sample Sceneが`ServerSceneList`（GUID `a3476e62f9db54749a534eb4f3b3e3e5`）を参照します。両GUIDの実Asset解決と、一覧内の`PlayGroundScene`／`SandBoxScene`／`NPCVillage`／`ServerScene`がEditor Build Settingsへ登録済みであることを確認しました。
 
@@ -224,11 +172,3 @@ Stage一覧だけを公開する`IStageSceneCatalog`を追加し、`ISteamLobbyS
 - Host／Client／Dedicated Server通し動作
 - Steam Lobby作成、参加、退出、再接続
 - Windows Dedicated ServerのSteam Lobby作成とStage遷移を含む実行確認
-
-## Pending（現在は必須外）
-
-- Local Stage Select／Local Scene切替
-- Local Camera／Character SelectのPlayMode確認
-- Domain Reload／Scene Reload無効の同一Editor Sessionでの連続Play
-- macOS／Linux Player Build
-- 多数NPC、Target、World Space UIのProfiler計測

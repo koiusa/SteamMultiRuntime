@@ -1,4 +1,5 @@
 using System;
+using Koiusa.SteamMultiRuntime.Core;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -19,23 +20,26 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            localManager = LocalManager.Singleton;
-            if (localManager != null)
-            {
-                localManager.PlayerSpawned -= OnPlayerSpawned;
-                localManager.PlayerSpawned += OnPlayerSpawned;
-                SetPlayer(localManager.LocalPlayerObject);
-                return;
-            }
-
-            Debug.LogError("LocalFocusMarkerContext requires an active LocalManager.", this);
-            SetPlayer(null);
+            LocalPlayerProviderRegistry.CurrentChanged += OnProviderChanged;
+            BindProvider(LocalPlayerProviderRegistry.Current);
         }
 
         private void OnDisable()
         {
+            LocalPlayerProviderRegistry.CurrentChanged -= OnProviderChanged;
             if (localManager != null) localManager.PlayerSpawned -= OnPlayerSpawned;
             localManager = null;
+            SetPlayer(null);
+        }
+
+        private void OnProviderChanged(ILocalPlayerProvider provider) => BindProvider(provider);
+
+        private void BindProvider(ILocalPlayerProvider provider)
+        {
+            if (localManager != null) localManager.PlayerSpawned -= OnPlayerSpawned;
+            localManager = provider as LocalManager;
+            if (localManager != null) localManager.PlayerSpawned += OnPlayerSpawned;
+            SetPlayer(provider?.LocalPlayerObject);
         }
 
         private void OnPlayerSpawned(GameObject player) => SetPlayer(player);

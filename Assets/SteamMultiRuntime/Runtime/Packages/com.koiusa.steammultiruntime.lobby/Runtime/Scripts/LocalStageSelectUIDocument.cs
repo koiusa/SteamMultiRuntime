@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Koiusa.Input;
 using TNRD;
 using UnityEngine;
@@ -30,7 +28,6 @@ namespace Koiusa.SteamMultiRuntime
         private LocalizedVisualTree localizedTree;
         private UiNavigationInputSession inputSession;
         private Action closeRequested;
-        private CancellationTokenSource enableCancellation;
 
         public event Action LoadingStarted;
         public event Action LoadingFinished;
@@ -44,17 +41,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            enableCancellation?.Dispose();
-            enableCancellation = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
             ResolveSceneLoader();
             BuildUI();
         }
 
         private void OnDisable()
         {
-            enableCancellation?.Cancel();
-            enableCancellation?.Dispose();
-            enableCancellation = null;
             inputSession?.Dispose();
             inputSession = null;
             UnbindUI();
@@ -185,14 +177,13 @@ namespace Koiusa.SteamMultiRuntime
 
             try
             {
-                var cancellationToken = enableCancellation?.Token ?? destroyCancellationToken;
                 var loaded = await SceneLoadUtility.SwitchPresentationSceneAsync(
                     stageName,
                     StageSceneCatalog.CreatableStageSceneNames,
                     true,
                     this,
                     nameof(LocalStageSelectUIDocument),
-                    cancellationToken);
+                    destroyCancellationToken);
                 if (!loaded)
                 {
                     Debug.LogError($"LocalStageSelectUIDocument: Failed to load stage '{stageName}'.");

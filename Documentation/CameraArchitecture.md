@@ -41,6 +41,8 @@ Contextの`StateChanged`を購読し、`IsActive`が変わると目標Weightを�
 
 Network Cameraの`NetworkFocusMarkerContext`は、Prefabで`SteamLobbyService`を直接参照できない構成では`SteamLobbyServiceRegistry.CurrentChanged`を購読します。CameraとServiceの生成順に依存せず、Service破棄時は購読を解除してPlayer Contextを無効化します。Scene全体から任意のLobby Serviceを探索しません。
 
+Local Cameraの`LocalFocusMarkerContext`も`LocalPlayerProviderRegistry.CurrentChanged`を購読します。Cameraが`LocalManager`より先に生成された場合はProvider登録後に接続し、Player生成時は`LocalManager.PlayerSpawned`から追従対象を更新します。LocalManagerの生成順に依存せず、Scene全体からManagerを探索しません。
+
 ## Camera入力
 
 `InputActionsConfig`から次のActionを名前で解決し、`CinemachineInputAxisController`へRuntime生成した`InputActionReference`を割り当てます。

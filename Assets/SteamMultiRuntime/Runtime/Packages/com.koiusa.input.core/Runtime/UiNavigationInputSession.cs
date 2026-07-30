@@ -24,6 +24,7 @@ namespace Koiusa.Input
         private static readonly LinkedList<UiNavigationInputSession> ActiveSessions = new();
         private static int cursorVisibilityLeaseCount;
         private static bool cursorVisibilityBeforeFirstLease;
+        private static CursorLockMode cursorLockModeBeforeFirstLease;
 
         public const float DefaultThreshold = 0.5f;
         public const float DefaultRepeatDelay = 0.4f;
@@ -37,6 +38,8 @@ namespace Koiusa.Input
         private InputAction navigateAction;
         private LinkedListNode<UiNavigationInputSession> activeSessionNode;
         private InputActionLease navigateLease;
+        private InputActionLease pointLease;
+        private InputActionLease clickLease;
         private InputActionBinding submitBinding;
         private InputActionBinding cancelBinding;
         private VisualElement blockedEventRoot;
@@ -54,6 +57,7 @@ namespace Koiusa.Input
             ActiveSessions.Clear();
             cursorVisibilityLeaseCount = 0;
             cursorVisibilityBeforeFirstLease = false;
+            cursorLockModeBeforeFirstLease = CursorLockMode.None;
         }
 
         public UiNavigationInputSession(
@@ -109,6 +113,9 @@ namespace Koiusa.Input
             activeSessionNode = ActiveSessions.AddLast(this);
             AcquireCursorVisibility();
             navigateLease = InputActionLease.Acquire(this.navigateAction);
+            var actionAsset = this.navigateAction.actionMap?.asset;
+            pointLease = InputActionLease.Acquire(actionAsset?.FindAction("UI/Point", false));
+            clickLease = InputActionLease.Acquire(actionAsset?.FindAction("UI/Click", false));
             this.navigateAction.performed += OnNavigatePerformed;
             submitBinding = submit == null
                 ? null
@@ -242,6 +249,10 @@ namespace Koiusa.Input
             blockedEventRoot = null;
             navigateLease?.Dispose();
             navigateLease = null;
+            pointLease?.Dispose();
+            pointLease = null;
+            clickLease?.Dispose();
+            clickLease = null;
             navigateAction = null;
             submitBinding?.Dispose();
             submitBinding = null;
@@ -256,10 +267,12 @@ namespace Koiusa.Input
             if (cursorVisibilityLeaseCount == 0)
             {
                 cursorVisibilityBeforeFirstLease = UnityEngine.Cursor.visible;
+                cursorLockModeBeforeFirstLease = UnityEngine.Cursor.lockState;
             }
 
             cursorVisibilityLeaseCount++;
             ownsCursorVisibility = true;
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
             UnityEngine.Cursor.visible = true;
         }
 
@@ -274,6 +287,7 @@ namespace Koiusa.Input
             cursorVisibilityLeaseCount = Mathf.Max(0, cursorVisibilityLeaseCount - 1);
             if (cursorVisibilityLeaseCount == 0)
             {
+                UnityEngine.Cursor.lockState = cursorLockModeBeforeFirstLease;
                 UnityEngine.Cursor.visible = cursorVisibilityBeforeFirstLease;
             }
         }

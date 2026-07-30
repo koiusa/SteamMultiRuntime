@@ -223,7 +223,7 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void RestoreDefaultTargets()
         {
-            lookAtAnchor?.SetTarget(null);
+            if (lookAtAnchor != null) lookAtAnchor.SetTarget(null);
             if (singleCamera != null)
             {
                 singleCamera.Follow = defaultSingleFollow;

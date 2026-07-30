@@ -118,6 +118,21 @@ Assets/Create/SteamMultiRuntime/Stage Select UI Assets
 Tools/SteamMultiRuntime/Create Assets/Loading Splash Settings
 ```
 
+## UI Sorting Order検証
+
+Screen Space `UIDocument`は次の予約帯を使用します。
+
+| Sorting Order | 用途 |
+|---:|---|
+| 0–49 | HUD／Overlay |
+| 50–79 | Debug UI |
+| 80–89 | Stage Select／Steam LobbyなどSession Menu |
+| 90–99 | PauseなどRoot Menu |
+| 100–109 | Character Select／Key ConfigなどChild／Modal Menu |
+| 110–119 | Loading／Blocking Dialog |
+
+`Tools/SteamMultiRuntime/Read Only/UI/Validate UIDocument Sorting Orders`は、Production Prefabを変更せずに読み込み、GameObject名から判定できるUIが予約帯を外れていないか検査します。違反時はAsset Path、Hierarchy Path、現在値、期待範囲をConsoleへ出力します。自動修正は行いません。
+
 ## 補助Window／ツール
 
 | メニュー | 用途 | 変更 |
@@ -126,6 +141,7 @@ Tools/SteamMultiRuntime/Create Assets/Loading Splash Settings
 | `Read Only/Animation Events/Receiver Visualizer` | Event受信関係の可視化 | なし |
 | `Read Only/ModelIdList Path Viewer` | Model IDと参照先Pathの確認 | なし |
 | `Read Only/Scene List Viewer` | Scene Listの内容確認 | なし |
+| `Read Only/UI/Validate UIDocument Sorting Orders` | Prefab内UIDocumentの予約帯検査 | なし |
 | `Modify Project Files/Facepunch AppID` | Steam App ID関連ファイルの設定 | あり |
 
 上表のメニューは、特記がない限り`Tools/SteamMultiRuntime/`以下です。

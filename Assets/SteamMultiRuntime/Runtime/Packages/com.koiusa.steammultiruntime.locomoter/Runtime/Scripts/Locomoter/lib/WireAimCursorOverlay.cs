@@ -47,7 +47,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnGUI()
         {
-            if (!isVisible)
+            // The gameplay cursor must not participate in IMGUI event processing while
+            // a screen-space menu owns the visible system pointer.
+            if (!isVisible || Cursor.visible)
             {
                 return;
             }

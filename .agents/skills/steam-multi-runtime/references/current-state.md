@@ -23,11 +23,15 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 - Key Config shows the protected UI Action Map as a navigable tab and read-only row list; its Change and Reset controls remain disabled.
 - Key Config PreviousSection/NextSection navigation cycles through Binding Group and every Action Map tab.
 - Pause Menu, Character Select, Stage Select, Key Config, and Steam Lobby use `UiNavigationInputSession` for exclusive frontmost input, event-driven direction changes, held-input repeat, cursor visibility, and Input Action lifetime. Screen-specific controllers own focus transitions only and do not poll navigation in `Update`.
+- `UiNavigationInputSession` leases UI Navigate／Submit／Cancelに加えてPoint／Click、Cursor visibility、Cursor lock stateを所有します。Menu表示中はPointer Actionを明示的に有効化してCursorを表示・解放し、最後のMenu closeで開始前のCursor状態を復元します。
+- Wire aim cursorはgameplay中だけIMGUI描画し、Menuがsystem cursorを表示している間は`OnGUI`処理へ参加しません。
+- Target Indicatorは表示専用で、Document Rootから動的Markerまで`PickingMode.Ignore`を使用し、前面MenuへのPointer入力を遮断しません。
 - Those menus implement `IUiMenu`; `UiMenuNavigator` owns root opening, child Push, Back restoration, and CloseAll. Pause pushes Key Config and Character Select so closing either child restores Pause automatically.
 - When a prior binding override path is null or empty, rebind reset must call `RemoveBindingOverride`; only non-empty paths may be passed to `ApplyBindingOverride`.
 
 ## Player, ownership, and guard
 
+- Local Cameraの`LocalFocusMarkerContext`は`LocalPlayerProviderRegistry.CurrentChanged`を購読し、Cameraが`LocalManager`より先に有効化されてもProvider登録後にPlayer追従を開始します。
 - Local and Network player-facing UI uses the typed `ILocalPlayerOwnership` snapshot contract. Consumers that react to transitions use `ILocalPlayerOwnershipNotifier.OwnershipChanged` and must not poll ownership every frame.
 - `CharacterSelectShortcutController` is attached to both Local and Network user runtime profiles and applies the selected model through `PlayerModelProfileBase`.
 - The Character Select shortcut is categorized under the Adventure action map; button east is also Dash in the Player map, so respect the active-map/input-routing behavior when changing it.
@@ -37,6 +41,7 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 
 ## Architecture and removals
 
+- Local Stage Selectの切替処理はUIの自動Closeではキャンセルせず、新StageをActiveにした後で旧StageをUnloadするまで継続します。
 - Player skills are coordinated through `PlayerCharacterCoordinator`; Network requests cross RPC boundaries and resolve authoritatively on the server.
 - Local and NPC presentation should share the same interpolation contract, but moving-platform work must not add execution-order attributes or per-NPC platform polling that scales poorly.
 - `Documentation/PackageArchitecture.md` is the source of truth for typed package connections and the project's no-reflection policy.

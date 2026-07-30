@@ -75,6 +75,7 @@ namespace Koiusa.TargetingSystem.Runtime
                 return;
 
             rootPanel = uiDocument.rootVisualElement;
+            rootPanel.pickingMode = PickingMode.Ignore;
             var styleSheet = themeProvider != null ? themeProvider.TargetIndicatorStyleSheet : null;
             if (styleSheet != null && !rootPanel.styleSheets.Contains(styleSheet))
                 rootPanel.styleSheets.Add(styleSheet);
@@ -89,9 +90,17 @@ namespace Koiusa.TargetingSystem.Runtime
 
             if (markersContainer == null)
             {
-                markersContainer = new VisualElement { name = "target-indicators" };
+                markersContainer = new VisualElement
+                {
+                    name = "target-indicators",
+                    pickingMode = PickingMode.Ignore
+                };
                 markersContainer.AddToClassList("target-indicators");
                 rootPanel.Add(markersContainer);
+            }
+            else
+            {
+                markersContainer.pickingMode = PickingMode.Ignore;
             }
         }
 
