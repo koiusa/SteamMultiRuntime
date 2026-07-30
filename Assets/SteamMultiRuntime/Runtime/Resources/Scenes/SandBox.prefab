@@ -154,6 +154,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1618758052532796983}
     m_Modifications:
+    - target: {fileID: 1517392215293828146, guid: f1c6ece1b0f170e47905f79bbdc34256, type: 3}
+      propertyPath: UseRigidBodyForMotion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1517392215293828146, guid: f1c6ece1b0f170e47905f79bbdc34256, type: 3}
+      propertyPath: AutoUpdateKinematicState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1517392215293828146, guid: f1c6ece1b0f170e47905f79bbdc34256, type: 3}
+      propertyPath: AutoSetKinematicOnDespawn
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4122873982381013024, guid: f1c6ece1b0f170e47905f79bbdc34256, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
