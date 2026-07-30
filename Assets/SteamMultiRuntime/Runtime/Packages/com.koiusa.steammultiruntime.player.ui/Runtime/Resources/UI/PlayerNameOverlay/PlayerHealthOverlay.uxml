@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="PlayerNameOverlay.uss" />
+    <ui:VisualElement class="player-health-overlay">
+        <ui:VisualElement name="health-bar" class="player-health-bar">
+            <ui:VisualElement name="health-bar-fill" class="player-health-bar__fill" />
+        </ui:VisualElement>
+        <ui:Label name="health-value-label" class="player-health-bar__value" text="100 / 100" />
+    </ui:VisualElement>
+</ui:UXML>

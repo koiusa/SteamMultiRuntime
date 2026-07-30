@@ -1,5 +1,92 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2163097053330141160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2429210523267760450}
+  - component: {fileID: 887873404572263141}
+  - component: {fileID: 6232576023878470467}
+  - component: {fileID: 6685923688338940317}
+  m_Layer: 0
+  m_Name: CharacterHealthUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2429210523267760450
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163097053330141160}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.08, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1381477422814112417}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &887873404572263141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163097053330141160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 7c6f1e4a9b234d6e8f102a3b4c5d6e7f, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 26a765475aa4450184df123544083bda, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 0
+  m_WorldSpaceWidth: 480
+  m_WorldSpaceHeight: 64
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &6232576023878470467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163097053330141160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8b34c995e4b45d285d8325de1039751, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerWorldSpaceOverlay
+  fadeStartDistance: 8
+  fadeEndDistance: 20
+  referenceDistance: 5
+  referenceFieldOfView: 60
+  referenceOrthographicSize: 5
+  screenSizeMultiplier: 1
+--- !u!114 &6685923688338940317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163097053330141160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -11,6 +98,7 @@ GameObject:
   - component: {fileID: 3338000546656025210}
   - component: {fileID: 3918581909359559565}
   - component: {fileID: 7715437038174053402}
+  - component: {fileID: 3523192947504267269}
   m_Layer: 0
   m_Name: CharacterHeadupUI
   m_TagString: Untagged
@@ -68,12 +156,92 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee94f4e0b282e6a41b0372b02e1c1fc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
+--- !u!114 &3523192947504267269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4413791566816308068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8b34c995e4b45d285d8325de1039751, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerWorldSpaceOverlay
   fadeStartDistance: 8
   fadeEndDistance: 20
   referenceDistance: 5
   referenceFieldOfView: 60
   referenceOrthographicSize: 5
   screenSizeMultiplier: 1
+--- !u!1 &8501527973056918799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5214900086528294821}
+  - component: {fileID: 1300529672637453659}
+  - component: {fileID: 8492098924903249651}
+  m_Layer: 0
+  m_Name: LocalHealthHUD
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5214900086528294821
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8501527973056918799}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1381477422814112417}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1300529672637453659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8501527973056918799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3ab95556cf2d610409cb0dc344bee2cc, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: dcb11ad1d02444dab078527cfbfe1a55, type: 3}
+  m_SortingOrder: 100
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!114 &8492098924903249651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8501527973056918799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
 --- !u!1001 &3110108053524853930
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -132,6 +300,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3338000546656025210}
+    - targetCorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2429210523267760450}
+    - targetCorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5214900086528294821}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: 1
@@ -217,6 +391,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 956000000000000001}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8577001046773359211}
   m_SourcePrefab: {fileID: 100100000, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
 --- !u!1 &181898395951536820 stripped
 GameObject:
@@ -690,6 +867,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8f2e063b0e646968d97cd36c1ba7e7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8577001046773359211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181898395951536820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f664ec72e9e14552a262a503fb5eab4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthUiRouter
+  overheadHealthUi: {fileID: 2163097053330141160}
+  localHealthHud: {fileID: 8501527973056918799}
+  damageOnlyOverhead: 0
+  npcVisibleDuration: 3
 --- !u!4 &1381477422814112417 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}

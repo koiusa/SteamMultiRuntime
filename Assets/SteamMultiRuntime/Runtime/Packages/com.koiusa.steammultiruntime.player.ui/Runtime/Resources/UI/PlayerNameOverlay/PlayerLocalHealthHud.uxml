@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="PlayerNameOverlay.uss" />
+    <ui:VisualElement class="player-local-health-hud">
+        <ui:Label class="player-local-health-hud__title" text="HP" />
+        <ui:VisualElement name="health-bar" class="player-health-bar player-local-health-hud__bar">
+            <ui:VisualElement name="health-bar-fill" class="player-health-bar__fill" />
+        </ui:VisualElement>
+        <ui:Label name="health-value-label" class="player-local-health-hud__value" text="100 / 100" />
+    </ui:VisualElement>
+</ui:UXML>

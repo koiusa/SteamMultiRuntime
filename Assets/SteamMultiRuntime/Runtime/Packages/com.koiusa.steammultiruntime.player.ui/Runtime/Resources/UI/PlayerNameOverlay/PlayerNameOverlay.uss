@@ -1,6 +1,82 @@
 .player-name-overlay {
     align-items: center;
     justify-content: center;
+    width: 140px;
+}
+
+.player-health-overlay {
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+}
+
+.player-health-bar {
+    width: 112px;
+    height: 7px;
+    margin-top: 1px;
+    background-color: rgba(8, 10, 14, 0.88);
+    border-left-width: 1px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgba(235, 240, 245, 0.8);
+    border-top-color: rgba(235, 240, 245, 0.8);
+    border-right-color: rgba(235, 240, 245, 0.8);
+    border-bottom-color: rgba(235, 240, 245, 0.8);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    overflow: hidden;
+}
+
+.player-health-bar__fill {
+    height: 100%;
+    width: 100%;
+    background-color: rgb(62, 222, 108);
+}
+
+.player-health-bar__value {
+    margin-top: 1px;
+    color: rgba(245, 247, 250, 0.92);
+    font-size: 6px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.player-local-health-hud {
+    position: absolute;
+    left: 28px;
+    bottom: 28px;
+    width: 260px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: rgba(8, 12, 18, 0.78);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.player-local-health-hud__title {
+    color: rgb(238, 242, 248);
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.player-local-health-hud__bar {
+    width: 232px;
+    height: 14px;
+    margin-top: 5px;
+}
+
+.player-local-health-hud__value {
+    margin-top: 3px;
+    color: rgb(245, 247, 250);
+    font-size: 12px;
+    -unity-font-style: bold;
 }
 
 .player-name-overlay__label {
