@@ -64,7 +64,9 @@ namespace Koiusa.TargetingSystem.Runtime
                 TargetingCommandType.EnterSingle => EnterSingle(),
                 TargetingCommandType.EnterMulti => EnterMulti(),
                 TargetingCommandType.Clear => ClearInternal(TargetingChangeReason.Command),
-                TargetingCommandType.SelectNext => SelectRelative(1),
+                TargetingCommandType.SelectNext => command.Direction.sqrMagnitude > 0f
+                    ? SelectDirectional(command.Direction)
+                    : SelectRelative(1),
                 TargetingCommandType.SelectPrevious => SelectRelative(-1),
                 TargetingCommandType.AddBestCandidate => AddBestCandidate(),
                 TargetingCommandType.ToggleBestCandidate => ToggleBestCandidate(),
@@ -236,6 +238,52 @@ namespace Koiusa.TargetingSystem.Runtime
             {
                 selectedTargets.Clear();
                 selectedTargets.Add(next);
+            }
+            return true;
+        }
+
+        private bool SelectDirectional(Vector2 direction)
+        {
+            if (mode == TargetingMode.None || primaryTarget == null
+                || resolvedContextSource == null
+                || !resolvedContextSource.TryGetContext(out var context)
+                || context.ViewCamera == null)
+            {
+                return SelectRelative(1);
+            }
+
+            var source = mode == TargetingMode.Multi ? selectedTargets : GetSortedCandidates();
+            var camera = context.ViewCamera;
+            var primaryTransform = primaryTarget.AimPoint != null ? primaryTarget.AimPoint : primaryTarget.Root;
+            var primaryPoint = camera.WorldToViewportPoint(primaryTransform.position);
+            ITargetable best = null;
+            var bestScore = float.PositiveInfinity;
+            var desired = direction.normalized;
+            for (var i = 0; i < source.Count; i++)
+            {
+                var candidate = source[i];
+                if (candidate == primaryTarget || !IsValid(candidate)) continue;
+
+                var candidateTransform = candidate.AimPoint != null ? candidate.AimPoint : candidate.Root;
+                var candidatePoint = camera.WorldToViewportPoint(candidateTransform.position);
+                if (candidatePoint.z <= 0f) continue;
+                var offset = new Vector2(candidatePoint.x - primaryPoint.x, candidatePoint.y - primaryPoint.y);
+                if (offset.sqrMagnitude <= Mathf.Epsilon) continue;
+
+                var alignment = Vector2.Dot(desired, offset.normalized);
+                if (alignment <= 0f) continue;
+                var score = (1f - alignment) * 10f + offset.magnitude;
+                if (score >= bestScore) continue;
+                bestScore = score;
+                best = candidate;
+            }
+
+            if (best == null) return SelectRelative(1);
+            primaryTarget = best;
+            if (mode == TargetingMode.Single)
+            {
+                selectedTargets.Clear();
+                selectedTargets.Add(best);
             }
             return true;
         }

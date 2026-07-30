@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Koiusa.TargetingSystem.Runtime
 {
     public enum TargetingCommandType
@@ -15,12 +17,14 @@ namespace Koiusa.TargetingSystem.Runtime
 
     public readonly struct TargetingCommand
     {
-        public TargetingCommand(TargetingCommandType type)
+        public TargetingCommand(TargetingCommandType type, Vector2 direction = default)
         {
             Type = type;
+            Direction = direction;
         }
 
         public TargetingCommandType Type { get; }
+        public Vector2 Direction { get; }
     }
 
     public readonly struct TargetingResult

@@ -443,6 +443,17 @@
                 },
                 {
                     "name": "",
+                    "id": "68ae5c17-5cb7-48c4-ab6b-bf131ece0ec3",
+                    "path": "<Gamepad>/rightStickPress",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Next",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f2e9ba44-c423-42a7-ad56-f20975884794",
                     "path": "<Keyboard>/leftCtrl",
                     "interactions": "",

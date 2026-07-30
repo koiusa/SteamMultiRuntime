@@ -12,6 +12,7 @@ namespace Koiusa.TargetingSystem.Runtime
         [SerializeField] private TargetingInputActions inputActions;
         [SerializeField, Min(0f)] private float multiAddInitialDelay = 0.3f;
         [SerializeField, Min(0.05f)] private float multiAddInterval = 0.2f;
+        [SerializeField, Range(0f, 1f)] private float directionalSelectionDeadzone = 0.35f;
 
         private InputActionBinding singleBinding;
         private InputActionBinding multiBinding;
@@ -91,7 +92,15 @@ namespace Koiusa.TargetingSystem.Runtime
         private void OnClear(InputAction.CallbackContext context) => ClearAllLocks();
         private void OnBulk(InputAction.CallbackContext context) => Execute(TargetingCommandType.SelectAllCandidates);
         private void OnPrevious(InputAction.CallbackContext context) => Execute(TargetingCommandType.SelectPrevious);
-        private void OnNext(InputAction.CallbackContext context) => Execute(TargetingCommandType.SelectNext);
+        private void OnNext(InputAction.CallbackContext context)
+        {
+            var direction = IsRightStickPress(context)
+                ? inputActions?.LookAction?.ReadValue<Vector2>() ?? Vector2.zero
+                : Vector2.zero;
+            Execute(direction.magnitude >= directionalSelectionDeadzone
+                ? new TargetingCommand(TargetingCommandType.SelectNext, direction.normalized)
+                : new TargetingCommand(TargetingCommandType.SelectNext));
+        }
 
         private void OnPromoteToMulti(InputAction.CallbackContext context)
         {
@@ -158,7 +167,13 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private bool Execute(TargetingCommandType type)
         {
-            return controller != null && controller.Execute(new TargetingCommand(type)).Changed;
+            return Execute(new TargetingCommand(type));
         }
+
+        private bool Execute(in TargetingCommand command) =>
+            controller != null && controller.Execute(command).Changed;
+
+        private static bool IsRightStickPress(InputAction.CallbackContext context) =>
+            context.control?.device is Gamepad && context.control.name == "rightStickPress";
     }
 }

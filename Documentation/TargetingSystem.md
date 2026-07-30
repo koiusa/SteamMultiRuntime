@@ -102,8 +102,8 @@ Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.in
 | 前の対象 | `Player/Previous` |
 | 次の対象 | `Player/Next` |
 
-MultiはKeyboard `3`、Gamepad R3です。入力時にMultiへ遷移して画面内候補を上限8体まで一括選択し、同じボタンの再入力で解除します。明示Clear、独立Bulk Lock、Focusの設定Pathは空のままです。
-Gamepad L2の`Player/Strafe`はホールド式です。押している間だけStrafeになり、離すと通常移動へ戻ります。Single Lock中に押した場合はStrafe開始と同時に現在対象を保持したままMultiへ昇格し、画面内候補を追加選択します。L2を離すと追加対象を解除し、Primary Targetを維持したSingleへ戻ります。`3`／R3で開始したMultiはL2解放の影響を受けません。
+本番設定ではGamepad R3を`Player/Next`へ割り当てます。右スティックを倒しながらR3を押すと、現在のPrimary Targetから見て入力した画面方向にある候補を優先し、ニュートラル時または入力方向に候補がない場合は通常のNextへフォールバックします。D-pad左／右とKeyboard `1`／`2`によるPrevious／Nextも引き続き使用できます。明示Multi、Clear、独立Bulk Lock、Focusの設定Pathは空のままです。
+Gamepad L2の`Player/Strafe`はホールド式です。押している間だけStrafeになり、離すと通常移動へ戻ります。Single Lock中に押した場合はStrafe開始と同時に現在対象を保持したままMultiへ昇格し、画面内候補を追加選択します。L2を離すと追加対象を解除し、Primary Targetを維持したSingleへ戻ります。
 Multi Lock中はStrafe入力の有無にかかわらず、移動入力方向ではなくPrimary Targetを向きます。`TargetingFacingRequestSource`は状態変更CallbackでPrimaryのAimPointを保持し、Locomoterの共通`PlayerFacingRequestResolver`へTargeting PriorityのRequestを提供します。Network PlayerではこのRequestを入力状態としてServerへ送り、Server側Motorが回転を確定します。Wire Groundなど高Priorityの移動制約がある場合はそちらを優先します。
 
 ## Local／Network所有権
