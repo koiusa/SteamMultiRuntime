@@ -22,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         private PhysicsPresentationSmoother presentationSmoother;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private PlayerFacingRequestResolver facingRequestResolver;
         private Vector3 moveDirection;
         private Vector2 moveInput;
         private int jumpToken;
@@ -92,6 +93,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
             {
@@ -185,6 +187,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             motor.SetStrafeMode(isStrafeMode);
+            motor.SetFacingRequest(facingRequestResolver.Resolve(
+                targetRigidbody.worldCenterOfMass,
+                isStrafeMode));
 
             traversalCoordinator?.SetWireInput(
                 grappleHeld,

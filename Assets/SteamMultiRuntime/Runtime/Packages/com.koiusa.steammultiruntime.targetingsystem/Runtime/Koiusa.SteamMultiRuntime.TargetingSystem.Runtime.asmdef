@@ -5,6 +5,7 @@
     "Koiusa.TargetingSystem.Runtime",
     "Koiusa.Input.Core.Runtime",
     "Koiusa.SteamMultiRuntime.Player.Runtime",
+    "Koiusa.SteamMultiRuntime.Locomoter.Runtime",
     "Unity.InputSystem"
   ],
   "autoReferenced": true,

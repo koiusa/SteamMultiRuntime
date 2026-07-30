@@ -27,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerCompositeMotor motor;
         private IPlayerMoveInputReceiver moveInputReceiver;
         private IPlayerTraversalCoordinator traversalCoordinator;
+        private PlayerFacingRequestResolver facingRequestResolver;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
@@ -149,6 +150,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveInputReceiver = motor as IPlayerMoveInputReceiver;
             traversalCoordinator = GetComponent<IPlayerTraversalCoordinator>();
+            facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
             {
@@ -288,6 +290,11 @@ namespace Koiusa.SteamMultiRuntime
                 var emptyInputState = netInputState.Value;
                 emptyInputState.MoveDirection = Vector3.zero;
                 emptyInputState.MoveInput = Vector2.zero;
+                emptyInputState.IsStrafeMode = false;
+                emptyInputState.FacingDirection = Vector3.zero;
+                emptyInputState.FacingPriority = 0;
+                emptyInputState.FacingBlend = 0f;
+                emptyInputState.FacingRotationSpeed = 0f;
                 emptyInputState.GrappleHeld = false;
                 emptyInputState.ReelInput = 0f;
                 emptyInputState.GrappleTargetPoint = Vector3.zero;
@@ -310,6 +317,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             isStrafeMode = inputState.IsStrafeMode;
+            var facingRequest = facingRequestResolver.Resolve(
+                targetRigidbody.worldCenterOfMass,
+                isStrafeMode);
             var aimPoint = default(Vector2);
             var hasAimPoint = baseInputSource != null && baseInputSource.TryReadAimPoint(out aimPoint);
             var showAimCursor = inputState.GrappleHeld
@@ -343,6 +353,7 @@ namespace Koiusa.SteamMultiRuntime
                 referenceTransform.rotation,
                 jumpToken,
                 isStrafeMode,
+                facingRequest,
                 inputState.GrappleHeld,
                 inputState.ReelInput,
                 grappleTargetPoint,
@@ -411,6 +422,19 @@ namespace Koiusa.SteamMultiRuntime
             if (motor != null)
             {
                 motor.SetStrafeMode(inputState.IsStrafeMode);
+                var facingRequest = new PlayerFacingRequest(
+                    inputState.FacingDirection,
+                    inputState.FacingPriority,
+                    inputState.FacingBlend,
+                    inputState.FacingRotationSpeed);
+                var authoritativeRequest = facingRequestResolver.Resolve(
+                    targetRigidbody.worldCenterOfMass,
+                    inputState.IsStrafeMode);
+                if (authoritativeRequest.IsValid)
+                {
+                    facingRequest = authoritativeRequest;
+                }
+                motor.SetFacingRequest(facingRequest);
 
                 moveInputReceiver?.SetMoveInput(inputState.MoveInput);
                 moveInputReceiver?.SetMoveReferenceRotation(inputState.MoveReferenceRotation);

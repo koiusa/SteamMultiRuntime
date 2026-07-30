@@ -110,8 +110,17 @@ LocalではControllerが入力を直接Physics Tickへ渡します。Networkで�
 - 接地判定と通常移動
 - Ground、Air、Steep Slopeの加速
 - 通常StrafeとWire Ground Strafeのブレンド
+- `PlayerFacingRequestResolver`が選んだ汎用Facing Requestの回転適用
 - Wire Swing中の通常空中加速抑制
 - WallRun中の向き維持
+
+### Facing Request
+
+向き制御はLocomoterの`IPlayerFacingRequestSource`へ統一します。Controllerは起動時に同じPlayer上のSourceを一度だけ収集し、既存の移動Tickで最もPriorityが高いRequestを解決して`PlayerMotor`へ渡します。離散的なTarget変更は各SourceがCallbackで保持し、動く対象への方向だけを物理処理に合わせて再計算します。
+
+Requestの`RotationSpeed`が未指定（0）の場合はMotorの通常`RotationSpeed`を使用します。`StrafeRotationSpeed`が0でも、Targetingなど明示的なFacing Requestによる旋回は停止しません。
+
+標準Priorityは`Wire Ground > Targeting > 通常移動`です。WallRunの向き固定はMotor側のTraversal制約としてすべてのRequestより優先します。NetworkではOwner由来のRequestを入力状態へ含めつつ、Wire GroundはServerの接続状態から再解決して上書きします。CombatやInteractはLocomoterへ具象依存を追加せず、新しいSourceとして接続します。
 
 ### PlayerTraversalCoordinator
 

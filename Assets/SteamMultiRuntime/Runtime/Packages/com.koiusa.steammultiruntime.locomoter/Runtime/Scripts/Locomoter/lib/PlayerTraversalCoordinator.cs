@@ -7,6 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
     public sealed class PlayerTraversalCoordinator : MonoBehaviour, IPlayerTraversalCoordinator, ITraversalIntentContext,
+        IPlayerFacingRequestSource,
         ITraversalCoordinatorDebugSnapshotSource
     {
         [SerializeField, Tooltip("TraversalのState遷移をUnity Consoleへ出力します。")]
@@ -48,13 +49,25 @@ namespace Koiusa.SteamMultiRuntime
             ? Mathf.Clamp01(wireGroundAction.StrafeBlend)
             : 0f;
         public float WireGroundFacingBlend => UsesWireGroundStrafe ? Mathf.Clamp01(wireGroundAction.FacingBlend) : 0f;
-        public Vector3 WireGroundFacingDirection => UsesWireGroundStrafe && rb != null
-            ? WireAnchorPoint - rb.worldCenterOfMass
-            : Vector3.zero;
-        public float WireGroundFacingRotationSpeed => UsesWireGroundStrafe ? wireGroundAction.FacingRotationSpeed : 0f;
         public Vector3 WireAnchorPoint => IsWireAttached ? wireConnection.AnchorPoint : Vector3.zero;
         public Transform WireAnchorTransform => IsWireAttached ? wireConnection.AnchorTransform : null;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
+
+        public bool TryGetFacingRequest(Vector3 origin, bool isStrafeMode, out PlayerFacingRequest request)
+        {
+            if (!UsesWireGroundStrafe)
+            {
+                request = default;
+                return false;
+            }
+
+            request = new PlayerFacingRequest(
+                WireAnchorPoint - origin,
+                PlayerFacingPriority.WireGround,
+                wireGroundAction.FacingBlend,
+                wireGroundAction.FacingRotationSpeed);
+            return request.IsValid;
+        }
         TraversalCoordinatorDebugSnapshot ITraversalCoordinatorDebugSnapshotSource.GetDebugSnapshot() => new TraversalCoordinatorDebugSnapshot(
             CurrentIntentFlags,
             Mathf.Max(0f, wallTraversalBlockedUntilTime - Time.time),

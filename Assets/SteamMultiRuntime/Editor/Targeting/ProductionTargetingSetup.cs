@@ -99,6 +99,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             if (prefab.GetComponent<TargetingController>() == null) errors.Add($"TargetingController: {path}");
             if (prefab.GetComponent<TargetingCommandInput>() == null) errors.Add($"TargetingCommandInput: {path}");
             if (prefab.GetComponent<PlayerTargetingOwner>() == null) errors.Add($"PlayerTargetingOwner: {path}");
+            if (prefab.GetComponent<TargetingFacingRequestSource>() == null) errors.Add($"TargetingFacingRequestSource: {path}");
         }
 
         private static void ValidateCamera(string path, ICollection<string> errors)
@@ -149,6 +150,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             var controller = GetOrAdd<TargetingController>(root);
             var input = GetOrAdd<TargetingCommandInput>(root);
             var owner = GetOrAdd<PlayerTargetingOwner>(root);
+            GetOrAdd<TargetingFacingRequestSource>(root);
             var inputConfig = AssetDatabase.LoadAssetAtPath<SteamMultiRuntimeTargetingInputActions>(InputConfigPath);
 
             var controllerObject = new SerializedObject(controller);

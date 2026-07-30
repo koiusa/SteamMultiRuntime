@@ -104,6 +104,7 @@ Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.in
 
 MultiはKeyboard `3`、Gamepad R3です。入力時にMultiへ遷移して画面内候補を上限8体まで一括選択し、同じボタンの再入力で解除します。明示Clear、独立Bulk Lock、Focusの設定Pathは空のままです。
 Gamepad L2の`Player/Strafe`はホールド式です。押している間だけStrafeになり、離すと通常移動へ戻ります。Single Lock中に押した場合はStrafe開始と同時に現在対象を保持したままMultiへ昇格し、画面内候補を追加選択します。L2を離すと追加対象を解除し、Primary Targetを維持したSingleへ戻ります。`3`／R3で開始したMultiはL2解放の影響を受けません。
+Multi Lock中はStrafe入力の有無にかかわらず、移動入力方向ではなくPrimary Targetを向きます。`TargetingFacingRequestSource`は状態変更CallbackでPrimaryのAimPointを保持し、Locomoterの共通`PlayerFacingRequestResolver`へTargeting PriorityのRequestを提供します。Network PlayerではこのRequestを入力状態としてServerへ送り、Server側Motorが回転を確定します。Wire Groundなど高Priorityの移動制約がある場合はそちらを優先します。
 
 ## Local／Network所有権
 

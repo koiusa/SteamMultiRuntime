@@ -145,6 +145,11 @@ namespace Koiusa.SteamMultiRuntime
             baseMotor?.SetStrafeMode(enabled);
         }
 
+        public void SetFacingRequest(PlayerFacingRequest request)
+        {
+            baseMotor?.SetFacingRequest(request);
+        }
+
         public void Tick(Vector3 moveDirection, bool jumpRequested)
         {
             if (!isActiveAndEnabled || baseMotor == null || !baseMotor.IsEnabled)

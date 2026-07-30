@@ -22,6 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 inheritedGroundVelocity;
         private bool isAirborneFromJump;
         private bool forcedStrafeMode;
+        private PlayerFacingRequest facingRequest;
 
         [SerializeField]
         [HideInInspector]
@@ -99,6 +100,7 @@ namespace Koiusa.SteamMultiRuntime
             grounding?.ResetState();
             jumpDetachUntilTime = 0f;
             inheritedGroundVelocity = Vector3.zero;
+            facingRequest = default;
             isAirborneFromJump = false;
             IsGrounded = true;
             HorizontalVelocity = 0f;
@@ -108,6 +110,11 @@ namespace Koiusa.SteamMultiRuntime
         public void SetStrafeMode(bool enabled)
         {
             forcedStrafeMode = enabled;
+        }
+
+        public void SetFacingRequest(PlayerFacingRequest request)
+        {
+            facingRequest = request;
         }
 
         public PlayerMotorSettings GetSettings() => settings;
@@ -226,42 +233,33 @@ namespace Koiusa.SteamMultiRuntime
             var preserveWallRunFacing = traversalCoordinator != null
                 && traversalCoordinator.IsEnabled
                 && traversalCoordinator.CurrentState == PlayerTraversalState.WallRun;
-            var useWireGroundFacing = traversalCoordinator != null
-                && traversalCoordinator.IsEnabled
-                && traversalCoordinator.UsesWireGroundStrafe;
-            if (useWireGroundFacing)
+            if (!preserveWallRunFacing)
             {
-                var facingDirection = Vector3.ProjectOnPlane(traversalCoordinator.WireGroundFacingDirection, upAxis);
-                if (facingDirection.sqrMagnitude > 0.0001f)
-                {
-                    var targetRotation = Quaternion.LookRotation(facingDirection.normalized, upAxis);
-                    var wireRotation = Quaternion.RotateTowards(
-                        rb.rotation,
-                        targetRotation,
-                        traversalCoordinator.WireGroundFacingRotationSpeed * Time.fixedDeltaTime);
-                    var normalRotation = PlayerMotorMovementLogic.CalculateRotation(
-                        rb.rotation,
-                        moveDirection,
-                        upAxis,
-                        groundRotationDelta,
-                        settings,
-                        forcedStrafeMode ? 1f : 0f);
-                    var nextRotation = Quaternion.Slerp(
-                        normalRotation,
-                        wireRotation,
-                        traversalCoordinator.WireGroundFacingBlend);
-                    rb.MoveRotation(nextRotation);
-                }
-            }
-            else if (!preserveWallRunFacing)
-            {
-                var nextRotation = PlayerMotorMovementLogic.CalculateRotation(
+                var normalRotation = PlayerMotorMovementLogic.CalculateRotation(
                     rb.rotation,
                     moveDirection,
                     upAxis,
                     groundRotationDelta,
                     settings,
                     effectiveStrafeBlend);
+                var nextRotation = normalRotation;
+                var requestedDirection = facingRequest.IsValid
+                    ? Vector3.ProjectOnPlane(facingRequest.Direction, upAxis)
+                    : Vector3.zero;
+                if (requestedDirection.sqrMagnitude > 0.0001f)
+                {
+                    var targetRotation = Quaternion.LookRotation(requestedDirection.normalized, upAxis);
+                    var rotationSpeed = facingRequest.RotationSpeed > 0f
+                        ? facingRequest.RotationSpeed
+                        : settings.RotationSpeed;
+                    var requestedRotation = rotationSpeed > 0f
+                        ? Quaternion.RotateTowards(
+                            rb.rotation,
+                            targetRotation,
+                            rotationSpeed * Time.fixedDeltaTime)
+                        : rb.rotation;
+                    nextRotation = Quaternion.Slerp(normalRotation, requestedRotation, facingRequest.Blend);
+                }
                 rb.MoveRotation(nextRotation);
             }
 

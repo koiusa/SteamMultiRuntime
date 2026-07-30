@@ -10,18 +10,26 @@ namespace Koiusa.SteamMultiRuntime
         public Quaternion MoveReferenceRotation;
         public int JumpToken;
         public bool IsStrafeMode;
+        public Vector3 FacingDirection;
+        public int FacingPriority;
+        public float FacingBlend;
+        public float FacingRotationSpeed;
         public bool GrappleHeld;
         public int GrappleFireToken;
         public float ReelInput;
         public Vector3 GrappleTargetPoint;
 
-        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleTargetPoint = default, int grappleFireToken = 0)
+        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, PlayerFacingRequest facingRequest = default, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleTargetPoint = default, int grappleFireToken = 0)
         {
             MoveDirection = moveDirection;
             MoveInput = moveInput;
             MoveReferenceRotation = moveReferenceRotation;
             JumpToken = jumpToken;
             IsStrafeMode = isStrafeMode;
+            FacingDirection = facingRequest.Direction;
+            FacingPriority = facingRequest.Priority;
+            FacingBlend = facingRequest.Blend;
+            FacingRotationSpeed = facingRequest.RotationSpeed;
             GrappleHeld = grappleHeld;
             ReelInput = reelInput;
             GrappleTargetPoint = grappleTargetPoint;
@@ -35,6 +43,10 @@ namespace Koiusa.SteamMultiRuntime
             serializer.SerializeValue(ref MoveReferenceRotation);
             serializer.SerializeValue(ref JumpToken);
             serializer.SerializeValue(ref IsStrafeMode);
+            serializer.SerializeValue(ref FacingDirection);
+            serializer.SerializeValue(ref FacingPriority);
+            serializer.SerializeValue(ref FacingBlend);
+            serializer.SerializeValue(ref FacingRotationSpeed);
             serializer.SerializeValue(ref GrappleHeld);
             serializer.SerializeValue(ref ReelInput);
             serializer.SerializeValue(ref GrappleTargetPoint);
