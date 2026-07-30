@@ -8,7 +8,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(ActorCompositeMotor))]
-    public class ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState, IPlayerLadderState, IPlayerWallRunState
+    public class ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState, IPlayerLadderState, IPlayerWallRunState
     {
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;
@@ -22,12 +22,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private Rigidbody targetRigidbody;
         private PlayerGameplayInputReader baseInputSource;
-        private IPlayerInputSource activeInputSource;
+        private IActorInputSource activeInputSource;
         private Transform injectedInputReferenceTransform;
         private ActorCompositeMotor motor;
         private IActorMoveInputReceiver moveInputReceiver;
         private IActorTraversalCoordinator traversalCoordinator;
-        private PlayerFacingRequestResolver facingRequestResolver;
+        private ActorFacingRequestResolver facingRequestResolver;
         private PhysicsPresentationSmoother presentationSmoother;
         private int jumpToken;
         private int lastConsumedJumpToken;
@@ -35,8 +35,8 @@ namespace Koiusa.SteamMultiRuntime
         private int lastConsumedGrappleFireToken;
         private bool isStrafeMode;
         private bool hasInitializedSettings;
-        private PlayerInputSyncState localInputState;
-        private PlayerInputSyncState serverInputState;
+        private ActorInputSyncState localInputState;
+        private ActorInputSyncState serverInputState;
         private float nextInputSendTime;
         private int lastSentJumpToken = -1;
         private int lastSentGrappleFireToken = -1;
@@ -44,8 +44,8 @@ namespace Koiusa.SteamMultiRuntime
         private float lastSentReelInput = float.NaN;
         private float nextStateSyncTime;
 
-        private readonly NetworkVariable<PlayerInputSyncState> netInputState = new NetworkVariable<PlayerInputSyncState>(
-            new PlayerInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<ActorInputSyncState> netInputState = new NetworkVariable<ActorInputSyncState>(
+            new ActorInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         // Settings Sync (Server -> All Clients)
         private readonly NetworkVariable<ActorMotorSettingsNetData> netActorMotorSettings = new NetworkVariable<ActorMotorSettingsNetData>(
@@ -53,10 +53,10 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NetworkVariable<TraversalFeatureSettingsNetData> netTraversalFeatureSettings = new NetworkVariable<TraversalFeatureSettingsNetData>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        private readonly NetworkVariable<PlayerKinematicState> netKinematicState = new NetworkVariable<PlayerKinematicState>(
-            new PlayerKinematicState(0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        private readonly NetworkVariable<PlayerMovementFlagsState> netMovementFlagsState = new NetworkVariable<PlayerMovementFlagsState>(
-            new PlayerMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<ActorKinematicState> netKinematicState = new NetworkVariable<ActorKinematicState>(
+            new ActorKinematicState(0f, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private readonly NetworkVariable<ActorMovementFlagsState> netMovementFlagsState = new NetworkVariable<ActorMovementFlagsState>(
+            new ActorMovementFlagsState(true, false, false, false, false, 0f, false, Vector3.zero), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<WireSwingNetworkState> netWireSwingState = new NetworkVariable<WireSwingNetworkState>(
             new WireSwingNetworkState(false, Vector3.zero, 0f), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -103,7 +103,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public void SetInputSource(IPlayerInputSource source, Transform referenceTransform = null)
+        public void SetInputSource(IActorInputSource source, Transform referenceTransform = null)
         {
             if (ReferenceEquals(activeInputSource, source)
                 && injectedInputReferenceTransform == referenceTransform)
@@ -117,7 +117,7 @@ namespace Koiusa.SteamMultiRuntime
                 Cursor.visible = false;
         }
 
-        public void ClearInputSource(IPlayerInputSource source)
+        public void ClearInputSource(IActorInputSource source)
         {
             if (!ReferenceEquals(activeInputSource, source))
                 return;
@@ -150,7 +150,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveInputReceiver = motor as IActorMoveInputReceiver;
             traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
-            facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
+            facingRequestResolver = new ActorFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
             {
@@ -347,7 +347,7 @@ namespace Koiusa.SteamMultiRuntime
                 targetRigidbody.worldCenterOfMass,
                 grappleTargetPoint,
                 inputState.GrappleHeld);
-            SubmitInput(new PlayerInputSyncState(
+            SubmitInput(new ActorInputSyncState(
                 moveDirection,
                 moveInput,
                 referenceTransform.rotation,
@@ -360,7 +360,7 @@ namespace Koiusa.SteamMultiRuntime
                 grappleFireToken));
         }
 
-        private void SubmitInput(PlayerInputSyncState inputState)
+        private void SubmitInput(ActorInputSyncState inputState)
         {
             localInputState = inputState;
 
@@ -388,12 +388,12 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         [ServerRpc(Delivery = RpcDelivery.Unreliable)]
-        private void SubmitInputServerRpc(PlayerInputSyncState inputState)
+        private void SubmitInputServerRpc(ActorInputSyncState inputState)
         {
             StoreServerInput(inputState);
         }
 
-        private void StoreServerInput(PlayerInputSyncState inputState)
+        private void StoreServerInput(ActorInputSyncState inputState)
         {
             serverInputState = inputState;
             if (ControlPolicy.BroadcastInputState)
@@ -422,7 +422,7 @@ namespace Koiusa.SteamMultiRuntime
             if (motor != null)
             {
                 motor.SetStrafeMode(inputState.IsStrafeMode);
-                var facingRequest = new PlayerFacingRequest(
+                var facingRequest = new ActorFacingRequest(
                     inputState.FacingDirection,
                     inputState.FacingPriority,
                     inputState.FacingBlend,
@@ -452,7 +452,7 @@ namespace Koiusa.SteamMultiRuntime
             kinematicState.VerticalVelocity = motor.VerticalVelocity;
             netKinematicState.Value = kinematicState;
 
-            netMovementFlagsState.Value = new PlayerMovementFlagsState(
+            netMovementFlagsState.Value = new ActorMovementFlagsState(
                 motor.IsGrounded,
                 motor.IsJumping,
                 motor.IsFreefall,

@@ -22,7 +22,7 @@ NpcNavMeshController : INpcLocomotionState
 │  └─ RVO
 ├─ NpcNavMeshJumpModule
 │  └─ 確率、クールダウン、最低移動速度
-├─ AiPlayerInputSource : IPlayerInputSource
+├─ AiActorInputSource : IActorInputSource
 ├─ NpcDestinationDebugMarker
 └─ NpcDestinationDebugMarkerNetSync（Network NPCのみ）
 ```
@@ -40,7 +40,7 @@ NpcNavMeshController : INpcLocomotionState
 ```text
 NPC Modules
   → NpcNavMeshController
-  → AiPlayerInputSource
+  → AiActorInputSource
   → ActorCompositeMotor
   → ActorMotor / ActorTraversalCoordinator
 ```
@@ -50,8 +50,8 @@ NPC Modules
 ```text
 NPC Modules（Serverのみ更新）
   → NpcNavMeshController
-  → SetInputSource(AiPlayerInputSource, npcTransform)
-  → ServerDrivenPlayerController
+  → SetInputSource(AiActorInputSource, npcTransform)
+  → ServerDrivenActorController
   → ActorCompositeMotor（Server Physics Tick）
   → NetworkVariable / NetworkTransformでClientへ同期
 ```
@@ -72,7 +72,7 @@ NPCの経路・移動状態は`INpcLocomotionState`、Network同期状態は
 
 ```text
 NetworkNPC
-├─ ServerDrivenPlayerController : IActorLocomotionState
+├─ ServerDrivenActorController : IActorLocomotionState
 ├─ NpcNavMeshController : INpcLocomotionState
 └─ ActorControllerAdapter : IActorController
 

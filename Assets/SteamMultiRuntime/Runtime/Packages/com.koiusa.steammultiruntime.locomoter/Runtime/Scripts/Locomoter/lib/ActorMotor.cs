@@ -22,7 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 inheritedGroundVelocity;
         private bool isAirborneFromJump;
         private bool forcedStrafeMode;
-        private PlayerFacingRequest facingRequest;
+        private ActorFacingRequest facingRequest;
 
         [SerializeField]
         [HideInInspector]
@@ -112,7 +112,7 @@ namespace Koiusa.SteamMultiRuntime
             forcedStrafeMode = enabled;
         }
 
-        public void SetFacingRequest(PlayerFacingRequest request)
+        public void SetFacingRequest(ActorFacingRequest request)
         {
             facingRequest = request;
         }

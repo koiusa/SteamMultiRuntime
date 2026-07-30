@@ -26,7 +26,7 @@ Skill Featureには紫の専用アイコンを表示します。
 | 対象 | Editor | 主な仕様 |
 |---|---|---|
 | `LocalPlayerController` | `LocalPlayerControllerEditor` | 使用中の`ActorCompositeMotor`を表示する |
-| `ServerDrivenPlayerController` | `ServerDrivenPlayerControllerEditor` | Composite MotorとControl Mode別の同期方針を表示する |
+| `ServerDrivenActorController` | `ServerDrivenActorControllerEditor` | Composite MotorとControl Mode別の同期方針を表示する |
 | `ActorCompositeMotor` | `ActorCompositeMotorEditor` | Motor、Coordinator、Traversal Feature／Actionの装着状況を階層表示し、不足Featureを追加できる |
 | `ActorTraversalCoordinator` | `ActorTraversalCoordinatorEditor` | 管理対象Featureを表示し、Play中の状態、Wire接続、Blend値を読み取り専用表示する |
 | Player Movement Debugger | `ActorMovementDebuggerWindow` | 選択したPlayerのComposite／Base Motor、Coordinator全体、Wall／Ladder／Wire Feature・Actionの実行状態を一覧監視する |

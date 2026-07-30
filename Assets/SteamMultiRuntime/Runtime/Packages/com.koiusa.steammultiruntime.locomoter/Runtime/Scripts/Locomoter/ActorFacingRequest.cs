@@ -2,15 +2,15 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public static class PlayerFacingPriority
+    public static class ActorFacingPriority
     {
         public const int Targeting = 100;
         public const int WireGround = 200;
     }
 
-    public readonly struct PlayerFacingRequest
+    public readonly struct ActorFacingRequest
     {
-        public PlayerFacingRequest(Vector3 direction, int priority, float blend = 1f, float rotationSpeed = 0f)
+        public ActorFacingRequest(Vector3 direction, int priority, float blend = 1f, float rotationSpeed = 0f)
         {
             Direction = direction;
             Priority = priority;
@@ -25,38 +25,38 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsValid => Direction.sqrMagnitude > 0.0001f && Blend > 0f;
     }
 
-    public interface IPlayerFacingRequestSource
+    public interface IActorFacingRequestSource
     {
-        bool TryGetFacingRequest(Vector3 origin, bool isStrafeMode, out PlayerFacingRequest request);
+        bool TryGetFacingRequest(Vector3 origin, bool isStrafeMode, out ActorFacingRequest request);
     }
 
-    public sealed class PlayerFacingRequestResolver
+    public sealed class ActorFacingRequestResolver
     {
-        private readonly IPlayerFacingRequestSource[] sources;
+        private readonly IActorFacingRequestSource[] sources;
 
-        public PlayerFacingRequestResolver(GameObject owner)
+        public ActorFacingRequestResolver(GameObject owner)
         {
             var components = owner != null ? owner.GetComponents<MonoBehaviour>() : System.Array.Empty<MonoBehaviour>();
             var count = 0;
             for (var i = 0; i < components.Length; i++)
             {
-                if (components[i] is IPlayerFacingRequestSource) count++;
+                if (components[i] is IActorFacingRequestSource) count++;
             }
 
-            sources = new IPlayerFacingRequestSource[count];
+            sources = new IActorFacingRequestSource[count];
             var destination = 0;
             for (var i = 0; i < components.Length; i++)
             {
-                if (components[i] is IPlayerFacingRequestSource source)
+                if (components[i] is IActorFacingRequestSource source)
                 {
                     sources[destination++] = source;
                 }
             }
         }
 
-        public PlayerFacingRequest Resolve(Vector3 origin, bool isStrafeMode)
+        public ActorFacingRequest Resolve(Vector3 origin, bool isStrafeMode)
         {
-            var result = default(PlayerFacingRequest);
+            var result = default(ActorFacingRequest);
             for (var i = 0; i < sources.Length; i++)
             {
                 if (sources[i] != null

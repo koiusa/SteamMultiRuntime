@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public readonly struct PlayerInputState
+    public readonly struct ActorInputState
     {
-        public PlayerInputState(Vector2 move, bool jumpPressed, bool grappleHeld = false, float reelInput = 0f, bool isStrafeMode = false, bool grappleFirePressed = false)
+        public ActorInputState(Vector2 move, bool jumpPressed, bool grappleHeld = false, float reelInput = 0f, bool isStrafeMode = false, bool grappleFirePressed = false)
         {
             Move = move;
             JumpPressed = jumpPressed;
@@ -21,6 +21,6 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsStrafeMode { get; }
         public bool GrappleFirePressed { get; }
 
-        public static PlayerInputState Empty => new PlayerInputState(Vector2.zero, false);
+        public static ActorInputState Empty => new ActorInputState(Vector2.zero, false);
     }
 }

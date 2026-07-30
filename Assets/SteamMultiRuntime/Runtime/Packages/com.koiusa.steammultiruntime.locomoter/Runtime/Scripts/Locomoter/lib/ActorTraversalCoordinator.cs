@@ -7,7 +7,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(SlopeContactResolver))]
     [DisallowMultipleComponent]
     public sealed class ActorTraversalCoordinator : MonoBehaviour, IActorTraversalCoordinator, ITraversalIntentContext,
-        IPlayerFacingRequestSource,
+        IActorFacingRequestSource,
         ITraversalCoordinatorDebugSnapshotSource
     {
         [SerializeField, Tooltip("TraversalのState遷移をUnity Consoleへ出力します。")]
@@ -53,7 +53,7 @@ namespace Koiusa.SteamMultiRuntime
         public Transform WireAnchorTransform => IsWireAttached ? wireConnection.AnchorTransform : null;
         public float WireRopeLength => IsWireAttached ? wireConnection.RopeLength : 0f;
 
-        public bool TryGetFacingRequest(Vector3 origin, bool isStrafeMode, out PlayerFacingRequest request)
+        public bool TryGetFacingRequest(Vector3 origin, bool isStrafeMode, out ActorFacingRequest request)
         {
             if (!UsesWireGroundStrafe)
             {
@@ -61,9 +61,9 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            request = new PlayerFacingRequest(
+            request = new ActorFacingRequest(
                 WireAnchorPoint - origin,
-                PlayerFacingPriority.WireGround,
+                ActorFacingPriority.WireGround,
                 wireGroundAction.FacingBlend,
                 wireGroundAction.FacingRotationSpeed);
             return request.IsValid;

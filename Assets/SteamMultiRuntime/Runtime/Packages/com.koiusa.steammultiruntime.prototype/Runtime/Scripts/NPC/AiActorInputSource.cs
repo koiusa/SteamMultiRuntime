@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public sealed class AiPlayerInputSource : IPlayerInputSource
+    public sealed class AiActorInputSource : IActorInputSource
     {
         private Vector2 _move;
         private bool _jumpRequested;
@@ -33,16 +33,16 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public PlayerInputState ReadState()
+        public ActorInputState ReadState()
         {
             if (!_isEnabled)
             {
-                return PlayerInputState.Empty;
+                return ActorInputState.Empty;
             }
 
             var jump = _jumpRequested;
             _jumpRequested = false;
-            return new PlayerInputState(_move, jump);
+            return new ActorInputState(_move, jump);
         }
     }
 }

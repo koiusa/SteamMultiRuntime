@@ -30,9 +30,9 @@ PlayerとNPCが共有するRuntime機能では`Actor`を使い、ユーザー入
 
 ### Phase 4: 入力契約の境界整理
 
-- [ ] NPCも利用する入力値・入力Source契約の命名を決定
-- [ ] `PlayerGameplayInputReader`など実Player入力の型は`Player`名を維持
-- [ ] Network同期データがPlayer固有かActor共通かを型ごとに確認
+- [x] NPCも利用する入力値・入力Source契約を`ActorInputState`／`IActorInputSource`へ変更
+- [x] `PlayerGameplayInputReader`など実Player入力の型は`Player`名を維持
+- [x] NPCも利用するNetwork同期データとServer駆動型を`Actor`名へ変更
 
 ### Phase 5: Combat／Skill
 

@@ -22,7 +22,7 @@ namespace Koiusa.SteamMultiRuntime
         private PhysicsPresentationSmoother presentationSmoother;
         private IActorMoveInputReceiver moveInputReceiver;
         private IActorTraversalCoordinator traversalCoordinator;
-        private PlayerFacingRequestResolver facingRequestResolver;
+        private ActorFacingRequestResolver facingRequestResolver;
         private Vector3 moveDirection;
         private Vector2 moveInput;
         private int jumpToken;
@@ -93,7 +93,7 @@ namespace Koiusa.SteamMultiRuntime
 
             moveInputReceiver = motor as IActorMoveInputReceiver;
             traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
-            facingRequestResolver = new PlayerFacingRequestResolver(gameObject);
+            facingRequestResolver = new ActorFacingRequestResolver(gameObject);
 
             if (inputActionsConfig == null)
             {

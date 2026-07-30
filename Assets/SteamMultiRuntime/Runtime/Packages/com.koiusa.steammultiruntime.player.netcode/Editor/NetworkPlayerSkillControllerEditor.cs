@@ -14,10 +14,10 @@ namespace Koiusa.SteamMultiRuntime
 
             var input = (NetworkPlayerSkillController)target;
             var owner = input.gameObject;
-            if (owner.GetComponent<ServerDrivenPlayerController>() == null)
+            if (owner.GetComponent<ServerDrivenActorController>() == null)
             {
                 EditorGUILayout.HelpBox(
-                    "ServerDrivenPlayerController is required to copy the gameplay input configuration.",
+                    "ServerDrivenActorController is required to copy the gameplay input configuration.",
                     MessageType.Warning);
             }
 
@@ -28,7 +28,7 @@ namespace Koiusa.SteamMultiRuntime
         private static void Configure(NetworkPlayerSkillController input)
         {
             var owner = input.gameObject;
-            var controller = owner.GetComponent<ServerDrivenPlayerController>();
+            var controller = owner.GetComponent<ServerDrivenActorController>();
             if (controller == null) return;
 
             Undo.RecordObject(input, "Configure Network Player Skill Input");

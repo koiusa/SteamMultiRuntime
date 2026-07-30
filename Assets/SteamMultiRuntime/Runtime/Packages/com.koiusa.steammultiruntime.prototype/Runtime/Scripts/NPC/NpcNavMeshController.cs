@@ -52,8 +52,8 @@ namespace Koiusa.SteamMultiRuntime
         private ActorCompositeMotor _motor;
         private IActorMoveInputReceiver _moveInputReceiver;
         private IActorMotor _baseMotor;
-        private AiPlayerInputSource _inputSource;
-        private ServerDrivenPlayerController _networkPlayerController;
+        private AiActorInputSource _inputSource;
+        private ServerDrivenActorController _networkPlayerController;
         private PhysicsPresentationSmoother _presentationSmoother;
 
         private Vector2 _moveInput;
@@ -115,8 +115,8 @@ namespace Koiusa.SteamMultiRuntime
             _motor = GetComponent<ActorCompositeMotor>();
             _moveInputReceiver = _motor as IActorMoveInputReceiver;
             _baseMotor = GetComponent<IActorMotor>();
-            _inputSource = new AiPlayerInputSource();
-            _networkPlayerController = GetComponent<ServerDrivenPlayerController>();
+            _inputSource = new AiActorInputSource();
+            _networkPlayerController = GetComponent<ServerDrivenActorController>();
             _presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
             if (_presentationSmoother == null)
                 _presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();

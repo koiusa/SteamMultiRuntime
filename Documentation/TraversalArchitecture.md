@@ -79,8 +79,8 @@ Actionは、入力やCoordinatorからの要求に対応する具体的な動作
 InputActionsConfig
   ↓
 PlayerGameplayInputReader
-  ↓ PlayerInputState
-LocalPlayerController / ServerDrivenPlayerController
+  ↓ ActorInputState
+LocalPlayerController / ServerDrivenActorController
   ↓
 ActorCompositeMotor
   ├─ ActorMotor
@@ -91,7 +91,7 @@ ActorCompositeMotor
 
 `PlayerGameplayInputReader`だけがInput Systemを扱います。Traversal FeatureとActionは`InputAction`へ依存しません。
 
-LocalではControllerが入力を直接Physics Tickへ渡します。NetworkではOwnerが`PlayerInputSyncState`を送信し、Server上のCoordinatorとActionが物理処理を実行します。
+LocalではControllerが入力を直接Physics Tickへ渡します。NetworkではOwnerが`ActorInputSyncState`を送信し、Server上のCoordinatorとActionが物理処理を実行します。
 
 ## Core Motor
 
@@ -110,13 +110,13 @@ LocalではControllerが入力を直接Physics Tickへ渡します。Networkで�
 - 接地判定と通常移動
 - Ground、Air、Steep Slopeの加速
 - 通常StrafeとWire Ground Strafeのブレンド
-- `PlayerFacingRequestResolver`が選んだ汎用Facing Requestの回転適用
+- `ActorFacingRequestResolver`が選んだ汎用Facing Requestの回転適用
 - Wire Swing中の通常空中加速抑制
 - WallRun中の向き維持
 
 ### Facing Request
 
-向き制御はLocomoterの`IPlayerFacingRequestSource`へ統一します。Controllerは起動時に同じPlayer上のSourceを一度だけ収集し、既存の移動Tickで最もPriorityが高いRequestを解決して`ActorMotor`へ渡します。離散的なTarget変更は各SourceがCallbackで保持し、動く対象への方向だけを物理処理に合わせて再計算します。
+向き制御はLocomoterの`IActorFacingRequestSource`へ統一します。Controllerは起動時に同じPlayer上のSourceを一度だけ収集し、既存の移動Tickで最もPriorityが高いRequestを解決して`ActorMotor`へ渡します。離散的なTarget変更は各SourceがCallbackで保持し、動く対象への方向だけを物理処理に合わせて再計算します。
 
 Requestの`RotationSpeed`が未指定（0）の場合はMotorの通常`RotationSpeed`を使用します。`StrafeRotationSpeed`が0でも、Targetingなど明示的なFacing Requestによる旋回は停止しません。
 
@@ -359,7 +359,7 @@ Motor、Collider、Network同期は補間前のPhysics Rootを参照します。
 Networkプレイヤーの物理処理はServer Authorityです。
 
 - Ownerが入力を読み取る
-- `PlayerInputSyncState`でServerへ送信する
+- `ActorInputSyncState`でServerへ送信する
 - Serverの`ActorTraversalCoordinator`と各Actionが物理処理を行う
 - Wire接続状態とロープ長をClientへ同期する
 - Traversal設定は`ITraversalSettingsSync`から収集・適用する

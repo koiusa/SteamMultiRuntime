@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomEditor(typeof(ServerDrivenPlayerController))]
-    public class ServerDrivenPlayerControllerEditor : UnityEditor.Editor
+    [CustomEditor(typeof(ServerDrivenActorController))]
+    public class ServerDrivenActorControllerEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
 
             EditorGUILayout.Space();
 
-            var controller = (ServerDrivenPlayerController)target;
+            var controller = (ServerDrivenActorController)target;
             var compositeMotor = controller.GetComponent<ActorCompositeMotor>();
             EditorGUILayout.ObjectField("ActorCompositeMotor", compositeMotor, typeof(ActorCompositeMotor), allowSceneObjects: true);
 

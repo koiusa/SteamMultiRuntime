@@ -60,13 +60,13 @@ SteamMultiRuntime
 ├─ Input
 │  ├─ InputActionsConfig
 │  ├─ PlayerGameplayInputReader
-│  ├─ PlayerInputState
-│  └─ IPlayerInputSource
+│  ├─ ActorInputState
+│  └─ IActorInputSource
 │
 ├─ Player Locomotion
 │  ├─ Controller
 │  │  ├─ LocalPlayerController
-│  │  └─ ServerDrivenPlayerController
+│  │  └─ ServerDrivenActorController
 │  ├─ ActorCompositeMotor
 │  ├─ ActorMotor
 │  └─ ActorTraversalCoordinator
@@ -79,7 +79,7 @@ SteamMultiRuntime
 ├─ NPC
 │  ├─ NpcNavMeshController
 │  ├─ NavMesh機能モジュール
-│  └─ AiPlayerInputSource
+│  └─ AiActorInputSource
 │
 ├─ Character
 │  ├─ Runtime User Profile
@@ -106,27 +106,27 @@ SteamMultiRuntime
 ```text
 IActorController
 ├─ LocalPlayerController（Local Player）
-│  ├─ PlayerGameplayInputReader : IPlayerInputSource
+│  ├─ PlayerGameplayInputReader : IActorInputSource
 │  └─ ActorCompositeMotor
 │
 └─ ActorControllerAdapter（Network Player / 全NPC）
    └─ IActorLocomotionState
-      ├─ ServerDrivenPlayerController : NetworkBehaviour
+      ├─ ServerDrivenActorController : NetworkBehaviour
       └─ NpcNavMeshController : INpcLocomotionState
 
-ServerDrivenPlayerController : NetworkBehaviour, IActorLocomotionState
-│  ├─ IPlayerInputSource
+ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState
+│  ├─ IActorInputSource
 │  │  ├─ PlayerGameplayInputReader（Network Player）
-│  │  └─ AiPlayerInputSource（Network NPC）
+│  │  └─ AiActorInputSource（Network NPC）
 │  ├─ ActorCompositeMotor
 │  └─ Network同期状態
-│     ├─ PlayerInputSyncState
-│     ├─ PlayerKinematicState
-│     ├─ PlayerMovementFlagsState
+│     ├─ ActorInputSyncState
+│     ├─ ActorKinematicState
+│     ├─ ActorMovementFlagsState
 │     └─ WireSwingNetworkState
 
 Local／Network NPCはいずれもActorControllerAdapterだけがIActorControllerを実装する。
-Adapterの状態SourceはLocalではNpcNavMeshController、NetworkではServerDrivenPlayerControllerになる。
+Adapterの状態SourceはLocalではNpcNavMeshController、NetworkではServerDrivenActorControllerになる。
 
 ActorCompositeMotor : IActorMoveInputReceiver
 ├─ ActorMotor : IActorMotor
@@ -143,7 +143,7 @@ Traversalは`Wall`、`Ladder`、`Wire`の3領域で構成され、共有状態�
 
 ## NPC
 
-NPCはNavMesh Moduleの判断を`AiPlayerInputSource`へ変換し、Player用Motorを再利用します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
+NPCはNavMesh Moduleの判断を`AiActorInputSource`へ変換し、Player用Motorを再利用します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
 
 ## Character ModelとProfile
 

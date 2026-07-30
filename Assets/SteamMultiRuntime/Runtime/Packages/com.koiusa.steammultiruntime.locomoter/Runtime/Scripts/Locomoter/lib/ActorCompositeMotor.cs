@@ -145,7 +145,7 @@ namespace Koiusa.SteamMultiRuntime
             baseMotor?.SetStrafeMode(enabled);
         }
 
-        public void SetFacingRequest(PlayerFacingRequest request)
+        public void SetFacingRequest(ActorFacingRequest request)
         {
             baseMotor?.SetFacingRequest(request);
         }

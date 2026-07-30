@@ -1,9 +1,9 @@
 namespace Koiusa.SteamMultiRuntime
 {
-    public interface IPlayerInputSource
+    public interface IActorInputSource
     {
         void Enable();
         void Disable();
-        PlayerInputState ReadState();
+        ActorInputState ReadState();
     }
 }

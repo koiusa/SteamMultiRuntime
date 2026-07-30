@@ -434,7 +434,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8352a4e8966d8334eb2dd58957290b57, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenPlayerController
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime::Koiusa.SteamMultiRuntime.ServerDrivenActorController
   ShowTopMostFoldoutHeaderGroup: 1
   inputActionsConfig: {fileID: 0}
   gamepadAimCursorSettings:

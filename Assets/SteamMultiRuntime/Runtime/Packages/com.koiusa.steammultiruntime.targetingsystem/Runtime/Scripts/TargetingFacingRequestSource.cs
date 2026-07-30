@@ -5,7 +5,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(TargetingController))]
-    public sealed class TargetingFacingRequestSource : MonoBehaviour, IPlayerFacingRequestSource
+    public sealed class TargetingFacingRequestSource : MonoBehaviour, IActorFacingRequestSource
     {
         private TargetingController controller;
         private Transform primaryAimPoint;
@@ -37,7 +37,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
             primaryAimPoint = null;
         }
 
-        public bool TryGetFacingRequest(Vector3 origin, bool _, out PlayerFacingRequest request)
+        public bool TryGetFacingRequest(Vector3 origin, bool _, out ActorFacingRequest request)
         {
             if (primaryAimPoint == null)
             {
@@ -45,9 +45,9 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem
                 return false;
             }
 
-            request = new PlayerFacingRequest(
+            request = new ActorFacingRequest(
                 primaryAimPoint.position - origin,
-                PlayerFacingPriority.Targeting);
+                ActorFacingPriority.Targeting);
             return request.IsValid;
         }
 

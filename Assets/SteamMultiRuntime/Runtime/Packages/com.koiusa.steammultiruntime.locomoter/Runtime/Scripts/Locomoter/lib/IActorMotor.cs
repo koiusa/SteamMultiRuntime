@@ -27,7 +27,7 @@ namespace Koiusa.SteamMultiRuntime
         ActorMotorSettings GetSettings();
         void ApplySettings(ActorMotorSettings newSettings);
         void SetStrafeMode(bool enabled);
-        void SetFacingRequest(PlayerFacingRequest request);
+        void SetFacingRequest(ActorFacingRequest request);
 
         void ResetState();
         ActorMotorTickResult Tick(Vector3 moveDirection, bool jumpRequested);

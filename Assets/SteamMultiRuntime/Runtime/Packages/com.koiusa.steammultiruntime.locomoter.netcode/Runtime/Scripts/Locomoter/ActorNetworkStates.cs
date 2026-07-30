@@ -3,7 +3,7 @@ using Unity.Netcode;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal struct PlayerInputSyncState : INetworkSerializable
+    internal struct ActorInputSyncState : INetworkSerializable
     {
         public Vector3 MoveDirection;
         public Vector2 MoveInput;
@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
         public float ReelInput;
         public Vector3 GrappleTargetPoint;
 
-        public PlayerInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, PlayerFacingRequest facingRequest = default, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleTargetPoint = default, int grappleFireToken = 0)
+        public ActorInputSyncState(Vector3 moveDirection, Vector2 moveInput, Quaternion moveReferenceRotation, int jumpToken, bool isStrafeMode, ActorFacingRequest facingRequest = default, bool grappleHeld = false, float reelInput = 0f, Vector3 grappleTargetPoint = default, int grappleFireToken = 0)
         {
             MoveDirection = moveDirection;
             MoveInput = moveInput;
@@ -96,12 +96,12 @@ namespace Koiusa.SteamMultiRuntime
         }
     }
 
-    internal struct PlayerKinematicState : INetworkSerializable
+    internal struct ActorKinematicState : INetworkSerializable
     {
         public float HorizontalVelocity;
         public float VerticalVelocity;
 
-        public PlayerKinematicState(float horizontalVelocity, float verticalVelocity)
+        public ActorKinematicState(float horizontalVelocity, float verticalVelocity)
         {
             HorizontalVelocity = horizontalVelocity;
             VerticalVelocity = verticalVelocity;
@@ -114,7 +114,7 @@ namespace Koiusa.SteamMultiRuntime
         }
     }
 
-    internal struct PlayerMovementFlagsState : INetworkSerializable
+    internal struct ActorMovementFlagsState : INetworkSerializable
     {
         public bool IsGrounded;
         public bool IsJumping;
@@ -125,7 +125,7 @@ namespace Koiusa.SteamMultiRuntime
         public bool IsWallRunning;
         public Vector3 WallNormal;
 
-        public PlayerMovementFlagsState(bool isGrounded, bool isJumping, bool isFreefall, bool isFallingAfterJump, bool isOnLadder, float ladderSpeed, bool isWallRunning, Vector3 wallNormal)
+        public ActorMovementFlagsState(bool isGrounded, bool isJumping, bool isFreefall, bool isFallingAfterJump, bool isOnLadder, float ladderSpeed, bool isWallRunning, Vector3 wallNormal)
         {
             IsGrounded = isGrounded;
             IsJumping = isJumping;

@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
         /// </summary>
         public static void AssignProfile(
             LocalPlayerController localController,
-            ServerDrivenPlayerController serverController,
+            ServerDrivenActorController serverController,
             InputActionsConfig profile)
         {
             if (profile == null)
@@ -56,7 +56,7 @@ namespace Koiusa.SteamMultiRuntime
         /// サーバー駆動プレイヤーのみにプロファイルを割り当てる
         /// </summary>
         public static void AssignProfileToServerDrivenOnly(
-            ServerDrivenPlayerController serverController,
+            ServerDrivenActorController serverController,
             InputActionsConfig profile)
         {
             if (profile == null)

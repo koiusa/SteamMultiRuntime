@@ -6,9 +6,9 @@ namespace Koiusa.SteamMultiRuntime
 {
     /// <summary>
     /// The single Input System adapter for player gameplay. Controllers consume
-    /// PlayerInputState and traversal features never depend on InputAction.
+    /// ActorInputState and traversal features never depend on InputAction.
     /// </summary>
-    public sealed class PlayerGameplayInputReader : IPlayerInputSource
+    public sealed class PlayerGameplayInputReader : IActorInputSource
     {
         private readonly InputAction moveAction;
         private readonly InputAction jumpAction;
@@ -137,7 +137,7 @@ namespace Koiusa.SteamMultiRuntime
             isStrafeMode = false;
         }
 
-        public PlayerInputState ReadState()
+        public ActorInputState ReadState()
         {
             var grappleHeld = grappleAction != null && grappleAction.IsPressed();
             var isGamepadAim = grappleHeld && grappleAction?.activeControl?.device is Gamepad;
@@ -172,7 +172,7 @@ namespace Koiusa.SteamMultiRuntime
             jumpToken = 0;
             var grappleFirePressed = grappleHeld && grappleFireAction != null && grappleFireAction.WasPressedThisFrame();
             var reelInput = reelAction != null ? reelAction.ReadValue<float>() : 0f;
-            return new PlayerInputState(move, jumpPressed, grappleHeld, reelInput, isStrafeMode, grappleFirePressed);
+            return new ActorInputState(move, jumpPressed, grappleHeld, reelInput, isStrafeMode, grappleFirePressed);
         }
 
         public bool TryReadAimPoint(out Vector2 screenPosition)
