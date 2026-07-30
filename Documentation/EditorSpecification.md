@@ -30,6 +30,7 @@ Skill Featureには紫の専用アイコンを表示します。
 | `PlayerCompositeMotor` | `PlayerCompositeMotorEditor` | Motor、Coordinator、Traversal Feature／Actionの装着状況を階層表示し、不足Featureを追加できる |
 | `PlayerTraversalCoordinator` | `PlayerTraversalCoordinatorEditor` | 管理対象Featureを表示し、Play中の状態、Wire接続、Blend値を読み取り専用表示する |
 | Player Movement Debugger | `PlayerMovementDebuggerWindow` | 選択したPlayerのComposite／Base Motor、Coordinator全体、Wall／Ladder／Wire Feature・Actionの実行状態を一覧監視する |
+| Physics Contact Debugger | `PhysicsContactDebuggerWindow` | `GroundContactDebugDisplay`が収集した接触点、法線、Ground判定、Layer分類をPlay Mode中に一覧監視する |
 | `WallTraversalFeature` | `WallTraversalFeatureEditor` | Wall ActionとResolverの不足を検出し、`Repair Wall Feature`で補完する |
 | `LadderTraversalFeature` | `LadderTraversalFeatureEditor` | Climb／Detach Actionの不足を検出し、`Repair Ladder Feature`で補完する |
 | `LadderVolume` | `LadderVolumeEditor` | シーン側Triggerとしての設定を表示する |
@@ -142,9 +143,12 @@ Screen Space `UIDocument`は次の予約帯を使用します。
 | `Read Only/ModelIdList Path Viewer` | Model IDと参照先Pathの確認 | なし |
 | `Read Only/Scene List Viewer` | Scene Listの内容確認 | なし |
 | `Read Only/UI/Validate UIDocument Sorting Orders` | Prefab内UIDocumentの予約帯検査 | なし |
+| `Debug/Physics Contact Debugger` | Moverの物理接触とGround判定の監視 | なし |
 | `Modify Project Files/Facepunch AppID` | Steam App ID関連ファイルの設定 | あり |
 
 上表のメニューは、特記がない限り`Tools/SteamMultiRuntime/`以下です。
+
+`GroundContactDebugDisplay`はRuntimeで接触情報の収集とScene Gizmo描画だけを担当します。Game View上のIMGUI表示は持たず、詳細表示は`Tools/SteamMultiRuntime/Debug/Physics Contact Debugger`から開くEditor専用Windowが内部Snapshotを読み取ります。Prefab上のコンポーネントが無効な場合は接触を収集しないため、調査対象のインスタンスで有効化して使用します。
 
 `NetworkAnimatorParameterSynchronizer`はAnimator ControllerとNetworkAnimatorの同期対象パラメータを比較・更新します。変更前に確認Windowを表示する設計です。
 

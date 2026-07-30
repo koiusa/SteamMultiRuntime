@@ -261,13 +261,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   upAxis: {x: 0, y: 1, z: 0}
   minGroundNormalDot: 0.55
-  showOverlay: 1
   showGizmos: 1
   normalLength: 0.3
   validGroundColor: {r: 0.2, g: 1, b: 0.2, a: 1}
   invalidGroundColor: {r: 1, g: 0.3, b: 0.2, a: 1}
-  windowPosition: {x: 12, y: 12}
-  windowSize: {x: 420, y: 320}
-  maxRows: 8
-  placeWindowTopRightOnStart: 1
-  aggregateFromAllInstances: 1
