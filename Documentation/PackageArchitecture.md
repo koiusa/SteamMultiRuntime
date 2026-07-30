@@ -36,7 +36,7 @@ Samples / Prototype / Integration
 
 | パッケージ | 責務 | 主な型 |
 |---|---|---|
-| `com.koiusa.steammultiruntime.core` | 内部パッケージ間で共有する最小契約と属性 | `ILocalPlayerProvider`, `LocalPlayerProviderRegistry`, `FallRecovery` |
+| `com.koiusa.steammultiruntime.core` | 内部パッケージ間で共有する最小契約と属性 | `ILocalPlayerProvider`, `LocalPlayerProviderRegistry`, `IPreservedLoadedSceneCamera`, `FallRecovery` |
 | `com.koiusa.steammultiruntime.localization` | 日本語・英語カタログ、Unity Localization連携、導入ツール | `GameLocalization`, `UiLocalizationCatalog` |
 | `com.koiusa.steammultiruntime.keyconfig` | 汎用KeyconfigをSteamMultiRuntimeのLocalizationへ接続 | `SteamMultiRuntimeKeyConfigLocalizer` |
 | `com.koiusa.steammultiruntime.targetingsystem` | 汎用TargetingSystemを共有Input Actions設定へ接続 | `SteamMultiRuntimeTargetingInputActions` |
@@ -64,11 +64,11 @@ Keyconfigの導入とテストは[Keyconfig.md](Keyconfig.md)、TargetingSystem�
 | `com.koiusa.steammultiruntime.locomoter.netcode` | 移動状態とTraversalのNGO同期 |
 | `com.koiusa.steammultiruntime.player` | Player入力、Skill、Health、表示名などPlayerドメイン |
 | `com.koiusa.steammultiruntime.player.netcode` | Player状態、モデル、表示名のNGO同期 |
-| `com.koiusa.steammultiruntime.player.ui` | Player名などPlayer固有UI |
+| `com.koiusa.steammultiruntime.player.ui` | Player名、World Space UI Overlay CameraなどPlayer固有UI。Render Pipeline非依存の本体と、URP用Adapter asmdefを同梱 |
 | `com.koiusa.steammultiruntime.animationdriver` | 確定済み移動状態からAnimatorへの変換 |
 | `com.koiusa.steammultiruntime.audio` | Footstep検出と音声再生。受信契約は`IFootstepReceiver` |
 
-`player.ui`は`player`だけを参照し、`player.netcode`を参照しません。Audioはメソッド名探索や`SendMessage`を使わず、`IFootstepReceiver`で接続します。
+`player.ui`のRender Pipeline非依存asmdefは`player`と`core`を参照し、`player.netcode`を参照しません。`core`への依存は、Scene Loaderが保護すべきUI基盤Cameraを`IPreservedLoadedSceneCamera`で識別するために使用します。URP固有のCamera Stack接続は`Koiusa.SteamMultiRuntime.Player.UI.URP.Runtime`へ分離し、このAdapterだけが`Unity.RenderPipelines.Universal.Runtime`を参照します。Audioはメソッド名探索や`SendMessage`を使わず、`IFootstepReceiver`で接続します。
 
 ### Lobbyとセッション
 
@@ -94,7 +94,8 @@ character.ui ───────────────> character
 resourceloader ─────────────> character
 integration ────────────────> core + character + resourceloader + locomoter
 
-player.ui ──────────────────> player
+player.ui ──────────────────> player + core
+player.ui.URP adapter ──────> player.ui + Unity URP
 player.netcode ─────────────> player + locomoter.netcode
 animationdriver ────────────> locomoter
 locomoter.netcode ──────────> locomoter + core
