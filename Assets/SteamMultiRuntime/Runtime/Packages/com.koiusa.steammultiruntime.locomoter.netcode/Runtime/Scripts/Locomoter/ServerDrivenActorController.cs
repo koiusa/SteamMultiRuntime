@@ -164,6 +164,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            ServerDrivenActorPhysicsLoop.Register(this);
 
             if (targetRigidbody != null)
             {
@@ -207,6 +208,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public override void OnNetworkDespawn()
         {
+            ServerDrivenActorPhysicsLoop.Unregister(this);
             // Unsubscribe from settings changes
             if (!IsServer)
             {
@@ -258,8 +260,11 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void FixedUpdate()
+        internal void TickRegisteredPhysics()
         {
+            if (controlMode == NetworkControlMode.ServerNpc)
+                return;
+
             if (!IsSpawned || motor == null)
             {
                 return;
@@ -281,6 +286,18 @@ namespace Koiusa.SteamMultiRuntime
                 TickServerPhysics();
                 presentationSmoother?.CapturePhysicsPose();
             }
+        }
+
+        public void TickServerNpcPhysicsFromCrowd()
+        {
+            if (controlMode != NetworkControlMode.ServerNpc || !IsSpawned || !IsServer || motor == null)
+                return;
+
+            if (targetRigidbody != null && targetRigidbody.interpolation != RigidbodyInterpolation.None)
+                targetRigidbody.interpolation = RigidbodyInterpolation.None;
+
+            TickServerPhysics();
+            presentationSmoother?.CapturePhysicsPose();
         }
 
         private void ReadAndSendInput()

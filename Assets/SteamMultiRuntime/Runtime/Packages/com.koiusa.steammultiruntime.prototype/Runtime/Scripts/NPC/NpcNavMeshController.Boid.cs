@@ -6,6 +6,9 @@ namespace Koiusa.SteamMultiRuntime
     {
         private Vector3 BuildBoidSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
         {
+            if (_hasCrowdSteering)
+                return Vector3.ProjectOnPlane(_crowdSteeringPlanar, upAxis);
+
             var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
             if (goalPlanar.sqrMagnitude <= 0.000001f)
                 return goalPlanarVelocity;

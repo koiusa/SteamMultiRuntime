@@ -29,7 +29,7 @@ NpcNavMeshController : INpcLocomotionState
 
 各Moduleは任意装着です。`NpcNavMeshController`は存在し、有効になっているModuleだけを利用します。回避方式を有効にした場合は`NavMeshAgent`標準回避を停止し、無効化時に復元します。
 
-回避のNPC近傍検索は、全NPCのXZ位置からFrame単位で一度だけ構築する共有Spatial Gridを使用します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍候補だけを調べます。経路Corner取得は`NpcNavMeshAvoidanceModule.UpdateInterval`の周期だけ実行し、NPCのInstance IDから決めた位相でFrame間へ分散します。Boid計算では距離と正規化方向を同じ平方根から算出し、近傍ごとの重複した正規化を行いません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
+回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路Corner取得は`NpcNavMeshAvoidanceModule.UpdateInterval`の周期だけ実行します。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
 
 重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。
 
@@ -57,6 +57,8 @@ NPC Modules（Serverのみ更新）
 ```
 
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
+
+Local／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`の単一`FixedUpdate`から一括で呼び出します。Player用`ServerDrivenActorController`の個別Tickは維持し、`ServerNpc` ModeだけをCrowd側へ委譲します。
 
 Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
 

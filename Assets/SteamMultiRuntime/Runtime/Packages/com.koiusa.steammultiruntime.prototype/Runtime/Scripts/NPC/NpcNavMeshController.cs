@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using Unity.Mathematics;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -67,6 +68,8 @@ namespace Koiusa.SteamMultiRuntime
         private int _jumpToken;
         private int _lastConsumedJumpToken;
         private bool _clientSimulationDisabled;
+        private Vector3 _crowdSteeringPlanar;
+        private bool _hasCrowdSteering;
 
         private readonly NpcNavMeshController[] _npcNeighborBuffer = new NpcNavMeshController[32];
         private readonly float[] _avoidanceCandidateScores = new float[32];
@@ -140,7 +143,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            RegisterSpatialNpc(this);
+            NpcCrowdSimulation.Register(this);
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -162,7 +165,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
-            UnregisterSpatialNpc(this);
+            NpcCrowdSimulation.Unregister(this);
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted -= OnReturnToCenterStarted;
@@ -181,7 +184,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
-            UnregisterSpatialNpc(this);
+            NpcCrowdSimulation.Unregister(this);
             StopAgent();
             ResetAgentPath();
         }
@@ -242,10 +245,13 @@ namespace Koiusa.SteamMultiRuntime
             enabled = false;
         }
 
-        private void FixedUpdate()
+        internal void TickCrowdPhysics()
         {
             if (_networkPlayerController != null)
+            {
+                _networkPlayerController.TickServerNpcPhysicsFromCrowd();
                 return;
+            }
 
             if (_motor == null)
                 return;
@@ -271,6 +277,35 @@ namespace Koiusa.SteamMultiRuntime
 
             if (_agent != null && _agent.isOnNavMesh && _rigidbody != null)
                 _agent.nextPosition = _rigidbody.position;
+        }
+
+        internal NpcCrowdSimulation.AgentData CaptureCrowdAgentData()
+        {
+            var mode = avoidance != null ? (int)avoidance.Mode : 0;
+            var isRvo = mode == (int)NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo;
+            return new NpcCrowdSimulation.AgentData
+            {
+                Position = transform.position,
+                Velocity = _rigidbody != null ? _rigidbody.linearVelocity : Vector3.zero,
+                GoalVelocity = _cachedTargetPlanarVelocity,
+                UpAxis = ActorMotor.GetUpAxis(),
+                Radius = isRvo ? rvoNeighborRadius : boidSeparationRadius,
+                TimeHorizon = isRvo ? rvoTimeHorizon : 1f,
+                GoalWeight = isRvo ? rvoGoalWeight : boidGoalWeight,
+                AvoidanceWeight = isRvo ? rvoAvoidanceWeight : boidSeparationWeight,
+                SeparationExponent = isRvo ? 1f : boidSeparationExponent,
+                MinApproachSpeed = isRvo ? rvoMinApproachSpeed : 0f,
+                ForwardDotMin = isRvo ? -1f : boidNeighborForwardDotMin,
+                MaxNeighbors = isRvo ? rvoMaxNeighbors : boidMaxNeighbors,
+                Mode = mode,
+                UseForwardFilter = !isRvo && boidUseForwardNeighborFilter ? 1 : 0
+            };
+        }
+
+        internal void ApplyCrowdSteering(float3 steering)
+        {
+            _crowdSteeringPlanar = new Vector3(steering.x, steering.y, steering.z);
+            _hasCrowdSteering = true;
         }
 
         private void OnRandomDestinationNeeded()
@@ -494,6 +529,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private Vector3 BuildRvoSteeringPlanar(Vector3 upAxis, Vector3 goalPlanarVelocity)
         {
+            if (_hasCrowdSteering)
+                return Vector3.ProjectOnPlane(_crowdSteeringPlanar, upAxis);
+
             var goalPlanar = Vector3.ProjectOnPlane(goalPlanarVelocity, upAxis);
             var goalSpeed = goalPlanar.magnitude;
             if (goalSpeed <= 0.0001f)
@@ -626,6 +664,8 @@ namespace Koiusa.SteamMultiRuntime
             _filteredSteeringPlanar = Vector3.zero;
             _cachedRawSteeringPlanar = Vector3.zero;
             _cachedTargetPlanarVelocity = Vector3.zero;
+            _crowdSteeringPlanar = Vector3.zero;
+            _hasCrowdSteering = true;
             // Spread expensive steering/physics queries across frames. Without this phase,
             // every NPC spawned in one batch performs its query on the same frame.
             var phase = (GetInstanceID() & 0x7fffffff) % 997 / 997f;

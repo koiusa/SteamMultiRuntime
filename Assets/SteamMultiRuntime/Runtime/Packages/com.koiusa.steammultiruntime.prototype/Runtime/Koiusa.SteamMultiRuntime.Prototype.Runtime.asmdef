@@ -10,7 +10,10 @@
 		"Koiusa.SteamMultiRuntime.Core.Runtime",
 		"Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime",
 		"Koiusa.Input.Core.Runtime",
-		"Unity.InputSystem"
+		"Unity.InputSystem",
+		"Unity.Burst",
+		"Unity.Collections",
+		"Unity.Mathematics"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],
