@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerSkillPresentation : MonoBehaviour, IPlayerSkillPresentation
+    public sealed class ActorSkillPresentation : MonoBehaviour, IActorSkillPresentation
     {
         [Header("Animator Triggers (optional)")]
         [SerializeField] private string attackTrigger = "Attack";
@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
         private PlayerSkillSlot activeSkill = PlayerSkillSlot.None;
         private uint lastRemoteSequence;
 
-        void IPlayerSkillPresentation.PlaySkillActivation(PlayerSkillSlot slot, uint sequence)
+        void IActorSkillPresentation.PlaySkillActivation(PlayerSkillSlot slot, uint sequence)
         {
             if (slot == PlayerSkillSlot.None) return;
             if (sequence != 0 && sequence == lastRemoteSequence) return;
@@ -27,10 +27,10 @@ namespace Koiusa.SteamMultiRuntime
 
             PlayAnimatorParameter(slot);
             if (playSkillEffects && slot != PlayerSkillSlot.Guard)
-                PlayerSkillEffectVisual.Create(transform, slot);
+                ActorSkillEffectVisual.Create(transform, slot);
         }
 
-        void IPlayerSkillPresentation.SetActiveSkill(PlayerSkillSlot slot)
+        void IActorSkillPresentation.SetActiveSkill(PlayerSkillSlot slot)
         {
             if (activeSkill == slot) return;
             activeSkill = slot;

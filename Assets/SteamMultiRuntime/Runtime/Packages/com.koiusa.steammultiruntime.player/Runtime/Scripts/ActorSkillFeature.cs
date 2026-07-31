@@ -2,24 +2,24 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public abstract class PlayerSkillFeature : MonoBehaviour, IPlayerSkillFeature
+    public abstract class ActorSkillFeature : MonoBehaviour, IActorSkillFeature
     {
-        [SerializeField] private PlayerSkillDefinition definition;
+        [SerializeField] private ActorSkillDefinition definition;
         [SerializeField, Min(0f)] private float cooldown = 1f;
         [SerializeField, Min(0f)] private float activeDuration = 0.2f;
 
         private float cooldownEndsAt;
         private float activeEndsAt;
 
-        public PlayerSkillDefinition Definition => definition;
+        public ActorSkillDefinition Definition => definition;
         public string SkillId => definition != null ? definition.Id : string.Empty;
         public bool IsEnabled => isActiveAndEnabled;
         public bool IsActive { get; private set; }
         public float CooldownRemaining => Mathf.Max(0f, cooldownEndsAt - Time.time);
-        protected PlayerSkillContext Context { get; private set; }
+        protected ActorSkillContext Context { get; private set; }
         protected virtual float ActiveDuration => activeDuration;
 
-        public virtual bool CanActivate(PlayerSkillContext context)
+        public virtual bool CanActivate(ActorSkillContext context)
         {
             return definition != null
                 && !string.IsNullOrWhiteSpace(definition.Id)
@@ -28,7 +28,7 @@ namespace Koiusa.SteamMultiRuntime
                 && CooldownRemaining <= 0f;
         }
 
-        public bool TryActivate(PlayerSkillContext context)
+        public bool TryActivate(ActorSkillContext context)
         {
             if (!CanActivate(context)) return false;
             Context = context;
@@ -61,7 +61,7 @@ namespace Koiusa.SteamMultiRuntime
             OnCompleted();
         }
 
-        protected abstract bool OnActivate(PlayerSkillContext context);
+        protected abstract bool OnActivate(ActorSkillContext context);
         protected virtual void OnSkillTick(float deltaTime) { }
         protected virtual void OnCompleted() { }
         protected virtual void OnCancelled() { }

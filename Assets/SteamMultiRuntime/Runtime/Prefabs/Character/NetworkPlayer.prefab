@@ -67,7 +67,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthOverlayUiDocument
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthOverlayUiDocument
 --- !u!1001 &1345867725016705497
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1027,7 +1027,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad22626052cf43048e5fe14de1984283, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkPlayerCombatState
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Netcode.Runtime::Koiusa.SteamMultiRuntime.NetworkActorCombatState
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &4504898204891808000
 MonoBehaviour:
@@ -1040,7 +1040,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f664ec72e9e14552a262a503fb5eab4e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthUiRouter
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthUiRouter
   overheadHealthUi: {fileID: 5862115728753123259}
   localHealthHud: {fileID: 4205792956162918049}
   damageOnlyOverhead: 0

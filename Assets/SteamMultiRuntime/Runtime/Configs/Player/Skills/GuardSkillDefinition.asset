@@ -11,6 +11,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c1e9dc5ad3c4ad1a2312726ce52e06a, type: 3}
   m_Name: GuardSkillDefinition
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillDefinition
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorSkillDefinition
   id: skill.guard
   displayName: Guard

@@ -26,7 +26,7 @@ namespace Koiusa.SteamMultiRuntime
         private static bool SetDefinition<T>(
             GameObject root,
             SerializedObject serializedInput,
-            string propertyName) where T : PlayerSkillFeature
+            string propertyName) where T : ActorSkillFeature
         {
             var definition = root.GetComponent<T>()?.Definition;
             return SetReference(serializedInput.FindProperty(propertyName), definition);

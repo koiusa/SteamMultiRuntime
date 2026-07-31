@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 754958c31ce54a3dba17d07a6e65f91b, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerRespawnFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorRespawnFeature
   respawnDelay: 3
 --- !u!114 &612215991497632317
 MonoBehaviour:
@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96b325c7ba154d4683d8a4a64756596c, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerDeathPresentation
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorDeathPresentation
   playDeathEffect: 1
   dissolveDuration: 1
   effectLifetime: 1.6
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillCoordinator
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorSkillCoordinator
 --- !u!114 &8786606430057324570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,7 +286,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCombatCoordinator
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorCombatCoordinator
 --- !u!114 &7952957115265635708
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,7 +298,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 10000000000000000000000000000014, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerCharacterCoordinator
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorCharacterCoordinator
 --- !u!114 &7099575249746740329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -381,7 +381,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHealthFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorHealthFeature
   maxHealth: 100
   restoreOnEnable: 1
   currentHealth: 0
@@ -396,7 +396,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerDamageReceiverFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorDamageReceiverFeature
   invincible: 0
 --- !u!114 &4987499974731793392
 MonoBehaviour:
@@ -409,7 +409,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1000000000000000000000000000000e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerHitDetectionFeature
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorHitDetectionFeature
 --- !u!114 &112213991497632317
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,7 +437,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: abf634ed93aeb5740a000c4e17367b17, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.PlayerSkillPresentation
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorSkillPresentation
   attackTrigger: Attack
   dashTrigger: Dash
   guardParameter: Guard

@@ -3,9 +3,9 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [CreateAssetMenu(
-        fileName = "PlayerSkillDefinition",
+        fileName = "ActorSkillDefinition",
         menuName = "SteamMultiRuntime/Player/Skill Definition")]
-    public sealed class PlayerSkillDefinition : ScriptableObject
+    public sealed class ActorSkillDefinition : ScriptableObject
     {
         [SerializeField] private string id;
         [SerializeField] private string displayName;

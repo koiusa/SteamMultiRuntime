@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomEditor(typeof(PlayerSkillCoordinator))]
-    public sealed class PlayerSkillCoordinatorEditor : UnityEditor.Editor
+    [CustomEditor(typeof(ActorSkillCoordinator))]
+    public sealed class ActorSkillCoordinatorEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
-            var coordinator = (PlayerSkillCoordinator)target;
+            var coordinator = (ActorSkillCoordinator)target;
             DrawDefaultInspector();
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Attached Skill Features", EditorStyles.boldLabel);
@@ -20,7 +20,7 @@ namespace Koiusa.SteamMultiRuntime
                     var component = skill as Component;
                     EditorGUILayout.ObjectField(skill.SkillId, component, component != null ? component.GetType() : typeof(MonoBehaviour), true);
                     using (new EditorGUI.DisabledScope(!Application.isPlaying || !skill.CanActivate(
-                        new PlayerSkillContext(coordinator.gameObject, coordinator.transform.forward))))
+                        new ActorSkillContext(coordinator.gameObject, coordinator.transform.forward))))
                     {
                         if (GUILayout.Button("Activate", GUILayout.Width(64f)))
                             coordinator.TryActivate(skill.SkillId, coordinator.transform.forward);

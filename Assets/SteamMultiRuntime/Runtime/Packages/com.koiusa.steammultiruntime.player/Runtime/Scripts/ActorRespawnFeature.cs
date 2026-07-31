@@ -6,16 +6,16 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerHealthFeature))]
-    public sealed class PlayerRespawnFeature : MonoBehaviour, IPlayerLifeState,
-        IPlayerRespawnPresentationNotifier, ISpawnPoseAppliedReceiver
+    [RequireComponent(typeof(ActorHealthFeature))]
+    public sealed class ActorRespawnFeature : MonoBehaviour, IActorLifeState,
+        IActorRespawnPresentationNotifier, ISpawnPoseAppliedReceiver
     {
         [SerializeField, Min(0f)] private float respawnDelay = 3f;
 
-        private PlayerHealthFeature health;
-        private PlayerCharacterCoordinator coordinator;
+        private ActorHealthFeature health;
+        private ActorCharacterCoordinator coordinator;
         private ActorCompositeMotor motor;
-        private IPlayerCombatProcessGate processGate;
+        private IActorCombatProcessGate processGate;
         private Rigidbody body;
         private Coroutine respawnRoutine;
         private Vector3 spawnPosition;
@@ -31,10 +31,10 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
-            health = GetComponent<PlayerHealthFeature>();
-            coordinator = GetComponent<PlayerCharacterCoordinator>();
+            health = GetComponent<ActorHealthFeature>();
+            coordinator = GetComponent<ActorCharacterCoordinator>();
             motor = GetComponent<ActorCompositeMotor>();
-            processGate = GetComponent<IPlayerCombatProcessGate>();
+            processGate = GetComponent<IActorCombatProcessGate>();
             body = GetComponent<Rigidbody>();
             wasDead = !health.IsAlive;
             CaptureSpawnPose();
@@ -74,7 +74,7 @@ namespace Koiusa.SteamMultiRuntime
             initialPoseCaptured = true;
         }
 
-        private void OnDied(PlayerDamageRequest request)
+        private void OnDied(ActorDamageRequest request)
         {
             coordinator?.ResetState();
             if (!CanManageRespawn() || respawnRoutine != null) return;

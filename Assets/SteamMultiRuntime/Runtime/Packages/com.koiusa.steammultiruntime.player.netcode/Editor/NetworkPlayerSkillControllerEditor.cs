@@ -49,7 +49,7 @@ namespace Koiusa.SteamMultiRuntime
         private static void SetDefinition<T>(
             GameObject owner,
             SerializedObject serializedInput,
-            string propertyName) where T : PlayerSkillFeature
+            string propertyName) where T : ActorSkillFeature
         {
             SetReference(
                 serializedInput.FindProperty(propertyName),

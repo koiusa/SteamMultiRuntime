@@ -51,7 +51,7 @@ namespace Koiusa.SteamMultiRuntime.Tests
         public void CharacterAgentCore_HasSharedSkillPresentation()
         {
             var prefab = LoadPrefab(CorePrefabPath);
-            Assert.That(prefab.GetComponent<PlayerSkillPresentation>(), Is.Not.Null);
+            Assert.That(prefab.GetComponent<ActorSkillPresentation>(), Is.Not.Null);
         }
 
         [Test]
@@ -92,8 +92,8 @@ namespace Koiusa.SteamMultiRuntime.Tests
             foreach (var prefabPath in NetworkProxyPaths)
             {
                 var prefab = LoadPrefab(prefabPath);
-                Assert.That(prefab.GetComponent<NetworkPlayerCombatState>(), Is.Not.Null,
-                    $"NetworkPlayerCombatState is missing: {prefabPath}");
+                Assert.That(prefab.GetComponent<NetworkActorCombatState>(), Is.Not.Null,
+                    $"NetworkActorCombatState is missing: {prefabPath}");
             }
         }
 

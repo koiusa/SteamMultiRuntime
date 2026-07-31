@@ -5,19 +5,19 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerSkillCoordinator : MonoBehaviour, IPlayerSkillCoordinator
+    public sealed class ActorSkillCoordinator : MonoBehaviour, IActorSkillCoordinator
     {
-        private readonly List<IPlayerSkillFeature> skills = new List<IPlayerSkillFeature>();
-        private IPlayerSkillPresentation presentation;
-        public IPlayerSkillFeature ActiveSkill { get; private set; }
-        public IReadOnlyList<IPlayerSkillFeature> Skills => skills;
-        public event Action<IPlayerSkillFeature> SkillStarted;
-        public event Action<IPlayerSkillFeature> SkillEnded;
+        private readonly List<IActorSkillFeature> skills = new List<IActorSkillFeature>();
+        private IActorSkillPresentation presentation;
+        public IActorSkillFeature ActiveSkill { get; private set; }
+        public IReadOnlyList<IActorSkillFeature> Skills => skills;
+        public event Action<IActorSkillFeature> SkillStarted;
+        public event Action<IActorSkillFeature> SkillEnded;
 
         private void Awake()
         {
             RefreshSkills();
-            presentation = GetComponent<IPlayerSkillPresentation>();
+            presentation = GetComponent<IActorSkillPresentation>();
         }
         private void OnEnable() => RefreshSkills();
 
@@ -44,7 +44,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (string.IsNullOrWhiteSpace(skillId)) return false;
             if (ActiveSkill != null && ActiveSkill.IsActive) return false;
-            var context = new PlayerSkillContext(gameObject, direction, target);
+            var context = new ActorSkillContext(gameObject, direction, target);
             for (var i = 0; i < skills.Count; i++)
             {
                 var skill = skills[i];
@@ -71,7 +71,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable() => CancelActiveSkill();
 
-        private static PlayerSkillSlot GetSkillSlot(IPlayerSkillFeature skill)
+        private static PlayerSkillSlot GetSkillSlot(IActorSkillFeature skill)
         {
             return skill switch
             {

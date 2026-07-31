@@ -5,16 +5,16 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerCharacterCoordinator))]
+    [RequireComponent(typeof(ActorCharacterCoordinator))]
     public sealed class NetworkPlayerSkillController : NetworkBehaviour
     {
         private const float MinimumDirectionSqrMagnitude = 0.0001f;
 
         [SerializeField] private InputActionsConfig inputActionsConfig;
-        [SerializeField] private PlayerSkillDefinition attackSkill;
-        [SerializeField] private PlayerSkillDefinition dashSkill;
-        [SerializeField] private PlayerSkillDefinition guardSkill;
-        [SerializeField] private PlayerSkillDefinition healSkill;
+        [SerializeField] private ActorSkillDefinition attackSkill;
+        [SerializeField] private ActorSkillDefinition dashSkill;
+        [SerializeField] private ActorSkillDefinition guardSkill;
+        [SerializeField] private ActorSkillDefinition healSkill;
         [SerializeField] private Transform directionReference;
 
         private readonly NetworkVariable<int> activeSkillIndex = new NetworkVariable<int>(
@@ -24,18 +24,18 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NetworkVariable<uint> activationSequence = new NetworkVariable<uint>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        private PlayerCharacterCoordinator coordinator;
+        private ActorCharacterCoordinator coordinator;
         private PlayerSkillInputBindings inputBindings;
         private bool guardStartedByInput;
-        private IPlayerSkillPresentation presentation;
+        private IActorSkillPresentation presentation;
 
         public int ActiveSkillIndex => activeSkillIndex.Value;
         public uint ActivationSequence => activationSequence.Value;
 
         private void Awake()
         {
-            coordinator = GetComponent<PlayerCharacterCoordinator>();
-            presentation = GetComponent<IPlayerSkillPresentation>();
+            coordinator = GetComponent<ActorCharacterCoordinator>();
+            presentation = GetComponent<IActorSkillPresentation>();
             CreateInputBindings();
         }
 
@@ -102,7 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             CancelInputGuard();
         }
 
-        private bool RequestActivate(PlayerSkillSlot skillSlot, PlayerSkillDefinition definition)
+        private bool RequestActivate(PlayerSkillSlot skillSlot, ActorSkillDefinition definition)
         {
             if (!IsSpawned || !IsOwner || definition == null || string.IsNullOrWhiteSpace(definition.Id)) return false;
             var reference = directionReference != null ? directionReference : transform;
@@ -165,7 +165,7 @@ namespace Koiusa.SteamMultiRuntime
                 coordinator.Skills.CancelActiveSkill();
         }
 
-        private void OnServerSkillStarted(IPlayerSkillFeature skill)
+        private void OnServerSkillStarted(IActorSkillFeature skill)
         {
             var slot = GetDefinitionSlot(skill.Definition);
             activeSkillIndex.Value = (int)slot;
@@ -173,13 +173,13 @@ namespace Koiusa.SteamMultiRuntime
             activationSequence.Value++;
         }
 
-        private void OnServerSkillEnded(IPlayerSkillFeature skill)
+        private void OnServerSkillEnded(IActorSkillFeature skill)
         {
             if (activeSkillIndex.Value == (int)GetDefinitionSlot(skill.Definition))
                 activeSkillIndex.Value = (int)PlayerSkillSlot.None;
         }
 
-        private PlayerSkillDefinition GetDefinition(PlayerSkillSlot slot)
+        private ActorSkillDefinition GetDefinition(PlayerSkillSlot slot)
         {
             return slot switch
             {
@@ -191,7 +191,7 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        private PlayerSkillSlot GetDefinitionSlot(PlayerSkillDefinition definition)
+        private PlayerSkillSlot GetDefinitionSlot(ActorSkillDefinition definition)
         {
             if (definition == attackSkill) return PlayerSkillSlot.Attack;
             if (definition == dashSkill) return PlayerSkillSlot.Dash;

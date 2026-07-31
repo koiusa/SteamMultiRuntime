@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime.Player.UI
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerHealthUiRouter : MonoBehaviour
+    public sealed class ActorHealthUiRouter : MonoBehaviour
     {
         [SerializeField] private GameObject overheadHealthUi;
         [SerializeField] private GameObject localHealthHud;
@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         [SerializeField, Min(0.1f)] private float npcVisibleDuration = 3f;
 
         private ILocalPlayerOwnershipNotifier ownership;
-        private PlayerHealthFeature health;
+        private ActorHealthFeature health;
         private Coroutine npcHideRoutine;
         private float previousHealth;
 
@@ -21,7 +21,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             var components = GetComponents<MonoBehaviour>();
             for (var i = 0; i < components.Length; i++)
                 if (components[i] is ILocalPlayerOwnershipNotifier source) { ownership = source; break; }
-            health = GetComponent<PlayerHealthFeature>();
+            health = GetComponent<ActorHealthFeature>();
             previousHealth = health != null ? health.CurrentHealth : 0f;
         }
 

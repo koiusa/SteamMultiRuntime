@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerHealthFeature : MonoBehaviour, IPlayerHealthFeature
+    public sealed class ActorHealthFeature : MonoBehaviour, IActorHealthFeature
     {
         [SerializeField, Min(1f)] private float maxHealth = 100f;
         [SerializeField] private bool restoreOnEnable = true;
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         public float MaxHealth => maxHealth;
         public bool IsAlive => currentHealth > 0f;
         public event Action<float, float> HealthChanged;
-        public event Action<PlayerDamageRequest> Died;
+        public event Action<ActorDamageRequest> Died;
 
         private void Awake()
         {
@@ -27,7 +27,7 @@ namespace Koiusa.SteamMultiRuntime
             currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
         }
 
-        public float ApplyDamage(PlayerDamageRequest request)
+        public float ApplyDamage(ActorDamageRequest request)
         {
             if (!isActiveAndEnabled || !IsAlive || request.Amount <= 0f) return 0f;
             var previous = currentHealth;

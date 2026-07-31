@@ -86,7 +86,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthOverlayUiDocument
 --- !u!1 &4413791566816308068
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03893203386d4555a4ad7d08f4943f4b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthOverlayUiDocument
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthOverlayUiDocument
 --- !u!1001 &3110108053524853930
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -878,7 +878,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f664ec72e9e14552a262a503fb5eab4e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.PlayerHealthUiRouter
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthUiRouter
   overheadHealthUi: {fileID: 2163097053330141160}
   localHealthHud: {fileID: 8501527973056918799}
   damageOnlyOverhead: 0

@@ -4,13 +4,13 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerCombatCoordinator : MonoBehaviour, IPlayerCombatCoordinator
+    public sealed class ActorCombatCoordinator : MonoBehaviour, IActorCombatCoordinator
     {
         private readonly Dictionary<int, float> incomingDamageScales = new Dictionary<int, float>();
-        private PlayerHitDetectionFeature hitDetection;
+        private ActorHitDetectionFeature hitDetection;
         private GuardShieldVisual guardShieldVisual;
-        private IPlayerCombatProcessGate processGate;
-        public IPlayerHealthFeature Health { get; private set; }
+        private IActorCombatProcessGate processGate;
+        public IActorHealthFeature Health { get; private set; }
         public float IncomingDamageScale { get; private set; } = 1f;
 
         private void Awake() => RefreshFeatures();
@@ -18,18 +18,18 @@ namespace Koiusa.SteamMultiRuntime
 
         public void RefreshFeatures()
         {
-            Health = GetComponent<IPlayerHealthFeature>();
-            hitDetection = GetComponent<PlayerHitDetectionFeature>();
+            Health = GetComponent<IActorHealthFeature>();
+            hitDetection = GetComponent<ActorHitDetectionFeature>();
             guardShieldVisual = GetComponent<GuardShieldVisual>();
-            processGate = GetComponent<IPlayerCombatProcessGate>();
+            processGate = GetComponent<IActorCombatProcessGate>();
         }
 
-        public float ReceiveDamage(PlayerDamageRequest request)
+        public float ReceiveDamage(ActorDamageRequest request)
         {
             if (!CanProcessCombat() || Health == null) return 0f;
             if (guardShieldVisual == null) guardShieldVisual = GetComponent<GuardShieldVisual>();
             if (IncomingDamageScale < 1f) guardShieldVisual?.PlayAttackImpact(request.Point);
-            var scaled = new PlayerDamageRequest(request.Source, request.Amount * IncomingDamageScale, request.Point, request.Direction);
+            var scaled = new ActorDamageRequest(request.Source, request.Amount * IncomingDamageScale, request.Point, request.Direction);
             return Health.ApplyDamage(scaled);
         }
 

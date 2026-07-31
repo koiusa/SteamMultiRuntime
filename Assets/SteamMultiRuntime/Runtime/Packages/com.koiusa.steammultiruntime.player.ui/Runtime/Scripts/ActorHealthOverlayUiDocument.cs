@@ -5,13 +5,13 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
-    public sealed class PlayerHealthOverlayUiDocument : MonoBehaviour
+    public sealed class ActorHealthOverlayUiDocument : MonoBehaviour
     {
         private UIDocument uiDocument;
         private VisualElement healthBar;
         private VisualElement healthBarFill;
         private Label healthValueLabel;
-        private PlayerHealthFeature healthFeature;
+        private ActorHealthFeature healthFeature;
 
         private void OnEnable()
         {
@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             uiDocument = GetComponent<UIDocument>();
             BindVisualTreeAndRefresh();
             uiDocument.rootVisualElement.schedule.Execute(BindVisualTreeAndRefresh);
-            healthFeature = GetComponentInParent<PlayerHealthFeature>();
+            healthFeature = GetComponentInParent<ActorHealthFeature>();
             if (healthFeature != null) healthFeature.HealthChanged += OnHealthChanged;
             RefreshHealth();
         }

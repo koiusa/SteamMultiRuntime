@@ -4,17 +4,17 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerCharacterCoordinator))]
+    [RequireComponent(typeof(ActorCharacterCoordinator))]
     public sealed class PlayerSkillInputController : MonoBehaviour
     {
         [SerializeField] private InputActionsConfig inputActionsConfig;
-        [SerializeField] private PlayerSkillDefinition attackSkill;
-        [SerializeField] private PlayerSkillDefinition dashSkill;
-        [SerializeField] private PlayerSkillDefinition guardSkill;
-        [SerializeField] private PlayerSkillDefinition healSkill;
+        [SerializeField] private ActorSkillDefinition attackSkill;
+        [SerializeField] private ActorSkillDefinition dashSkill;
+        [SerializeField] private ActorSkillDefinition guardSkill;
+        [SerializeField] private ActorSkillDefinition healSkill;
         [SerializeField] private Transform directionReference;
 
-        private PlayerCharacterCoordinator coordinator;
+        private ActorCharacterCoordinator coordinator;
         private PlayerSkillInputBindings inputBindings;
         private bool guardStartedByInput;
 
@@ -29,7 +29,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
-            coordinator = GetComponent<PlayerCharacterCoordinator>();
+            coordinator = GetComponent<ActorCharacterCoordinator>();
             CreateInputBindings();
         }
 
@@ -52,10 +52,10 @@ namespace Koiusa.SteamMultiRuntime
                 () => TryActivate(healSkill));
         }
 
-        private bool TryActivate(PlayerSkillDefinition definition)
+        private bool TryActivate(ActorSkillDefinition definition)
         {
             if (definition == null || string.IsNullOrWhiteSpace(definition.Id)) return false;
-            if (coordinator == null) coordinator = GetComponent<PlayerCharacterCoordinator>();
+            if (coordinator == null) coordinator = GetComponent<ActorCharacterCoordinator>();
             var reference = directionReference != null ? directionReference : transform;
             return coordinator != null && coordinator.TryActivateSkill(definition, reference.forward);
         }

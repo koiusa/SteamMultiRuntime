@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal interface IPlayerCombatProcessGate
+    internal interface IActorCombatProcessGate
     {
         bool CanProcessCombat { get; }
     }
 
-    public readonly struct PlayerDamageRequest
+    public readonly struct ActorDamageRequest
     {
-        public PlayerDamageRequest(GameObject source, float amount, Vector3 point, Vector3 direction)
+        public ActorDamageRequest(GameObject source, float amount, Vector3 point, Vector3 direction)
         {
             Source = source;
             Amount = Mathf.Max(0f, amount);
@@ -24,40 +24,40 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 Direction { get; }
     }
 
-    public interface IPlayerHealthFeature
+    public interface IActorHealthFeature
     {
         float CurrentHealth { get; }
         float MaxHealth { get; }
         bool IsAlive { get; }
-        float ApplyDamage(PlayerDamageRequest request);
+        float ApplyDamage(ActorDamageRequest request);
         float Heal(float amount);
         void RestoreFullHealth();
     }
 
-    public interface IPlayerDamageReceiverFeature
+    public interface IActorDamageReceiverFeature
     {
         bool CanReceiveDamage { get; }
-        float ReceiveDamage(PlayerDamageRequest request);
+        float ReceiveDamage(ActorDamageRequest request);
     }
 
-    public interface IPlayerCombatCoordinator
+    public interface IActorCombatCoordinator
     {
-        IPlayerHealthFeature Health { get; }
+        IActorHealthFeature Health { get; }
         float IncomingDamageScale { get; }
-        float ReceiveDamage(PlayerDamageRequest request);
+        float ReceiveDamage(ActorDamageRequest request);
         float Heal(float amount);
         int PerformAreaAttack(Vector3 center, float radius, float damage, Vector3 direction, LayerMask layers);
         void SetIncomingDamageScale(int ownerId, float scale);
         void ClearIncomingDamageScale(int ownerId);
     }
 
-    public interface IPlayerLifeState
+    public interface IActorLifeState
     {
         bool IsDead { get; }
         event Action<bool> LifeStateChanged;
     }
 
-    public interface IPlayerRespawnPresentationNotifier
+    public interface IActorRespawnPresentationNotifier
     {
         event Action<Vector3, Quaternion> RespawnPresentationReady;
     }

@@ -5,9 +5,9 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerHealthFeature))]
-    public sealed class NetworkPlayerCombatState : NetworkBehaviour, IPlayerCombatProcessGate,
-        IPlayerRespawnPresentationNotifier
+    [RequireComponent(typeof(ActorHealthFeature))]
+    public sealed class NetworkActorCombatState : NetworkBehaviour, IActorCombatProcessGate,
+        IActorRespawnPresentationNotifier
     {
         private readonly NetworkVariable<float> currentHealth = new NetworkVariable<float>(
             0f,
@@ -19,17 +19,17 @@ namespace Koiusa.SteamMultiRuntime
                 NetworkVariableReadPermission.Everyone,
                 NetworkVariableWritePermission.Server);
 
-        private PlayerHealthFeature health;
-        private PlayerRespawnFeature respawn;
+        private ActorHealthFeature health;
+        private ActorRespawnFeature respawn;
 
         public float CurrentHealth => currentHealth.Value;
         public event Action<Vector3, Quaternion> RespawnPresentationReady;
-        bool IPlayerCombatProcessGate.CanProcessCombat => IsSpawned && IsServer;
+        bool IActorCombatProcessGate.CanProcessCombat => IsSpawned && IsServer;
 
         private void Awake()
         {
-            health = GetComponent<PlayerHealthFeature>();
-            respawn = GetComponent<PlayerRespawnFeature>();
+            health = GetComponent<ActorHealthFeature>();
+            respawn = GetComponent<ActorRespawnFeature>();
         }
 
         public override void OnNetworkSpawn()

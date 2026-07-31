@@ -11,15 +11,15 @@ namespace Koiusa.SteamMultiRuntime
         Heal = 3
     }
 
-    internal interface IPlayerSkillPresentation
+    internal interface IActorSkillPresentation
     {
         void PlaySkillActivation(PlayerSkillSlot slot, uint sequence = 0);
         void SetActiveSkill(PlayerSkillSlot slot);
     }
 
-    public readonly struct PlayerSkillContext
+    public readonly struct ActorSkillContext
     {
-        public PlayerSkillContext(GameObject owner, Vector3 direction, GameObject target = null)
+        public ActorSkillContext(GameObject owner, Vector3 direction, GameObject target = null)
         {
             Owner = owner;
             Direction = direction;
@@ -31,22 +31,22 @@ namespace Koiusa.SteamMultiRuntime
         public GameObject Target { get; }
     }
 
-    public interface IPlayerSkillFeature
+    public interface IActorSkillFeature
     {
-        PlayerSkillDefinition Definition { get; }
+        ActorSkillDefinition Definition { get; }
         string SkillId { get; }
         bool IsEnabled { get; }
         bool IsActive { get; }
         float CooldownRemaining { get; }
-        bool CanActivate(PlayerSkillContext context);
-        bool TryActivate(PlayerSkillContext context);
+        bool CanActivate(ActorSkillContext context);
+        bool TryActivate(ActorSkillContext context);
         void Tick(float deltaTime);
         void Cancel();
     }
 
-    public interface IPlayerSkillCoordinator
+    public interface IActorSkillCoordinator
     {
-        IPlayerSkillFeature ActiveSkill { get; }
+        IActorSkillFeature ActiveSkill { get; }
         bool TryActivate(string skillId, Vector3 direction, GameObject target = null);
         void CancelActiveSkill();
     }

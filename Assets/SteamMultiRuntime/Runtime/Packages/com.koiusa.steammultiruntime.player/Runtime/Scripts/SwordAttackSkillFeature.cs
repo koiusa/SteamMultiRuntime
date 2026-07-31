@@ -3,21 +3,21 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class SwordAttackSkillFeature : PlayerSkillFeature
+    public sealed class SwordAttackSkillFeature : ActorSkillFeature
     {
         [SerializeField, Min(0f)] private float damage = 20f;
         [SerializeField, Min(0f)] private float radius = 1.2f;
         [SerializeField, Min(0f)] private float forwardOffset = 1f;
         [SerializeField] private LayerMask targetLayers = ~0;
 
-        private IPlayerCombatCoordinator combat;
+        private IActorCombatCoordinator combat;
         public int LastHitCount { get; private set; }
 
-        private void Awake() => combat = GetComponent<IPlayerCombatCoordinator>();
+        private void Awake() => combat = GetComponent<IActorCombatCoordinator>();
 
-        protected override bool OnActivate(PlayerSkillContext context)
+        protected override bool OnActivate(ActorSkillContext context)
         {
-            if (combat == null) combat = GetComponent<IPlayerCombatCoordinator>();
+            if (combat == null) combat = GetComponent<IActorCombatCoordinator>();
             if (combat == null) return false;
             var direction = context.Direction.sqrMagnitude > 0.0001f ? context.Direction.normalized : transform.forward;
             var center = transform.position + direction * forwardOffset;

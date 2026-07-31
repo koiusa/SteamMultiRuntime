@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class DashSkillFeature : PlayerSkillFeature
+    public sealed class DashSkillFeature : ActorSkillFeature
     {
         [SerializeField, Min(0f)] private float speed = 12f;
         [SerializeField, Min(0.01f)] private float duration = 0.2f;
@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime
             locomotionState = GetComponent<IActorLocomotionState>();
         }
 
-        protected override bool OnActivate(PlayerSkillContext context)
+        protected override bool OnActivate(ActorSkillContext context)
         {
             if (motor == null) motor = GetComponent<IActorMotorMotionSink>();
             var direction = context.Direction;

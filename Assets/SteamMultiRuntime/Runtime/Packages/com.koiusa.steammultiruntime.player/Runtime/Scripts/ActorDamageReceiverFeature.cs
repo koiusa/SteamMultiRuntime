@@ -3,17 +3,17 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerDamageReceiverFeature : MonoBehaviour, IPlayerDamageReceiverFeature
+    public sealed class ActorDamageReceiverFeature : MonoBehaviour, IActorDamageReceiverFeature
     {
-        private IPlayerCombatCoordinator combat;
+        private IActorCombatCoordinator combat;
         [SerializeField] private bool invincible;
         public bool CanReceiveDamage => isActiveAndEnabled && !invincible;
         public bool IsInvincible => invincible;
 
-        private void Awake() => combat = GetComponent<IPlayerCombatCoordinator>();
+        private void Awake() => combat = GetComponent<IActorCombatCoordinator>();
         public void SetInvincible(bool value) => invincible = value;
 
-        public float ReceiveDamage(PlayerDamageRequest request)
+        public float ReceiveDamage(ActorDamageRequest request)
         {
             return CanReceiveDamage && combat != null ? combat.ReceiveDamage(request) : 0f;
         }

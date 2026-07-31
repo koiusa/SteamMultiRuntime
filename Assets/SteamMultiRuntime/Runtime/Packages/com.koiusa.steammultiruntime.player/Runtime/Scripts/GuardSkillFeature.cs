@@ -3,20 +3,20 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class GuardSkillFeature : PlayerSkillFeature
+    public sealed class GuardSkillFeature : ActorSkillFeature
     {
         [SerializeField, Range(0f, 1f)] private float incomingDamageScale = 0.25f;
-        private IPlayerCombatCoordinator combat;
+        private IActorCombatCoordinator combat;
         protected override float ActiveDuration => float.PositiveInfinity;
 
         private void Awake()
         {
-            combat = GetComponent<IPlayerCombatCoordinator>();
+            combat = GetComponent<IActorCombatCoordinator>();
         }
 
-        protected override bool OnActivate(PlayerSkillContext context)
+        protected override bool OnActivate(ActorSkillContext context)
         {
-            if (combat == null) combat = GetComponent<IPlayerCombatCoordinator>();
+            if (combat == null) combat = GetComponent<IActorCombatCoordinator>();
             if (combat == null) return false;
             combat.SetIncomingDamageScale(GetInstanceID(), incomingDamageScale);
             return true;

@@ -3,7 +3,7 @@ using UnityEngine.VFX;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public sealed class PlayerSkillEffectVisual : MonoBehaviour
+    public sealed class ActorSkillEffectVisual : MonoBehaviour
     {
         private const string AttackVfxPath = "VFX/Skills/SkillAttackBurst";
         private const string DashVfxPath = "VFX/Skills/SkillDashTrail";
@@ -24,9 +24,9 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var effectObject = new GameObject($"{slot}SkillVFX", typeof(VisualEffect), typeof(PlayerSkillEffectVisual));
+            var effectObject = new GameObject($"{slot}SkillVFX", typeof(VisualEffect), typeof(ActorSkillEffectVisual));
             effectObject.transform.SetParent(FindPresentationRoot(owner), false);
-            var lifetime = effectObject.GetComponent<PlayerSkillEffectVisual>();
+            var lifetime = effectObject.GetComponent<ActorSkillEffectVisual>();
             lifetime.Configure(slot);
             var effect = effectObject.GetComponent<VisualEffect>();
             effect.visualEffectAsset = asset;

@@ -6,8 +6,8 @@ using UnityEngine.VFX;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PlayerRespawnFeature))]
-    public sealed class PlayerDeathPresentation : MonoBehaviour
+    [RequireComponent(typeof(ActorRespawnFeature))]
+    public sealed class ActorDeathPresentation : MonoBehaviour
     {
         private const string DeathVfxPath = "VFX/Skills/SkillHealBurst";
         private const string DissolveShaderPath = "Shaders/CharacterDeathDissolve";
@@ -23,8 +23,8 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Vector3 effectLocalScale = new Vector3(1.35f, 1.8f, 1.35f);
 
         private readonly List<DissolveRendererState> rendererStates = new();
-        private readonly List<IPlayerRespawnPresentationNotifier> respawnNotifiers = new();
-        private PlayerRespawnFeature lifeState;
+        private readonly List<IActorRespawnPresentationNotifier> respawnNotifiers = new();
+        private ActorRespawnFeature lifeState;
         private Coroutine dissolveRoutine;
         private GameObject activeDeathEffect;
 
@@ -35,11 +35,11 @@ namespace Koiusa.SteamMultiRuntime
             public Material[] DissolveMaterials;
         }
 
-        private void Awake() => lifeState = GetComponent<PlayerRespawnFeature>();
+        private void Awake() => lifeState = GetComponent<ActorRespawnFeature>();
 
         private void OnEnable()
         {
-            if (lifeState == null) lifeState = GetComponent<PlayerRespawnFeature>();
+            if (lifeState == null) lifeState = GetComponent<ActorRespawnFeature>();
             if (lifeState != null) lifeState.LifeStateChanged += OnLifeStateChanged;
             FindRespawnNotifiers();
             if (lifeState != null && lifeState.IsDead) BeginDissolve();
@@ -82,7 +82,7 @@ namespace Koiusa.SteamMultiRuntime
                 var candidate = renderers[i];
                 if (candidate == null || !candidate.enabled
                     || candidate.GetComponentInParent<VisualEffect>() != null
-                    || candidate.GetComponentInParent<PlayerSkillEffectVisual>() != null
+                    || candidate.GetComponentInParent<ActorSkillEffectVisual>() != null
                     || candidate.GetComponentInParent<GuardShieldVisual>() != null)
                     continue;
 
@@ -170,7 +170,7 @@ namespace Koiusa.SteamMultiRuntime
             var components = GetComponents<MonoBehaviour>();
             for (var i = 0; i < components.Length; i++)
             {
-                if (components[i] is not IPlayerRespawnPresentationNotifier notifier) continue;
+                if (components[i] is not IActorRespawnPresentationNotifier notifier) continue;
                 respawnNotifiers.Add(notifier);
                 notifier.RespawnPresentationReady += OnRespawnPresentationReady;
             }

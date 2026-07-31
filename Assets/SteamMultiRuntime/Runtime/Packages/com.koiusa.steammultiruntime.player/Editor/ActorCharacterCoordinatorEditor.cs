@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [CustomEditor(typeof(PlayerCharacterCoordinator))]
-    public sealed class PlayerCharacterCoordinatorEditor : UnityEditor.Editor
+    [CustomEditor(typeof(ActorCharacterCoordinator))]
+    public sealed class ActorCharacterCoordinatorEditor : UnityEditor.Editor
     {
         private bool movementExpanded = true;
         private bool skillsExpanded = true;
@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public override void OnInspectorGUI()
         {
-            var coordinator = (PlayerCharacterCoordinator)target;
+            var coordinator = (ActorCharacterCoordinator)target;
             var owner = coordinator.gameObject;
 
             EditorGUILayout.HelpBox(
@@ -49,8 +49,8 @@ namespace Koiusa.SteamMultiRuntime
             if (skillsExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawReadOnly<PlayerSkillCoordinator>(owner, "Coordinator");
-                DrawOptional<PlayerSkillPresentation>(owner, "Skill Presentation");
+                DrawReadOnly<ActorSkillCoordinator>(owner, "Coordinator");
+                DrawOptional<ActorSkillPresentation>(owner, "Skill Presentation");
                 DrawSkillInput(owner);
                 DrawOptional<DashSkillFeature>(owner, "Dash Skill");
                 DrawOptional<SwordAttackSkillFeature>(owner, "Sword Attack Skill");
@@ -67,10 +67,10 @@ namespace Koiusa.SteamMultiRuntime
             if (combatExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawReadOnly<PlayerCombatCoordinator>(owner, "Coordinator");
-                DrawOptional<PlayerHealthFeature>(owner, "Health Feature");
-                DrawOptional<PlayerDamageReceiverFeature>(owner, "Damage Receiver Feature");
-                DrawOptional<PlayerHitDetectionFeature>(owner, "Hit Detection Feature");
+                DrawReadOnly<ActorCombatCoordinator>(owner, "Coordinator");
+                DrawOptional<ActorHealthFeature>(owner, "Health Feature");
+                DrawOptional<ActorDamageReceiverFeature>(owner, "Damage Receiver Feature");
+                DrawOptional<ActorHitDetectionFeature>(owner, "Hit Detection Feature");
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.EndFoldoutHeaderGroup();

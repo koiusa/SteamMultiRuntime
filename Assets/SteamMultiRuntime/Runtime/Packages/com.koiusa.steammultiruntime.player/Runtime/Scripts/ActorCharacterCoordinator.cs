@@ -4,21 +4,21 @@ namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(ActorCompositeMotor))]
-    [RequireComponent(typeof(PlayerSkillCoordinator))]
-    [RequireComponent(typeof(PlayerCombatCoordinator))]
-    public sealed class PlayerCharacterCoordinator : MonoBehaviour
+    [RequireComponent(typeof(ActorSkillCoordinator))]
+    [RequireComponent(typeof(ActorCombatCoordinator))]
+    public sealed class ActorCharacterCoordinator : MonoBehaviour
     {
         public ActorCompositeMotor Motor { get; private set; }
-        public PlayerSkillCoordinator Skills { get; private set; }
-        public PlayerCombatCoordinator Combat { get; private set; }
+        public ActorSkillCoordinator Skills { get; private set; }
+        public ActorCombatCoordinator Combat { get; private set; }
 
         private void Awake() => RefreshComponents();
 
         public void RefreshComponents()
         {
             Motor = GetComponent<ActorCompositeMotor>();
-            Skills = GetComponent<PlayerSkillCoordinator>();
-            Combat = GetComponent<PlayerCombatCoordinator>();
+            Skills = GetComponent<ActorSkillCoordinator>();
+            Combat = GetComponent<ActorCombatCoordinator>();
             Skills?.RefreshSkills();
             Combat?.RefreshFeatures();
         }
@@ -30,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime
                 && Skills.TryActivate(skillId, direction, target);
         }
 
-        public bool TryActivateSkill(PlayerSkillDefinition definition, Vector3 direction, GameObject target = null)
+        public bool TryActivateSkill(ActorSkillDefinition definition, Vector3 direction, GameObject target = null)
         {
             return definition != null && TryActivateSkill(definition.Id, direction, target);
         }
