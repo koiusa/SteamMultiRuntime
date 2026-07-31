@@ -39,6 +39,13 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float speedDampTime = 0.08f;
         [SerializeField, Min(0.0001f)] private float motionSpeedMultiplier = 2f;
 
+        [Header("Animation Update LOD")]
+        [SerializeField, Min(0f)] private float nearAnimationDistance = 12f;
+        [SerializeField, Min(0f)] private float midAnimationDistance = 30f;
+        [SerializeField, Min(0.1f)] private float nearAnimationUpdateRate = 30f;
+        [SerializeField, Min(0.1f)] private float midAnimationUpdateRate = 15f;
+        [SerializeField, Min(0.1f)] private float farAnimationUpdateRate = 2f;
+
         private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
         private RuntimeAnimatorController cachedAnimatorController;
         private IActorController playerController;
@@ -49,6 +56,13 @@ namespace Koiusa.SteamMultiRuntime
         private IActorTraversalCoordinator traversalCoordinator;
         private Renderer[] targetRenderers;
         private Vector3 previousPosition;
+        private float scheduledDeltaTime;
+
+        internal float NearAnimationDistance => Mathf.Max(0f, nearAnimationDistance);
+        internal float MidAnimationDistance => Mathf.Max(NearAnimationDistance, midAnimationDistance);
+        internal float NearAnimationUpdateInterval => 1f / Mathf.Max(0.1f, nearAnimationUpdateRate);
+        internal float MidAnimationUpdateInterval => 1f / Mathf.Max(0.1f, midAnimationUpdateRate);
+        internal float FarAnimationUpdateInterval => 1f / Mathf.Max(0.1f, farAnimationUpdateRate);
 
         private void Reset()
         {
@@ -79,12 +93,43 @@ namespace Koiusa.SteamMultiRuntime
             targetRenderers = targetAnimator != null
                 ? targetAnimator.GetComponentsInChildren<Renderer>(true)
                 : System.Array.Empty<Renderer>();
+            if (targetAnimator != null)
+                targetAnimator.keepAnimatorStateOnDisable = true;
 
             CacheParameterHashes();
             previousPosition = transform.position;
+            ActorAnimatorUpdateScheduler.Register(this);
+            enabled = false;
         }
 
-        private void LateUpdate()
+        internal void TickScheduled(float deltaTime)
+        {
+            scheduledDeltaTime = Mathf.Max(0.0001f, deltaTime);
+            UpdateAnimatorState(scheduledDeltaTime);
+        }
+
+        internal void TickFarScheduled(float deltaTime)
+        {
+            if (targetAnimator == null)
+                return;
+            SetScheduledAnimatorActive(true);
+            TickScheduled(deltaTime);
+            targetAnimator.Update(scheduledDeltaTime);
+            SetScheduledAnimatorActive(false);
+        }
+
+        internal void SetScheduledAnimatorActive(bool active)
+        {
+            if (targetAnimator != null && targetAnimator.enabled != active)
+                targetAnimator.enabled = active;
+        }
+
+        private void OnDestroy()
+        {
+            ActorAnimatorUpdateScheduler.Unregister(this);
+        }
+
+        private void UpdateAnimatorState(float deltaTime)
         {
             if (targetAnimator == null)
             {
@@ -167,7 +212,7 @@ namespace Koiusa.SteamMultiRuntime
                     : ActorAirAnimationState.None;
             var animationVerticalSpeed = isLadder ? ladderSpeed : verticalSpeed;
 
-            SetFloat(horizontalSpeedParameter, animationMoveSpeed, speedDampTime);
+            SetFloat(horizontalSpeedParameter, animationMoveSpeed, speedDampTime, deltaTime);
             SetFloat(verticalSpeedParameter, animationVerticalSpeed);
             SetFloat(motionSpeedParameter, motionSpeed);
             SetInt(locomotionModeParameter, (int)locomotionMode);
@@ -257,7 +302,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private void SetFloat(string parameterName, float value, float dampTime = 0f)
+        private void SetFloat(string parameterName, float value, float dampTime = 0f, float deltaTime = 0f)
         {
             if (!TryGetParameterHash(parameterName, out var hash))
             {
@@ -266,7 +311,7 @@ namespace Koiusa.SteamMultiRuntime
 
             if (dampTime > 0f)
             {
-                targetAnimator.SetFloat(hash, value, dampTime, Time.deltaTime);
+                targetAnimator.SetFloat(hash, value, dampTime, deltaTime > 0f ? deltaTime : Time.deltaTime);
                 return;
             }
 

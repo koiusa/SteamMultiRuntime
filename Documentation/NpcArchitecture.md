@@ -60,6 +60,8 @@ Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、
 
 Local／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`の単一`FixedUpdate`から一括で呼び出します。Player用`ServerDrivenActorController`の個別Tickは維持し、`ServerNpc` ModeだけをCrowd側へ委譲します。
 
+Player／NPC共通の`ActorAnimatorStateDriver`は個別`LateUpdate`を持たず、単一SchedulerがCamera距離に応じて更新頻度を切り替えます。各`ActorAnimatorStateDriver`のInspectorにある`Animation Update LOD`で近距離／中距離の境界と近距離／中距離／遠距離の各更新Hzを設定できます。遠距離ActorはAnimator状態を保持したまま更新時だけ評価し、Cameraが存在しないDedicated ServerではAnimatorを停止します。初期値は近距離12m・30Hz、中距離30m・15Hz、遠距離2Hzです。
+
 Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
 
 ## 目的地デバッグ表示
