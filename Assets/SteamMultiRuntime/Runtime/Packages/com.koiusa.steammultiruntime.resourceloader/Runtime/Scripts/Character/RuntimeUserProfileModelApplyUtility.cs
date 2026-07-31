@@ -21,7 +21,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var sync = target.GetComponent<IPlayerModelSync>();
+            var sync = target.GetComponent<IActorModelSync>();
             if (sync != null)
             {
                 sync.ModelIdList = modelIdList;

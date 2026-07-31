@@ -325,7 +325,7 @@ Animation Move Speed = sqrt(HorizontalVelocity² + VerticalVelocity²)
 
 この値は斜面に沿った実移動距離を反映するため、上り坂／下り坂でAnimation再生速度が遅くなることを防ぎます。空中では従来どおり水平速度を使用します。Gameplay上の`HorizontalVelocity`定義は変更しません。
 
-`PlayerLocomotionAnimationMode`は次の値を使用します。
+`ActorLocomotionAnimationMode`は次の値を使用します。
 
 ```text
 Grounded = 0

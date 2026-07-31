@@ -1,6 +1,6 @@
 namespace Koiusa.SteamMultiRuntime.Character
 {
-    public interface IPlayerModelSync
+    public interface IActorModelSync
     {
         CharacterModelIdList ModelIdList { get; set; }
         int CurrentModelIndex { get; }

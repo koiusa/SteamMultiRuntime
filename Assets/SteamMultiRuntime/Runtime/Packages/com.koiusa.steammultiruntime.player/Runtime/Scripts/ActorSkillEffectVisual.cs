@@ -15,7 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private VisualEffect visualEffect;
         private bool emissionStopped;
 
-        internal static void Create(Transform owner, PlayerSkillSlot slot)
+        internal static void Create(Transform owner, ActorSkillSlot slot)
         {
             var asset = Resources.Load<VisualEffectAsset>(GetResourcePath(slot));
             if (asset == null)
@@ -44,27 +44,27 @@ namespace Koiusa.SteamMultiRuntime
             return owner;
         }
 
-        private static string GetResourcePath(PlayerSkillSlot slot)
+        private static string GetResourcePath(ActorSkillSlot slot)
         {
             return slot switch
             {
-                PlayerSkillSlot.Attack => AttackVfxPath,
-                PlayerSkillSlot.Dash => DashVfxPath,
-                PlayerSkillSlot.Heal => HealVfxPath,
+                ActorSkillSlot.Attack => AttackVfxPath,
+                ActorSkillSlot.Dash => DashVfxPath,
+                ActorSkillSlot.Heal => HealVfxPath,
                 _ => string.Empty
             };
         }
 
-        private void Configure(PlayerSkillSlot slot)
+        private void Configure(ActorSkillSlot slot)
         {
             switch (slot)
             {
-                case PlayerSkillSlot.Attack:
+                case ActorSkillSlot.Attack:
                     transform.localPosition = new Vector3(0f, 0.75f, 0.9f);
                     transform.localScale = new Vector3(1.2f, 0.8f, 0.45f);
                     duration = 1.5f;
                     break;
-                case PlayerSkillSlot.Dash:
+                case ActorSkillSlot.Dash:
                     transform.localPosition = new Vector3(0f, 0.55f, -0.65f);
                     transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
                     transform.localScale = new Vector3(0.6f, 0.6f, 1.4f);

@@ -140,7 +140,7 @@ Network Player
 
 Local／NetworkともSkill Featureを直接呼ばず、`ActorCharacterCoordinator`または`IActorSkillCoordinator`を共通入口にします。NetworkではOwner入力をServerRpcで送り、発動可否、Hit判定、Damage、HealをServer Authorityで確定します。
 
-`ActiveSkillIndex`は`PlayerSkillSlot`によりAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加し、`LastActivatedSkillIndex`と組み合わせて短時間Skillが同一Network tick内に終了しても一回限りの演出を失わないようにします。すべて全Clientから読み取り可能ですが、書き込みはServerだけが行います。
+`ActiveSkillIndex`は`ActorSkillSlot`によりAttack／Dash／Guard／Healをそれぞれ`0`／`1`／`2`／`3`で表し、非発動時は`-1`です。`ActivationSequence`はServer上でSkill開始のたびに増加し、`LastActivatedSkillIndex`と組み合わせて短時間Skillが同一Network tick内に終了しても一回限りの演出を失わないようにします。すべて全Clientから読み取り可能ですが、書き込みはServerだけが行います。
 
 Local／ServerのSkill開始・終了は`ActorSkillCoordinator`から、Remote ClientはNetwork Skill Stateから、共通の`ActorSkillPresentation`へ通知します。HostではServer側のCoordinator通知だけを使うため二重再生しません。PresentationはAttack／Dash／HealのVFX Graph、Guard Shield、Animatorの任意Trigger／Boolを一元管理します。現在の標準Animator ControllerにはSkill用Parameter／Clipがないため、Animationは対応Controllerへ`Attack`、`Dash`、`Guard`、`Heal`を追加した場合に再生されます。
 
@@ -274,7 +274,7 @@ Shield中心はCharacter ModelのRenderer boundsからGuard開始時に一度だ
 - 攻撃命中は`ActorDamageRequest.Point`を中心とするRingで表示する
 - 環境との交差はURP Scene Depthを比較して表示する
 - 環境交差のためPC／Mobile双方のURP AssetでDepth Textureを有効にする
-- Network Playerでは`PlayerSkillSlot.Guard`の同期状態を全Clientへ反映する
+- Network Playerでは`ActorSkillSlot.Guard`の同期状態を全Clientへ反映する
 - Attack／Dash／Healの一回限りのEffectは`ActivationSequence`でRemote Clientへ反映する
 
 > [!CAUTION]
@@ -284,7 +284,7 @@ Shield中心はCharacter ModelのRenderer boundsからGuard開始時に一度だ
 
 Player表示名は各Playerの`Presentation`配下にあるWorld Space `UIDocument`で描画します。位置はPlayerの表示補間Transformから継承し、スクリーン座標への変換やPlayer一覧走査を`Update`／`LateUpdate`で行いません。
 
-表示名とHPゲージは別GameObject・別`UIDocument`・別Presenterとして管理します。`PlayerNameOverlayUiDocument`は表示名だけ、`ActorHealthOverlayUiDocument`はHPだけを所有し、表示位置や有効状態を個別に変更できます。カメラ正対、距離Fade、画面上のサイズ維持は共通の`PlayerWorldSpaceOverlay`を各Objectで再利用します。HP Presenterは`ActorHealthFeature.HealthChanged`を購読してDamage／Heal／Network同期時だけFill幅、赤から緑への残量色、数値を更新し、HP値を毎フレーム監視しません。
+表示名とHPゲージは別GameObject・別`UIDocument`・別Presenterとして管理します。`PlayerNameOverlayUiDocument`は表示名だけ、`ActorHealthOverlayUiDocument`はHPだけを所有し、表示位置や有効状態を個別に変更できます。カメラ正対、距離Fade、画面上のサイズ維持は共通の`ActorWorldSpaceOverlay`を各Objectで再利用します。HP Presenterは`ActorHealthFeature.HealthChanged`を購読してDamage／Heal／Network同期時だけFill幅、赤から緑への残量色、数値を更新し、HP値を毎フレーム監視しません。
 
 HPの表示先は`ActorHealthUiRouter`が所有権とCharacter種別に応じて切り替えます。Local Ownerは画面左下の固定HUD、Remote Playerは頭上ゲージを常時表示します。Local／Network NPCは頭上ゲージを通常は隠し、被ダメージ時に3秒間表示します。表示中に再度ダメージを受けた場合は表示時間を3秒へ延長し、回復だけでは表示しません。HPが0になった通知では全表示先を即座に隠し、リスポーン後はPlayerだけ通常の表示先へ戻します。
 

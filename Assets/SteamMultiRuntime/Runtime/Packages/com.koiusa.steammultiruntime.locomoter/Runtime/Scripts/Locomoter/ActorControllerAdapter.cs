@@ -7,13 +7,13 @@ namespace Koiusa.SteamMultiRuntime
     /// underlying state is produced locally, by NPC navigation, or by netcode.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class ActorControllerAdapter : MonoBehaviour, IActorController, IPlayerLadderState, IPlayerWallRunState
+    public sealed class ActorControllerAdapter : MonoBehaviour, IActorController, IActorLadderState, IActorWallRunState
     {
         [SerializeField] private MonoBehaviour stateSource;
 
         private IActorLocomotionState source;
-        private IPlayerLadderState ladderState;
-        private IPlayerWallRunState wallRunState;
+        private IActorLadderState ladderState;
+        private IActorWallRunState wallRunState;
 
         public bool IsGrounded => source != null && source.IsGrounded;
         public bool IsJumping => source != null && source.IsJumping;
@@ -65,8 +65,8 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            ladderState = source as IPlayerLadderState;
-            wallRunState = source as IPlayerWallRunState;
+            ladderState = source as IActorLadderState;
+            wallRunState = source as IActorWallRunState;
 
             if (source == null && Application.isPlaying)
                 Debug.LogError("ActorControllerAdapter could not find an IActorLocomotionState source.", this);

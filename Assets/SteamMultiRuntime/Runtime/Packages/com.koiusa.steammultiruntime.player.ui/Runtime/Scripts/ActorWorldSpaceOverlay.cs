@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 {
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
-    public sealed class PlayerWorldSpaceOverlay : MonoBehaviour
+    public sealed class ActorWorldSpaceOverlay : MonoBehaviour
     {
         [Min(0f)] [SerializeField] private float fadeStartDistance = 8f;
         [Min(0f)] [SerializeField] private float fadeEndDistance = 20f;
@@ -33,7 +33,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void RestoreLiveInstancesAfterSubsystemReset()
         {
-            var instances = FindObjectsByType<PlayerWorldSpaceOverlay>(
+            var instances = FindObjectsByType<ActorWorldSpaceOverlay>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (var i = 0; i < instances.Length; i++)
             {

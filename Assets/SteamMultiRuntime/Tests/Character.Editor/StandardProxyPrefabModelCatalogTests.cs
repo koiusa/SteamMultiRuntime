@@ -62,9 +62,9 @@ namespace Koiusa.SteamMultiRuntime.Tests
             foreach (var prefabPath in LocalProxyPaths)
             {
                 var prefab = LoadPrefab(prefabPath);
-                var modelSync = prefab.GetComponentInChildren<LocalPlayerModelSync>(true);
+                var modelSync = prefab.GetComponentInChildren<LocalActorModelSync>(true);
 
-                Assert.That(modelSync, Is.Not.Null, $"LocalPlayerModelSync is missing: {prefabPath}");
+                Assert.That(modelSync, Is.Not.Null, $"LocalActorModelSync is missing: {prefabPath}");
                 Assert.That(modelSync.ModelIdList, Is.SameAs(expectedCatalog),
                     $"CharacterModelIdList is not assigned: {prefabPath}");
             }
@@ -78,9 +78,9 @@ namespace Koiusa.SteamMultiRuntime.Tests
             foreach (var prefabPath in NetworkProxyPaths)
             {
                 var prefab = LoadPrefab(prefabPath);
-                var modelSync = prefab.GetComponentInChildren<NetworkPlayerModelSync>(true);
+                var modelSync = prefab.GetComponentInChildren<NetworkActorModelSync>(true);
 
-                Assert.That(modelSync, Is.Not.Null, $"NetworkPlayerModelSync is missing: {prefabPath}");
+                Assert.That(modelSync, Is.Not.Null, $"NetworkActorModelSync is missing: {prefabPath}");
                 Assert.That(modelSync.ModelIdList, Is.SameAs(expectedCatalog),
                     $"CharacterModelIdList is not assigned: {prefabPath}");
             }

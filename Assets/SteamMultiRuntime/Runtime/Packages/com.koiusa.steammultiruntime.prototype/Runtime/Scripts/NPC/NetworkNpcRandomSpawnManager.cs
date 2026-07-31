@@ -539,7 +539,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
+            var networkModelSync = instance.GetComponent<NetworkActorModelSync>();
             if (networkModelSync == null)
             {
                 return;
@@ -555,7 +555,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var networkModelSync = instance.GetComponent<NetworkPlayerModelSync>();
+            var networkModelSync = instance.GetComponent<NetworkActorModelSync>();
             if (networkModelSync == null || !networkModelSync.IsSpawned || !networkModelSync.IsServer)
             {
                 return;
@@ -571,7 +571,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var localModelSync = instance.GetComponent<LocalPlayerModelSync>();
+            var localModelSync = instance.GetComponent<LocalActorModelSync>();
             if (localModelSync == null)
             {
                 return;

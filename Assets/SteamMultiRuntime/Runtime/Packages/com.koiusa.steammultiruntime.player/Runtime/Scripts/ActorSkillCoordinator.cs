@@ -29,7 +29,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var ended = ActiveSkill;
                 ActiveSkill = null;
-                presentation?.SetActiveSkill(PlayerSkillSlot.None);
+                presentation?.SetActiveSkill(ActorSkillSlot.None);
                 SkillEnded?.Invoke(ended);
             }
         }
@@ -65,21 +65,21 @@ namespace Koiusa.SteamMultiRuntime
             var cancelled = ActiveSkill;
             ActiveSkill.Cancel();
             ActiveSkill = null;
-            presentation?.SetActiveSkill(PlayerSkillSlot.None);
+            presentation?.SetActiveSkill(ActorSkillSlot.None);
             SkillEnded?.Invoke(cancelled);
         }
 
         private void OnDisable() => CancelActiveSkill();
 
-        private static PlayerSkillSlot GetSkillSlot(IActorSkillFeature skill)
+        private static ActorSkillSlot GetSkillSlot(IActorSkillFeature skill)
         {
             return skill switch
             {
-                SwordAttackSkillFeature => PlayerSkillSlot.Attack,
-                DashSkillFeature => PlayerSkillSlot.Dash,
-                GuardSkillFeature => PlayerSkillSlot.Guard,
-                HealSkillFeature => PlayerSkillSlot.Heal,
-                _ => PlayerSkillSlot.None
+                SwordAttackSkillFeature => ActorSkillSlot.Attack,
+                DashSkillFeature => ActorSkillSlot.Dash,
+                GuardSkillFeature => ActorSkillSlot.Guard,
+                HealSkillFeature => ActorSkillSlot.Heal,
+                _ => ActorSkillSlot.None
             };
         }
     }

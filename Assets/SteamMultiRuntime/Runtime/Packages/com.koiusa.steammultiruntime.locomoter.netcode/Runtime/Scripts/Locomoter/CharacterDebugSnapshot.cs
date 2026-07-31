@@ -122,8 +122,8 @@ namespace Koiusa.SteamMultiRuntime
             destination.VerticalVelocity = controller.VerticalVelocity;
             destination.MaxMoveSpeed = controller.MaxMoveSpeed;
             destination.InheritedGroundVelocity = controller.InheritedGroundVelocity;
-            destination.HasLadderState = controller is IPlayerLadderState;
-            if (controller is IPlayerLadderState ladder)
+            destination.HasLadderState = controller is IActorLadderState;
+            if (controller is IActorLadderState ladder)
             {
                 destination.OnLadder = ladder.IsOnLadder;
                 destination.LadderSpeed = ladder.LadderSpeed;

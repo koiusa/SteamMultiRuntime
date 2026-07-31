@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public enum PlayerLocomotionAnimationMode
+    public enum ActorLocomotionAnimationMode
     {
         Grounded = 0,
         Airborne = 1,
@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         WireSwing = 4
     }
 
-    public enum PlayerAirAnimationState
+    public enum ActorAirAnimationState
     {
         None = 0,
         Rising = 1,
@@ -43,8 +43,8 @@ namespace Koiusa.SteamMultiRuntime
         private RuntimeAnimatorController cachedAnimatorController;
         private IActorController playerController;
         private ILadderTraversalFeature ladderTraversalFeature;
-        private IPlayerLadderState playerLadderState;
-        private IPlayerWallRunState playerWallRunState;
+        private IActorLadderState playerLadderState;
+        private IActorWallRunState playerWallRunState;
         private IWallRunAction wallRunAction;
         private IActorTraversalCoordinator traversalCoordinator;
         private Renderer[] targetRenderers;
@@ -72,8 +72,8 @@ namespace Koiusa.SteamMultiRuntime
 
             playerController = GetComponentInParent<IActorController>();
             ladderTraversalFeature = GetComponentInParent<ILadderTraversalFeature>();
-            playerLadderState = playerController as IPlayerLadderState;
-            playerWallRunState = playerController as IPlayerWallRunState;
+            playerLadderState = playerController as IActorLadderState;
+            playerWallRunState = playerController as IActorWallRunState;
             wallRunAction = GetComponentInParent<IWallRunAction>();
             traversalCoordinator = GetComponentInParent<IActorTraversalCoordinator>();
             targetRenderers = targetAnimator != null
@@ -142,29 +142,29 @@ namespace Koiusa.SteamMultiRuntime
                 : Vector3.zero;
             var useWallRunAnimation = isWallRunning;
             var locomotionMode = isLadder
-                ? PlayerLocomotionAnimationMode.Ladder
+                ? ActorLocomotionAnimationMode.Ladder
                 : useWallRunAnimation
-                ? PlayerLocomotionAnimationMode.WallRun
+                ? ActorLocomotionAnimationMode.WallRun
                 : isWireSwinging
-                    ? PlayerLocomotionAnimationMode.WireSwing
+                    ? ActorLocomotionAnimationMode.WireSwing
                 : isGrounded && !isWireSwinging
-                    ? PlayerLocomotionAnimationMode.Grounded
-                    : PlayerLocomotionAnimationMode.Airborne;
-            var wallRunSide = locomotionMode == PlayerLocomotionAnimationMode.WallRun
+                    ? ActorLocomotionAnimationMode.Grounded
+                    : ActorLocomotionAnimationMode.Airborne;
+            var wallRunSide = locomotionMode == ActorLocomotionAnimationMode.WallRun
                 ? GetWallRunSide(wallNormal, upAxis)
                 : 0;
-            var usesAirAnimation = locomotionMode == PlayerLocomotionAnimationMode.Airborne
-                || locomotionMode == PlayerLocomotionAnimationMode.WireSwing;
+            var usesAirAnimation = locomotionMode == ActorLocomotionAnimationMode.Airborne
+                || locomotionMode == ActorLocomotionAnimationMode.WireSwing;
             var airState = !usesAirAnimation
-                ? PlayerAirAnimationState.None
-                : isJumping ? PlayerAirAnimationState.Rising
+                ? ActorAirAnimationState.None
+                : isJumping ? ActorAirAnimationState.Rising
                 : isFreefall || isFallingAfterJump
-                    ? PlayerAirAnimationState.Falling
+                    ? ActorAirAnimationState.Falling
                     : isWireSwinging
                         ? verticalSpeed > 0f
-                            ? PlayerAirAnimationState.Rising
-                            : PlayerAirAnimationState.Falling
-                    : PlayerAirAnimationState.None;
+                            ? ActorAirAnimationState.Rising
+                            : ActorAirAnimationState.Falling
+                    : ActorAirAnimationState.None;
             var animationVerticalSpeed = isLadder ? ladderSpeed : verticalSpeed;
 
             SetFloat(horizontalSpeedParameter, animationMoveSpeed, speedDampTime);

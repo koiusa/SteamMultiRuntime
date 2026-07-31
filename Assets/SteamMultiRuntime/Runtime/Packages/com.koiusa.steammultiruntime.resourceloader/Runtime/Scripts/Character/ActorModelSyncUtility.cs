@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public static class PlayerModelSyncUtility
+    public static class ActorModelSyncUtility
     {
         public static void EnsureModelIdList(ref CharacterModelIdList modelIdList)
         {

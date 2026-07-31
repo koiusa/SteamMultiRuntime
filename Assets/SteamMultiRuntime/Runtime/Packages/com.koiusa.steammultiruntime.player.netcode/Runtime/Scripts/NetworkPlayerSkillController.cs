@@ -18,9 +18,9 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private Transform directionReference;
 
         private readonly NetworkVariable<int> activeSkillIndex = new NetworkVariable<int>(
-            (int)PlayerSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            (int)ActorSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<int> lastActivatedSkillIndex = new NetworkVariable<int>(
-            (int)PlayerSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            (int)ActorSkillSlot.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         private readonly NetworkVariable<uint> activationSequence = new NetworkVariable<uint>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -44,7 +44,7 @@ namespace Koiusa.SteamMultiRuntime
             base.OnNetworkSpawn();
             activeSkillIndex.OnValueChanged += OnActiveSkillIndexChanged;
             activationSequence.OnValueChanged += OnActivationSequenceChanged;
-            if (!IsServer) presentation?.SetActiveSkill((PlayerSkillSlot)activeSkillIndex.Value);
+            if (!IsServer) presentation?.SetActiveSkill((ActorSkillSlot)activeSkillIndex.Value);
             if (IsServer && coordinator?.Skills != null)
             {
                 coordinator.Skills.SkillStarted += OnServerSkillStarted;
@@ -57,7 +57,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             activeSkillIndex.OnValueChanged -= OnActiveSkillIndexChanged;
             activationSequence.OnValueChanged -= OnActivationSequenceChanged;
-            if (!IsServer) presentation?.SetActiveSkill(PlayerSkillSlot.None);
+            if (!IsServer) presentation?.SetActiveSkill(ActorSkillSlot.None);
             ReleaseInput();
             if (coordinator?.Skills != null)
             {
@@ -69,13 +69,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnActiveSkillIndexChanged(int previousValue, int newValue)
         {
-            if (!IsServer) presentation?.SetActiveSkill((PlayerSkillSlot)newValue);
+            if (!IsServer) presentation?.SetActiveSkill((ActorSkillSlot)newValue);
         }
 
         private void OnActivationSequenceChanged(uint previousValue, uint newValue)
         {
             if (!IsServer && newValue != 0)
-                presentation?.PlaySkillActivation((PlayerSkillSlot)lastActivatedSkillIndex.Value, newValue);
+                presentation?.PlaySkillActivation((ActorSkillSlot)lastActivatedSkillIndex.Value, newValue);
         }
 
         private void OnEnable()
@@ -89,11 +89,11 @@ namespace Koiusa.SteamMultiRuntime
         {
             inputBindings = new PlayerSkillInputBindings(
                 inputActionsConfig,
-                () => RequestActivate(PlayerSkillSlot.Attack, attackSkill),
-                () => RequestActivate(PlayerSkillSlot.Dash, dashSkill),
-                () => guardStartedByInput = RequestActivate(PlayerSkillSlot.Guard, guardSkill),
+                () => RequestActivate(ActorSkillSlot.Attack, attackSkill),
+                () => RequestActivate(ActorSkillSlot.Dash, dashSkill),
+                () => guardStartedByInput = RequestActivate(ActorSkillSlot.Guard, guardSkill),
                 CancelInputGuard,
-                () => RequestActivate(PlayerSkillSlot.Heal, healSkill));
+                () => RequestActivate(ActorSkillSlot.Heal, healSkill));
         }
 
         private void ReleaseInput()
@@ -102,7 +102,7 @@ namespace Koiusa.SteamMultiRuntime
             CancelInputGuard();
         }
 
-        private bool RequestActivate(PlayerSkillSlot skillSlot, ActorSkillDefinition definition)
+        private bool RequestActivate(ActorSkillSlot skillSlot, ActorSkillDefinition definition)
         {
             if (!IsSpawned || !IsOwner || definition == null || string.IsNullOrWhiteSpace(definition.Id)) return false;
             var reference = directionReference != null ? directionReference : transform;
@@ -115,10 +115,10 @@ namespace Koiusa.SteamMultiRuntime
         [ServerRpc]
         private void ActivateSkillServerRpc(int skillIndex, Vector3 direction)
         {
-            ActivateOnServer((PlayerSkillSlot)skillIndex, direction);
+            ActivateOnServer((ActorSkillSlot)skillIndex, direction);
         }
 
-        private bool ActivateOnServer(PlayerSkillSlot skillSlot, Vector3 direction)
+        private bool ActivateOnServer(ActorSkillSlot skillSlot, Vector3 direction)
         {
             var definition = GetDefinition(skillSlot);
             return IsServer
@@ -176,28 +176,28 @@ namespace Koiusa.SteamMultiRuntime
         private void OnServerSkillEnded(IActorSkillFeature skill)
         {
             if (activeSkillIndex.Value == (int)GetDefinitionSlot(skill.Definition))
-                activeSkillIndex.Value = (int)PlayerSkillSlot.None;
+                activeSkillIndex.Value = (int)ActorSkillSlot.None;
         }
 
-        private ActorSkillDefinition GetDefinition(PlayerSkillSlot slot)
+        private ActorSkillDefinition GetDefinition(ActorSkillSlot slot)
         {
             return slot switch
             {
-                PlayerSkillSlot.Attack => attackSkill,
-                PlayerSkillSlot.Dash => dashSkill,
-                PlayerSkillSlot.Guard => guardSkill,
-                PlayerSkillSlot.Heal => healSkill,
+                ActorSkillSlot.Attack => attackSkill,
+                ActorSkillSlot.Dash => dashSkill,
+                ActorSkillSlot.Guard => guardSkill,
+                ActorSkillSlot.Heal => healSkill,
                 _ => null
             };
         }
 
-        private PlayerSkillSlot GetDefinitionSlot(ActorSkillDefinition definition)
+        private ActorSkillSlot GetDefinitionSlot(ActorSkillDefinition definition)
         {
-            if (definition == attackSkill) return PlayerSkillSlot.Attack;
-            if (definition == dashSkill) return PlayerSkillSlot.Dash;
-            if (definition == guardSkill) return PlayerSkillSlot.Guard;
-            if (definition == healSkill) return PlayerSkillSlot.Heal;
-            return PlayerSkillSlot.None;
+            if (definition == attackSkill) return ActorSkillSlot.Attack;
+            if (definition == dashSkill) return ActorSkillSlot.Dash;
+            if (definition == guardSkill) return ActorSkillSlot.Guard;
+            if (definition == healSkill) return ActorSkillSlot.Heal;
+            return ActorSkillSlot.None;
         }
     }
 }

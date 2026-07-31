@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime
     /// <summary>
     /// ローカルプレイヤー用のモデル同期コンポーネント。
     /// </summary>
-    public class LocalPlayerModelSync : MonoBehaviour, IPlayerModelSync
+    public class LocalActorModelSync : MonoBehaviour, IActorModelSync
     {
         [Tooltip("モデルIDリスト（RuntimeUserProfileから自動設定されます）")]
         public CharacterModelIdList modelIdList;
@@ -24,7 +24,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
+            ActorModelSyncUtility.EnsureModelIdList(ref modelIdList);
             ApplyCurrentModel();
         }
 
@@ -36,9 +36,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void ApplyCurrentModel()
         {
-            PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
-            var resourceId = PlayerModelSyncUtility.GetCurrentResourceId(modelIdList, selectedModelIndex);
-            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(LocalPlayerModelSync));
+            ActorModelSyncUtility.EnsureModelIdList(ref modelIdList);
+            var resourceId = ActorModelSyncUtility.GetCurrentResourceId(modelIdList, selectedModelIndex);
+            ActorModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(LocalActorModelSync));
         }
     }
 }

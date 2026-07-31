@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    internal enum PlayerSkillSlot
+    internal enum ActorSkillSlot
     {
         None = -1,
         Attack = 0,
@@ -13,8 +13,8 @@ namespace Koiusa.SteamMultiRuntime
 
     internal interface IActorSkillPresentation
     {
-        void PlaySkillActivation(PlayerSkillSlot slot, uint sequence = 0);
-        void SetActiveSkill(PlayerSkillSlot slot);
+        void PlaySkillActivation(ActorSkillSlot slot, uint sequence = 0);
+        void SetActiveSkill(ActorSkillSlot slot);
     }
 
     public readonly struct ActorSkillContext

@@ -50,7 +50,7 @@ Keyconfigの導入とテストは[Keyconfig.md](Keyconfig.md)、TargetingSystem�
 
 | パッケージ | 責務 | 主な型 |
 |---|---|---|
-| `com.koiusa.steammultiruntime.character` | モデルID、プロフィール、モデル同期の契約 | `CharacterModelIdList`, `IRuntimeUserProfileModelSource`, `IPlayerModelSync` |
+| `com.koiusa.steammultiruntime.character` | モデルID、プロフィール、モデル同期の契約 | `CharacterModelIdList`, `IRuntimeUserProfileModelSource`, `IActorModelSync` |
 | `com.koiusa.steammultiruntime.resourceloader` | Character Prefabの解決・生成、Loading Splash表示 | `ICharacterPrefabLoader`, `CharacterPrefabLoader`, `LoadingSplashPresenter` |
 | `com.koiusa.steammultiruntime.character.ui` | Character選択UI | `CharacterSelectUiDocument`, `CharacterSelectView` |
 

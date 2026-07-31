@@ -22,9 +22,9 @@ IRuntimeUserProfileModelSource
    ├─ RuntimeUserProfile（Network）
    └─ LocalRuntimeUserProfile（Local）
 
-IPlayerModelSync
-├─ LocalPlayerModelSync
-└─ NetworkPlayerModelSync : NetworkBehaviour
+IActorModelSync
+├─ LocalActorModelSync
+└─ NetworkActorModelSync : NetworkBehaviour
 
 ICharacterPrefabLoader
 └─ CharacterPrefabLoader
@@ -50,15 +50,15 @@ Display Name
 ```text
 RuntimeUserProfile / LocalRuntimeUserProfile
   → model ID
-  → LocalPlayerModelSync / NetworkPlayerModelSync
+  → LocalActorModelSync / NetworkActorModelSync
   → CharacterPrefabLoader
   → CharacterModelIdListからPrefabを解決
   → Player Model Instance
 ```
 
 - `PlayerModelProfileBase`がモデル選択の共通契約を提供する
-- Localは`LocalPlayerModelSync`が直接反映する
-- Networkは`NetworkPlayerModelSync`が選択Indexを同期して各表示へ反映する
+- Localは`LocalActorModelSync`が直接反映する
+- Networkは`NetworkActorModelSync`が選択Indexを同期して各表示へ反映する
 - Prefab解決処理は`ICharacterPrefabLoader`の背後へ置く
 - 標準Local／Network／NPC Proxy Prefabは`CharacterModelIdList`を直接シリアライズ参照し、Model SyncがScene全体から任意のProfileを探索して設定を借用しない。5種類の標準ProxyはUnity Import後のPrefab Assetを読むEditorテストで参照を検証する
 - Local Profileは`LocalManager.Singleton`と`LocalPlayerProviderRegistry.Current`、Network Profileは`NetworkManager.Singleton`から対象Playerを解決する

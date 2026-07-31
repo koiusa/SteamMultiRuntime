@@ -36,14 +36,21 @@ PlayerとNPCが共有するRuntime機能では`Actor`を使い、ユーザー入
 
 ### Phase 5: Combat／Skill
 
-- [ ] NPCが利用するHealth、Damage、Combat型だけを`Actor`候補として分類
-- [ ] Player入力CoordinatorとPlayer専用Presentationは`Player`名を維持
-- [ ] Server authorityとPlayer/NPC双方の経路を確認してから改名
+- [x] NPCが利用するHealth、Damage、Combat、Skill実行型を`Actor`名へ変更
+- [x] Player Skill入力Controllerと入力Bindingは`Player`名を維持
+- [x] Server authorityとPlayer/NPC双方の経路を確認してから改名
+
+### Phase 6: 残存する共有Presentation／Character契約
+
+- [x] Animation modeとTraversal表示状態を`Actor`名へ変更
+- [x] Player／NPC共通World Space Overlayを`ActorWorldSpaceOverlay`へ変更
+- [x] Player／NPC共通Model Sync契約・実装を`ActorModelSync`系へ変更
+- [x] Profile、Spawn、表示名、Compass、Targeting ownerはPlayer固有として維持
 
 ## 検証チェック
 
 - [x] 完了済みPhaseの旧型名がFirst-party Runtime、Editor、Prefab、Scene、文書に残っていない
-- [ ] 旧型名の意図しない参照がFirst-party Runtime、Editor、Prefab、Scene、文書に残っていない
+- [x] 旧型名の意図しない参照がFirst-party Runtime、Editor、Prefab、Scene、文書に残っていない
 - [x] 移動したUnity Assetの`.meta` GUIDが変更されていない
 - [x] Local Player PrefabのComponent参照がMissingにならない
 - [x] Network Player PrefabのComponent参照がMissingにならない

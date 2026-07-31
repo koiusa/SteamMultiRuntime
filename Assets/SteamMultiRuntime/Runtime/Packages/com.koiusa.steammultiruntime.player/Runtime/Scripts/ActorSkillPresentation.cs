@@ -16,25 +16,25 @@ namespace Koiusa.SteamMultiRuntime
 
         private readonly Dictionary<Animator, HashSet<int>> parameterCache = new();
         private GuardShieldVisual guardShield;
-        private PlayerSkillSlot activeSkill = PlayerSkillSlot.None;
+        private ActorSkillSlot activeSkill = ActorSkillSlot.None;
         private uint lastRemoteSequence;
 
-        void IActorSkillPresentation.PlaySkillActivation(PlayerSkillSlot slot, uint sequence)
+        void IActorSkillPresentation.PlaySkillActivation(ActorSkillSlot slot, uint sequence)
         {
-            if (slot == PlayerSkillSlot.None) return;
+            if (slot == ActorSkillSlot.None) return;
             if (sequence != 0 && sequence == lastRemoteSequence) return;
             if (sequence != 0) lastRemoteSequence = sequence;
 
             PlayAnimatorParameter(slot);
-            if (playSkillEffects && slot != PlayerSkillSlot.Guard)
+            if (playSkillEffects && slot != ActorSkillSlot.Guard)
                 ActorSkillEffectVisual.Create(transform, slot);
         }
 
-        void IActorSkillPresentation.SetActiveSkill(PlayerSkillSlot slot)
+        void IActorSkillPresentation.SetActiveSkill(ActorSkillSlot slot)
         {
             if (activeSkill == slot) return;
             activeSkill = slot;
-            var guarding = slot == PlayerSkillSlot.Guard;
+            var guarding = slot == ActorSkillSlot.Guard;
             SetAnimatorBool(guardParameter, guarding);
             EnsureGuardShield().SetGuarding(guarding);
         }
@@ -46,17 +46,17 @@ namespace Koiusa.SteamMultiRuntime
             return guardShield;
         }
 
-        private void PlayAnimatorParameter(PlayerSkillSlot slot)
+        private void PlayAnimatorParameter(ActorSkillSlot slot)
         {
             var parameter = slot switch
             {
-                PlayerSkillSlot.Attack => attackTrigger,
-                PlayerSkillSlot.Dash => dashTrigger,
-                PlayerSkillSlot.Guard => guardParameter,
-                PlayerSkillSlot.Heal => healTrigger,
+                ActorSkillSlot.Attack => attackTrigger,
+                ActorSkillSlot.Dash => dashTrigger,
+                ActorSkillSlot.Guard => guardParameter,
+                ActorSkillSlot.Heal => healTrigger,
                 _ => string.Empty
             };
-            if (slot == PlayerSkillSlot.Guard) SetAnimatorBool(parameter, true);
+            if (slot == ActorSkillSlot.Guard) SetAnimatorBool(parameter, true);
             else SetAnimatorTrigger(parameter);
         }
 
@@ -93,7 +93,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
-            activeSkill = PlayerSkillSlot.None;
+            activeSkill = ActorSkillSlot.None;
             if (guardShield != null) guardShield.SetGuarding(false);
             SetAnimatorBool(guardParameter, false);
         }

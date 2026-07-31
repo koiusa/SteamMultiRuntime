@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime.Network
     /// <summary>
     /// サーバー主導でモデルIDを同期し、各クライアントでローカルPrefabを切り替えるNetcode同期用NetworkBehaviour。
     /// </summary>
-    public class NetworkPlayerModelSync : NetworkBehaviour, IPlayerModelSync
+    public class NetworkActorModelSync : NetworkBehaviour, IActorModelSync
     {
         [Tooltip("モデルIDリスト（RuntimeUserProfileから自動設定されます）")]
         public CharacterModelIdList modelIdList;
@@ -27,8 +27,8 @@ namespace Koiusa.SteamMultiRuntime.Network
 
         public override void OnNetworkSpawn()
         {
-            PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
-            PlayerModelSyncUtility.EnsurePrefabLoader(gameObject, ref prefabLoaderBehaviour);
+            ActorModelSyncUtility.EnsureModelIdList(ref modelIdList);
+            ActorModelSyncUtility.EnsurePrefabLoader(gameObject, ref prefabLoaderBehaviour);
             SelectedModelIndex.OnValueChanged += OnModelChanged;
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
@@ -57,9 +57,9 @@ namespace Koiusa.SteamMultiRuntime.Network
 
         private void ApplyCurrentModel()
         {
-            PlayerModelSyncUtility.EnsureModelIdList(ref modelIdList);
-            var resourceId = PlayerModelSyncUtility.GetCurrentResourceId(modelIdList, SelectedModelIndex.Value);
-            PlayerModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(NetworkPlayerModelSync));
+            ActorModelSyncUtility.EnsureModelIdList(ref modelIdList);
+            var resourceId = ActorModelSyncUtility.GetCurrentResourceId(modelIdList, SelectedModelIndex.Value);
+            ActorModelSyncUtility.ApplyCurrentModel(gameObject, ref prefabLoaderBehaviour, resourceId, nameof(NetworkActorModelSync));
         }
 
         private void OnModelChanged(int oldIndex, int newIndex)
