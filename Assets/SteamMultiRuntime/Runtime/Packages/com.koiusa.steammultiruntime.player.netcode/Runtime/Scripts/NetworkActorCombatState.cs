@@ -29,6 +29,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             health = GetComponent<ActorHealthFeature>();
+            health?.EnsureInitialized();
             respawn = GetComponent<ActorRespawnFeature>();
         }
 

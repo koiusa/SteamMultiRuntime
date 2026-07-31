@@ -2,6 +2,7 @@
     "name": "Koiusa.SteamMultiRuntime.Player.Netcode.PlayModeTests",
     "rootNamespace": "Koiusa.SteamMultiRuntime.Tests",
     "references": [
+        "Koiusa.SteamMultiRuntime.Player.Runtime",
         "Koiusa.SteamMultiRuntime.Player.Netcode.Runtime",
         "Unity.Netcode.Runtime"
     ],

@@ -32,6 +32,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             health = GetComponent<ActorHealthFeature>();
+            health?.EnsureInitialized();
             coordinator = GetComponent<ActorCharacterCoordinator>();
             motor = GetComponent<ActorCompositeMotor>();
             processGate = GetComponent<IActorCombatProcessGate>();

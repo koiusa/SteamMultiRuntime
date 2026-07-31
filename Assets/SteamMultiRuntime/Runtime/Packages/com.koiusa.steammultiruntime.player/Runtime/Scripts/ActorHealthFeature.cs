@@ -9,15 +9,20 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(1f)] private float maxHealth = 100f;
         [SerializeField] private bool restoreOnEnable = true;
         [SerializeField] private float currentHealth;
+        private bool initialized;
 
-        public float CurrentHealth => currentHealth;
-        public float MaxHealth => maxHealth;
-        public bool IsAlive => currentHealth > 0f;
+        public float CurrentHealth { get { EnsureInitialized(); return currentHealth; } }
+        public float MaxHealth { get { EnsureInitialized(); return maxHealth; } }
+        public bool IsAlive { get { EnsureInitialized(); return currentHealth > 0f; } }
         public event Action<float, float> HealthChanged;
         public event Action<ActorDamageRequest> Died;
 
-        private void Awake()
+        private void Awake() => EnsureInitialized();
+
+        internal void EnsureInitialized()
         {
+            if (initialized) return;
+            initialized = true;
             if (restoreOnEnable || currentHealth <= 0f) currentHealth = maxHealth;
         }
 
@@ -29,6 +34,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public float ApplyDamage(ActorDamageRequest request)
         {
+            EnsureInitialized();
             if (!isActiveAndEnabled || !IsAlive || request.Amount <= 0f) return 0f;
             var previous = currentHealth;
             currentHealth = Mathf.Max(0f, currentHealth - request.Amount);
@@ -40,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public float Heal(float amount)
         {
+            EnsureInitialized();
             if (!isActiveAndEnabled || !IsAlive || amount <= 0f) return 0f;
             var previous = currentHealth;
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
@@ -50,6 +57,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void RestoreFullHealth()
         {
+            EnsureInitialized();
             if (Mathf.Approximately(currentHealth, maxHealth)) return;
             currentHealth = maxHealth;
             HealthChanged?.Invoke(currentHealth, maxHealth);
@@ -57,10 +65,14 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void ApplyReplicatedHealth(float value)
         {
+            EnsureInitialized();
             var replicated = Mathf.Clamp(value, 0f, maxHealth);
             if (Mathf.Approximately(currentHealth, replicated)) return;
+            var previous = currentHealth;
             currentHealth = replicated;
             HealthChanged?.Invoke(currentHealth, maxHealth);
+            if (previous > 0f && currentHealth <= 0f)
+                Died?.Invoke(new ActorDamageRequest(null, previous, transform.position, Vector3.zero));
         }
     }
 }

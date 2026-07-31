@@ -9,6 +9,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Player.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Keyconfig.Runtime.csproj" />
   <Project Path="TNRD.SerializableInterface.Editor.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.PlayModeTests.csproj" />
   <Project Path="UnityChan.Common.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Integration.Editor.csproj" />
@@ -51,5 +52,4 @@
   <Project Path="Koiusa.SteamMultiRuntime.Localization.Editor.csproj" />
   <Project Path="Koiusa.System.Core.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Netcode.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.PlayModeTests.csproj" />
 </Solution>
