@@ -68,6 +68,8 @@ namespace Koiusa.SteamMultiRuntime.Tests
                 var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visual.transform.SetParent(actor.transform, false);
                 var renderer = visual.GetComponent<Renderer>();
+                actor.AddComponent<ActorSkillEffectVisual>();
+                actor.AddComponent<GuardShieldVisual>();
                 actor.AddComponent<ActorDeathPresentation>();
 
                 health.ApplyReplicatedHealth(0f);
@@ -75,6 +77,8 @@ namespace Koiusa.SteamMultiRuntime.Tests
                 var dissolveShader = Resources.Load<Shader>("Shaders/CharacterDeathDissolve");
                 Assert.That(dissolveShader, Is.Not.Null);
                 Assert.That(renderer.sharedMaterial.shader, Is.SameAs(dissolveShader));
+                var shieldRenderer = actor.transform.Find("GuardShieldVisual").GetComponent<Renderer>();
+                Assert.That(shieldRenderer.sharedMaterial.shader, Is.Not.SameAs(dissolveShader));
             }
             finally
             {

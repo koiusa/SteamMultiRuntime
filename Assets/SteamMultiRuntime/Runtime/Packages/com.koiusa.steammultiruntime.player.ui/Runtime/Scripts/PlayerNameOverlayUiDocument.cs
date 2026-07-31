@@ -7,10 +7,13 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
     [DisallowMultipleComponent]
     public sealed class PlayerNameOverlayUiDocument : MonoBehaviour
     {
+        [SerializeField] private ActorPresentationSettings presentationSettings;
+
         private UIDocument uiDocument;
         private Label playerNameLabel;
         private IPlayerIdentitySource identitySource;
         private IPlayerDisplayNameNotifier displayNameNotifier;
+        private ActorHealthFeature healthFeature;
 
         private void OnEnable()
         {
@@ -21,13 +24,17 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             identitySource = FindIdentitySource();
             displayNameNotifier = identitySource as IPlayerDisplayNameNotifier;
             if (displayNameNotifier != null) displayNameNotifier.DisplayNameChanged += RefreshDisplayName;
+            healthFeature = GetComponentInParent<ActorHealthFeature>();
+            if (healthFeature != null) healthFeature.HealthChanged += OnHealthChanged;
             RefreshDisplayName();
         }
 
         private void OnDisable()
         {
             if (displayNameNotifier != null) displayNameNotifier.DisplayNameChanged -= RefreshDisplayName;
+            if (healthFeature != null) healthFeature.HealthChanged -= OnHealthChanged;
             displayNameNotifier = null;
+            healthFeature = null;
             identitySource = null;
             playerNameLabel = null;
         }
@@ -41,7 +48,9 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         private void RefreshDisplayName()
         {
             if (playerNameLabel == null) return;
-            if (identitySource == null || !identitySource.IsAvailable)
+            if (!ShouldDisplayName(
+                    identitySource != null && identitySource.IsAvailable,
+                    !HideNameWhenDead || healthFeature == null || healthFeature.IsAlive))
             {
                 playerNameLabel.style.display = DisplayStyle.None;
                 return;
@@ -53,6 +62,15 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
                 : identitySource.PlayerId is { } playerId ? $"Player{playerId}" : "Player";
             playerNameLabel.style.display = DisplayStyle.Flex;
         }
+
+        private void OnHealthChanged(float currentHealth, float maxHealth) => RefreshDisplayName();
+
+        internal static bool ShouldDisplayName(bool identityAvailable, bool isAlive)
+        {
+            return identityAvailable && isAlive;
+        }
+
+        private bool HideNameWhenDead => presentationSettings == null || presentationSettings.HideNameWhenDead;
 
         private IPlayerIdentitySource FindIdentitySource()
         {

@@ -15,12 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
-        [SerializeField] private bool playDeathEffect = true;
-        [SerializeField, Min(0.1f)] private float dissolveDuration = 1f;
-        [SerializeField, Min(0.1f)] private float effectLifetime = 1.6f;
-        [SerializeField] private Color dissolveEdgeColor = new Color(0.25f, 0.8f, 1f, 1f);
-        [SerializeField] private Vector3 effectLocalPosition = new Vector3(0f, 0.8f, 0f);
-        [SerializeField] private Vector3 effectLocalScale = new Vector3(1.35f, 1.8f, 1.35f);
+        [SerializeField] private ActorPresentationSettings presentationSettings;
 
         private readonly List<DissolveRendererState> rendererStates = new();
         private readonly List<IActorRespawnPresentationNotifier> respawnNotifiers = new();
@@ -76,14 +71,15 @@ namespace Koiusa.SteamMultiRuntime
 
         private void CaptureAndReplaceMaterials(Shader shader)
         {
+            var guardShield = GetComponent<GuardShieldVisual>();
             var renderers = GetComponentsInChildren<Renderer>(true);
             for (var i = 0; i < renderers.Length; i++)
             {
                 var candidate = renderers[i];
-                if (candidate == null || !candidate.enabled
-                    || candidate.GetComponentInParent<VisualEffect>() != null
-                    || candidate.GetComponentInParent<ActorSkillEffectVisual>() != null
-                    || candidate.GetComponentInParent<GuardShieldVisual>() != null)
+                if (candidate == null
+                    || candidate is ParticleSystemRenderer or TrailRenderer or LineRenderer
+                    || IsChildEffectRenderer(candidate)
+                    || guardShield != null && guardShield.OwnsRenderer(candidate))
                     continue;
 
                 var originals = candidate.sharedMaterials;
@@ -99,6 +95,18 @@ namespace Koiusa.SteamMultiRuntime
                 });
                 candidate.sharedMaterials = replacements;
             }
+        }
+
+        private bool IsChildEffectRenderer(Renderer candidate)
+        {
+            for (var current = candidate.transform; current != null && current != transform; current = current.parent)
+            {
+                if (current.GetComponent<VisualEffect>() != null
+                    || current.GetComponent<ActorSkillEffectVisual>() != null)
+                    return true;
+            }
+
+            return false;
         }
 
         private Material CreateDissolveMaterial(Shader shader, Material source)
@@ -119,7 +127,7 @@ namespace Koiusa.SteamMultiRuntime
                 : Shader.PropertyToID("_Color");
             if (source != null && source.HasProperty(colorProperty))
                 material.SetColor(BaseColorId, source.GetColor(colorProperty));
-            material.SetColor("_EdgeColor", dissolveEdgeColor);
+            material.SetColor("_EdgeColor", DissolveEdgeColor);
             material.SetFloat(DissolveAmountId, 0f);
             return material;
         }
@@ -127,15 +135,16 @@ namespace Koiusa.SteamMultiRuntime
         private IEnumerator AnimateDissolve()
         {
             var elapsed = 0f;
-            while (elapsed < dissolveDuration)
+            var duration = DissolveDuration;
+            while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                SetDissolveAmount(Mathf.Clamp01(elapsed / dissolveDuration));
+                SetDissolveAmount(Mathf.Clamp01(elapsed / duration));
                 yield return null;
             }
             SetDissolveAmount(1f);
             dissolveRoutine = null;
-            if (playDeathEffect) PlayDeathEffect();
+            if (PlayDeathEffectEnabled) PlayDeathEffect();
         }
 
         private void SetDissolveAmount(float amount)
@@ -189,13 +198,30 @@ namespace Koiusa.SteamMultiRuntime
             var effectObject = new GameObject("DeathDissolveVFX", typeof(VisualEffect));
             activeDeathEffect = effectObject;
             effectObject.transform.SetParent(FindPresentationRoot(), false);
-            effectObject.transform.localPosition = effectLocalPosition;
-            effectObject.transform.localScale = effectLocalScale;
+            effectObject.transform.localPosition = DeathEffectLocalPosition;
+            effectObject.transform.localScale = DeathEffectLocalScale;
             var effect = effectObject.GetComponent<VisualEffect>();
             effect.visualEffectAsset = asset;
             effect.Play();
-            Destroy(effectObject, effectLifetime);
+            Destroy(effectObject, DeathEffectLifetime);
         }
+
+        private bool PlayDeathEffectEnabled => presentationSettings == null || presentationSettings.PlayDeathEffect;
+        private float DissolveDuration => presentationSettings != null
+            ? presentationSettings.DissolveDuration
+            : ActorPresentationSettings.DefaultDissolveDuration;
+        private float DeathEffectLifetime => presentationSettings != null
+            ? presentationSettings.DeathEffectLifetime
+            : ActorPresentationSettings.DefaultDeathEffectLifetime;
+        private Color DissolveEdgeColor => presentationSettings != null
+            ? presentationSettings.DissolveEdgeColor
+            : ActorPresentationSettings.DefaultDissolveEdgeColor;
+        private Vector3 DeathEffectLocalPosition => presentationSettings != null
+            ? presentationSettings.DeathEffectLocalPosition
+            : ActorPresentationSettings.DefaultDeathEffectLocalPosition;
+        private Vector3 DeathEffectLocalScale => presentationSettings != null
+            ? presentationSettings.DeathEffectLocalScale
+            : ActorPresentationSettings.DefaultDeathEffectLocalScale;
 
         private Transform FindPresentationRoot()
         {

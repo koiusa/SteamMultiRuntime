@@ -156,6 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee94f4e0b282e6a41b0372b02e1c1fc6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.CharacterUI.Runtime::Koiusa.SteamMultiRuntime.PlayerNameOverlayUiDocument
+  presentationSettings: {fileID: 11400000, guid: bf68eb4cb1dd4f888107980670488a0c, type: 2}
 --- !u!114 &3523192947504267269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,8 +882,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthUiRouter
   overheadHealthUi: {fileID: 2163097053330141160}
   localHealthHud: {fileID: 8501527973056918799}
-  damageOnlyOverhead: 0
-  npcVisibleDuration: 3
+  presentationSettings: {fileID: 11400000, guid: bf68eb4cb1dd4f888107980670488a0c, type: 2}
 --- !u!4 &1381477422814112417 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}

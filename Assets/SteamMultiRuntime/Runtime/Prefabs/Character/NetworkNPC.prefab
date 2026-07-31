@@ -655,8 +655,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.UI.Runtime::Koiusa.SteamMultiRuntime.Player.UI.ActorHealthUiRouter
   overheadHealthUi: {fileID: 4663298044637592150}
   localHealthHud: {fileID: 0}
-  damageOnlyOverhead: 1
-  npcVisibleDuration: 3
+  presentationSettings: {fileID: 11400000, guid: bf68eb4cb1dd4f888107980670488a0c, type: 2}
 --- !u!4 &3936134579245457733 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}

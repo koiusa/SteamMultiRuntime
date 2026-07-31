@@ -31,6 +31,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool IsGuarding => isGuarding;
 
+        internal bool OwnsRenderer(Renderer candidate) => candidate == shieldRenderer;
+
         private void Awake() => EnsureShield();
 
         private void Update()

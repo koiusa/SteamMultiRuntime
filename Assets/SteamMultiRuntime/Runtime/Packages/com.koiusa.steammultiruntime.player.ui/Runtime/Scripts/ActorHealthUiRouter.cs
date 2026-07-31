@@ -8,12 +8,11 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
     {
         [SerializeField] private GameObject overheadHealthUi;
         [SerializeField] private GameObject localHealthHud;
-        [SerializeField] private bool damageOnlyOverhead;
-        [SerializeField, Min(0.1f)] private float npcVisibleDuration = 3f;
+        [SerializeField] private ActorPresentationSettings presentationSettings;
 
         private ILocalPlayerOwnershipNotifier ownership;
         private ActorHealthFeature health;
-        private Coroutine npcHideRoutine;
+        private Coroutine overheadHideRoutine;
         private float previousHealth;
 
         private void Awake()
@@ -37,8 +36,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         {
             if (ownership != null) ownership.OwnershipChanged -= Apply;
             if (health != null) health.HealthChanged -= OnHealthChanged;
-            if (npcHideRoutine != null) StopCoroutine(npcHideRoutine);
-            npcHideRoutine = null;
+            StopOverheadHideRoutine();
         }
 
         private void Apply()
@@ -46,7 +44,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             var isAlive = health == null || health.IsAlive;
             var isLocalOwner = ownership != null && ownership.IsOwnershipResolved && ownership.IsLocalOwner;
             if (overheadHealthUi != null)
-                overheadHealthUi.SetActive(isAlive && !damageOnlyOverhead && ownership != null && !isLocalOwner);
+                overheadHealthUi.SetActive(isAlive && !DamageOnlyOverhead && CanShowOverhead());
             if (localHealthHud != null) localHealthHud.SetActive(isAlive && isLocalOwner);
         }
 
@@ -57,8 +55,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             previousHealth = currentHealth;
             if (currentHealth <= 0f)
             {
-                if (npcHideRoutine != null) StopCoroutine(npcHideRoutine);
-                npcHideRoutine = null;
+                StopOverheadHideRoutine();
                 if (overheadHealthUi != null) overheadHealthUi.SetActive(false);
                 if (localHealthHud != null) localHealthHud.SetActive(false);
                 return;
@@ -70,18 +67,42 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
                 return;
             }
 
-            if (!damageOnlyOverhead || !tookDamage || overheadHealthUi == null) return;
+            if (!DamageOnlyOverhead || !tookDamage || overheadHealthUi == null || !CanShowOverhead()) return;
 
             overheadHealthUi.SetActive(true);
-            if (npcHideRoutine != null) StopCoroutine(npcHideRoutine);
-            npcHideRoutine = StartCoroutine(HideNpcHealthAfterDelay());
+            StopOverheadHideRoutine();
+            overheadHideRoutine = StartCoroutine(HideOverheadHealthAfterDelay());
         }
 
-        private IEnumerator HideNpcHealthAfterDelay()
+        private bool CanShowOverhead()
         {
-            yield return new WaitForSeconds(npcVisibleDuration);
+            return CanShowOverhead(
+                ownership != null,
+                ownership != null && ownership.IsOwnershipResolved,
+                ownership != null && ownership.IsLocalOwner);
+        }
+
+        internal static bool CanShowOverhead(bool hasOwnership, bool isOwnershipResolved, bool isLocalOwner)
+        {
+            return !hasOwnership || isOwnershipResolved && !isLocalOwner;
+        }
+
+        private IEnumerator HideOverheadHealthAfterDelay()
+        {
+            var duration = presentationSettings != null
+                ? presentationSettings.OverheadHealthVisibleDuration
+                : ActorPresentationSettings.DefaultOverheadHealthVisibleDuration;
+            yield return new WaitForSeconds(duration);
             if (overheadHealthUi != null) overheadHealthUi.SetActive(false);
-            npcHideRoutine = null;
+            overheadHideRoutine = null;
+        }
+
+        private bool DamageOnlyOverhead => presentationSettings == null || presentationSettings.DamageOnlyOverhead;
+
+        private void StopOverheadHideRoutine()
+        {
+            if (overheadHideRoutine != null) StopCoroutine(overheadHideRoutine);
+            overheadHideRoutine = null;
         }
     }
 }

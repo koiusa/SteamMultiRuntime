@@ -63,12 +63,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96b325c7ba154d4683d8a4a64756596c, type: 3}
   m_Name:
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Player.Runtime::Koiusa.SteamMultiRuntime.ActorDeathPresentation
-  playDeathEffect: 1
-  dissolveDuration: 1
-  effectLifetime: 1.6
-  dissolveEdgeColor: {r: 0.25, g: 0.8, b: 1, a: 1}
-  effectLocalPosition: {x: 0, y: 0.8, z: 0}
-  effectLocalScale: {x: 1.35, y: 1.8, z: 1.35}
+  presentationSettings: {fileID: 11400000, guid: bf68eb4cb1dd4f888107980670488a0c, type: 2}
 --- !u!4 &4035978081068949003
 Transform:
   m_ObjectHideFlags: 0

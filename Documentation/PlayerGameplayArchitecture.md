@@ -150,6 +150,10 @@ Dash TrailはDash本体の0.2秒で新規発生を停止し、0.42秒でEffect O
 
 `ActorHealthFeature`は最初に参照された時点で初期HPを確定します。ComponentのAwake順にかかわらず、`ActorRespawnFeature`と`ActorHealthUiRouter`は0ではなく初期HPを基準に死亡・Damageを判定します。Clientへ複製されたHPが0を跨いだ場合は`HealthChanged`に加えて`Died`と`LifeStateChanged`も一度だけ通知し、Client側のHP表示、死亡Presentation、状態解除を同じ遷移へ接続します。
 
+NPCとNetwork越しの非所有Playerの頭上HPは通常非表示とし、Damageによる`HealthChanged`を受けたときだけ設定時間（既定3秒）表示します。ローカル所有Playerは画面HUDだけを使用し、頭上HPを表示しません。
+
+演出の調整値は`Runtime/Configs/Player/ActorPresentationSettings.asset`へ集約します。頭上HPのDamage時表示条件と表示時間、死亡中の名前非表示、死亡ディゾルブの時間・色、死亡VFXの有効状態・位置・Scale・LifetimeをこのAssetで管理し、Local／NetworkのPlayer／NPC Prefabは同じAssetをGUID参照します。
+
 HPが0になると`ActorRespawnFeature`が死亡を確定し、進行中SkillとMotor状態を解除してRigidbodyを停止します。3秒後に生成時の位置・向きへ戻し、HPを最大まで回復して制御を再開します。Network CharacterではServerだけがタイマー、座標復帰、HP回復を実行し、既存のNetwork TransformとHP NetworkVariableを通してClientへ反映します。Local／NetworkのPlayerとNPCは`CharacterAgentCore`から同じ機能を継承します。
 
 生成位置の記録はフレーム待ちに依存しません。`PlayerSpawnService.Place`がTransform／RigidbodyへのPose適用と`Physics.SyncTransforms`を完了した直後、`ISpawnPoseAppliedReceiver.OnSpawnPoseApplied`で`ActorRespawnFeature`へ通知します。NPCのようにSpawn Serviceを経由せず指定PoseでInstantiateされるCharacterはAwake時のPoseを初期値として保持します。
@@ -270,6 +274,8 @@ Dashは`Rigidbody`を直接更新せず、`ActorCompositeMotor`へ期限付き�
 
 `GuardShieldVisual`は実行時にIcosphereを生成し、`Koiusa/Effects/GuardShield` Shaderで半透明膜、リム、均一な格子、Pulseを描画します。表示ObjectはPlayerの`Presentation`配下へ配置し、Character Modelと同じ補間座標を使用します。
 
+死亡ディゾルブはActor配下のCharacter Rendererを対象にし、死亡VFX、スキルVFX、ガードシールド自身のRendererだけを除外します。Actorルートに演出管理コンポーネントが存在してもCharacter Rendererは除外されません。
+
 Shield中心はCharacter ModelのRenderer boundsからGuard開始時に一度だけ計算します。直前のAttack／Dash／Heal VFX Rendererはbounds対象外とし、Skill Effectの位置へShield中心が引かれないようにします。
 
 - Guard開始／終了時は中心から拡縮しながらFadeする
@@ -286,8 +292,10 @@ Shield中心はCharacter ModelのRenderer boundsからGuard開始時に一度だ
 
 Player表示名は各Playerの`Presentation`配下にあるWorld Space `UIDocument`で描画します。位置はPlayerの表示補間Transformから継承し、スクリーン座標への変換やPlayer一覧走査を`Update`／`LateUpdate`で行いません。
 
-表示名とHPゲージは別GameObject・別`UIDocument`・別Presenterとして管理します。`PlayerNameOverlayUiDocument`は表示名だけ、`ActorHealthOverlayUiDocument`はHPだけを所有し、表示位置や有効状態を個別に変更できます。カメラ正対、距離Fade、画面上のサイズ維持は共通の`ActorWorldSpaceOverlay`を各Objectで再利用します。HP Presenterは`ActorHealthFeature.HealthChanged`を購読してDamage／Heal／Network同期時だけFill幅、赤から緑への残量色、数値を更新し、HP値を毎フレーム監視しません。
+表示名とHPゲージは別GameObject・別`UIDocument`・別Presenterとして管理します。`PlayerNameOverlayUiDocument`は表示名だけ、`ActorHealthOverlayUiDocument`はHPだけを所有し、表示位置や有効状態を個別に変更できます。カメラ正対、距離Fade、画面上のサイズ維持は共通の`ActorWorldSpaceOverlay`を各Objectで再利用します。HP Presenterは`ActorHealthFeature.HealthChanged`を購読してDamage／Heal／Network同期時だけ、左端を基準とするFillのX Scale、赤から緑への残量色、数値を更新し、HP値を毎フレーム監視しません。
 
 HPの表示先は`ActorHealthUiRouter`が所有権とCharacter種別に応じて切り替えます。Local Ownerは画面左下の固定HUD、Remote Playerは頭上ゲージを常時表示します。Local／Network NPCは頭上ゲージを通常は隠し、被ダメージ時に3秒間表示します。表示中に再度ダメージを受けた場合は表示時間を3秒へ延長し、回復だけでは表示しません。HPが0になった通知では全表示先を即座に隠し、リスポーン後はPlayerだけ通常の表示先へ戻します。
 
 表示名の変更は`IPlayerDisplayNameNotifier.DisplayNameChanged`で通知します。カメラ正対と距離Fadeだけは、実際にCameraが描画される直前のRender Pipelineコールバックで更新します。Player表示名専用MaterialはDepth Testを無効化し、World Spaceの距離表現を保ったままシーンObjectより手前へ描画します。
+
+`PlayerNameOverlayUiDocument`は`ActorHealthFeature.HealthChanged`も購読し、HPが0の間は表示名Labelを非表示にします。リスポーンでHPが復元された通知を受けると表示名を再表示します。
