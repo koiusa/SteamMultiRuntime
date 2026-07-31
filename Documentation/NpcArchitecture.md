@@ -58,6 +58,8 @@ NPC Modules（Serverのみ更新）
 
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
 
+Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
+
 ## 目的地デバッグ表示
 
 - Serverが目的地と到着を判定する

@@ -12,6 +12,61 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class NetworkNpcRandomSpawnManager : MonoBehaviour
     {
+        private sealed class SpawnPositionIndex
+        {
+            private readonly Dictionary<Vector3Int, List<Vector3>> cells = new();
+            private readonly float cellSize;
+            private readonly float minDistanceSqr;
+
+            public SpawnPositionIndex(float minDistance)
+            {
+                cellSize = Mathf.Max(0.01f, minDistance);
+                minDistanceSqr = minDistance * minDistance;
+            }
+
+            public bool IsFarEnough(Vector3 position)
+            {
+                if (minDistanceSqr <= 0f)
+                    return true;
+
+                var center = ToCell(position);
+                for (var z = -1; z <= 1; z++)
+                for (var y = -1; y <= 1; y++)
+                for (var x = -1; x <= 1; x++)
+                {
+                    var key = new Vector3Int(center.x + x, center.y + y, center.z + z);
+                    if (!cells.TryGetValue(key, out var positions))
+                        continue;
+                    for (var i = 0; i < positions.Count; i++)
+                    {
+                        if ((position - positions[i]).sqrMagnitude < minDistanceSqr)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public void Add(Vector3 position)
+            {
+                var key = ToCell(position);
+                if (!cells.TryGetValue(key, out var positions))
+                {
+                    positions = new List<Vector3>(4);
+                    cells.Add(key, positions);
+                }
+                positions.Add(position);
+            }
+
+            private Vector3Int ToCell(Vector3 position)
+            {
+                return new Vector3Int(
+                    Mathf.FloorToInt(position.x / cellSize),
+                    Mathf.FloorToInt(position.y / cellSize),
+                    Mathf.FloorToInt(position.z / cellSize));
+            }
+        }
+
         private struct NpcSpawnSceneData : INetworkSerializable
         {
             public int SceneBuildIndex;
@@ -379,7 +434,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var spawnedCount = 0;
-            var usedSpawnPositions = new List<Vector3>(spawnCount);
+            var usedSpawnPositions = new SpawnPositionIndex(minSpawnDistance);
             for (var i = 0; i < spawnCount; i++)
             {
                 if (!TryGetSpawnPosition(sampleAgentTypeId, sampleAreaMask, usedSpawnPositions, out var spawnPosition))
@@ -584,7 +639,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private bool TryGetSpawnPosition(int agentTypeId, int areaMask, List<Vector3> usedPositions, out Vector3 spawnPosition)
+        private bool TryGetSpawnPosition(int agentTypeId, int areaMask, SpawnPositionIndex usedPositions, out Vector3 spawnPosition)
         {
             var center = areaCenter != null ? areaCenter.position : transform.position;
 
@@ -609,7 +664,7 @@ namespace Koiusa.SteamMultiRuntime
             bool useAgentTypeFilter,
             int agentTypeId,
             int areaMask,
-            List<Vector3> usedPositions,
+            SpawnPositionIndex usedPositions,
             out Vector3 spawnPosition)
         {
             if (!sampleOnNavMesh)
@@ -617,7 +672,7 @@ namespace Koiusa.SteamMultiRuntime
                 for (var attempt = 0; attempt < attempts; attempt++)
                 {
                     var raw = center + GetRandomOffset();
-                    if (!IsFarEnoughFromUsedPositions(raw, usedPositions))
+                    if (!usedPositions.IsFarEnough(raw))
                         continue;
 
                     spawnPosition = raw;
@@ -664,7 +719,7 @@ namespace Koiusa.SteamMultiRuntime
             bool useAgentTypeFilter,
             int agentTypeId,
             int areaMask,
-            List<Vector3> usedPositions,
+            SpawnPositionIndex usedPositions,
             out Vector3 sampledPosition)
         {
             if (useAgentTypeFilter)
@@ -676,14 +731,14 @@ namespace Koiusa.SteamMultiRuntime
                 };
 
                 if (NavMesh.SamplePosition(candidate, out var filteredHit, sampleRadius, filter)
-                    && IsFarEnoughFromUsedPositions(filteredHit.position, usedPositions))
+                    && usedPositions.IsFarEnough(filteredHit.position))
                 {
                     sampledPosition = filteredHit.position;
                     return true;
                 }
             }
             else if (NavMesh.SamplePosition(candidate, out var anyHit, sampleRadius, NavMesh.AllAreas)
-                && IsFarEnoughFromUsedPositions(anyHit.position, usedPositions))
+                && usedPositions.IsFarEnough(anyHit.position))
             {
                 sampledPosition = anyHit.position;
                 return true;
@@ -691,21 +746,6 @@ namespace Koiusa.SteamMultiRuntime
 
             sampledPosition = candidate;
             return false;
-        }
-
-        private bool IsFarEnoughFromUsedPositions(Vector3 position, List<Vector3> usedPositions)
-        {
-            if (usedPositions == null || usedPositions.Count == 0 || minSpawnDistance <= 0f)
-                return true;
-
-            var minDistanceSqr = minSpawnDistance * minSpawnDistance;
-            for (var i = 0; i < usedPositions.Count; i++)
-            {
-                if ((position - usedPositions[i]).sqrMagnitude < minDistanceSqr)
-                    return false;
-            }
-
-            return true;
         }
 
         private void UnsubscribeServerStarted()

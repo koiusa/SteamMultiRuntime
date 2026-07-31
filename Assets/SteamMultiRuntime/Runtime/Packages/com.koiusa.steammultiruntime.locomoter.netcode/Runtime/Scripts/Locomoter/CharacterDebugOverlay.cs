@@ -73,8 +73,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            if (!ActiveInstances.Contains(this)) ActiveInstances.Add(this);
-            RefreshRendererOwnership();
+            ActiveInstances.Add(this);
         }
 
         private void OnDisable()
@@ -83,7 +82,6 @@ namespace Koiusa.SteamMultiRuntime
             if (selectedInstanceIndex >= ActiveInstances.Count)
                 selectedInstanceIndex = Mathf.Max(0, ActiveInstances.Count - 1);
             DestroyUi();
-            RefreshRendererOwnership();
         }
 
         private void Update()
@@ -539,12 +537,6 @@ namespace Koiusa.SteamMultiRuntime
             launcherButton = null;
             displayedTarget = null;
             labelBindings.Clear();
-        }
-
-        private static void RefreshRendererOwnership()
-        {
-            foreach (var overlay in ActiveInstances)
-                if (overlay != null) overlay.nextRefreshTime = 0;
         }
 
         private Transform FindPlayerRoot()
