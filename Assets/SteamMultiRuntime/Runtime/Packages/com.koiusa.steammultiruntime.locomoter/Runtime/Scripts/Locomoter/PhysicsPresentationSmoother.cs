@@ -14,6 +14,9 @@ namespace Koiusa.SteamMultiRuntime
         private Quaternion previousRotation;
         private Quaternion currentRotation;
         private bool hasPhysicsSample;
+        private bool useExplicitSampleTiming;
+        private float currentSampleTime;
+        private float sampleInterval;
 
         public void Initialize(Rigidbody body)
         {
@@ -23,10 +26,25 @@ namespace Koiusa.SteamMultiRuntime
 
         public void CapturePhysicsPose()
         {
+            CapturePhysicsPoseInternal(false, Time.fixedDeltaTime);
+        }
+
+        public void CapturePhysicsPose(float explicitSampleInterval)
+        {
+            CapturePhysicsPoseInternal(true, explicitSampleInterval);
+        }
+
+        private void CapturePhysicsPoseInternal(bool explicitTiming, float interval)
+        {
             if (targetRigidbody == null)
             {
                 return;
             }
+
+            useExplicitSampleTiming = explicitTiming;
+            sampleInterval = Mathf.Max(interval, 0.0001f);
+            if (explicitTiming)
+                currentSampleTime = Time.time;
 
             if (!hasPhysicsSample)
             {
@@ -46,12 +64,21 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
-            if (!hasPhysicsSample || presentationRoot == null || Time.fixedDeltaTime <= 0f)
+            TickPresentation();
+        }
+
+        public void TickPresentation()
+        {
+            if (!hasPhysicsSample || presentationRoot == null)
             {
                 return;
             }
 
-            var alpha = Mathf.Clamp01((Time.time - Time.fixedTime) / Time.fixedDeltaTime);
+            var interval = useExplicitSampleTiming ? sampleInterval : Time.fixedDeltaTime;
+            if (interval <= 0f)
+                return;
+            var sampleTime = useExplicitSampleTiming ? currentSampleTime : Time.fixedTime;
+            var alpha = Mathf.Clamp01((Time.time - sampleTime) / interval);
             presentationRoot.SetPositionAndRotation(
                 Vector3.Lerp(previousPosition, currentPosition, alpha),
                 Quaternion.Slerp(previousRotation, currentRotation, alpha));

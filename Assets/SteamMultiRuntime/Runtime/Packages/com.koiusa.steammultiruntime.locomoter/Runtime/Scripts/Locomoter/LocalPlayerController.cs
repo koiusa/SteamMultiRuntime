@@ -112,12 +112,14 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            Core.CrowdPhysicsBodyRegistry.RegisterPlayer(GetComponent<Rigidbody>());
             inputSource?.Enable();
             Cursor.visible = false;
         }
 
         private void OnDisable()
         {
+            Core.CrowdPhysicsBodyRegistry.UnregisterPlayer(GetComponent<Rigidbody>());
             inputSource?.Disable();
             motor?.ResetState();
             moveDirection = Vector3.zero;

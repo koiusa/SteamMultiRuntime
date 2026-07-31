@@ -43,6 +43,9 @@ namespace Koiusa.SteamMultiRuntime
         private bool lastSentGrappleHeld;
         private float lastSentReelInput = float.NaN;
         private float nextStateSyncTime;
+        private bool hasServerNpcCrowdState;
+        private ActorKinematicState serverNpcCrowdKinematicState;
+        private ActorMovementFlagsState serverNpcCrowdMovementState;
 
         private readonly NetworkVariable<ActorInputSyncState> netInputState = new NetworkVariable<ActorInputSyncState>(
             new ActorInputSyncState(Vector3.zero, Vector2.zero, Quaternion.identity, 0, false), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -62,11 +65,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private NetworkControlPolicy ControlPolicy => NetworkControlPolicies.Get(controlMode);
         private bool UseLocalMotorState => IsSpawned && IsServer;
+        private bool UseServerNpcCrowdState => UseLocalMotorState && controlMode == NetworkControlMode.ServerNpc && hasServerNpcCrowdState;
 
-        public bool IsGrounded => UseLocalMotorState && motor != null ? motor.IsGrounded : netMovementFlagsState.Value.IsGrounded;
-        public bool IsJumping => UseLocalMotorState && motor != null ? motor.IsJumping : netMovementFlagsState.Value.IsJumping;
-        public bool IsFreefall => UseLocalMotorState && motor != null ? motor.IsFreefall : netMovementFlagsState.Value.IsFreefall;
-        public bool IsFallingAfterJump => UseLocalMotorState && motor != null ? motor.IsFallingAfterJump : netMovementFlagsState.Value.IsFallingAfterJump;
+        public bool IsGrounded => UseServerNpcCrowdState ? serverNpcCrowdMovementState.IsGrounded : UseLocalMotorState && motor != null ? motor.IsGrounded : netMovementFlagsState.Value.IsGrounded;
+        public bool IsJumping => UseServerNpcCrowdState ? serverNpcCrowdMovementState.IsJumping : UseLocalMotorState && motor != null ? motor.IsJumping : netMovementFlagsState.Value.IsJumping;
+        public bool IsFreefall => UseServerNpcCrowdState ? serverNpcCrowdMovementState.IsFreefall : UseLocalMotorState && motor != null ? motor.IsFreefall : netMovementFlagsState.Value.IsFreefall;
+        public bool IsFallingAfterJump => UseServerNpcCrowdState ? serverNpcCrowdMovementState.IsFallingAfterJump : UseLocalMotorState && motor != null ? motor.IsFallingAfterJump : netMovementFlagsState.Value.IsFallingAfterJump;
         public bool IsOnLadder => UseLocalMotorState ? traversalCoordinator != null && traversalCoordinator.IsOnLadder : netMovementFlagsState.Value.IsOnLadder;
         public float LadderSpeed => UseLocalMotorState && traversalCoordinator != null ? traversalCoordinator.LadderSpeed : netMovementFlagsState.Value.LadderSpeed;
         public bool IsWallRunning => UseLocalMotorState ? traversalCoordinator != null && traversalCoordinator.IsWallRunning : netMovementFlagsState.Value.IsWallRunning;
@@ -75,8 +79,8 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 InheritedGroundVelocity => UseLocalMotorState && motor != null ? motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => IsOwner ? localInputState.MoveInput : netInputState.Value.MoveInput;
         public Vector3 MoveDirection => IsOwner ? localInputState.MoveDirection : netInputState.Value.MoveDirection;
-        public float HorizontalVelocity => UseLocalMotorState && motor != null ? motor.HorizontalVelocity : netKinematicState.Value.HorizontalVelocity;
-        public float VerticalVelocity => UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
+        public float HorizontalVelocity => UseServerNpcCrowdState ? serverNpcCrowdKinematicState.HorizontalVelocity : UseLocalMotorState && motor != null ? motor.HorizontalVelocity : netKinematicState.Value.HorizontalVelocity;
+        public float VerticalVelocity => UseServerNpcCrowdState ? serverNpcCrowdKinematicState.VerticalVelocity : UseLocalMotorState && motor != null ? motor.VerticalVelocity : netKinematicState.Value.VerticalVelocity;
         public float MaxMoveSpeed => 5f;
         public InputActionsConfig InputActionsConfig => inputActionsConfig;
 
@@ -165,6 +169,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             base.OnNetworkSpawn();
             ServerDrivenActorPhysicsLoop.Register(this);
+            if (IsServer && controlMode == NetworkControlMode.Player)
+                Core.CrowdPhysicsBodyRegistry.RegisterPlayer(targetRigidbody);
 
             if (targetRigidbody != null)
             {
@@ -209,6 +215,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkDespawn()
         {
             ServerDrivenActorPhysicsLoop.Unregister(this);
+            Core.CrowdPhysicsBodyRegistry.UnregisterPlayer(targetRigidbody);
             // Unsubscribe from settings changes
             if (!IsServer)
             {
@@ -298,6 +305,28 @@ namespace Koiusa.SteamMultiRuntime
 
             TickServerPhysics();
             presentationSmoother?.CapturePhysicsPose();
+        }
+
+        public void ApplyServerNpcCrowdState(
+            float horizontalVelocity,
+            float verticalVelocity,
+            bool isGrounded,
+            bool isJumping,
+            bool isFreefall,
+            bool isFallingAfterJump)
+        {
+            if (controlMode != NetworkControlMode.ServerNpc || !IsSpawned || !IsServer)
+                return;
+            hasServerNpcCrowdState = true;
+            serverNpcCrowdKinematicState = new ActorKinematicState(horizontalVelocity, verticalVelocity);
+            serverNpcCrowdMovementState = new ActorMovementFlagsState(
+                isGrounded, isJumping, isFreefall, isFallingAfterJump,
+                false, 0f, false, Vector3.zero);
+            if (Time.unscaledTime < nextStateSyncTime)
+                return;
+            nextStateSyncTime = Time.unscaledTime + ControlPolicy.StateSyncInterval;
+            netKinematicState.Value = serverNpcCrowdKinematicState;
+            netMovementFlagsState.Value = serverNpcCrowdMovementState;
         }
 
         private void ReadAndSendInput()

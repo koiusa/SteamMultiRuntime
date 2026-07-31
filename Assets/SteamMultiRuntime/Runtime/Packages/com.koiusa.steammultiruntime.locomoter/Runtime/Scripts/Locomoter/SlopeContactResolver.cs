@@ -35,6 +35,22 @@ namespace Koiusa.SteamMultiRuntime
             obstacleNormalsByColliderId.Remove(colliderId);
         }
 
+        public void SetSyntheticObstacleContact(int sourceId, Vector3 normal)
+        {
+            if (normal.sqrMagnitude > 0.0001f)
+                obstacleNormalsByColliderId[sourceId] = normal.normalized;
+            else
+                obstacleNormalsByColliderId.Remove(sourceId);
+        }
+
+        public void RemoveSyntheticContact(int sourceId)
+        {
+            groundedColliderIds.Remove(sourceId);
+            groundNormalsByColliderId.Remove(sourceId);
+            steepSlopeNormalsByColliderId.Remove(sourceId);
+            obstacleNormalsByColliderId.Remove(sourceId);
+        }
+
         public void UpdateCollisionContacts(Collision collision, Vector3 upAxis, LayerMask groundLayer, float minGroundNormalDot)
         {
             var colliderId = collision.collider.GetInstanceID();

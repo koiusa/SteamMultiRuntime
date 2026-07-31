@@ -23,8 +23,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
+            TickSkills(Time.deltaTime);
+        }
+
+        public void TickSkills(float deltaTime)
+        {
             if (ActiveSkill == null) return;
-            ActiveSkill.Tick(Time.deltaTime);
+            ActiveSkill.Tick(deltaTime);
             if (!ActiveSkill.IsActive)
             {
                 var ended = ActiveSkill;

@@ -15,6 +15,7 @@
     "com.koiusa.steammultiruntime.integration": "0.1.0",
     "com.koiusa.steammultiruntime.locomoter": "0.1.0",
     "com.koiusa.steammultiruntime.locomoter.netcode": "0.1.0",
+    "com.koiusa.steammultiruntime.player": "0.1.0",
     "com.koiusa.steammultiruntime.resourceloader": "0.1.0",
     "com.koiusa.input.core": "0.1.0"
     ,"com.unity.burst": "1.8.28"

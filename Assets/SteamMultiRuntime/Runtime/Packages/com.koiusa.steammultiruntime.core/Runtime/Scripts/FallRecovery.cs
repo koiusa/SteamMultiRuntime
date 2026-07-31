@@ -43,6 +43,11 @@ namespace Koiusa.SteamMultiRuntime.Core
 
         private void FixedUpdate()
         {
+            TickRecovery();
+        }
+
+        public void TickRecovery()
+        {
             if (!ShouldProcess())
             {
                 return;
@@ -66,11 +71,19 @@ namespace Koiusa.SteamMultiRuntime.Core
             var targetPosition = recoveryPoint != null ? recoveryPoint.position + recoveryOffset : initialPosition + recoveryOffset;
             var targetRotation = recoveryPoint != null ? recoveryPoint.rotation : initialRotation;
 
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
             rb.position = targetPosition;
             rb.rotation = targetRotation;
-            rb.Sleep();
+            if (!rb.isKinematic)
+                rb.Sleep();
+
+            var motionResetters = GetComponents<IFallRecoveryMotionReset>();
+            for (var i = 0; i < motionResetters.Length; i++)
+                motionResetters[i].ResetAfterFallRecovery(targetPosition, targetRotation);
 
             onRecovered?.Invoke();
             Recovered?.Invoke();

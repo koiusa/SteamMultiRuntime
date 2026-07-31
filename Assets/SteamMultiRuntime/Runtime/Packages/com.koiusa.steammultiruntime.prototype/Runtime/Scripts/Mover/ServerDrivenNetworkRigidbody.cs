@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -12,6 +13,12 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class ServerDrivenNetworkRigidbody : NetworkBehaviour
     {
+        private static readonly List<ServerDrivenNetworkRigidbody> serverInstances = new();
+        private static readonly List<ServerDrivenNetworkRigidbody> interactionInstances = new();
+        internal static IReadOnlyList<ServerDrivenNetworkRigidbody> ServerInstances => serverInstances;
+        internal static IReadOnlyList<ServerDrivenNetworkRigidbody> InteractionInstances => interactionInstances;
+        internal bool CanReceiveAuthoritativeCrowdContact => !IsSpawned || IsServer;
+
         [Header("Sync Settings")]
         [Tooltip("クライアント側の補間速度（大きいほどサーバー状態に素早く追従）")]
         [SerializeField] private float interpolationSpeed = 15f;
@@ -20,6 +27,16 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private float snapThreshold = 3f;
 
         private Rigidbody rb;
+        private Collider[] interactionColliders;
+        internal Rigidbody Body => rb;
+        internal Collider[] InteractionColliders => interactionColliders;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            serverInstances.Clear();
+            interactionInstances.Clear();
+        }
 
         // サーバーが書き込み、全員が読み取る
         private readonly NetworkVariable<Vector3> netPosition = new(
@@ -50,6 +67,9 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            interactionColliders = GetComponentsInChildren<Collider>(true);
+            if (!interactionInstances.Contains(this))
+                interactionInstances.Add(this);
         }
 
         public override void OnNetworkSpawn()
@@ -62,6 +82,22 @@ namespace Koiusa.SteamMultiRuntime
                 rb.isKinematic = true;
                 SnapToServerState();
             }
+            else if (!serverInstances.Contains(this))
+            {
+                serverInstances.Add(this);
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            serverInstances.Remove(this);
+            base.OnNetworkDespawn();
+        }
+
+        private void OnDestroy()
+        {
+            serverInstances.Remove(this);
+            interactionInstances.Remove(this);
         }
 
         private void FixedUpdate()

@@ -276,6 +276,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5550183443932027836}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 950000000000000010}
   m_SourcePrefab: {fileID: 100100000, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
 --- !u!1 &2824373030294622544 stripped
 GameObject:
@@ -471,6 +474,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
+  crowdContactSettings:
+    EnablePlayerContacts: 1
+    EnableNetworkPhysicsObjectContacts: 1
+    BroadphasePadding: 0.5
+    PenetrationResolution: 1
+    ApplyImpulse: 1
+    ImpulseMassScale: 0.2
+    MaxImpulse: 5
 --- !u!114 &8884666047061710343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -656,6 +667,31 @@ MonoBehaviour:
   overheadHealthUi: {fileID: 4663298044637592150}
   localHealthHud: {fileID: 0}
   presentationSettings: {fileID: 11400000, guid: bf68eb4cb1dd4f888107980670488a0c, type: 2}
+--- !u!114 &950000000000000010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10cba3917e958b54d88848b3a8ca0378, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcCrowdTraversalTestDriver
+  action: 1
+  target: {fileID: 0}
+  actionDistance: 1.25
+  actionInput: {x: 0, y: 1}
+  jumpInterval: 1
+  wireReelInput: 0
+  wireAimHeightOffset: 1.5
+  wireApproachDistance: 30
+  wireRetryInterval: 0.25
+  detectedState: 0
+  distanceToTarget: 0
+  sentMoveInput: {x: 0, y: 0}
+  status: Disabled
 --- !u!4 &3936134579245457733 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}

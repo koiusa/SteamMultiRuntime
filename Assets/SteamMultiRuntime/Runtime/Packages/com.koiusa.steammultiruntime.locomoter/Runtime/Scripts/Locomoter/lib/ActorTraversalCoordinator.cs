@@ -14,6 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool logStateTransitions;
 
         private Rigidbody rb;
+        private ITraversalVelocityAdapter velocityAdapter;
         private GroundMotionTracker groundMotionTracker;
         private SlopeContactResolver slopeContactResolver;
         private IWallRunAction wallRunAction;
@@ -81,6 +82,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
+            velocityAdapter = GetComponent<ITraversalVelocityAdapter>();
             groundMotionTracker = GetComponent<GroundMotionTracker>();
             slopeContactResolver = GetComponent<SlopeContactResolver>();
             CacheFeatures();
@@ -257,7 +259,7 @@ namespace Koiusa.SteamMultiRuntime
             if (activeLadderFeature != null)
             {
                 var upAxisForLadder = GetUpAxis();
-                if (activeLadderDetachAction != null && activeLadderDetachAction.TryHandleTraversal(rb.linearVelocity, moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
+                if (activeLadderDetachAction != null && activeLadderDetachAction.TryHandleTraversal(ReadVelocity(), moveInput, moveReferenceRotation, jumpRequested, isGrounded, upAxisForLadder, out var ladderVelocity, out var detachedByJump))
                 {
                     if (detachedByJump)
                     {
@@ -272,7 +274,7 @@ namespace Koiusa.SteamMultiRuntime
                     else if (activeLadderFeature.IsOnLadder)
                     {
                         wallTraversalBlockedUntilTime = 0f;
-                        rb.linearVelocity = ladderVelocity;
+                        WriteVelocity(ladderVelocity);
                         activeWallRunFeature?.ResetState();
                         activeWallJumpFeature?.ResetState();
                         activeWallSlideFeature?.ResetState();
@@ -305,7 +307,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var upAxis = GetUpAxis();
-            var velocity = rb.linearVelocity;
+            var velocity = ReadVelocity();
             if (wallRunBlockedUntilWallExit && !slopeContactResolver.HasObstacleContact)
             {
                 wallRunBlockedUntilWallExit = false;
@@ -315,7 +317,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 activeWallRunFeature?.ResetState();
                 activeWallSlideFeature?.ResetState();
-                rb.linearVelocity = velocity;
+                WriteVelocity(velocity);
                 SetState(ActorTraversalState.Cooldown);
                 return;
             }
@@ -358,7 +360,28 @@ namespace Koiusa.SteamMultiRuntime
                 SetState(ActorTraversalState.Airborne);
             }
 
-            rb.linearVelocity = velocity;
+            WriteVelocity(velocity);
+        }
+
+        private ITraversalVelocityAdapter ResolveVelocityAdapter()
+        {
+            if (velocityAdapter == null)
+                velocityAdapter = GetComponent<ITraversalVelocityAdapter>();
+            return velocityAdapter;
+        }
+
+        private Vector3 ReadVelocity()
+        {
+            var adapter = ResolveVelocityAdapter();
+            return adapter != null ? adapter.TraversalVelocity : rb.linearVelocity;
+        }
+        private void WriteVelocity(Vector3 value)
+        {
+            var adapter = ResolveVelocityAdapter();
+            if (adapter != null)
+                adapter.TraversalVelocity = value;
+            else
+                rb.linearVelocity = value;
         }
 
         private void CacheFeatures()

@@ -11,6 +11,8 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(ActorCompositeMotor))]
     public partial class NpcNavMeshController : MonoBehaviour, INpcLocomotionState
     {
+        [Header("Crowd Contact")]
+        [SerializeField] private NpcCrowdContactSettings crowdContactSettings = NpcCrowdContactSettings.CreateDefault();
 
         private NpcNavMeshMovementModule movement;
         private NpcNavMeshSpeedModule speed;
@@ -56,6 +58,12 @@ namespace Koiusa.SteamMultiRuntime
         private AiActorInputSource _inputSource;
         private ServerDrivenActorController _networkPlayerController;
         private PhysicsPresentationSmoother _presentationSmoother;
+        private NpcCrowdMotor _crowdMotor;
+        private Core.FallRecovery _fallRecovery;
+        private ActorSkillCoordinator _skillCoordinator;
+        private IActorTraversalCoordinator _traversalCoordinator;
+        private NpcCrowdTraversalInput _traversalInput;
+        private NpcCrowdTraversalTestDriver _traversalTestDriver;
 
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
@@ -74,7 +82,6 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NpcNavMeshController[] _npcNeighborBuffer = new NpcNavMeshController[32];
         private readonly float[] _avoidanceCandidateScores = new float[32];
         private readonly Vector3[] _avoidanceCandidates = new Vector3[32];
-        private readonly Vector3[] _pathCornerBuffer = new Vector3[16];
 
 
         public event System.Action ReturnToCenterStarted;
@@ -82,16 +89,16 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
         public bool IsMoving => HorizontalVelocity > 0.01f;
-        public bool IsGrounded => _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
-        public bool IsJumping => _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
-        public bool IsFreefall => _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
-        public bool IsFallingAfterJump => _networkPlayerController != null ? _networkPlayerController.IsFallingAfterJump : _motor != null && _motor.IsFallingAfterJump;
+        public bool IsGrounded => _crowdMotor != null ? _crowdMotor.IsGrounded : _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
+        public bool IsJumping => _crowdMotor != null ? _crowdMotor.IsJumping : _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
+        public bool IsFreefall => _crowdMotor != null ? _crowdMotor.IsFreefall : _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
+        public bool IsFallingAfterJump => _crowdMotor != null ? _crowdMotor.IsFallingAfterJump : _networkPlayerController != null ? _networkPlayerController.IsFallingAfterJump : _motor != null && _motor.IsFallingAfterJump;
         public bool IsStrafeMode => false;
         public Vector3 InheritedGroundVelocity => _networkPlayerController != null ? _networkPlayerController.InheritedGroundVelocity : _motor != null ? _motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => _moveInput;
         public Vector3 MoveDirection => _moveDirection;
-        public float HorizontalVelocity => _networkPlayerController != null ? _networkPlayerController.HorizontalVelocity : _motor != null ? _motor.HorizontalVelocity : 0f;
-        public float VerticalVelocity => _networkPlayerController != null ? _networkPlayerController.VerticalVelocity : _motor != null ? _motor.VerticalVelocity : 0f;
+        public float HorizontalVelocity => _crowdMotor != null ? _crowdMotor.HorizontalVelocity : _networkPlayerController != null ? _networkPlayerController.HorizontalVelocity : _motor != null ? _motor.HorizontalVelocity : 0f;
+        public float VerticalVelocity => _crowdMotor != null ? _crowdMotor.VerticalVelocity : _networkPlayerController != null ? _networkPlayerController.VerticalVelocity : _motor != null ? _motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed
         {
             get
@@ -123,6 +130,26 @@ namespace Koiusa.SteamMultiRuntime
             if (_presentationSmoother == null)
                 _presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
             _presentationSmoother.Initialize(_rigidbody);
+            _presentationSmoother.enabled = false;
+            _fallRecovery = GetComponent<Core.FallRecovery>();
+            if (_fallRecovery != null)
+                _fallRecovery.enabled = false;
+            _skillCoordinator = GetComponent<ActorSkillCoordinator>();
+            if (_skillCoordinator != null)
+                _skillCoordinator.enabled = false;
+            _traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
+            _traversalInput = GetComponent<NpcCrowdTraversalInput>();
+            if (_traversalInput == null)
+                _traversalInput = gameObject.AddComponent<NpcCrowdTraversalInput>();
+            _traversalTestDriver = GetComponent<NpcCrowdTraversalTestDriver>();
+            _crowdMotor = GetComponent<NpcCrowdMotor>();
+            if (_crowdMotor == null)
+                _crowdMotor = gameObject.AddComponent<NpcCrowdMotor>();
+            _crowdMotor.Initialize(_baseMotor, crowdContactSettings);
+            if (_baseMotor is Behaviour baseMotorBehaviour)
+                baseMotorBehaviour.enabled = false;
+            if (_motor != null)
+                _motor.enabled = false;
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -189,8 +216,11 @@ namespace Koiusa.SteamMultiRuntime
             ResetAgentPath();
         }
 
-        private void Update()
+        internal void TickCrowdUpdate(float deltaTime)
         {
+            _presentationSmoother?.TickPresentation();
+            _skillCoordinator?.TickSkills(deltaTime);
+
             if (_networkPlayerController != null)
             {
                 if (!_networkPlayerController.IsSpawned)
@@ -209,14 +239,14 @@ namespace Koiusa.SteamMultiRuntime
             if (movement != null && movement.isActiveAndEnabled)
                 movement.ObserveState();
 
-            if (_networkPlayerController != null)
-                UpdateAiInputSignal();
-
             if (_rigidbody != null)
                 _agent.nextPosition = _rigidbody.position;
             else
                 _agent.nextPosition = transform.position;
+
         }
+
+        internal void TickCrowdRecovery() => _fallRecovery?.TickRecovery();
 
         private void DisableClientSimulation()
         {
@@ -279,6 +309,64 @@ namespace Koiusa.SteamMultiRuntime
                 _agent.nextPosition = _rigidbody.position;
         }
 
+        internal void PrepareCrowdPhysics(float deltaTime)
+        {
+            _crowdMotor.BeginSimulationStep(deltaTime);
+            UpdateAiInputSignal();
+            var inputState = _inputSource.ReadState();
+            _moveInput = inputState.Move;
+            var jumpRequested = inputState.JumpPressed;
+            if (_traversalTestDriver != null && _traversalTestDriver.IsControlling)
+                jumpRequested = false;
+            if (_traversalTestDriver != null && _traversalTestDriver.ShouldTick)
+                _traversalTestDriver.TickTest(_traversalInput, _traversalCoordinator, IsGrounded);
+            _traversalInput.Consume(ref _moveInput, ref jumpRequested, out var wireHeld,
+                out var wireFire, out var reelInput, out var wireTarget);
+            _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
+            var wireOrigin = _rigidbody.worldCenterOfMass;
+            if (wireHeld)
+            {
+                // SetWireInput caches its aim result by requested target point. A Crowd
+                // NPC can approach a fixed target after an out-of-range result, so the
+                // changing origin must explicitly refresh that cached aim before retrying.
+                _traversalCoordinator?.SetWireAimCursor(default, false, wireOrigin, wireTarget, true);
+            }
+            _traversalCoordinator?.SetWireInput(wireHeld, wireFire, reelInput, wireOrigin, wireTarget);
+            _traversalCoordinator?.ProcessMotorInput(_moveDirection, jumpRequested, IsGrounded);
+            _traversalCoordinator?.ApplyTraversal(_moveDirection, _moveInput, transform.rotation, jumpRequested, IsGrounded);
+            _crowdMotor.SetTraversalState(_traversalCoordinator);
+            _crowdMotor.SetCommand(_moveDirection * MaxMoveSpeed, jumpRequested);
+        }
+
+        internal void CreateCrowdGroundProbes(out CapsulecastCommand castCommand, out OverlapCapsuleCommand overlapCommand) =>
+            _crowdMotor.CreateGroundProbes(out castCommand, out overlapCommand);
+        internal void CreateCrowdWallProbes(out CapsulecastCommand forward, out CapsulecastCommand left, out CapsulecastCommand right) =>
+            _crowdMotor.CreateWallProbes(_moveDirection, out forward, out left, out right);
+        internal bool ShouldProbeCrowdWalls => _crowdMotor.ShouldProbeWalls;
+        internal bool ShouldProbeCrowdWallsEveryFixedStep => _crowdMotor.ShouldProbeWallsEveryFixedStep;
+        internal void ApplyCrowdGroundProbe(RaycastHit hit, ColliderHit overlapHit) => _crowdMotor.ApplyGroundProbe(hit, overlapHit);
+        internal void ResolveCrowdEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3) =>
+            _crowdMotor.ResolveEnvironmentOverlaps(hit0, hit1, hit2, hit3);
+        internal void ApplyCrowdWallProbes(RaycastHit forward, RaycastHit left, RaycastHit right) =>
+            _crowdMotor.ApplyWallProbes(forward, left, right);
+        internal void ClearCrowdWallProbe() => _crowdMotor.ClearWallProbe();
+        internal NpcCrowdMotor.MovementData CaptureCrowdMovementData() => _crowdMotor.CaptureMovementData();
+
+        internal void ApplyCrowdMovement(NpcCrowdMotor.MovementResult result, float deltaTime)
+        {
+            _crowdMotor.ApplyMovement(result);
+            _presentationSmoother?.CapturePhysicsPose(deltaTime);
+            if (_agent != null && _agent.enabled && _agent.isOnNavMesh && _crowdMotor.IsGrounded)
+                _agent.nextPosition = _rigidbody.position;
+            _networkPlayerController?.ApplyServerNpcCrowdState(
+                HorizontalVelocity,
+                VerticalVelocity,
+                IsGrounded,
+                IsJumping,
+                IsFreefall,
+                IsFallingAfterJump);
+        }
+
         internal NpcCrowdSimulation.AgentData CaptureCrowdAgentData()
         {
             var mode = avoidance != null ? (int)avoidance.Mode : 0;
@@ -304,8 +392,13 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void ApplyCrowdSteering(float3 steering)
         {
+            // PrepareCrowdPhysics already wrote the deterministic test command.
+            // Applying the random NavMesh/boid steering afterward would replace it.
+            if (_traversalTestDriver != null && _traversalTestDriver.IsControlling)
+                return;
             _crowdSteeringPlanar = new Vector3(steering.x, steering.y, steering.z);
             _hasCrowdSteering = true;
+            _crowdMotor?.SetCommand(_crowdSteeringPlanar, false);
         }
 
         private void OnRandomDestinationNeeded()
@@ -377,18 +470,9 @@ namespace Koiusa.SteamMultiRuntime
                 var planningUpAxis = ActorMotor.GetUpAxis();
                 _cachedTargetPlanarVelocity = BuildTargetPlanarVelocity(planningUpAxis);
                 _cachedRawSteeringPlanar = _cachedTargetPlanarVelocity;
-                if (avoidance != null && avoidance.isActiveAndEnabled)
-                {
-                    switch (avoidance.Mode)
-                    {
-                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
-                        _cachedRawSteeringPlanar = BuildBoidSteeringPlanar(planningUpAxis, _cachedTargetPlanarVelocity);
-                        break;
-                    case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
-                        _cachedRawSteeringPlanar = BuildRvoSteeringPlanar(planningUpAxis, _cachedTargetPlanarVelocity);
-                        break;
-                    }
-                }
+                // Crowd avoidance is calculated once for every NPC by SteeringJob.
+                // Running the legacy per-NPC Boid/RVO neighbor scan here duplicates
+                // that work on the Main Thread and becomes superlinear in dense crowds.
             }
 
             var upAxis = ActorMotor.GetUpAxis();
@@ -423,31 +507,11 @@ namespace Koiusa.SteamMultiRuntime
             if (desiredSpeed <= 0.0001f)
                 return Vector3.zero;
 
-            var desiredDirection = desiredPlanar / desiredSpeed;
-            var cornerDirection = desiredDirection;
-            var cornerCount = _agent.path.GetCornersNonAlloc(_pathCornerBuffer);
-            if (cornerCount > 1)
-            {
-                var cornerIndex = 1;
-                var minDistance = Mathf.Max(0f, navCornerMinDistance);
-                while (cornerIndex < cornerCount)
-                {
-                    var toCorner = Vector3.ProjectOnPlane(_pathCornerBuffer[cornerIndex] - transform.position, upAxis);
-                    if (toCorner.magnitude > minDistance)
-                    {
-                        cornerDirection = toCorner.normalized;
-                        break;
-                    }
-                    cornerIndex++;
-                }
-            }
-
-            var cornerWeight = Mathf.Clamp01(navCornerDirectionWeight);
-            var blendedDirection = Vector3.Lerp(desiredDirection, cornerDirection, cornerWeight);
-            if (blendedDirection.sqrMagnitude <= 0.000001f)
-                blendedDirection = desiredDirection;
-
-            return Vector3.ProjectOnPlane(blendedDirection.normalized * desiredSpeed, upAxis);
+            // NavMeshAgent.path creates a managed NavMeshPath. With hundreds of NPCs,
+            // reading it on every steering refresh produced MBs of garbage per frame.
+            // desiredVelocity already follows the current corridor and its corners, so
+            // use that allocation-free result as the crowd goal velocity.
+            return desiredPlanar;
         }
 
         private Vector2 ApplyAdaptiveMoveInputMagnitude(Vector2 moveInput, Vector3 targetPlanarVelocity, Vector3 upAxis)

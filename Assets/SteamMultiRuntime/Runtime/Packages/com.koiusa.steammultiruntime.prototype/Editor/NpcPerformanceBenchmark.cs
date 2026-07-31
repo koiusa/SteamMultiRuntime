@@ -12,16 +12,21 @@ namespace Koiusa.SteamMultiRuntime.Editor
     public static class NpcPerformanceBenchmark
     {
         private const string ScenePath = "Assets/SteamMultiRuntime/Samples/Gameplay/Stages/ServerScene.unity";
-        private static readonly int[] Counts = { 200, 300 };
+        private static readonly int[] Counts = { 100, 300 };
         private const int WarmupFrames = 180;
         private const int SampleFrames = 300;
 
         private static int runIndex;
         private static int frame;
         private static double mainThreadNanoseconds;
+        private static double renderThreadNanoseconds;
+        private static double gpuFrameNanoseconds;
         private static long gcBytes;
         private static long drawCalls;
+        private static readonly List<float> frameTimesMs = new(SampleFrames);
         private static ProfilerRecorder mainThreadRecorder;
+        private static ProfilerRecorder renderThreadRecorder;
+        private static ProfilerRecorder gpuFrameTimeRecorder;
         private static ProfilerRecorder gcRecorder;
         private static ProfilerRecorder drawCallRecorder;
         private static readonly List<NamedRecorder> subsystemRecorders = new();
@@ -36,6 +41,14 @@ namespace Koiusa.SteamMultiRuntime.Editor
         public static void Run200Vs300()
         {
             runIndex = 0;
+            EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            StartRun();
+        }
+
+        public static void Run300Only()
+        {
+            runIndex = 1;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
             StartRun();
@@ -63,9 +76,14 @@ namespace Koiusa.SteamMultiRuntime.Editor
             {
                 frame = 0;
                 mainThreadNanoseconds = 0;
+                renderThreadNanoseconds = 0;
+                gpuFrameNanoseconds = 0;
                 gcBytes = 0;
                 drawCalls = 0;
+                frameTimesMs.Clear();
                 mainThreadRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 1);
+                renderThreadRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Render Thread", 1);
+                gpuFrameTimeRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "GPU Frame Time", 1);
                 gcRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame", 1);
                 drawCallRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count", 1);
                 StartSubsystemRecorders();
@@ -88,6 +106,9 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 return;
 
             mainThreadNanoseconds += mainThreadRecorder.LastValue;
+            renderThreadNanoseconds += renderThreadRecorder.LastValue;
+            gpuFrameNanoseconds += gpuFrameTimeRecorder.LastValue;
+            frameTimesMs.Add(Time.unscaledDeltaTime * 1000f);
             gcBytes += gcRecorder.LastValue;
             drawCalls += drawCallRecorder.LastValue;
             for (var i = 0; i < subsystemRecorders.Count; i++)
@@ -96,14 +117,25 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 return;
 
             var npcCount = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(FindObjectsSortMode.None).Length;
+            frameTimesMs.Sort();
+            var averageFrameMs = frameTimesMs.Count > 0 ? frameTimesMs.Average() : 0d;
+            var p95FrameMs = frameTimesMs.Count > 0
+                ? frameTimesMs[Mathf.Clamp(Mathf.CeilToInt(frameTimesMs.Count * 0.95f) - 1, 0, frameTimesMs.Count - 1)]
+                : 0f;
             Debug.Log(
                 $"[NpcBenchmark] requested={Counts[runIndex]} actual={npcCount} " +
                 $"mainThreadMs={mainThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
+                $"renderThreadMs={renderThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
+                $"gpuFrameMs={gpuFrameNanoseconds / SampleFrames / 1_000_000d:F3} " +
+                $"frameMs={averageFrameMs:F3} p95FrameMs={p95FrameMs:F3} " +
+                $"fps={(averageFrameMs > 0d ? 1000d / averageFrameMs : 0d):F1} " +
                 $"gcBytesPerFrame={(double)gcBytes / SampleFrames:F1} " +
                 $"drawCalls={(double)drawCalls / SampleFrames:F1}");
 
             EditorApplication.update -= Sample;
             mainThreadRecorder.Dispose();
+            renderThreadRecorder.Dispose();
+            gpuFrameTimeRecorder.Dispose();
             gcRecorder.Dispose();
             drawCallRecorder.Dispose();
             LogAndDisposeSubsystemRecorders();
@@ -121,7 +153,8 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 if (description.UnitType != ProfilerMarkerDataUnit.TimeNanoseconds)
                     continue;
                 var name = description.Name;
-                if (!ContainsAny(name, "Physics", "NavMesh", "Animation", "Animator", "Behaviour", "UIElements", "Render"))
+                if (!ContainsAny(name, "Physics", "NavMesh", "Animation", "Animator", "Behaviour", "UIElements",
+                        "Render", "Gfx", "GPU", "Present", "Wait", "Skin", "Shadow", "Camera", "Batch"))
                     continue;
                 var recorder = ProfilerRecorder.StartNew(description.Category, name, 1);
                 if (recorder.Valid)

@@ -29,7 +29,7 @@ NpcNavMeshController : INpcLocomotionState
 
 各Moduleは任意装着です。`NpcNavMeshController`は存在し、有効になっているModuleだけを利用します。回避方式を有効にした場合は`NavMeshAgent`標準回避を停止し、無効化時に復元します。
 
-回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路Corner取得は`NpcNavMeshAvoidanceModule.UpdateInterval`の周期だけ実行します。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
+回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路方向にはNavMeshAgentのallocation-freeな`desiredVelocity`を使い、`agent.path`取得によるNPC数比例のGCを発生させません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
 
 重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。
 
@@ -58,9 +58,15 @@ NPC Modules（Serverのみ更新）
 
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
 
-Local／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`の単一`FixedUpdate`から一括で呼び出します。Player用`ServerDrivenActorController`の個別Tickは維持し、`ServerNpc` ModeだけをCrowd側へ委譲します。
+Local／Network Server NPCのCrowd Physics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`から30Hzで一括実行します。描画が遅れた場合も1描画フレームにつき最大1回とし、FixedUpdateのcatch-upがCrowd全体を複数回評価する負荷循環を防ぎます。空中・特殊移動中の壁Probeは毎Crowd Tick、通常接地移動中はNPCごとに位相をずらして隔Tickで実行します。Player用`ServerDrivenActorController`の個別Tickは維持し、`ServerNpc` ModeだけをCrowd側へ委譲します。
+
+NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`RaycastCommand.ScheduleBatch`で一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、床の点速度と変位をCrowd移動へ合成します。Playerは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を維持します。
+
+NPCと`ServerDrivenNetworkRigidbody`の接触は権限側だけがImpulseを適用します。Network ServerではSpawn済みServer Instance、Local実行では未SpawnのLocal Instanceを対象とし、Network Client上のKinematic複製には適用しません。
 
 Player／NPC共通の`ActorAnimatorStateDriver`は個別`LateUpdate`を持たず、単一SchedulerがCamera距離に応じて更新頻度を切り替えます。各`ActorAnimatorStateDriver`のInspectorにある`Animation Update LOD`で近距離／中距離の境界と近距離／中距離／遠距離の各更新Hzを設定できます。遠距離ActorはAnimator状態を保持したまま更新時だけ評価し、Cameraが存在しないDedicated ServerではAnimatorを停止します。初期値は近距離12m・30Hz、中距離30m・15Hz、遠距離2Hzです。
+
+NPCモデルの`UTJ.SpringManager`と`UnityChan.SpringManager`は個別`LateUpdate`を停止し、`NpcCrowdSpringSimulation`へ登録します。中央SchedulerはAnimator評価後、`TransformAccessArray`からボーンとSpring Colliderの姿勢をJob内で取得し、Verlet積分、バネ、減衰、重力、長さ制約、Sphere／Capsule／Panel Collider制約、回転算出、Transform反映をBurstで並列実行します。Camera距離による初期更新頻度は15m以内30Hz、40m以内15Hz、それ以遠5Hzです。PlayerのSpringManagerは従来処理を維持します。
 
 Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
 
@@ -92,7 +98,7 @@ Local／Networkとも構成が同じになり、Animatorなどが行う`GetCompo
 
 ## 表示補間と移動床
 
-Local／Network NPCはPlayerと同じ`PhysicsPresentationSmoother`を使用します。Physics RootのRigidbody補間は`None`とし、Character Modelなどの表示階層だけを`Presentation`上で補間します。Network Clientは物理Simulationを行わず、`NetworkTransform`の補間結果を表示します。
+Local／Network NPCはPlayerと同じ`PhysicsPresentationSmoother`を使用します。Physics RootのRigidbody補間は`None`とし、Character Modelなどの表示階層だけを`Presentation`上で補間します。PlayerはFixed時刻、Crowd Motorは30Hzサンプルの時刻と実測間隔を補間器へ渡し、Crowd計算周期とは独立して表示を毎フレーム更新します。Network Clientは物理Simulationを行わず、`NetworkTransform`の補間結果を表示します。
 
 移動床上では`GroundMotionTracker`が`IGroundMotionSnapshotSource`から速度、変位、回転を一括取得します。床の移動行列はNPCごとに再計算せずPhysics tick単位で共有します。床変位は`ActorMotor`が一度だけ適用し、物理押し出しとの二重適用は行いません。
 

@@ -8,12 +8,15 @@
 		"Koiusa.SteamMultiRuntime.Integration.Runtime",
 		"Koiusa.SteamMultiRuntime.ResourceLoader.Runtime",
 		"Koiusa.SteamMultiRuntime.Core.Runtime",
+		"Koiusa.SteamMultiRuntime.Player.Runtime",
 		"Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime",
 		"Koiusa.Input.Core.Runtime",
 		"Unity.InputSystem",
 		"Unity.Burst",
 		"Unity.Collections",
 		"Unity.Mathematics"
+		,"Koiusa.SteamMultiRuntime.Thirdparty.Runtime"
+		,"UnityChan.Common"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],

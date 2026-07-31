@@ -3,6 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -14,6 +15,13 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     internal sealed class NpcCrowdSimulation : MonoBehaviour
     {
+        private const int GroundOverlapHitsPerNpc = 4;
+        private static readonly ProfilerMarker PrepareMarker = new("Physics.NpcCrowd.PrepareProbes");
+        private static readonly ProfilerMarker QueryMarker = new("Physics.NpcCrowd.QueryAndSteeringWait");
+        private static readonly ProfilerMarker ProbeApplyMarker = new("Physics.NpcCrowd.ApplyProbeResults");
+        private static readonly ProfilerMarker PenetrationMarker = new("Physics.NpcCrowd.ResolvePenetration");
+        private static readonly ProfilerMarker MovementJobMarker = new("Physics.NpcCrowd.MovementJob");
+        private static readonly ProfilerMarker MovementApplyMarker = new("Physics.NpcCrowd.ApplyMovementAndContacts");
         internal struct AgentData
         {
             public float3 Position;
@@ -133,6 +141,129 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
+        [BurstCompile]
+        private struct MovementJob : IJobParallelFor
+        {
+            [ReadOnly] public NativeArray<NpcCrowdMotor.MovementData> Inputs;
+            [WriteOnly] public NativeArray<NpcCrowdMotor.MovementResult> Results;
+            public float DeltaTime;
+
+            public void Execute(int index)
+            {
+                var input = Inputs[index];
+                var up = math.normalizesafe(input.UpAxis, new float3(0f, 1f, 0f));
+                var traversalMode = input.TraversalMode;
+                var traversalActive = traversalMode == (int)ActorTraversalState.WallRun
+                    || traversalMode == (int)ActorTraversalState.WallSlide
+                    || traversalMode == (int)ActorTraversalState.Ladder
+                    || traversalMode == (int)ActorTraversalState.WallJump
+                    || (traversalMode == (int)ActorTraversalState.WireSwing && input.Grounded == 0);
+                if (traversalActive)
+                {
+                    var traversalVelocity = input.Velocity;
+                    var groundedTraversal = traversalMode == (int)ActorTraversalState.Ladder;
+                    if (!groundedTraversal)
+                        traversalVelocity += up * input.Gravity * DeltaTime;
+                    if (input.HasWall != 0)
+                    {
+                        var wallNormal = math.normalizesafe(input.WallNormal);
+                        var inwardSpeed = math.dot(traversalVelocity, wallNormal);
+                        if (inwardSpeed < 0f && input.WallDistance <= -inwardSpeed * DeltaTime + 0.03f)
+                            traversalVelocity -= wallNormal * inwardSpeed;
+                    }
+
+                    if (traversalMode == (int)ActorTraversalState.WireSwing)
+                    {
+                        var toAnchor = input.WireAnchor - input.Position;
+                        var ropeDirection = math.normalizesafe(toAnchor);
+                        var tangentInput = input.DesiredPlanarVelocity - ropeDirection * math.dot(input.DesiredPlanarVelocity, ropeDirection);
+                        traversalVelocity += tangentInput * DeltaTime;
+                    }
+
+                    var traversalPosition = input.Position + input.GroundDisplacement + traversalVelocity * DeltaTime;
+                    if (traversalMode == (int)ActorTraversalState.WireSwing && input.WireRopeLength > 0.01f)
+                    {
+                        var fromAnchor = traversalPosition - input.WireAnchor;
+                        var distance = math.length(fromAnchor);
+                        if (distance > input.WireRopeLength && distance > 0.0001f)
+                        {
+                            var radial = fromAnchor / distance;
+                            traversalPosition = input.WireAnchor + radial * input.WireRopeLength;
+                            var outwardSpeed = math.dot(traversalVelocity, radial);
+                            if (outwardSpeed > 0f)
+                                traversalVelocity -= radial * outwardSpeed;
+                        }
+                    }
+
+                    Results[index] = new NpcCrowdMotor.MovementResult
+                    {
+                        Position = traversalPosition,
+                        Velocity = traversalVelocity,
+                        Grounded = groundedTraversal ? 1 : 0,
+                        AirborneFromJump = traversalMode == (int)ActorTraversalState.WallJump ? 1 : input.AirborneFromJump
+                    };
+                    return;
+                }
+                var currentPlanar = input.Velocity - up * math.dot(input.Velocity, up);
+                var target = input.DesiredPlanarVelocity;
+                var targetSpeed = math.length(target);
+                if (targetSpeed > input.MoveSpeed && targetSpeed > 0.0001f)
+                    target *= input.MoveSpeed / targetSpeed;
+                var delta = target - currentPlanar;
+                var maxDelta = math.max(0f, input.Acceleration) * DeltaTime;
+                var deltaLength = math.length(delta);
+                if (deltaLength > maxDelta && deltaLength > 0.0001f)
+                    delta *= maxDelta / deltaLength;
+                var planar = currentPlanar + delta;
+
+                var grounded = input.Grounded != 0;
+                var airborneFromJump = input.AirborneFromJump != 0;
+                var vertical = math.dot(input.Velocity, up);
+                if (input.JumpRequested != 0 && grounded)
+                {
+                    currentPlanar += input.GroundVelocity - up * math.dot(input.GroundVelocity, up);
+                    planar = currentPlanar;
+                    vertical = input.JumpSpeed + math.dot(input.GroundVelocity, up);
+                    grounded = false;
+                    airborneFromJump = true;
+                }
+                if (!grounded)
+                    vertical += input.Gravity * DeltaTime;
+
+                var velocity = planar + up * vertical;
+                if (input.HasWall != 0)
+                {
+                    var wallNormal = math.normalizesafe(input.WallNormal);
+                    var inwardSpeed = math.dot(velocity, wallNormal);
+                    if (inwardSpeed < 0f && input.WallDistance <= -inwardSpeed * DeltaTime + 0.03f)
+                        velocity -= wallNormal * inwardSpeed;
+                }
+                var position = input.Position + input.GroundDisplacement + velocity * DeltaTime;
+                var height = math.dot(position, up);
+                if (input.HasGroundSurface != 0 && grounded)
+                {
+                    // Follow slopes, steps and moving-floor height while grounded. Without
+                    // this snap the planar integration leaves the capsule behind the floor.
+                    position += up * (input.GroundCoordinate - height);
+                    velocity -= up * math.dot(velocity, up);
+                }
+                else if (input.HasGroundSurface != 0 && !grounded && vertical <= 0f && height <= input.GroundCoordinate)
+                {
+                    position += up * (input.GroundCoordinate - height);
+                    velocity -= up * vertical;
+                    grounded = true;
+                    airborneFromJump = false;
+                }
+                Results[index] = new NpcCrowdMotor.MovementResult
+                {
+                    Position = position,
+                    Velocity = velocity,
+                    Grounded = grounded ? 1 : 0,
+                    AirborneFromJump = airborneFromJump ? 1 : 0
+                };
+            }
+        }
+
         private const float SpatialCellSize = 2f;
         private static NpcCrowdSimulation instance;
         private readonly List<NpcNavMeshController> activeNpcs = new(256);
@@ -140,7 +271,43 @@ namespace Koiusa.SteamMultiRuntime
         private NativeArray<AgentData> agents;
         private NativeArray<float3> steeringResults;
         private NativeParallelMultiHashMap<int, int> spatialGrid;
+        private NativeArray<CapsulecastCommand> groundCommands;
+        private NativeArray<RaycastHit> groundHits;
+        private NativeArray<OverlapCapsuleCommand> groundOverlapCommands;
+        private NativeArray<ColliderHit> groundOverlapHits;
+        private NativeArray<CapsulecastCommand> wallCommands;
+        private NativeArray<RaycastHit> wallHits;
+        private NativeArray<int> wallOwners;
+        private int wallProbePhase;
+        private NativeArray<NpcCrowdMotor.MovementData> movementInputs;
+        private NativeArray<NpcCrowdMotor.MovementResult> movementResults;
         private int capacity;
+        private float crowdStepAccumulator;
+        private const float CrowdStepInterval = 1f / 30f;
+        private const float MaximumCrowdStep = 1f / 15f;
+
+        private void Update()
+        {
+            var deltaTime = Time.deltaTime;
+            for (var i = activeNpcs.Count - 1; i >= 0; i--)
+            {
+                var npc = activeNpcs[i];
+                if (npc != null && npc.isActiveAndEnabled)
+                    npc.TickCrowdUpdate(deltaTime);
+            }
+
+            // Crowd bodies are kinematic and use their own Burst integration. Keeping
+            // that work in FixedUpdate made a slow frame execute the entire crowd two
+            // or more times while Unity caught up, causing a feedback loop. Run at a
+            // stable 30 Hz and never execute more than one crowd step per render frame.
+            crowdStepAccumulator += Mathf.Min(deltaTime, MaximumCrowdStep);
+            if (crowdStepAccumulator >= CrowdStepInterval)
+            {
+                var crowdDeltaTime = Mathf.Min(crowdStepAccumulator, MaximumCrowdStep);
+                crowdStepAccumulator = 0f;
+                RunCrowdStep(crowdDeltaTime);
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -191,7 +358,7 @@ namespace Koiusa.SteamMultiRuntime
             activeNpcs.RemoveAt(last);
         }
 
-        private void FixedUpdate()
+        private void RunCrowdStep(float deltaTime)
         {
             RemoveDeadEntries();
             var count = activeNpcs.Count;
@@ -199,38 +366,98 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             EnsureCapacity(count);
+            wallProbePhase ^= 1;
+            var wallProbeCount = 0;
+            using (PrepareMarker.Auto())
             for (var i = 0; i < count; i++)
+            {
+                activeNpcs[i].TickCrowdRecovery();
+                activeNpcs[i].PrepareCrowdPhysics(deltaTime);
                 agents[i] = activeNpcs[i].CaptureCrowdAgentData();
-
-            spatialGrid.Clear();
-            var buildHandle = new BuildSpatialGridJob
-            {
-                Agents = agents.GetSubArray(0, count),
-                Grid = spatialGrid.AsParallelWriter()
-            }.Schedule(count, 64);
-            var steeringHandle = new SteeringJob
-            {
-                Agents = agents.GetSubArray(0, count),
-                Grid = spatialGrid,
-                Results = steeringResults.GetSubArray(0, count)
-            }.Schedule(count, 64, buildHandle);
-            steeringHandle.Complete();
-
-            for (var i = 0; i < count; i++)
-                activeNpcs[i].ApplyCrowdSteering(steeringResults[i]);
-
-            for (var i = activeNpcs.Count - 1; i >= 0; i--)
-            {
-                var npc = activeNpcs[i];
-                if (npc == null)
+                activeNpcs[i].CreateCrowdGroundProbes(out var castCommand, out var overlapCommand);
+                groundCommands[i] = castCommand;
+                groundOverlapCommands[i] = overlapCommand;
+                var probeWalls = activeNpcs[i].ShouldProbeCrowdWalls
+                    && (activeNpcs[i].ShouldProbeCrowdWallsEveryFixedStep || ((i + wallProbePhase) & 1) == 0);
+                if (probeWalls)
                 {
-                    activeNpcSet.Remove(npc);
-                    activeNpcs.RemoveAt(i);
-                    continue;
+                    activeNpcs[i].ClearCrowdWallProbe();
+                    activeNpcs[i].CreateCrowdWallProbes(out var wallForward, out var wallLeft, out var wallRight);
+                    var wallIndex = wallProbeCount * 3;
+                    wallCommands[wallIndex] = wallForward;
+                    wallCommands[wallIndex + 1] = wallLeft;
+                    wallCommands[wallIndex + 2] = wallRight;
+                    wallOwners[wallProbeCount] = i;
+                    wallProbeCount++;
                 }
-                if (npc.isActiveAndEnabled)
-                    npc.TickCrowdPhysics();
             }
+
+            using (QueryMarker.Auto())
+            {
+                spatialGrid.Clear();
+                var buildHandle = new BuildSpatialGridJob
+                {
+                    Agents = agents.GetSubArray(0, count), Grid = spatialGrid.AsParallelWriter()
+                }.Schedule(count, 64);
+                var steeringHandle = new SteeringJob
+                {
+                    Agents = agents.GetSubArray(0, count), Grid = spatialGrid,
+                    Results = steeringResults.GetSubArray(0, count)
+                }.Schedule(count, 64, buildHandle);
+                var groundHandle = CapsulecastCommand.ScheduleBatch(
+                    groundCommands.GetSubArray(0, count), groundHits.GetSubArray(0, count), 32, 1);
+                var overlapHandle = OverlapCapsuleCommand.ScheduleBatch(
+                    groundOverlapCommands.GetSubArray(0, count),
+                    groundOverlapHits.GetSubArray(0, count * GroundOverlapHitsPerNpc),
+                    32, GroundOverlapHitsPerNpc, default);
+                var wallHandle = wallProbeCount > 0
+                    ? CapsulecastCommand.ScheduleBatch(
+                        wallCommands.GetSubArray(0, wallProbeCount * 3),
+                        wallHits.GetSubArray(0, wallProbeCount * 3), 32, 1)
+                    : default;
+                var groundAndSteeringHandle = JobHandle.CombineDependencies(steeringHandle, groundHandle, overlapHandle);
+                JobHandle.CombineDependencies(groundAndSteeringHandle, wallHandle).Complete();
+            }
+
+            using (ProbeApplyMarker.Auto())
+            {
+            for (var i = 0; i < count; i++)
+            {
+                activeNpcs[i].ApplyCrowdSteering(steeringResults[i]);
+                var overlapIndex = i * GroundOverlapHitsPerNpc;
+                activeNpcs[i].ApplyCrowdGroundProbe(groundHits[i], groundOverlapHits[overlapIndex]);
+            }
+            for (var probeIndex = 0; probeIndex < wallProbeCount; probeIndex++)
+            {
+                var wallIndex = probeIndex * 3;
+                activeNpcs[wallOwners[probeIndex]].ApplyCrowdWallProbes(
+                    wallHits[wallIndex], wallHits[wallIndex + 1], wallHits[wallIndex + 2]);
+            }
+            }
+            using (PenetrationMarker.Auto())
+            for (var i = 0; i < count; i++)
+            {
+                // Resolve the exact movement capsule after the predictive wall casts.
+                // This also recovers contacts when a fast/thin obstacle started inside
+                // the cast volume and therefore produced no sweep hit.
+                var overlapIndex = i * GroundOverlapHitsPerNpc;
+                activeNpcs[i].ResolveCrowdEnvironmentOverlaps(
+                    groundOverlapHits[overlapIndex],
+                    groundOverlapHits[overlapIndex + 1],
+                    groundOverlapHits[overlapIndex + 2],
+                    groundOverlapHits[overlapIndex + 3]);
+                movementInputs[i] = activeNpcs[i].CaptureCrowdMovementData();
+            }
+            using (MovementJobMarker.Auto())
+                new MovementJob
+                {
+                    Inputs = movementInputs.GetSubArray(0, count),
+                    Results = movementResults.GetSubArray(0, count),
+                    DeltaTime = deltaTime
+                }.Schedule(count, 64).Complete();
+            using (MovementApplyMarker.Auto())
+            for (var i = 0; i < count; i++)
+                activeNpcs[i].ApplyCrowdMovement(movementResults[i], deltaTime);
         }
 
         private void RemoveDeadEntries()
@@ -252,6 +479,15 @@ namespace Koiusa.SteamMultiRuntime
             agents = new NativeArray<AgentData>(capacity, Allocator.Persistent);
             steeringResults = new NativeArray<float3>(capacity, Allocator.Persistent);
             spatialGrid = new NativeParallelMultiHashMap<int, int>(capacity * 2, Allocator.Persistent);
+            groundCommands = new NativeArray<CapsulecastCommand>(capacity, Allocator.Persistent);
+            groundHits = new NativeArray<RaycastHit>(capacity, Allocator.Persistent);
+            groundOverlapCommands = new NativeArray<OverlapCapsuleCommand>(capacity, Allocator.Persistent);
+            groundOverlapHits = new NativeArray<ColliderHit>(capacity * GroundOverlapHitsPerNpc, Allocator.Persistent);
+            wallCommands = new NativeArray<CapsulecastCommand>(capacity * 3, Allocator.Persistent);
+            wallHits = new NativeArray<RaycastHit>(capacity * 3, Allocator.Persistent);
+            wallOwners = new NativeArray<int>(capacity, Allocator.Persistent);
+            movementInputs = new NativeArray<NpcCrowdMotor.MovementData>(capacity, Allocator.Persistent);
+            movementResults = new NativeArray<NpcCrowdMotor.MovementResult>(capacity, Allocator.Persistent);
         }
 
         private void OnDestroy()
@@ -266,6 +502,15 @@ namespace Koiusa.SteamMultiRuntime
             if (agents.IsCreated) agents.Dispose();
             if (steeringResults.IsCreated) steeringResults.Dispose();
             if (spatialGrid.IsCreated) spatialGrid.Dispose();
+            if (groundCommands.IsCreated) groundCommands.Dispose();
+            if (groundHits.IsCreated) groundHits.Dispose();
+            if (groundOverlapCommands.IsCreated) groundOverlapCommands.Dispose();
+            if (groundOverlapHits.IsCreated) groundOverlapHits.Dispose();
+            if (wallCommands.IsCreated) wallCommands.Dispose();
+            if (wallHits.IsCreated) wallHits.Dispose();
+            if (wallOwners.IsCreated) wallOwners.Dispose();
+            if (movementInputs.IsCreated) movementInputs.Dispose();
+            if (movementResults.IsCreated) movementResults.Dispose();
         }
 
         private static int3 ToCell(float3 position) => (int3)math.floor(position / SpatialCellSize);
