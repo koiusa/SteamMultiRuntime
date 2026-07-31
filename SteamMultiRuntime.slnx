@@ -25,11 +25,11 @@
   <Project Path="Koiusa.Input.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.TargetingSystem.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Steam.Runtime.csproj" />
+  <Project Path="Koiusa.SteamMultiRuntime.Character.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.UI.PlayModeTests.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.UI.URP.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
-  <Project Path="Koiusa.SteamMultiRuntime.Character.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.UI.Runtime.csproj" />
   <Project Path="Koiusa.UI.Common.Runtime.csproj" />

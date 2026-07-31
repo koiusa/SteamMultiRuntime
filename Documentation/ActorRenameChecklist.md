@@ -64,3 +64,12 @@ PlayerとNPCが共有するRuntime機能では`Actor`を使い、ユーザー入
 - [x] 新規Reflection、`SendMessage`、型名文字列によるRuntime解決がない
 
 未実施のPlay Mode、Prefab Import、Host／Client検証は、検索や静的検証だけでチェックしません。
+
+## 最終検証結果
+
+- Unity `6000.3.9f1` Batch Mode Import／Script Compilation成功
+- Tundra build成功、C# compiler errorなし
+- 改名したUnity AssetのGUID不一致 `0`
+- 完了対象の旧共有型名の残存 `0`
+- `git diff --check`成功
+- Play Mode、Host／Client、Network NPC実動作確認は未実施
