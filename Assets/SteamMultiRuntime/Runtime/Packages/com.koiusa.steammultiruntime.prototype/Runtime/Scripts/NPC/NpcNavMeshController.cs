@@ -68,8 +68,7 @@ namespace Koiusa.SteamMultiRuntime
         private int _lastConsumedJumpToken;
         private bool _clientSimulationDisabled;
 
-        private readonly Collider[] _boidNeighborBuffer = new Collider[32];
-        private readonly int[] _uniqueNeighborIds = new int[32];
+        private readonly NpcNavMeshController[] _npcNeighborBuffer = new NpcNavMeshController[32];
         private readonly float[] _avoidanceCandidateScores = new float[32];
         private readonly Vector3[] _avoidanceCandidates = new Vector3[32];
         private readonly Vector3[] _pathCornerBuffer = new Vector3[16];
@@ -141,6 +140,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
+            RegisterSpatialNpc(this);
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -162,6 +162,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
+            UnregisterSpatialNpc(this);
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted -= OnReturnToCenterStarted;
@@ -180,6 +181,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            UnregisterSpatialNpc(this);
             StopAgent();
             ResetAgentPath();
         }
@@ -498,13 +500,12 @@ namespace Koiusa.SteamMultiRuntime
                 return goalPlanarVelocity;
 
             var radius = Mathf.Max(0.1f, rvoNeighborRadius);
-            var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
+            var count = GetSpatialNeighbors(this, radius, _npcNeighborBuffer);
             if (count <= 0)
                 return goalPlanarVelocity;
 
-            var maxNeighbors = Mathf.Clamp(rvoMaxNeighbors, 1, _boidNeighborBuffer.Length);
+            var maxNeighbors = Mathf.Clamp(rvoMaxNeighbors, 1, _npcNeighborBuffer.Length);
             var primaryNeighborCount = Mathf.Clamp(rvoPrimaryNeighborCount, 1, maxNeighbors);
-            var uniqueNeighborCount = 0;
             var candidateCount = 0;
             var selfPos = transform.position;
             var selfVel = _rigidbody != null ? _rigidbody.linearVelocity : Vector3.zero;
@@ -517,41 +518,18 @@ namespace Koiusa.SteamMultiRuntime
 
             for (var i = 0; i < count && candidateCount < maxNeighbors; i++)
             {
-                var col = _boidNeighborBuffer[i];
-                if (col == null)
-                    continue;
-                if (col.attachedRigidbody == _rigidbody)
-                    continue;
-
-                var neighborKey = col.attachedRigidbody != null
-                    ? col.attachedRigidbody.GetInstanceID()
-                    : col.transform.root.GetInstanceID();
-
-                var alreadyAdded = false;
-                for (var keyIndex = 0; keyIndex < uniqueNeighborCount; keyIndex++)
-                {
-                    if (_uniqueNeighborIds[keyIndex] != neighborKey)
-                        continue;
-                    alreadyAdded = true;
-                    break;
-                }
-                if (alreadyAdded)
-                    continue;
-
-                var other = col.GetComponentInParent<IActorController>();
+                var other = _npcNeighborBuffer[i];
                 if (other == null)
                     continue;
-
-                _uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
-
-                var otherPos = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
+                var otherBody = other._rigidbody;
+                var otherPos = otherBody != null ? otherBody.worldCenterOfMass : other.transform.position;
                 var relPos = Vector3.ProjectOnPlane(otherPos - selfPos, upAxis);
                 var dist = relPos.magnitude;
                 if (dist <= 0.0001f || dist > radius)
                     continue;
 
                 var relDir = relPos / dist;
-                var otherVel = col.attachedRigidbody != null ? col.attachedRigidbody.linearVelocity : Vector3.zero;
+                var otherVel = otherBody != null ? otherBody.linearVelocity : Vector3.zero;
                 var otherPlanarVel = Vector3.ProjectOnPlane(otherVel, upAxis);
                 var relVel = selfPlanarVel - otherPlanarVel;
                 var approachSpeed = Vector3.Dot(relVel, relDir);

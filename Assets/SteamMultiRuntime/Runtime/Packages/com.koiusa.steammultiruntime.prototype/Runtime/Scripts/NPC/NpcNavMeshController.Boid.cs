@@ -11,15 +11,14 @@ namespace Koiusa.SteamMultiRuntime
                 return goalPlanarVelocity;
 
             var radius = Mathf.Max(0.1f, boidSeparationRadius);
-            var count = Physics.OverlapSphereNonAlloc(transform.position, radius, _boidNeighborBuffer, ~0, QueryTriggerInteraction.Ignore);
+            var count = GetSpatialNeighbors(this, radius, _npcNeighborBuffer);
             if (count <= 0)
                 return goalPlanarVelocity;
 
             var separation = Vector3.zero;
             var neighborCount = 0;
-            var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _boidNeighborBuffer.Length);
+            var maxNeighbors = Mathf.Clamp(boidMaxNeighbors, 1, _npcNeighborBuffer.Length);
             var radiusSqr = radius * radius;
-            var uniqueNeighborCount = 0;
             var separationExponent = Mathf.Max(1f, boidSeparationExponent);
             var selfPosition = transform.position;
 
@@ -31,35 +30,11 @@ namespace Koiusa.SteamMultiRuntime
 
             for (var i = 0; i < count && neighborCount < maxNeighbors; i++)
             {
-                var col = _boidNeighborBuffer[i];
-                if (col == null)
-                    continue;
-                if (col.attachedRigidbody == _rigidbody)
-                    continue;
-
-                var neighborKey = col.attachedRigidbody != null
-                    ? col.attachedRigidbody.GetInstanceID()
-                    : col.transform.root.GetInstanceID();
-
-                var alreadyAdded = false;
-                for (var keyIndex = 0; keyIndex < uniqueNeighborCount; keyIndex++)
-                {
-                    if (_uniqueNeighborIds[keyIndex] != neighborKey)
-                        continue;
-                    alreadyAdded = true;
-                    break;
-                }
-
-                if (alreadyAdded)
-                    continue;
-
-                var other = col.GetComponentInParent<IActorController>();
+                var other = _npcNeighborBuffer[i];
                 if (other == null)
                     continue;
-
-                _uniqueNeighborIds[uniqueNeighborCount++] = neighborKey;
-
-                var neighborPosition = col.attachedRigidbody != null ? col.attachedRigidbody.worldCenterOfMass : col.bounds.center;
+                var otherBody = other._rigidbody;
+                var neighborPosition = otherBody != null ? otherBody.worldCenterOfMass : other.transform.position;
                 var delta = selfPosition - neighborPosition;
                 var planarDelta = Vector3.ProjectOnPlane(delta, upAxis);
                 var sqr = planarDelta.sqrMagnitude;
