@@ -25,6 +25,7 @@ namespace Koiusa.SteamMultiRuntime
         private IWireLineVisualFeature wireVisual;
         private IWireGroundAction groundAction;
         private IWireReelAction reelAction;
+        private WireSwingAction swingAction;
         private Transform anchorTransform;
         private Vector3 anchorLocalPoint;
         private Transform visualAnchorTransform;
@@ -58,6 +59,7 @@ namespace Koiusa.SteamMultiRuntime
             wireVisual = visual != null ? visual : GetComponent<IWireLineVisualFeature>();
             groundAction = GetComponent<IWireGroundAction>();
             reelAction = GetComponent<IWireReelAction>();
+            swingAction = GetComponent<WireSwingAction>();
             wireVisual?.Initialize();
         }
 
@@ -72,13 +74,16 @@ namespace Koiusa.SteamMultiRuntime
             elasticStretchLimit = Mathf.Max(0f, elasticStretchLimit);
         }
 
-        private void LateUpdate()
+        internal void TickAttachedLate()
         {
-            if (IsAttached) wireVisual?.UpdateEndpoints(VisualAnchorPoint);
+            if (isActiveAndEnabled && IsAttached)
+                wireVisual?.UpdateEndpoints(VisualAnchorPoint);
         }
 
-        private void FixedUpdate()
+        internal void TickAttachedFixed()
         {
+            if (!isActiveAndEnabled || !IsAttached)
+                return;
             if (IsAttached && RopeLength > maximumRopeLength)
             {
                 // A distant target remains attachable, but the excess wire is reeled in
@@ -116,6 +121,17 @@ namespace Koiusa.SteamMultiRuntime
                 var damping = useRopeConstraint || reachedHardLimit ? 1f : radialVelocityDamping;
                 Body.linearVelocity += towardAnchor * (awaySpeed * damping);
             }
+
+        }
+
+        internal void TickAttachedActionsFixed()
+        {
+            if (!isActiveAndEnabled || !IsAttached)
+                return;
+            if (swingAction != null && swingAction.isActiveAndEnabled)
+                swingAction.TickAttachedFixed();
+            if (groundAction is WireGroundAction concreteGroundAction && concreteGroundAction.isActiveAndEnabled)
+                concreteGroundAction.TickAttachedFixed();
         }
 
         public void SetRopeLength(float value)
@@ -151,11 +167,13 @@ namespace Koiusa.SteamMultiRuntime
                 : attachDistance);
             IsAttached = true;
             wireVisual?.SetVisible(true);
+            WireTraversalUpdateLoop.Register(this);
         }
 
         public void Detach()
         {
             IsAttached = false;
+            WireTraversalUpdateLoop.Unregister(this);
             anchorTransform = null;
             visualAnchorTransform = null;
             AnchorBody = null;
@@ -178,6 +196,7 @@ namespace Koiusa.SteamMultiRuntime
             RopeLength = Mathf.Max(minimumRopeLength, ropeLength);
             IsAttached = true;
             wireVisual?.SetVisible(true);
+            WireTraversalUpdateLoop.Register(this);
         }
 
         private Vector3 VisualAnchorPoint => visualAnchorTransform != null

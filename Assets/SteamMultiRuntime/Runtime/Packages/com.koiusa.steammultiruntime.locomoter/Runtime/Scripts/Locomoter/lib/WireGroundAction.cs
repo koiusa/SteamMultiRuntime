@@ -66,7 +66,7 @@ namespace Koiusa.SteamMultiRuntime
             moveDirection = Vector3.ClampMagnitude(value, 1f);
         }
 
-        private void FixedUpdate()
+        internal void TickAttachedFixed()
         {
             if (!HasConnection && !wasUsingStrafeMovement
                 && strafeBlend <= 0f && facingBlend <= 0f)

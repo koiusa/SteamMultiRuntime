@@ -388,8 +388,8 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.4
-  RotAngleThreshold: 3
+  PositionThreshold: 0.5
+  RotAngleThreshold: 6
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
@@ -436,7 +436,7 @@ NavMeshAgent:
   m_Height: 1
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 0
 --- !u!114 &4967333075865679800
 MonoBehaviour:
   m_ObjectHideFlags: 0

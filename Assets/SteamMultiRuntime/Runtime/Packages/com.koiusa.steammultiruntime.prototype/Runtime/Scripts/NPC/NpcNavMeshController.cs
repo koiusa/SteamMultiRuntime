@@ -91,6 +91,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public event System.Action ReturnToCenterStarted;
         public event System.Action<Vector3> DestinationSet;
+        public event System.Action DestinationArrived;
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
         public bool IsMoving => HorizontalVelocity > 0.01f;
@@ -178,6 +179,7 @@ namespace Koiusa.SteamMultiRuntime
                 _crowdAgent?.Activate();
             else
             {
+                NpcConventionalUpdateLoop.Register(this);
                 RegisterSpatialNpc(this);
                 NpcConventionalCollisionRegistry.Register(this, _rigidbody);
                 if (_networkPlayerController == null)
@@ -189,6 +191,7 @@ namespace Koiusa.SteamMultiRuntime
                 movement.OnRandomDestinationNeeded += OnRandomDestinationNeeded;
                 movement.OnCenterDestinationNeeded += OnCenterDestinationNeeded;
                 movement.OnDestinationNeeded += OnDestinationNeeded;
+                movement.OnDestinationArrived += OnDestinationArrived;
             }
 
             _inputSource.Enable();
@@ -202,12 +205,14 @@ namespace Koiusa.SteamMultiRuntime
             UnregisterSpatialNpc(this);
             NpcConventionalCollisionRegistry.Unregister(this);
             NpcConventionalPhysicsLoop.Unregister(this);
+            NpcConventionalUpdateLoop.Unregister(this);
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted -= OnReturnToCenterStarted;
                 movement.OnRandomDestinationNeeded -= OnRandomDestinationNeeded;
                 movement.OnCenterDestinationNeeded -= OnCenterDestinationNeeded;
                 movement.OnDestinationNeeded -= OnDestinationNeeded;
+                movement.OnDestinationArrived -= OnDestinationArrived;
             }
 
             _inputSource.Disable();
@@ -226,6 +231,7 @@ namespace Koiusa.SteamMultiRuntime
             UnregisterSpatialNpc(this);
             NpcConventionalCollisionRegistry.Unregister(this);
             NpcConventionalPhysicsLoop.Unregister(this);
+            NpcConventionalUpdateLoop.Unregister(this);
             StopAgent();
             ResetAgentPath();
         }
@@ -256,6 +262,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             DestinationSet?.Invoke(_agent.destination);
+        }
+
+        private void OnDestinationArrived()
+        {
+            DestinationArrived?.Invoke();
         }
 
         private void OnReturnToCenterStarted()

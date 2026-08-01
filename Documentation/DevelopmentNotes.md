@@ -20,19 +20,34 @@ NPC 1000体表示を目標とし、Crowd Backendを標準経路とする。現�
 
 大量NPCではUnityのNavMesh経路計算キューが飽和し、経路計算待ちのNPCが停止していた。Crowdでは`NavMeshAgent`を経路探索専用とし、個別Obstacle Avoidance／Stuck再経路／`autoRepath`を使用しない。経路計算予算は登録NPC数に応じて調整し、再経路計算中も直前の進行方向を維持する。
 
-Server Network NPC 300体の診断では、移動中40体から最新計測で250体へ改善した。残る停止数には目的地到着後の意図的な待機を含む。Crowd OFFの導入前比デグレは解消済み。
+### Network Crowd計測（2026-08-02）
 
-Main Thread CPU時間は次の通り。現在値は最小化EditorでON／OFFを同条件計測した結果。旧基準値とは実行条件が異なるため単純比較はしない。
+個体別の空振りCallbackを中央Schedulerまたはpush通知へ移した後のNetwork NPC、Crowd ON計測。`NetworkRigidbody`は標準構成を維持し、`NetworkTransform`のPosition Thresholdは0.5m、Y Rotation Thresholdは6度とした。
 
-| NPC | Crowd ON | Crowd OFF | ON FPS | ON移動中 |
-|---:|---:|---:|---:|---:|
-| 100 | 27.685 ms | 31.971 ms | 36.0 | 74 / 100 |
-| 200 | 56.273 ms | 56.770 ms | 17.7 | 144 / 200 |
-| 300 | 85.744 ms | 88.930 ms | 11.6 | 250 / 300 |
+実行条件はUnity 6000.3.9f1、`ServerScene`、Network Server、Crowd ON、100／200／300体、Warmup 180 frame、Sample 300 frame、乱数Seed 481516、Subsystem Recorder ON、`-batchmode -nographics`である。ヘッドレス実行のためGPU Frame、Render Thread、Draw Callは評価対象外とする。
 
-経路制御変更前の旧基準値は、100体でON 11.009 ms／OFF 12.325 ms、300体でON 43.284 ms／OFF 59.737 ms。現在もCrowd ONはOFFより速いが、NavMesh経路予算増加により差が約5%まで縮小している。
+| NPC | Frame平均 | P95 | FPS | Main Thread | Fixed steps/frame | 移動中 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 100 | 10.305 ms | 19.305 ms | 97.0 | 10.274 ms | 0.51 | 71 / 100 |
+| 200 | 25.023 ms | 46.525 ms | 40.0 | 24.987 ms | 1.25 | 162 / 200 |
+| 300 | 45.453 ms | 73.620 ms | 22.0 | 45.411 ms | 2.27 | 237 / 300 |
 
-計測は`NpcPerformanceBenchmark`を使用し、100／200／300体を比較する。Networkでは`-npcBenchmarkNetwork 1`を指定する。
+直前の300体Network Crowd ON計測53.6msに対して45.453msとなり、約15.2%改善した。ただし固定条件のA/B計測ではないため参考値とする。
+
+300体の主要Markerは次の通り。
+
+| Marker | 平均時間 |
+|---|---:|
+| `LateBehaviourUpdate` | 18.693 ms |
+| `BehaviourUpdate` | 9.979 ms |
+| `Physics.NpcCrowd.PrepareProbes` | 3.717 ms |
+| `MeshSkinning.Skin` | 3.070 ms |
+| `FixedUpdate.PhysicsFixedUpdate` | 2.420 ms |
+| `Physics.SyncColliderTransformBatchJob` | 2.192 ms |
+| `BatchQuery.ExecuteCapsulecastJob` | 1.737 ms |
+| `UpdateRendererBoundingVolumes` | 1.422 ms |
+
+`BehaviourUpdate`は以前の約11.9msから9.979msへ低下したが、標準`NetworkTransform`による全NPC走査は残る。最大項目は`LateBehaviourUpdate`である。300体ではFixed stepも平均2.27回まで増え、catch-upによる非線形な悪化が始まっている。
 
 ### 運用上の注意
 
@@ -44,6 +59,4 @@ Main Thread CPU時間は次の通り。現在値は最小化EditorでON／OFFを
 
 ### 次の課題
 
-Crowd化によって移動Simulationは改善したが、1000体規模ではAnimator評価、ボーンTransform更新、`SkinnedMeshRenderer`のスキニング、Renderer／Material描画がボトルネックになる。
-
-次はUnity標準描画を基準に、Blend Shape、複数Skinned Mesh、モデル別bind pose／軸変換、Humanoid Retargeting、頭・髪・装飾・Spring Boneを検証し、GPU Skinning、Animation Texture、Compute Skinning、Entities Graphicsの採用方式を判断する。
+次は`LateBehaviourUpdate`の発生元分離と、NPCごとの`NetworkTransform`を置き換える一括同期を優先する。Animator、Spring Bone、Renderer、スキニングの方式変更は難易度が高いため、その後の課題とする。

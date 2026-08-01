@@ -74,6 +74,7 @@ namespace Koiusa.SteamMultiRuntime
         public Vector3 SmoothedMoveDirection { get; private set; }
 
         public event System.Action OnDestinationNeeded;
+        public event System.Action OnDestinationArrived;
         public event System.Action OnReturnToCenterStarted;
         public event System.Action OnRandomDestinationNeeded;
         public event System.Action OnCenterDestinationNeeded;
@@ -234,6 +235,7 @@ namespace Koiusa.SteamMultiRuntime
                     return;
 
                 _isReturningToCenter = false;
+                OnDestinationArrived?.Invoke();
                 _waitingBeforeNextRandomDestination = false;
                 _nextRepathAllowedTime = Time.time + path.repathCooldown;
                 ResetStuckTracking();
@@ -373,6 +375,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 if (!_waitingBeforeNextRandomDestination)
                 {
+                    OnDestinationArrived?.Invoke();
                     _waitingBeforeNextRandomDestination = true;
                     _nextRepathAllowedTime = Time.time + GetRandomWaitBeforeNextDestination();
                     if (Time.time < _nextRepathAllowedTime)
@@ -385,6 +388,7 @@ namespace Koiusa.SteamMultiRuntime
             }
             else
             {
+                OnDestinationArrived?.Invoke();
                 _waitingBeforeNextRandomDestination = false;
             }
 

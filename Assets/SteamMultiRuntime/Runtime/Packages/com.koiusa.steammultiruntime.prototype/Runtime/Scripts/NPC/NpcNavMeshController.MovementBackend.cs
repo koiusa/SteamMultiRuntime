@@ -74,7 +74,7 @@ namespace Koiusa.SteamMultiRuntime
             // every conventional NPC immediately before OnEnable did the same work.
         }
 
-        private void Update()
+        internal void TickConventionalUpdate()
         {
             if (useCrowdSimulation || _clientSimulationDisabled)
                 return;

@@ -34,6 +34,7 @@ namespace Koiusa.SteamMultiRuntime
             if (controller != null)
             {
                 controller.DestinationSet += OnDestinationSet;
+                controller.DestinationArrived += OnDestinationArrived;
             }
 
             syncedDestination.OnValueChanged += OnSyncedDestinationChanged;
@@ -44,20 +45,12 @@ namespace Koiusa.SteamMultiRuntime
                 marker?.ClearDestination();
         }
 
-        private void Update()
-        {
-            if (!IsSpawned || !IsServer || !syncedVisible.Value || marker == null)
-                return;
-
-            if (marker.HasArrived())
-                syncedVisible.Value = false;
-        }
-
         public override void OnNetworkDespawn()
         {
             if (controller != null)
             {
                 controller.DestinationSet -= OnDestinationSet;
+                controller.DestinationArrived -= OnDestinationArrived;
             }
 
             syncedDestination.OnValueChanged -= OnSyncedDestinationChanged;
@@ -79,6 +72,12 @@ namespace Koiusa.SteamMultiRuntime
 
             syncedDestination.Value = destination;
             syncedVisible.Value = true;
+        }
+
+        private void OnDestinationArrived()
+        {
+            if (IsServer)
+                syncedVisible.Value = false;
         }
 
         private void OnSyncedDestinationChanged(Vector3 previousValue, Vector3 newValue)

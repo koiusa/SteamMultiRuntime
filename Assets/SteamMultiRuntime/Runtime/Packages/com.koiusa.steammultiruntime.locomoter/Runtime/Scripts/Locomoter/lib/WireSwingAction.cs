@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake() { body = GetComponent<Rigidbody>(); groundAction = GetComponent<IWireGroundAction>(); connection = GetComponent<IWireConnection>(); }
         private void OnValidate() { swingAcceleration = Mathf.Max(0f, swingAcceleration); maximumInputSwingSpeed = Mathf.Max(0f, maximumInputSwingSpeed); }
         public void SetMoveDirection(Vector3 value) => moveDirection = Vector3.ClampMagnitude(value, 1f);
-        private void FixedUpdate()
+        internal void TickAttachedFixed()
         {
             if (connection == null || !connection.IsAttached || body == null || body.isKinematic || swingAcceleration <= 0f || maximumInputSwingSpeed <= 0f || (groundAction != null && groundAction.BlocksSwing)) return;
             var ropeDirection = (connection.AnchorPoint - body.worldCenterOfMass).normalized;

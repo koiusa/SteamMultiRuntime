@@ -3,14 +3,13 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    /// <summary>Owns the single FixedUpdate callback for conventional NPC motors.</summary>
+    /// <summary>Owns the single render-loop callback for conventional NPC planning.</summary>
     [DisallowMultipleComponent]
-    internal sealed class NpcConventionalPhysicsLoop : MonoBehaviour
+    internal sealed class NpcConventionalUpdateLoop : MonoBehaviour
     {
-        private static NpcConventionalPhysicsLoop instance;
+        private static NpcConventionalUpdateLoop instance;
         private readonly List<NpcNavMeshController> controllers = new();
         private readonly HashSet<NpcNavMeshController> controllerSet = new();
-        private int lastTickFrame = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => instance = null;
@@ -36,29 +35,19 @@ namespace Koiusa.SteamMultiRuntime
             instance.controllers.RemoveAt(last);
         }
 
-        private static NpcConventionalPhysicsLoop EnsureInstance()
+        private static NpcConventionalUpdateLoop EnsureInstance()
         {
             if (instance != null)
                 return instance;
-            var host = new GameObject(nameof(NpcConventionalPhysicsLoop));
+            var host = new GameObject(nameof(NpcConventionalUpdateLoop));
             host.hideFlags = HideFlags.HideAndDontSave;
             DontDestroyOnLoad(host);
-            instance = host.AddComponent<NpcConventionalPhysicsLoop>();
+            instance = host.AddComponent<NpcConventionalUpdateLoop>();
             return instance;
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
-            // A slow rendered frame can contain several fixed steps. Running every
-            // conventional NPC motor on each catch-up step makes the NPC work itself
-            // create still more catch-up steps. Physics continues at Unity's fixed
-            // cadence, but NPC decisions and motor commands are sampled at most once
-            // per rendered frame as an overload guard, matching the Crowd backend.
-            var frame = Time.frameCount;
-            if (lastTickFrame == frame)
-                return;
-            lastTickFrame = frame;
-
             for (var i = controllers.Count - 1; i >= 0; i--)
             {
                 var controller = controllers[i];
@@ -69,7 +58,7 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
                 if (controller.isActiveAndEnabled)
-                    controller.TickConventionalPhysics();
+                    controller.TickConventionalUpdate();
             }
         }
 

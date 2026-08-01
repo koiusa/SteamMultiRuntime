@@ -1,6 +1,7 @@
 using Koiusa.Input;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -8,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(GroundMotionTracker))]
     [RequireComponent(typeof(SlopeContactResolver))]
     [RequireComponent(typeof(ActorCompositeMotor))]
+    [RequireComponent(typeof(NetworkRigidbody))]
     public class ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState, IActorLadderState, IActorWallRunState
     {
         [Header("Input")]
@@ -174,14 +176,16 @@ namespace Koiusa.SteamMultiRuntime
             // NPC each fixed step only to return immediately.
             if (controlMode != NetworkControlMode.ServerNpc || serverNpcConventionalMotorEnabled)
                 ServerDrivenActorPhysicsLoop.Register(this);
+            if (controlMode != NetworkControlMode.ServerNpc)
+                ServerDrivenActorInputLoop.Register(this);
             if (IsServer && controlMode == NetworkControlMode.Player)
                 Core.CrowdPhysicsBodyRegistry.RegisterPlayer(targetRigidbody);
 
             if (targetRigidbody != null)
             {
-                // Physics is server authoritative. Remote and owning clients are
-                // presentation-only; NetworkTransform applies the interpolated pose.
-                targetRigidbody.isKinematic = !IsServer;
+                // NetworkRigidbody owns the authority-based Dynamic/Kinematic state.
+                // Presentation is smoothed separately, so Rigidbody interpolation
+                // remains disabled on both authority and replicas.
                 targetRigidbody.interpolation = RigidbodyInterpolation.None;
             }
 
@@ -220,6 +224,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkDespawn()
         {
             ServerDrivenActorPhysicsLoop.Unregister(this);
+            ServerDrivenActorInputLoop.Unregister(this);
             Core.CrowdPhysicsBodyRegistry.UnregisterPlayer(targetRigidbody);
             // Unsubscribe from settings changes
             if (!IsServer)
@@ -259,7 +264,7 @@ namespace Koiusa.SteamMultiRuntime
             motor?.ResetState();
         }
 
-        private void Update()
+        internal void TickRegisteredInput()
         {
             if (!IsSpawned || controlMode == NetworkControlMode.ServerNpc)
             {

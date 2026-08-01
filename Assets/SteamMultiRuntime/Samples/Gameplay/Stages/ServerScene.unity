@@ -1744,7 +1744,7 @@ MonoBehaviour:
   localNpcPrefab: {fileID: 5458667738441605525, guid: 736a6fa63db86254484b652c285319a4, type: 3}
   npcModelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   randomizeModelOnSpawn: 1
-  spawnCount: 300
+  spawnCount: 200
   spawnOnStart: 1
   oneShot: 1
   spawnHeightOffset: 0.05
@@ -2310,7 +2310,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.083333336
+  m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 5902d8ee6ff90e84fbc6f925fe751db3, type: 2}
   m_BuildHeightMesh: 1

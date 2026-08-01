@@ -82,11 +82,23 @@ NPC Modules / FutureAction / Test Driver（Serverのみ更新）
 
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
 
+Network NPCの`NetworkTransform`はPlayerとは別のPrefab設定を持ち、Position 0.5m、Y Rotation 6度を送信閾値とします。標準移動速度5m/sでは位置更新が概ね10Hz以下となり、補間を維持しながらTransform Deltaの生成・配送頻度を抑えます。Netcode 2.7.0の`NetworkTransform`は権限側の全InstanceをNetwork Tickごとに内部走査するため、この設定で送信回数は減りますが、個体別の変化判定コスト自体は残ります。
+
+Network NPCのServer／Remote ClientにおけるDynamic／Kinematic切替は、`AutoUpdateKinematicState`を有効にした`NetworkRigidbody`が所有します。`ServerDrivenActorController`はこの状態を重複設定せず、表示補間との二重適用を避けるためRigidbody補間を`None`に固定します。
+
+`ServerDrivenActorController`は個別`Update`を持ちません。Network Playerだけを`ServerDrivenActorInputLoop`へ登録して単一のPlayer Loopから入力を読み取り、入力を持たないServer NPCが毎フレーム空の`Update` callbackを受けるコストを除外します。
+
+`NpcNavMeshController`も個別`Update`を持ちません。従来Rigidbody Backendだけを`NpcConventionalUpdateLoop`へ登録してAI計画を一括更新し、Crowd BackendのNPCが従来経路判定のためだけに空の`Update` callbackを受けないようにします。
+
+目的地Markerの終了判定は`NpcNavMeshMovementModule.OnDestinationArrived`からのpush通知で行います。Local markerとNetwork marker同期は個別`Update`やNavMesh到着判定を重複実行せず、この通知で表示を閉じます。
+
+Wire未接続ActorはWire用`FixedUpdate`／`LateUpdate`を持ちません。接続時に`WireTraversalUpdateLoop`へ登録し、接続中の`WireTraversalFeature`、`WireSwingAction`、`WireGroundAction`だけを単一のFixed／Late callbackから更新して、待機中NPCの空振りcallbackを除外します。
+
 `LocalNPC.prefab`と`NetworkNPC.prefab`は、Wall／Ladder／WireのFeature・Action一式を同じGameObject構成で保持します。特殊ActionはPrefabへ明示的にSerializeし、Runtime Spawn時には追加しません。
 
 Crowd有効時も`ServerDrivenActorController.ApplyServerNpcCrowdState`が通常のNetwork Motorと同じ`ActorMovementFlagsState`と`WireSwingNetworkState`を送信します。Ladder状態／速度、WallRun状態／法線、Wire Anchor／Rope LengthをRemote Clientへ同期し、Client側のCoordinatorは受信したWire状態だけを表示へ適用します。
 
-`Use Crowd Simulation`が有効なLocal／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`から30Hzで一括実行します。描画が遅れた場合も1描画フレームにつき最大1回とし、FixedUpdateのcatch-upがCrowd全体を複数回評価する負荷循環を防ぎます。空中・特殊移動中の壁Probeは毎Crowd Tick、通常接地移動中はNPCごとに位相をずらして隔Tickで実行します。無効時は比較用の従来経路としてNPCごとの`FixedUpdate`から`ActorCompositeMotor`を駆動します。
+`Use Crowd Simulation`が有効なLocal／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`から30Hzで一括実行します。描画が遅れた場合も1描画フレームにつき最大1回とし、FixedUpdateのcatch-upがCrowd全体を複数回評価する負荷循環を防ぎます。空中・特殊移動中の壁Probeは毎Crowd Tick、通常接地移動中はNPCごとに位相をずらして隔Tickで実行します。無効時は比較用の従来Rigidbody経路として`NpcConventionalPhysicsLoop`から`ActorCompositeMotor`を一括駆動します。この経路も過負荷時は1描画フレームにつき最大1回だけNPC Motorを評価し、Unity Physics自体のfixed stepとは分離してcatch-upの正帰還を抑えます。プロジェクトのMaximum Allowed Timestepは0.10秒（標準Fixed Timestep 0.02秒で最大5 step）です。
 
 Crowd実装のファイル責務は次のように分離します。`NpcCrowdSimulation`は`NpcCrowdAgent`だけを登録し、30HzのPlayer Loop、Jobと一括Queryの編成を所有します。Native Collectionの確保・破棄は`NpcCrowdSimulation.Buffers`へ分離します。`NpcCrowdAgent`はSimulationとNPC一体分の実行境界であり、Probe、Movement Snapshot、結果適用、表示補間、Network状態反映を担当します。`NpcNavMeshController`はNavMesh AI判断、目的地、共通疑似入力とBackend選択を担当し、Simulationから直接参照されません。`NpcCrowdMotor`はKinematic状態、接地・壁・外部物体接触と移動結果を所有します。Job境界を通過するBlittable DTO、共通入力DTO、接触設定は`NpcCrowdData`、モデル生成時のAnimator／Spring／装飾設定は`NpcCrowdModelPresentation`が所有します。`NpcCrowdSpringSimulation.Registration`はモデル別Spring Rigの収集と無効化を所有します。Crowd有効時はLocal／Network Serverとも`NpcCrowdMotor`の一括Movement Job、無効時は`ActorCompositeMotor`の個別Physics Tickを使用します。
 
