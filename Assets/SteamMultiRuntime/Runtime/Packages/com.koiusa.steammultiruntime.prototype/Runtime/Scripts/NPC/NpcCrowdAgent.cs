@@ -86,10 +86,24 @@ namespace Koiusa.SteamMultiRuntime
                 motor.IsFallingAfterJump);
         }
 
+        internal void FollowMovingPlatformPhysicsPose(PrototypeMotionMover source, float deltaTime)
+        {
+            if (!motor.FollowMovingPlatformPhysicsPose(source, deltaTime))
+                return;
+            presentationSmoother?.CapturePhysicsPose(deltaTime);
+            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
+                navMeshAgent.nextPosition = body.position;
+        }
+
         internal void CreateGroundProbes(out CapsulecastCommand cast, out OverlapCapsuleCommand overlap) =>
             motor.CreateGroundProbes(out cast, out overlap);
-        internal void ApplyGroundProbe(RaycastHit hit, ColliderHit overlap) =>
-            motor.ApplyGroundProbe(hit, overlap);
+        internal void ApplyGroundProbe(
+            RaycastHit hit,
+            ColliderHit overlap0,
+            ColliderHit overlap1,
+            ColliderHit overlap2,
+            ColliderHit overlap3) =>
+            motor.ApplyGroundProbe(hit, overlap0, overlap1, overlap2, overlap3);
         internal void ResolveEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3) =>
             motor.ResolveEnvironmentOverlaps(hit0, hit1, hit2, hit3);
 

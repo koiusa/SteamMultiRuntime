@@ -120,6 +120,26 @@ Network NPCでは`CharacterPrefabLoader`がPrefabに存在せず`OnNetworkSpawn`
 
 画面確認で旧`UnityChan.SpringBone`のSDモデルは正常だった一方、TokoChanz版`UTJ.SpringBone`を使うMarie／Tokoは揺れ方向が逆だった。UTJ元実装は初期Local Rotationを基準にBone AxisからTip方向へのAim Rotationを作るため、現在のAnimator姿勢差分を使うLegacy式との共通化をやめ、型別に回転復元した。修正後のCrowd ONは100体1.988ms、200体3.352ms、300体7.171ms（P95 18.951ms）で、性能退行はない。向きはMarie／Tokoの画面付きPlay Modeで再確認する。
 
+### Network NPCの移動床すり抜け（2026-08-02）
+
+Server／Clientの両方でNPCがVertical／Spin移動床を非決定的にすり抜ける問題があった。床がCrowd tick間にカプセルへ入るとShape Castは開始Overlapを返さず、代替の`OverlapCapsuleCommand`最大4件のうち先頭1件だけを無条件に床扱いしていた。結果配列の先頭が床なら維持できるが、側面や別Colliderなら床Bindingを失うため、発生が一定しなかった。
+
+Cast miss時は4件全てを評価し、現在Binding中の床を最優先する。新規Bindingは`Physics.ComputePenetration`の押し出し法線が接地条件を満たすColliderだけを採用する。Remote Clientでは床だけが先行しないよう、移動床Binding中だけNPC `NetworkTransform.PositionThreshold`を0.5mから0.02mへ下げ、解除時に0.5mへ戻す。変更後の通常Crowd ONは100体2.080ms、200体3.203ms、300体7.495ms（P95 19.705ms）である。
+
+先頭Overlap選別の修正後も、Vertical／Spin床ではCastとOverlapが3 Crowd tick以上連続して外れ、まだ足元にある床Bindingを固定猶予だけで解除するケースが残った。移動床Colliderの`ClosestPoint`が接地可能範囲内なら、tick数ではなく幾何距離でBindingとSnapshot追従を維持する。追加後の通常Crowd ONは100体1.912ms、200体3.243ms、300体8.284ms（P95 39.345ms）で完走した。Server／Remote Clientでの再現確認を合格条件とする。
+
+### 最新の採用構成ベンチマーク（2026-08-02）
+
+中央Burst Spring、UTJ／Legacy別回転復元、移動床Overlap選択、移動床Binding中のNetworkTransform精度切替を含む最新構成。実行条件はUnity 6000.3.9f1、`ServerScene`、Network Server、Crowd ON、Warmup 180 frame、Sample 300 frame、乱数Seed 481516、Subsystem Recorder ON、`-batchmode -nographics`である。
+
+| NPC | Frame平均 | P95 | FPS | Main Thread | Fixed steps/frame | GC bytes/frame |
+|---:|---:|---:|---:|---:|---:|---:|
+| 100 | 1.912 ms | 4.010 ms | 523.0 | 1.885 ms | 0.10 | 41,192.4 |
+| 200 | 3.243 ms | 7.378 ms | 308.4 | 3.220 ms | 0.16 | 105,400.3 |
+| 300 | 8.284 ms | 39.345 ms | 120.7 | 8.264 ms | 0.41 | 398,625.0 |
+
+旧個別Spring構成のCrowd ON 300体43.124ms、P95 70.446msに対し、最新構成は8.284ms、39.345msである。ヘッドレス計測のためGPU Frame、Render Thread、Draw Call、揺れ方向、Server／Remote Client間の見た目は評価対象外とする。
+
 ### 運用上の注意
 
 - `ServerScene`のNavMeshはScene全体を収集してベイクする。壁や梯子の追加後は再ベイクする。

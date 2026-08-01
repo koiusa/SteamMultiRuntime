@@ -275,6 +275,17 @@ namespace Koiusa.SteamMultiRuntime
         {
             originalPathfindingIterationsPerFrame = NavMesh.pathfindingIterationsPerFrame;
             appliedPathfindingIterationsPerFrame = originalPathfindingIterationsPerFrame;
+            PrototypeMotionMover.PhysicsPoseApplied += OnMovingPlatformPhysicsPoseApplied;
+        }
+
+        private void OnMovingPlatformPhysicsPoseApplied(PrototypeMotionMover source, float deltaTime)
+        {
+            for (var i = activeNpcs.Count - 1; i >= 0; i--)
+            {
+                var npc = activeNpcs[i];
+                if (npc != null && npc.isActiveAndEnabled)
+                    npc.FollowMovingPlatformPhysicsPose(source, deltaTime);
+            }
         }
 
         private void Update()
@@ -417,7 +428,12 @@ namespace Koiusa.SteamMultiRuntime
             {
                 activeNpcs[i].ApplySteering(steeringResults[i]);
                 var overlapIndex = i * GroundOverlapHitsPerNpc;
-                activeNpcs[i].ApplyGroundProbe(groundHits[i], groundOverlapHits[overlapIndex]);
+                activeNpcs[i].ApplyGroundProbe(
+                    groundHits[i],
+                    groundOverlapHits[overlapIndex],
+                    groundOverlapHits[overlapIndex + 1],
+                    groundOverlapHits[overlapIndex + 2],
+                    groundOverlapHits[overlapIndex + 3]);
             }
             for (var probeIndex = 0; probeIndex < wallProbeCount; probeIndex++)
             {

@@ -5,6 +5,8 @@ namespace Koiusa.SteamMultiRuntime
 {
     public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource, IGroundMotionSnapshotSource
     {
+        internal static event System.Action<PrototypeMotionMover, float> PhysicsPoseApplied;
+
         private static readonly Vector3 UnitScale = Vector3.one;
 
         [System.Flags]
@@ -101,7 +103,11 @@ namespace Koiusa.SteamMultiRuntime
 
             EnsurePhysicsSample();
             ApplyMotionMatrix(currentPhysicsMatrix);
+            PhysicsPoseApplied?.Invoke(this, Time.fixedDeltaTime);
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => PhysicsPoseApplied = null;
 
         private void Update()
         {

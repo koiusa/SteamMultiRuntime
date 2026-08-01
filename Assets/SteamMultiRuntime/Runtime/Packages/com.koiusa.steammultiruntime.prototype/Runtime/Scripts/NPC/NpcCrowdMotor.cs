@@ -11,6 +11,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private ActorMotorSettings settings = default;
         private Rigidbody body;
         private NpcCrowdMovingPlatformAction movingPlatform;
+        private ServerDrivenActorController networkController;
         private CapsuleCollider movementCapsule;
         private Vector3 velocity;
         private Vector3 desiredPlanarVelocity;
@@ -71,6 +72,9 @@ namespace Koiusa.SteamMultiRuntime
             wallProbeContactId = GetInstanceID() ^ unchecked((int)0x6a09e667);
             if (movingPlatform == null)
                 movingPlatform = gameObject.AddComponent<NpcCrowdMovingPlatformAction>();
+            movingPlatform.MovingPlatformBindingChanged -= OnMovingPlatformBindingChanged;
+            movingPlatform.MovingPlatformBindingChanged += OnMovingPlatformBindingChanged;
+            networkController = GetComponent<ServerDrivenActorController>();
             settings = settingsSource != null ? settingsSource.GetSettings() : ActorMotorSettings.CreateDefault();
             contactSettings = crowdContactSettings;
             body.isKinematic = true;
@@ -105,6 +109,35 @@ namespace Koiusa.SteamMultiRuntime
             velocity = Vector3.zero;
             groundCoordinate = bodyCoordinate;
             grounded = true;
+        }
+
+        private void OnDestroy()
+        {
+            if (movingPlatform != null)
+                movingPlatform.MovingPlatformBindingChanged -= OnMovingPlatformBindingChanged;
+            networkController?.SetServerNpcMovingPlatformSync(false);
+        }
+
+        private void OnMovingPlatformBindingChanged(bool isBound) =>
+            networkController?.SetServerNpcMovingPlatformSync(isBound);
+
+        internal bool FollowMovingPlatformPhysicsPose(PrototypeMotionMover source, float deltaTime)
+        {
+            if (!grounded || movingPlatform == null
+                || !movingPlatform.TrySamplePhysicsFollow(
+                    source,
+                    body.position,
+                    deltaTime,
+                    out var displacement,
+                    out var rotationDelta))
+                return false;
+
+            body.position += displacement;
+            body.rotation = rotationDelta * body.rotation;
+            groundCoordinate += Vector3.Dot(displacement, UpAxis);
+            groundDisplacement = Vector3.zero;
+            groundRotationDelta = Quaternion.identity;
+            return true;
         }
 
         internal void SetCommand(Vector3 desiredVelocity, bool wantsJump)
@@ -264,24 +297,42 @@ namespace Koiusa.SteamMultiRuntime
                 best = candidate;
         }
 
-        internal void ApplyGroundProbe(RaycastHit hit, ColliderHit overlapHit)
+        internal void ApplyGroundProbe(
+            RaycastHit hit,
+            ColliderHit overlapHit0,
+            ColliderHit overlapHit1,
+            ColliderHit overlapHit2,
+            ColliderHit overlapHit3)
         {
             var valid = hit.collider != null && Vector3.Dot(hit.normal, UpAxis) >= settings.MinGroundNormalDot;
             if (!valid)
             {
-                if (grounded && overlapHit.collider != null)
+                var overlapCollider = SelectGroundOverlap(
+                    overlapHit0.collider,
+                    overlapHit1.collider,
+                    overlapHit2.collider,
+                    overlapHit3.collider);
+                if (grounded && overlapCollider != null)
                 {
                     consecutiveGroundMisses = 0;
                     hasGroundSurface = true;
-                    movingPlatform.Sample(overlapHit.collider, body.position, simulationDeltaTime,
+                    movingPlatform.Sample(overlapCollider, body.position, simulationDeltaTime,
                         out groundVelocity, out groundDisplacement, out groundRotationDelta);
                     groundCoordinate += Vector3.Dot(groundDisplacement, UpAxis);
                     return;
                 }
                 consecutiveGroundMisses++;
-                if (grounded && consecutiveGroundMisses <= 2)
+                var movingPlatformRetentionDistance = groundClearance
+                    + groundProbeRadius
+                    + Mathf.Max(0.25f, settings.NearbyGroundDistance);
+                if (grounded && (consecutiveGroundMisses <= 2
+                    || movingPlatform.CanRetainMovingPlatformBinding(
+                        body.position,
+                        movingPlatformRetentionDistance)))
                 {
-                    // Keep the last floor binding through short cast gaps at moving seams.
+                    // Keep moving-platform binding while its collider remains within the
+                    // reachable support volume. A fixed two-tick grace was too short for
+                    // vertical + rotating floors and caused non-deterministic fall-through.
                     movingPlatform.SampleBound(body.position, simulationDeltaTime,
                         out groundVelocity, out groundDisplacement, out groundRotationDelta);
                     groundCoordinate += Vector3.Dot(groundDisplacement, UpAxis);
@@ -306,6 +357,44 @@ namespace Koiusa.SteamMultiRuntime
                 grounded = gap <= Mathf.Max(0.05f, settings.NearbyGroundDistance);
             }
             movingPlatform.Sample(hit.collider, body.position, simulationDeltaTime, out groundVelocity, out groundDisplacement, out groundRotationDelta);
+        }
+
+        private Collider SelectGroundOverlap(Collider hit0, Collider hit1, Collider hit2, Collider hit3)
+        {
+            if (movingPlatform.IsBoundTo(hit0)) return hit0;
+            if (movingPlatform.IsBoundTo(hit1)) return hit1;
+            if (movingPlatform.IsBoundTo(hit2)) return hit2;
+            if (movingPlatform.IsBoundTo(hit3)) return hit3;
+
+            var best = default(Collider);
+            var bestUpDot = settings.MinGroundNormalDot;
+            SelectGroundOverlapCandidate(hit0, ref best, ref bestUpDot);
+            SelectGroundOverlapCandidate(hit1, ref best, ref bestUpDot);
+            SelectGroundOverlapCandidate(hit2, ref best, ref bestUpDot);
+            SelectGroundOverlapCandidate(hit3, ref best, ref bestUpDot);
+            return best;
+        }
+
+        private void SelectGroundOverlapCandidate(Collider candidate, ref Collider best, ref float bestUpDot)
+        {
+            if (candidate == null || candidate == movementCapsule || candidate.isTrigger
+                || candidate.transform.IsChildOf(transform))
+                return;
+            if (!Physics.ComputePenetration(
+                    movementCapsule,
+                    body.position,
+                    body.rotation,
+                    candidate,
+                    candidate.transform.position,
+                    candidate.transform.rotation,
+                    out var direction,
+                    out _))
+                return;
+            var upDot = Vector3.Dot(direction, UpAxis);
+            if (upDot < bestUpDot)
+                return;
+            best = candidate;
+            bestUpDot = upDot;
         }
 
         internal void ResolveEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3)

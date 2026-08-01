@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(NetworkRigidbody))]
     public class ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState, IActorLadderState, IActorWallRunState
     {
+        private const float MovingPlatformPositionThreshold = 0.02f;
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;
         [SerializeField] private GamepadAimCursorSettings gamepadAimCursorSettings = new();
@@ -31,6 +32,9 @@ namespace Koiusa.SteamMultiRuntime
         private IActorTraversalCoordinator traversalCoordinator;
         private ActorFacingRequestResolver facingRequestResolver;
         private PhysicsPresentationSmoother presentationSmoother;
+        private NetworkTransform networkTransform;
+        private float defaultPositionThreshold;
+        private bool useMovingPlatformSync;
         private int jumpToken;
         private int lastConsumedJumpToken;
         private int grappleFireToken;
@@ -141,6 +145,9 @@ namespace Koiusa.SteamMultiRuntime
             targetRigidbody = GetComponent<Rigidbody>();
             targetRigidbody.freezeRotation = true;
             targetRigidbody.interpolation = RigidbodyInterpolation.None;
+            networkTransform = GetComponent<NetworkTransform>();
+            if (networkTransform != null)
+                defaultPositionThreshold = networkTransform.PositionThreshold;
 
             presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
             if (presentationSmoother == null)
@@ -171,6 +178,7 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            ApplyServerNpcPositionThreshold();
             // Server NPC physics is owned by NpcConventionalPhysicsLoop or the Crowd
             // simulation. Registering it here as well makes the player loop scan every
             // NPC each fixed step only to return immediately.
@@ -223,6 +231,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public override void OnNetworkDespawn()
         {
+            useMovingPlatformSync = false;
+            ApplyServerNpcPositionThreshold();
             ServerDrivenActorPhysicsLoop.Unregister(this);
             ServerDrivenActorInputLoop.Unregister(this);
             Core.CrowdPhysicsBodyRegistry.UnregisterPlayer(targetRigidbody);
@@ -242,6 +252,23 @@ namespace Koiusa.SteamMultiRuntime
             }
             motor?.ResetState();
             base.OnNetworkDespawn();
+        }
+
+        public void SetServerNpcMovingPlatformSync(bool enabled)
+        {
+            if (controlMode != NetworkControlMode.ServerNpc || useMovingPlatformSync == enabled)
+                return;
+            useMovingPlatformSync = enabled;
+            ApplyServerNpcPositionThreshold();
+        }
+
+        private void ApplyServerNpcPositionThreshold()
+        {
+            if (networkTransform == null)
+                return;
+            networkTransform.PositionThreshold = useMovingPlatformSync
+                ? Mathf.Min(defaultPositionThreshold, MovingPlatformPositionThreshold)
+                : defaultPositionThreshold;
         }
 
         private void OnEnable()

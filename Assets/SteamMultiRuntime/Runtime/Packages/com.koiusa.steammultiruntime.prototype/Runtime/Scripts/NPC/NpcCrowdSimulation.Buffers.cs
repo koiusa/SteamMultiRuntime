@@ -30,6 +30,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            PrototypeMotionMover.PhysicsPoseApplied -= OnMovingPlatformPhysicsPoseApplied;
             DisposeNativeCollections();
             if (appliedPathfindingIterationsPerFrame != originalPathfindingIterationsPerFrame)
                 NavMesh.pathfindingIterationsPerFrame = originalPathfindingIterationsPerFrame;
