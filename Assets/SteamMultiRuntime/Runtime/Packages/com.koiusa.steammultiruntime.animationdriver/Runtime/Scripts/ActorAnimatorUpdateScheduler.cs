@@ -61,6 +61,16 @@ namespace Koiusa.SteamMultiRuntime
                 if (!driver.gameObject.activeInHierarchy)
                     continue;
 
+                // Distance alone is insufficient for a crowd: hundreds of actors may be
+                // close to the camera while outside its frustum. The former per-driver
+                // implementation skipped those actors through Renderer.isVisible. Keep
+                // that behavior so the scheduler does not re-enable their Animator graph.
+                if (!driver.IsPresentationVisible)
+                {
+                    driver.SetScheduledAnimatorActive(false);
+                    continue;
+                }
+
                 var distanceSqr = hasCamera
                     ? (driver.transform.position - cameraPosition).sqrMagnitude
                     : float.PositiveInfinity;

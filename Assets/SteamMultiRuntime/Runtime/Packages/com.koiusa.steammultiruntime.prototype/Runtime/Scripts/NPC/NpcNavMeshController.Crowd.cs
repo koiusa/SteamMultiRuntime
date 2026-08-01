@@ -32,6 +32,7 @@ namespace Koiusa.SteamMultiRuntime
             if (_clientSimulationDisabled)
                 return;
             _clientSimulationDisabled = true;
+            RestoreOnDemandTraversalFeatures();
 
             // Remote clients display authoritative NetworkTransform state and must not
             // duplicate NavMesh, AI, query or movement work performed by the server.
@@ -73,13 +74,29 @@ namespace Koiusa.SteamMultiRuntime
                 jumpRequested = false;
             if (_traversalTestDriver != null && _traversalTestDriver.ShouldTick)
                 _traversalTestDriver.TickTest(_traversalInput, _traversalCoordinator, IsGrounded);
-            _traversalInput.Consume(ref _moveInput, ref jumpRequested, out var wireHeld,
-                out var wireFire, out var reelInput, out var wireTarget);
+            var wireHeld = false;
+            var wireFire = false;
+            var reelInput = 0f;
+            var wireTarget = Vector3.zero;
+            var hasTraversalInput = _traversalInput != null && _traversalInput.HasPendingInput;
+            var hasWallIntent = _traversalInput != null && _traversalInput.HasWallIntent;
+            var hasLadderIntent = _traversalInput != null && _traversalInput.HasLadderIntent;
+            if (hasTraversalInput)
+            {
+                _traversalInput.Consume(ref _moveInput, ref jumpRequested, out wireHeld,
+                    out wireFire, out reelInput, out wireTarget);
+            }
+            UpdateOnDemandTraversalActivity(wireHeld || wireFire, hasWallIntent, hasLadderIntent);
             _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
-            var wireOrigin = _rigidbody.worldCenterOfMass;
-            if (wireHeld)
-                _traversalCoordinator?.SetWireAimCursor(default, false, wireOrigin, wireTarget, true);
-            _traversalCoordinator?.SetWireInput(wireHeld, wireFire, reelInput, wireOrigin, wireTarget);
+            if (hasTraversalInput || _onDemandWireFeaturesActive)
+            {
+                var wireOrigin = _rigidbody.worldCenterOfMass;
+                UpdateOnDemandWireFeatures(wireHeld || wireFire);
+                if (wireHeld)
+                    _traversalCoordinator?.SetWireAimCursor(default, false, wireOrigin, wireTarget, true);
+                _traversalCoordinator?.SetWireInput(wireHeld, wireFire, reelInput, wireOrigin, wireTarget);
+                SuspendDetachedOnDemandWireFeatures(wireHeld || wireFire);
+            }
             return new NpcControllerInputCommand
             {
                 MoveInput = _moveInput,

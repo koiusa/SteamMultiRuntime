@@ -51,7 +51,7 @@ namespace Koiusa.SteamMultiRuntime
             obstacleNormalsByColliderId.Remove(sourceId);
         }
 
-        public void UpdateCollisionContacts(Collision collision, Vector3 upAxis, LayerMask groundLayer, float minGroundNormalDot)
+        public float UpdateCollisionContacts(Collision collision, Vector3 upAxis, LayerMask groundLayer, float minGroundNormalDot)
         {
             var colliderId = collision.collider.GetInstanceID();
             var isGrounded = false;
@@ -59,11 +59,14 @@ namespace Koiusa.SteamMultiRuntime
             var steepSlopeNormal = Vector3.zero;
             var obstacleNormal = Vector3.zero;
             var climbableNormalDot = GetClimbableNormalDot();
+            var bestUpDot = float.MinValue;
 
             for (var i = 0; i < collision.contactCount; i++)
             {
                 var contact = collision.GetContact(i);
                 var upDot = Vector3.Dot(contact.normal, upAxis);
+                if (upDot > bestUpDot)
+                    bestUpDot = upDot;
 
                 if (IsInGroundLayer(collision.gameObject.layer, groundLayer) && upDot >= minGroundNormalDot)
                 {
@@ -114,6 +117,8 @@ namespace Koiusa.SteamMultiRuntime
             {
                 obstacleNormalsByColliderId.Remove(colliderId);
             }
+
+            return bestUpDot;
         }
 
         public bool TryGetObstacleNormal(Vector3 upAxis, float wallMaxUpDot, out Vector3 obstacleNormal)

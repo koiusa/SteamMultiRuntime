@@ -33,22 +33,24 @@ namespace Koiusa.SteamMultiRuntime
 
         public void UpdateGroundContact(Collision collision, Vector3 upAxis, LayerMask groundLayer, float minGroundNormalDot)
         {
+            var bestUpDot = float.MinValue;
+            for (var i = 0; i < collision.contactCount; i++)
+            {
+                var upDot = Vector3.Dot(collision.GetContact(i).normal, upAxis);
+                if (upDot > bestUpDot)
+                    bestUpDot = upDot;
+            }
+
+            UpdateGroundContact(collision, bestUpDot, groundLayer, minGroundNormalDot);
+        }
+
+        public void UpdateGroundContact(Collision collision, float bestUpDot, LayerMask groundLayer, float minGroundNormalDot)
+        {
             var colliderId = collision.collider.GetInstanceID();
             if (!IsInGroundLayer(collision.gameObject.layer, groundLayer))
             {
                 groundContactsByColliderId.Remove(colliderId);
                 return;
-            }
-
-            var bestUpDot = float.MinValue;
-
-            for (var i = 0; i < collision.contactCount; i++)
-            {
-                var upDot = Vector3.Dot(collision.GetContact(i).normal, upAxis);
-                if (upDot > bestUpDot)
-                {
-                    bestUpDot = upDot;
-                }
             }
 
             if (bestUpDot < minGroundNormalDot)
@@ -65,13 +67,13 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            var motionSource = GetMotionSource(groundTransform);
             if (groundContactsByColliderId.TryGetValue(colliderId, out var existingGroundContact) && existingGroundContact.GroundTransform == groundTransform)
             {
                 existingGroundContact.UpDot = bestUpDot;
                 return;
             }
 
+            var motionSource = GetMotionSource(groundTransform);
             groundContactsByColliderId[colliderId] = new GroundContactInfo(groundTransform, groundRigidbody, motionSource, bestUpDot);
         }
 

@@ -69,6 +69,7 @@ namespace Koiusa.SteamMultiRuntime
         private IActorTraversalCoordinator _traversalCoordinator;
         private NpcCrowdTraversalInput _traversalInput;
         private NpcCrowdTraversalTestDriver _traversalTestDriver;
+        private CharacterPrefabLoader _characterPrefabLoader;
 
         private Vector2 _moveInput;
         private Vector3 _moveDirection;
@@ -87,6 +88,7 @@ namespace Koiusa.SteamMultiRuntime
         private readonly NpcNavMeshController[] _npcNeighborBuffer = new NpcNavMeshController[32];
         private readonly float[] _avoidanceCandidateScores = new float[32];
         private readonly Vector3[] _avoidanceCandidates = new Vector3[32];
+        private readonly Vector3[] _pathCornerBuffer = new Vector3[16];
 
 
         public event System.Action ReturnToCenterStarted;
@@ -143,10 +145,14 @@ namespace Koiusa.SteamMultiRuntime
             if (_skillCoordinator != null)
                 _skillCoordinator.enabled = !useCrowdSimulation;
             _traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
+            InitializeOnDemandTraversalFeatures();
             _traversalInput = GetComponent<NpcCrowdTraversalInput>();
             if (_traversalInput == null)
                 _traversalInput = gameObject.AddComponent<NpcCrowdTraversalInput>();
             _traversalTestDriver = GetComponent<NpcCrowdTraversalTestDriver>();
+            _characterPrefabLoader = GetComponent<CharacterPrefabLoader>();
+            if (_characterPrefabLoader != null)
+                _characterPrefabLoader.PrefabInstantiated += OnCharacterPrefabInstantiated;
             ConfigureMovementBackend();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
@@ -170,6 +176,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (useCrowdSimulation)
                 _crowdAgent?.Activate();
+            else
+            {
+                RegisterSpatialNpc(this);
+                NpcConventionalCollisionRegistry.Register(this, _rigidbody);
+                if (_networkPlayerController == null)
+                    NpcConventionalPhysicsLoop.Register(this);
+            }
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -192,6 +205,9 @@ namespace Koiusa.SteamMultiRuntime
         private void OnDisable()
         {
             _crowdAgent?.Deactivate();
+            UnregisterSpatialNpc(this);
+            NpcConventionalCollisionRegistry.Unregister(this);
+            NpcConventionalPhysicsLoop.Unregister(this);
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted -= OnReturnToCenterStarted;
@@ -210,9 +226,20 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            if (_characterPrefabLoader != null)
+                _characterPrefabLoader.PrefabInstantiated -= OnCharacterPrefabInstantiated;
             _crowdAgent?.Deactivate();
+            UnregisterSpatialNpc(this);
+            NpcConventionalCollisionRegistry.Unregister(this);
+            NpcConventionalPhysicsLoop.Unregister(this);
             StopAgent();
             ResetAgentPath();
+        }
+
+        private void OnCharacterPrefabInstantiated(GameObject instance)
+        {
+            if (!useCrowdSimulation && isActiveAndEnabled)
+                NpcConventionalCollisionRegistry.Refresh(this, _rigidbody);
         }
 
         private void OnRandomDestinationNeeded()
@@ -284,9 +311,24 @@ namespace Koiusa.SteamMultiRuntime
                 var planningUpAxis = ActorMotor.GetUpAxis();
                 _cachedTargetPlanarVelocity = BuildTargetPlanarVelocity(planningUpAxis);
                 _cachedRawSteeringPlanar = _cachedTargetPlanarVelocity;
-                // Crowd avoidance is calculated once for every NPC by SteeringJob.
-                // Running the legacy per-NPC Boid/RVO neighbor scan here duplicates
-                // that work on the Main Thread and becomes superlinear in dense crowds.
+                // Crowd avoidance is calculated once for every NPC by SteeringJob. The
+                // conventional backend has no job result, so retain its original per-NPC
+                // Boid/RVO path instead of allowing dynamic bodies to pile up and create a
+                // large PhysX contact island.
+                if (!useCrowdSimulation && avoidance != null && avoidance.isActiveAndEnabled)
+                {
+                    switch (avoidance.Mode)
+                    {
+                        case NpcNavMeshAvoidanceModule.AvoidanceMode.Boid:
+                            _cachedRawSteeringPlanar = BuildBoidSteeringPlanar(
+                                planningUpAxis, _cachedTargetPlanarVelocity);
+                            break;
+                        case NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo:
+                            _cachedRawSteeringPlanar = BuildRvoSteeringPlanar(
+                                planningUpAxis, _cachedTargetPlanarVelocity);
+                            break;
+                    }
+                }
             }
 
             var upAxis = ActorMotor.GetUpAxis();
@@ -320,6 +362,35 @@ namespace Koiusa.SteamMultiRuntime
             var desiredSpeed = desiredPlanar.magnitude;
             if (desiredSpeed <= 0.0001f)
                 return Vector3.zero;
+
+            if (!useCrowdSimulation)
+            {
+                var desiredDirection = desiredPlanar / desiredSpeed;
+                var cornerDirection = desiredDirection;
+                var cornerCount = _agent.path.GetCornersNonAlloc(_pathCornerBuffer);
+                if (cornerCount > 1)
+                {
+                    var cornerIndex = 1;
+                    var minDistance = Mathf.Max(0f, navCornerMinDistance);
+                    while (cornerIndex < cornerCount)
+                    {
+                        var toCorner = Vector3.ProjectOnPlane(
+                            _pathCornerBuffer[cornerIndex] - transform.position, upAxis);
+                        if (toCorner.magnitude > minDistance)
+                        {
+                            cornerDirection = toCorner.normalized;
+                            break;
+                        }
+                        cornerIndex++;
+                    }
+                }
+
+                var cornerWeight = Mathf.Clamp01(navCornerDirectionWeight);
+                var blendedDirection = Vector3.Lerp(desiredDirection, cornerDirection, cornerWeight);
+                if (blendedDirection.sqrMagnitude <= 0.000001f)
+                    blendedDirection = desiredDirection;
+                return Vector3.ProjectOnPlane(blendedDirection.normalized * desiredSpeed, upAxis);
+            }
 
             // NavMeshAgent.path creates a managed NavMeshPath. With hundreds of NPCs,
             // reading it on every steering refresh produced MBs of garbage per frame.
@@ -543,7 +614,7 @@ namespace Koiusa.SteamMultiRuntime
             _cachedRawSteeringPlanar = Vector3.zero;
             _cachedTargetPlanarVelocity = Vector3.zero;
             _crowdSteeringPlanar = Vector3.zero;
-            _hasCrowdSteering = true;
+            _hasCrowdSteering = false;
             // Spread expensive steering/physics queries across frames. Without this phase,
             // every NPC spawned in one batch performs its query on the same frame.
             var phase = (GetInstanceID() & 0x7fffffff) % 997 / 997f;

@@ -10,13 +10,22 @@ namespace Koiusa.SteamMultiRuntime
         private bool jumpRequested;
         private bool grappleHeld;
         private bool grappleFireRequested;
+        private bool wireInputDirty;
         private float reelInput;
         private Vector3 grappleTargetPoint;
         private SlopeContactResolver slopeContacts;
         private ILadderTraversalFeature ladderFeature;
         private bool hasWallContact;
+        private bool hasAppliedWallContact;
         private Vector3 wallNormal;
         private int syntheticContactId;
+        private bool hasLadderIntent;
+
+        internal bool HasPendingInput => overrideNavigation || jumpRequested
+            || grappleHeld || grappleFireRequested || wireInputDirty || Mathf.Abs(reelInput) > 0.0001f
+            || hasWallContact || hasAppliedWallContact;
+        internal bool HasWallIntent => hasWallContact;
+        internal bool HasLadderIntent => hasLadderIntent;
 
         private void Awake()
         {
@@ -37,6 +46,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             grappleHeld = held;
             grappleFireRequested |= fireRequested;
+            wireInputDirty = true;
             reelInput = Mathf.Clamp(reel, -1f, 1f);
             grappleTargetPoint = targetPoint;
         }
@@ -49,17 +59,20 @@ namespace Koiusa.SteamMultiRuntime
 
         public void EnterLadder(LadderVolume ladder)
         {
+            hasLadderIntent = ladder != null;
             ladderFeature?.NotifyEnterLadder(ladder);
         }
 
         public void ExitLadder(LadderVolume ladder)
         {
             ladderFeature?.NotifyExitLadder(ladder);
+            hasLadderIntent = false;
         }
 
         public void DetachFromLadder(float reattachDelaySeconds)
         {
             ladderFeature?.DetachFromLadder(reattachDelaySeconds);
+            hasLadderIntent = false;
         }
 
         public void ClearMoveOverride()
@@ -72,9 +85,15 @@ namespace Koiusa.SteamMultiRuntime
             out bool wireFire, out float reel, out Vector3 targetPoint)
         {
             if (hasWallContact)
+            {
                 slopeContacts?.SetSyntheticObstacleContact(syntheticContactId, wallNormal);
+                hasAppliedWallContact = true;
+            }
             else
+            {
                 slopeContacts?.RemoveSyntheticContact(syntheticContactId);
+                hasAppliedWallContact = false;
+            }
             if (overrideNavigation)
                 navMove = move;
             jump |= jumpRequested;
@@ -82,6 +101,7 @@ namespace Koiusa.SteamMultiRuntime
             wireHeld = grappleHeld;
             wireFire = grappleFireRequested;
             grappleFireRequested = false;
+            wireInputDirty = false;
             reel = reelInput;
             targetPoint = grappleTargetPoint;
         }
@@ -90,10 +110,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             slopeContacts?.RemoveSyntheticContact(syntheticContactId);
             hasWallContact = false;
+            hasAppliedWallContact = false;
             wallNormal = Vector3.zero;
             grappleHeld = false;
             grappleFireRequested = false;
+            wireInputDirty = false;
             reelInput = 0f;
+            hasLadderIntent = false;
         }
     }
 }

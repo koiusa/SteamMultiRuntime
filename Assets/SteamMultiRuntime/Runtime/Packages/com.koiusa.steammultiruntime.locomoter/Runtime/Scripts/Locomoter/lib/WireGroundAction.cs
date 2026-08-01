@@ -68,6 +68,10 @@ namespace Koiusa.SteamMultiRuntime
 
         private void FixedUpdate()
         {
+            if (!HasConnection && !wasUsingStrafeMovement
+                && strafeBlend <= 0f && facingBlend <= 0f)
+                return;
+
             var usesStrafeMovement = UsesStrafeMovement;
             if (usesStrafeMovement && !wasUsingStrafeMovement)
             {

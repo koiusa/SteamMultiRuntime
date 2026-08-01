@@ -13,9 +13,12 @@ namespace Koiusa.SteamMultiRuntime.Editor
     {
         private const string ScenePath = "Assets/SteamMultiRuntime/Samples/Gameplay/Stages/ServerScene.unity";
         private const string LocalNpcPrefabPath = "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalNPC.prefab";
+        private const string NetworkNpcPrefabPath = "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkNPC.prefab";
+        private const string NetworkManagerResourcePath = "System/NetworkManager";
         private static readonly int[] Counts = { 100, 300 };
         private const int WarmupFrames = 180;
         private const int SampleFrames = 300;
+        private const int RandomSeed = 481516;
 
         private static int runIndex;
         private static int frame;
@@ -24,6 +27,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static double gpuFrameNanoseconds;
         private static long gcBytes;
         private static long drawCalls;
+        private static double fixedTimeAtSampleStart;
         private static readonly List<float> frameTimesMs = new(SampleFrames);
         private static ProfilerRecorder mainThreadRecorder;
         private static ProfilerRecorder renderThreadRecorder;
@@ -32,6 +36,27 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static ProfilerRecorder drawCallRecorder;
         private static readonly List<NamedRecorder> subsystemRecorders = new();
         private static bool useCrowdSimulation = true;
+        private static bool usePreCrowdPrefabBaseline;
+        private static bool useNetworkNpc;
+        private static bool recordSubsystems = true;
+        private static readonly HashSet<string> PostCrowdPrefabFeatureNames = new()
+        {
+            nameof(NpcCrowdTraversalTestDriver),
+            "WallTraversalFeature",
+            "WallRunAction",
+            "WallSlideAction",
+            "WallJumpAction",
+            "LadderTraversalFeature",
+            "LadderClimbAction",
+            "LadderDetachAction",
+            "WireLineVisualFeature",
+            "WireTraversalFeature",
+            "WireGrappleTargetingFeature",
+            "WireAttachAction",
+            "WireSwingAction",
+            "WireReelAction",
+            "WireGroundAction"
+        };
 
         private sealed class NamedRecorder
         {
@@ -59,6 +84,9 @@ namespace Koiusa.SteamMultiRuntime.Editor
         public static void RunCrowdComparisonFromCommandLine()
         {
             useCrowdSimulation = ReadIntArgument("-npcBenchmarkCrowd", 1) != 0;
+            usePreCrowdPrefabBaseline = ReadIntArgument("-npcBenchmarkPreCrowdPrefab", 0) != 0;
+            useNetworkNpc = ReadIntArgument("-npcBenchmarkNetwork", 0) != 0;
+            recordSubsystems = ReadIntArgument("-npcBenchmarkSubsystems", 1) != 0;
             Run200Vs300();
         }
 
@@ -76,18 +104,22 @@ namespace Koiusa.SteamMultiRuntime.Editor
             serializedSpawner.FindProperty("spawnCount").intValue = Counts[runIndex];
             serializedSpawner.FindProperty("showNpcDestinationMarkers").boolValue = false;
             serializedSpawner.FindProperty("showCharacterDebugUi").boolValue = false;
+            if (useNetworkNpc)
+                serializedSpawner.FindProperty("spawnOnStart").boolValue = false;
             serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
 
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(LocalNpcPrefabPath);
+            var prefabPath = useNetworkNpc ? NetworkNpcPrefabPath : LocalNpcPrefabPath;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             var controller = prefab != null ? prefab.GetComponent<NpcNavMeshController>() : null;
             if (controller == null)
             {
-                Fail("LocalNPC NpcNavMeshController was not found.");
+                Fail($"NpcNavMeshController was not found on {prefabPath}.");
                 return;
             }
             var serializedController = new SerializedObject(controller);
             serializedController.FindProperty("useCrowdSimulation").boolValue = useCrowdSimulation;
             serializedController.ApplyModifiedPropertiesWithoutUndo();
+            UnityEngine.Random.InitState(RandomSeed);
             EditorApplication.EnterPlaymode();
         }
 
@@ -95,6 +127,20 @@ namespace Koiusa.SteamMultiRuntime.Editor
         {
             if (state == PlayModeStateChange.EnteredPlayMode)
             {
+                if (useNetworkNpc && !StartBenchmarkServer())
+                    return;
+                if (useNetworkNpc)
+                {
+                    var spawner = UnityEngine.Object.FindFirstObjectByType<NetworkNpcRandomSpawnManager>();
+                    if (spawner == null)
+                    {
+                        Fail("NPC spawner disappeared before server spawn.");
+                        return;
+                    }
+                    spawner.SpawnNow();
+                }
+                if (usePreCrowdPrefabBaseline)
+                    DisablePostCrowdPrefabFeatures();
                 frame = 0;
                 mainThreadNanoseconds = 0;
                 renderThreadNanoseconds = 0;
@@ -107,7 +153,8 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 gpuFrameTimeRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "GPU Frame Time", 1);
                 gcRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame", 1);
                 drawCallRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count", 1);
-                StartSubsystemRecorders();
+                if (recordSubsystems)
+                    StartSubsystemRecorders();
                 EditorApplication.update += Sample;
             }
             else if (state == PlayModeStateChange.EnteredEditMode)
@@ -124,7 +171,11 @@ namespace Koiusa.SteamMultiRuntime.Editor
         {
             frame++;
             if (frame <= WarmupFrames)
+            {
+                if (frame == WarmupFrames)
+                    fixedTimeAtSampleStart = Time.fixedTimeAsDouble;
                 return;
+            }
 
             mainThreadNanoseconds += mainThreadRecorder.LastValue;
             renderThreadNanoseconds += renderThreadRecorder.LastValue;
@@ -138,18 +189,27 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 return;
 
             var npcCount = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(FindObjectsSortMode.None).Length;
+            var networkNpcCount = CountNetworkNpcs();
+            if (useNetworkNpc && networkNpcCount != Counts[runIndex])
+            {
+                Fail($"Expected {Counts[runIndex]} NetworkNPCs, but found {networkNpcCount} (all NPCs: {npcCount}).");
+                return;
+            }
             frameTimesMs.Sort();
             var averageFrameMs = frameTimesMs.Count > 0 ? frameTimesMs.Average() : 0d;
             var p95FrameMs = frameTimesMs.Count > 0
                 ? frameTimesMs[Mathf.Clamp(Mathf.CeilToInt(frameTimesMs.Count * 0.95f) - 1, 0, frameTimesMs.Count - 1)]
                 : 0f;
             Debug.Log(
-                $"[NpcBenchmark] crowd={(useCrowdSimulation ? 1 : 0)} requested={Counts[runIndex]} actual={npcCount} " +
+                $"[NpcBenchmark] crowd={(useCrowdSimulation ? 1 : 0)} network={(useNetworkNpc ? 1 : 0)} " +
+                $"preCrowdPrefab={(usePreCrowdPrefabBaseline ? 1 : 0)} requested={Counts[runIndex]} " +
+                $"actual={npcCount} networkActual={networkNpcCount} " +
                 $"mainThreadMs={mainThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"renderThreadMs={renderThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"gpuFrameMs={gpuFrameNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"frameMs={averageFrameMs:F3} p95FrameMs={p95FrameMs:F3} " +
                 $"fps={(averageFrameMs > 0d ? 1000d / averageFrameMs : 0d):F1} " +
+                $"fixedStepsPerFrame={(Time.fixedTimeAsDouble - fixedTimeAtSampleStart) / Time.fixedDeltaTime / SampleFrames:F2} " +
                 $"gcBytesPerFrame={(double)gcBytes / SampleFrames:F1} " +
                 $"drawCalls={(double)drawCalls / SampleFrames:F1}");
 
@@ -209,6 +269,80 @@ namespace Koiusa.SteamMultiRuntime.Editor
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             Debug.Log("[NpcBenchmark] complete");
             EditorApplication.Exit(0);
+        }
+
+        private static void DisablePostCrowdPrefabFeatures()
+        {
+            var controllers = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (var i = 0; i < controllers.Length; i++)
+            {
+                var behaviours = controllers[i].GetComponents<Behaviour>();
+                for (var behaviourIndex = 0; behaviourIndex < behaviours.Length; behaviourIndex++)
+                {
+                    var behaviour = behaviours[behaviourIndex];
+                    if (behaviour != null && PostCrowdPrefabFeatureNames.Contains(behaviour.GetType().Name))
+                        behaviour.enabled = false;
+                }
+            }
+        }
+
+        private static bool StartBenchmarkServer()
+        {
+            var prefab = Resources.Load<GameObject>(NetworkManagerResourcePath);
+            if (prefab == null)
+            {
+                Fail($"NetworkManager resource '{NetworkManagerResourcePath}' was not found.");
+                return false;
+            }
+
+            var instance = UnityEngine.Object.Instantiate(prefab);
+            instance.name = "NetworkManager (NPC Benchmark)";
+            var behaviours = instance.GetComponentsInChildren<MonoBehaviour>(true);
+            for (var i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i];
+                if (behaviour == null)
+                    continue;
+                var fullName = behaviour.GetType().FullName;
+                if (fullName != "Unity.Netcode.NetworkManager"
+                    && fullName != "Netcode.Transports.Facepunch.FacepunchTransport")
+                    behaviour.enabled = false;
+            }
+            for (var i = 0; i < behaviours.Length; i++)
+            {
+                var behaviour = behaviours[i];
+                if (behaviour == null || behaviour.GetType().FullName != "Unity.Netcode.NetworkManager")
+                    continue;
+                var startServer = behaviour.GetType().GetMethod("StartServer", Type.EmptyTypes);
+                if (startServer != null && startServer.Invoke(behaviour, null) is true)
+                    return true;
+                Fail("NetworkManager.StartServer() failed.");
+                return false;
+            }
+
+            Fail("Unity.Netcode.NetworkManager component was not found on the resource prefab.");
+            return false;
+        }
+
+        private static int CountNetworkNpcs()
+        {
+            var controllers = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(FindObjectsSortMode.None);
+            var count = 0;
+            for (var i = 0; i < controllers.Length; i++)
+            {
+                var behaviours = controllers[i].GetComponents<MonoBehaviour>();
+                for (var behaviourIndex = 0; behaviourIndex < behaviours.Length; behaviourIndex++)
+                {
+                    var behaviour = behaviours[behaviourIndex];
+                    if (behaviour != null && behaviour.GetType().Name == "ServerDrivenActorController")
+                    {
+                        count++;
+                        break;
+                    }
+                }
+            }
+            return count;
         }
 
         private static int ReadIntArgument(string name, int fallback)

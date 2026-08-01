@@ -63,6 +63,7 @@ namespace Koiusa.SteamMultiRuntime
         internal float NearAnimationUpdateInterval => 1f / Mathf.Max(0.1f, nearAnimationUpdateRate);
         internal float MidAnimationUpdateInterval => 1f / Mathf.Max(0.1f, midAnimationUpdateRate);
         internal float FarAnimationUpdateInterval => 1f / Mathf.Max(0.1f, farAnimationUpdateRate);
+        internal bool IsPresentationVisible => IsAnyRendererVisible();
 
         private void Reset()
         {

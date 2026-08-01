@@ -4,10 +4,14 @@ namespace Koiusa.SteamMultiRuntime
 {
     public partial class NpcNavMeshController
     {
+        private NpcControllerInputCommand _conventionalInputCommand;
+        private bool _hasConventionalInputCommand;
+
         private void ConfigureMovementBackend()
         {
             if (useCrowdSimulation)
             {
+                _networkPlayerController?.SetServerNpcConventionalMotorEnabled(false);
                 _crowdMotor = GetComponent<NpcCrowdMotor>();
                 if (_crowdMotor == null)
                     _crowdMotor = gameObject.AddComponent<NpcCrowdMotor>();
@@ -31,6 +35,7 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             _crowdAgent = GetComponent<NpcCrowdAgent>();
+            _networkPlayerController?.SetServerNpcConventionalMotorEnabled(true);
             if (_crowdAgent != null)
             {
                 _crowdAgent.Deactivate();
@@ -63,6 +68,11 @@ namespace Koiusa.SteamMultiRuntime
             var movementCapsule = GetComponent<CapsuleCollider>();
             if (movementCapsule != null)
                 movementCapsule.isTrigger = false;
+
+            NpcConventionalCollisionRegistry.Register(this, _rigidbody);
+            RegisterSpatialNpc(this);
+            if (_networkPlayerController == null)
+                NpcConventionalPhysicsLoop.Register(this);
         }
 
         private void Update()
@@ -81,33 +91,38 @@ namespace Koiusa.SteamMultiRuntime
                 }
             }
 
-            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
-                return;
-            movement?.ObserveState();
-            _agent.nextPosition = _rigidbody != null ? _rigidbody.position : transform.position;
+            if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
+            {
+                movement?.ObserveState();
+                _agent.nextPosition = _rigidbody != null ? _rigidbody.position : transform.position;
+            }
+
+            // AI planning and pseudo-input generation belong to the render update, as in
+            // the pre-crowd controller. FixedUpdate may run several times while recovering
+            // from a slow frame and must only consume the latest command.
+            _conventionalInputCommand = BuildNpcInputCommand();
+            _hasConventionalInputCommand = true;
+            if (_networkPlayerController != null)
+                SubmitConventionalNetworkInput(_conventionalInputCommand);
         }
 
-        private void FixedUpdate()
+        internal void TickConventionalPhysics()
         {
             if (useCrowdSimulation || _clientSimulationDisabled)
                 return;
             if (_inputSource == null)
                 return;
 
-            var input = BuildNpcInputCommand();
+            if (!_hasConventionalInputCommand)
+            {
+                _conventionalInputCommand = BuildNpcInputCommand();
+                _hasConventionalInputCommand = true;
+            }
+            var input = _conventionalInputCommand;
+            _conventionalInputCommand.JumpRequested = false;
+            _conventionalInputCommand.WireFireRequested = false;
             if (_networkPlayerController != null)
             {
-                _networkPlayerController.TickServerNpcPhysics(
-                    new ActorInputState(
-                        input.MoveInput,
-                        input.JumpRequested,
-                        input.WireHeld,
-                        input.ReelInput,
-                        false,
-                        input.WireFireRequested),
-                    input.MoveDirection,
-                    transform.rotation,
-                    input.WireTarget);
                 return;
             }
             if (_motor == null)
@@ -117,6 +132,23 @@ namespace Koiusa.SteamMultiRuntime
             _moveInputReceiver?.SetMoveReferenceRotation(transform.rotation);
             _motor.Tick(input.MoveDirection, input.JumpRequested);
             _presentationSmoother?.CapturePhysicsPose();
+        }
+
+        private void SubmitConventionalNetworkInput(NpcControllerInputCommand input)
+        {
+            _networkPlayerController.SubmitServerNpcInput(
+                new ActorInputState(
+                    input.MoveInput,
+                    input.JumpRequested,
+                    input.WireHeld,
+                    input.ReelInput,
+                    false,
+                    input.WireFireRequested),
+                input.MoveDirection,
+                transform.rotation,
+                input.WireTarget);
+            _conventionalInputCommand.JumpRequested = false;
+            _conventionalInputCommand.WireFireRequested = false;
         }
     }
 }

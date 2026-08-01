@@ -44,6 +44,7 @@ namespace Koiusa.SteamMultiRuntime
         private float lastSentReelInput = float.NaN;
         private float nextStateSyncTime;
         private bool hasServerNpcCrowdState;
+        private bool serverNpcConventionalMotorEnabled;
         private ActorKinematicState serverNpcCrowdKinematicState;
         private ActorMovementFlagsState serverNpcCrowdMovementState;
 
@@ -168,7 +169,11 @@ namespace Koiusa.SteamMultiRuntime
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            ServerDrivenActorPhysicsLoop.Register(this);
+            // Server NPC physics is owned by NpcConventionalPhysicsLoop or the Crowd
+            // simulation. Registering it here as well makes the player loop scan every
+            // NPC each fixed step only to return immediately.
+            if (controlMode != NetworkControlMode.ServerNpc || serverNpcConventionalMotorEnabled)
+                ServerDrivenActorPhysicsLoop.Register(this);
             if (IsServer && controlMode == NetworkControlMode.Player)
                 Core.CrowdPhysicsBodyRegistry.RegisterPlayer(targetRigidbody);
 
@@ -269,7 +274,7 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void TickRegisteredPhysics()
         {
-            if (controlMode == NetworkControlMode.ServerNpc)
+            if (controlMode == NetworkControlMode.ServerNpc && !serverNpcConventionalMotorEnabled)
                 return;
 
             if (!IsSpawned || motor == null)
@@ -301,11 +306,21 @@ namespace Koiusa.SteamMultiRuntime
             Quaternion moveReferenceRotation,
             Vector3 grappleTargetPoint)
         {
+            SubmitServerNpcInput(inputState, moveDirection, moveReferenceRotation, grappleTargetPoint);
             if (controlMode != NetworkControlMode.ServerNpc || !IsSpawned || !IsServer || motor == null)
                 return;
+            TickServerPhysics();
+            presentationSmoother?.CapturePhysicsPose();
+        }
 
-            if (targetRigidbody != null && targetRigidbody.interpolation != RigidbodyInterpolation.None)
-                targetRigidbody.interpolation = RigidbodyInterpolation.None;
+        public void SubmitServerNpcInput(
+            ActorInputState inputState,
+            Vector3 moveDirection,
+            Quaternion moveReferenceRotation,
+            Vector3 grappleTargetPoint)
+        {
+            if (controlMode != NetworkControlMode.ServerNpc || !IsSpawned || !IsServer || motor == null)
+                return;
 
             if (inputState.JumpPressed)
                 jumpToken++;
@@ -322,8 +337,19 @@ namespace Koiusa.SteamMultiRuntime
                 inputState.ReelInput,
                 grappleTargetPoint,
                 grappleFireToken);
-            TickServerPhysics();
-            presentationSmoother?.CapturePhysicsPose();
+        }
+
+        public void SetServerNpcConventionalMotorEnabled(bool enabled)
+        {
+            if (controlMode != NetworkControlMode.ServerNpc || serverNpcConventionalMotorEnabled == enabled)
+                return;
+            serverNpcConventionalMotorEnabled = enabled;
+            if (!IsSpawned)
+                return;
+            if (enabled)
+                ServerDrivenActorPhysicsLoop.Register(this);
+            else
+                ServerDrivenActorPhysicsLoop.Unregister(this);
         }
 
         public void ApplyServerNpcCrowdState(

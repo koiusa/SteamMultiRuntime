@@ -301,15 +301,15 @@ namespace Koiusa.SteamMultiRuntime
         public void OnCollisionEnter(Collision collision)
         {
             var upAxis = GetUpAxis();
-            slopeContactResolver.UpdateCollisionContacts(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
-            groundMotionTracker.UpdateGroundContact(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
+            var bestUpDot = slopeContactResolver.UpdateCollisionContacts(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
+            groundMotionTracker.UpdateGroundContact(collision, bestUpDot, settings.GroundLayer, settings.MinGroundNormalDot);
         }
 
         public void OnCollisionStay(Collision collision)
         {
             var upAxis = GetUpAxis();
-            slopeContactResolver.UpdateCollisionContacts(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
-            groundMotionTracker.UpdateGroundContact(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
+            var bestUpDot = slopeContactResolver.UpdateCollisionContacts(collision, upAxis, settings.GroundLayer, settings.MinGroundNormalDot);
+            groundMotionTracker.UpdateGroundContact(collision, bestUpDot, settings.GroundLayer, settings.MinGroundNormalDot);
         }
 
         public void OnCollisionExit(Collision collision)
