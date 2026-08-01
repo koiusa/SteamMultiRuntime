@@ -84,8 +84,6 @@ Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、
 
 Network NPCの`NetworkTransform`はPlayerとは別のPrefab設定を持ち、Position 0.5m、Y Rotation 6度を送信閾値とします。標準移動速度5m/sでは位置更新が概ね10Hz以下となり、補間を維持しながらTransform Deltaの生成・配送頻度を抑えます。Netcode 2.7.0の`NetworkTransform`は権限側の全InstanceをNetwork Tickごとに内部走査するため、この設定で送信回数は減りますが、個体別の変化判定コスト自体は残ります。
 
-Network NPCのPosition補間は、更新間のスナップを避けるため`Position Lerp Smoothing`を有効にし、追従時間が床より長くならないよう`Position Max Interpolation Time`をNetworkMoverと同じ0.1秒にします。床とNPCは通常の`NetworkTransform`経路を維持し、クライアント専用の床時刻再生やActor表示座標の上書きは行いません。
-
 Crowd Server NPCが`IGroundMotionSource`／`IGroundMotionSnapshotSource`を持つ移動床へBindingしている間だけ、Position Thresholdを0.02mへ下げます。床は高頻度で同期される一方NPCだけ0.5m閾値のままだと、Remote Client上で床が先行して最大0.5mの相対位置誤差となるためです。Binding開始／解除のpush通知で切り替え、通常地面と空中では0.5mへ戻して通常移動の通信量を維持します。
 
 Network NPCのServer／Remote ClientにおけるDynamic／Kinematic切替は、`AutoUpdateKinematicState`を有効にした`NetworkRigidbody`が所有します。`ServerDrivenActorController`はこの状態を重複設定せず、表示補間との二重適用を避けるためRigidbody補間を`None`に固定します。
