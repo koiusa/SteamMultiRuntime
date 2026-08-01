@@ -147,7 +147,7 @@ Traversalは`Wall`、`Ladder`、`Wire`の3領域で構成され、共有状態�
 
 ## NPC
 
-NPCはAI判断とCrowd実行を分離します。`NpcNavMeshController`はNavMesh Moduleの判断を`AiActorInputSource`へ変換し、Playerと共通のTraversal Coordinatorへ疑似入力を送って`NpcCrowdCommand`を生成します。`NpcCrowdAgent`がCommand、Probe、Snapshot、結果適用の境界となり、`NpcCrowdSimulation`と`NpcCrowdMotor`はAI判断を参照しません。
+NPCはAI判断、共通疑似入力、移動Backendを分離します。`NpcNavMeshController`はNavMesh Module、FutureAction、テストドライバの指示を`NpcControllerInputCommand`へ一度だけ集約します。起動時に選択したBackend AdapterがこれをCrowd CommandまたはPlayer共通Actor入力へ変換します。`NpcCrowdAgent`がCrowd側のCommand、Probe、Snapshot、結果適用の境界となり、`NpcCrowdSimulation`と`NpcCrowdMotor`はAI判断を参照しません。
 
 ```text
 NpcNavMeshController : INpcLocomotionState
@@ -157,22 +157,28 @@ NpcNavMeshController : INpcLocomotionState
 ├─ NpcNavMeshAvoidanceModule
 ├─ NpcNavMeshJumpModule
 ├─ AiActorInputSource
-└─ NpcCrowdCommand生成
-        │
-        ▼
-NpcCrowdAgent
-├─ NpcCrowdSimulationへの登録／解除
-├─ Capsulecast／Overlap Queryの受け渡し
-├─ NpcCrowdAgentData／NpcCrowdMovementData Snapshot
-├─ Movement結果とPhysicsPresentationSmootherへの反映
-└─ Network Server NPC状態の反映
-        │
-        ▼
-NpcCrowdMotor
-├─ Kinematic移動、加減速、ジャンプ、重力
-├─ 接地、壁、Overlap解決
-├─ NpcCrowdMovingPlatformAction
-└─ Player／Network Physics Objectとの接触
+├─ NpcCrowdTraversalInput
+│  └─ FutureAction／テストドライバ疑似入力
+└─ BuildNpcInputCommand
+   └─ NpcControllerInputCommand
+      ├─ Move／Jump
+      └─ Wire Aim／Fire／Hold／Reel
+             │
+             ├─ Use Crowd Simulation = ON
+             │  └─ NpcCrowdCommand
+             │     └─ NpcCrowdAgent
+             │        ├─ NpcCrowdSimulationへの登録／解除
+             │        ├─ Capsulecast／Overlap Queryの受け渡し
+             │        ├─ Agent／Movement Snapshot
+             │        └─ NpcCrowdMotor
+             │           ├─ Kinematic移動、接地、壁、移動床
+             │           └─ Player／Physics Objectとの接触
+             │
+             └─ Use Crowd Simulation = OFF
+                ├─ Local: ActorCompositeMotor
+                └─ Network Server: ServerDrivenActorController
+                   └─ ActorCompositeMotor
+                      └─ Dynamic Rigidbody／ActorTraversalCoordinator
 
 NpcCrowdSimulation
 ├─ NpcCrowdAgentだけを登録
@@ -181,7 +187,11 @@ NpcCrowdSimulation
 └─ 一括Capsulecast／Overlap Query
 ```
 
-通常移動はPlayerのDynamic Rigidbody Motorを直接Tickせず、NPC専用のKinematic Crowd Motorで処理します。一方、`IActorMotor`設定、`IActorTraversalCoordinator`、Actor状態契約、Animator Driver、表示補間はPlayerと共通化を維持します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
+Wall接触は`NpcCrowdTraversalInput`から`SlopeContactResolver`へ、LadderのEnter／Exit／Detachは`ILadderTraversalFeature`へ通知します。これらもBackend分岐より前に処理されるため、Crowd／従来方式で同じCoordinator状態を使用します。
+
+Crowd有効時の通常移動はPlayerのDynamic Rigidbody Motorを直接Tickせず、NPC専用のKinematic Crowd Motorで処理します。Crowd無効時は比較用に`ActorCompositeMotor`を使用します。`IActorMotor`設定、`IActorTraversalCoordinator`、Actor状態契約、Animator Driver、表示補間はPlayerと共通化を維持します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
+
+`NpcNavMeshController.Use Crowd Simulation`を無効にすると、同じAI／FutureAction疑似入力を`ActorCompositeMotor`へ渡す従来のDynamic Rigidbody経路へ起動時に切り替わります。通常移動、ジャンプ、WallRun、Ladder、Wire入力の生成はBackend選択前に一度だけ行うため、共通化による二重計算は発生しません。これによりPrefab／SceneのInspectorチェック一つでCrowd有無の性能・挙動を比較できます。
 
 ## Character ModelとProfile
 

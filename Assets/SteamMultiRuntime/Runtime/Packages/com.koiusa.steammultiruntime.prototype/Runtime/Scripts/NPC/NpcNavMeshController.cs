@@ -11,6 +11,10 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(ActorCompositeMotor))]
     public partial class NpcNavMeshController : MonoBehaviour, INpcLocomotionState
     {
+        [Header("Movement Backend")]
+        [Tooltip("Enabled: shared Burst Crowd simulation. Disabled: conventional per-NPC Rigidbody motor.")]
+        [SerializeField] private bool useCrowdSimulation = true;
+
         [Header("Crowd Contact")]
         [SerializeField] private NpcCrowdContactSettings crowdContactSettings = NpcCrowdContactSettings.CreateDefault();
 
@@ -90,16 +94,16 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
         public bool IsMoving => HorizontalVelocity > 0.01f;
-        public bool IsGrounded => _crowdMotor != null ? _crowdMotor.IsGrounded : _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
-        public bool IsJumping => _crowdMotor != null ? _crowdMotor.IsJumping : _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
-        public bool IsFreefall => _crowdMotor != null ? _crowdMotor.IsFreefall : _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
-        public bool IsFallingAfterJump => _crowdMotor != null ? _crowdMotor.IsFallingAfterJump : _networkPlayerController != null ? _networkPlayerController.IsFallingAfterJump : _motor != null && _motor.IsFallingAfterJump;
+        public bool IsGrounded => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsGrounded : _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
+        public bool IsJumping => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsJumping : _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
+        public bool IsFreefall => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsFreefall : _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
+        public bool IsFallingAfterJump => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsFallingAfterJump : _networkPlayerController != null ? _networkPlayerController.IsFallingAfterJump : _motor != null && _motor.IsFallingAfterJump;
         public bool IsStrafeMode => false;
         public Vector3 InheritedGroundVelocity => _networkPlayerController != null ? _networkPlayerController.InheritedGroundVelocity : _motor != null ? _motor.InheritedGroundVelocity : Vector3.zero;
         public Vector2 MoveInput => _moveInput;
         public Vector3 MoveDirection => _moveDirection;
-        public float HorizontalVelocity => _crowdMotor != null ? _crowdMotor.HorizontalVelocity : _networkPlayerController != null ? _networkPlayerController.HorizontalVelocity : _motor != null ? _motor.HorizontalVelocity : 0f;
-        public float VerticalVelocity => _crowdMotor != null ? _crowdMotor.VerticalVelocity : _networkPlayerController != null ? _networkPlayerController.VerticalVelocity : _motor != null ? _motor.VerticalVelocity : 0f;
+        public float HorizontalVelocity => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.HorizontalVelocity : _networkPlayerController != null ? _networkPlayerController.HorizontalVelocity : _motor != null ? _motor.HorizontalVelocity : 0f;
+        public float VerticalVelocity => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.VerticalVelocity : _networkPlayerController != null ? _networkPlayerController.VerticalVelocity : _motor != null ? _motor.VerticalVelocity : 0f;
         public float MaxMoveSpeed
         {
             get
@@ -134,27 +138,16 @@ namespace Koiusa.SteamMultiRuntime
             _presentationSmoother.enabled = false;
             _fallRecovery = GetComponent<Core.FallRecovery>();
             if (_fallRecovery != null)
-                _fallRecovery.enabled = false;
+                _fallRecovery.enabled = !useCrowdSimulation;
             _skillCoordinator = GetComponent<ActorSkillCoordinator>();
             if (_skillCoordinator != null)
-                _skillCoordinator.enabled = false;
+                _skillCoordinator.enabled = !useCrowdSimulation;
             _traversalCoordinator = GetComponent<IActorTraversalCoordinator>();
             _traversalInput = GetComponent<NpcCrowdTraversalInput>();
             if (_traversalInput == null)
                 _traversalInput = gameObject.AddComponent<NpcCrowdTraversalInput>();
             _traversalTestDriver = GetComponent<NpcCrowdTraversalTestDriver>();
-            _crowdMotor = GetComponent<NpcCrowdMotor>();
-            if (_crowdMotor == null)
-                _crowdMotor = gameObject.AddComponent<NpcCrowdMotor>();
-            _crowdMotor.Initialize(_baseMotor, crowdContactSettings);
-            _crowdAgent = GetComponent<NpcCrowdAgent>();
-            if (_crowdAgent == null)
-                _crowdAgent = gameObject.AddComponent<NpcCrowdAgent>();
-            _crowdAgent.Initialize(this);
-            if (_baseMotor is Behaviour baseMotorBehaviour)
-                baseMotorBehaviour.enabled = false;
-            if (_motor != null)
-                _motor.enabled = false;
+            ConfigureMovementBackend();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -175,7 +168,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            _crowdAgent?.Activate();
+            if (useCrowdSimulation)
+                _crowdAgent?.Activate();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();

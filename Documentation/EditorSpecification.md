@@ -65,6 +65,7 @@ WireTraversalFeature
 ## NPC Inspector
 
 `NpcNavMeshControllerEditor`は、同じGameObjectに装着されたNPC Moduleを一覧表示します。
+Custom Editor上部には`NpcNavMeshController`の全SerializedFieldを標準描画し、今後設定が追加された場合も省略しません。`Movement Backend > Use Crowd Simulation`で起動時のCrowd／従来Motorを切り替え、`Crowd Contact`でCrowd有効時の接触設定を編集します。Backendの変更は次回のPlay開始時に反映され、Play中の切り替えは対象外です。
 
 ```text
 Attached NPC Features

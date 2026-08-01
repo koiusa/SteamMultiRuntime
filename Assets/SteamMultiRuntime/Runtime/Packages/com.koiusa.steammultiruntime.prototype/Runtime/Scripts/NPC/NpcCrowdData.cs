@@ -3,6 +3,17 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    internal struct NpcControllerInputCommand
+    {
+        public Vector2 MoveInput;
+        public Vector3 MoveDirection;
+        public bool JumpRequested;
+        public bool WireHeld;
+        public bool WireFireRequested;
+        public float ReelInput;
+        public Vector3 WireTarget;
+    }
+
     internal struct NpcCrowdAgentData
     {
         public float3 Position;

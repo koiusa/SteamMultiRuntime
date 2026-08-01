@@ -9,10 +9,21 @@ namespace Koiusa.SteamMultiRuntime
     {
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+
             EditorGUILayout.HelpBox(
                 "NPC機能は同じGameObject上のコンポーネントで構成されます。" +
                 "必要な機能だけを追加し、不要な機能はコンポーネントを削除してください。",
                 MessageType.Info);
+
+            EditorGUILayout.Space();
+            DrawPropertiesExcluding(serializedObject, "m_Script");
+            serializedObject.ApplyModifiedProperties();
+
+            EditorGUILayout.HelpBox(
+                "Use Crowd Simulationの変更は次回のPlay開始時に反映されます。" +
+                "Play中のBackend切り替えには対応していません。",
+                MessageType.None);
 
             var gameObject = ((NpcNavMeshController)target).gameObject;
 

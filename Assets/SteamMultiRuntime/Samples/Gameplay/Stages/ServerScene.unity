@@ -1744,7 +1744,7 @@ MonoBehaviour:
   localNpcPrefab: {fileID: 5458667738441605525, guid: 736a6fa63db86254484b652c285319a4, type: 3}
   npcModelIdList: {fileID: 11400000, guid: 53fb10e1957573c44be834f0809a3752, type: 2}
   randomizeModelOnSpawn: 1
-  spawnCount: 500
+  spawnCount: 300
   spawnOnStart: 1
   oneShot: 1
   spawnHeightOffset: 0.05

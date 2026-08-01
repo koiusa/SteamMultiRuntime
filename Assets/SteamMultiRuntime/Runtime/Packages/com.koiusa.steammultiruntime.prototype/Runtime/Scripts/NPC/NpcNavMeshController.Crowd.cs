@@ -47,6 +47,24 @@ namespace Koiusa.SteamMultiRuntime
 
         internal NpcCrowdCommand BuildCrowdCommand()
         {
+            var input = BuildNpcInputCommand();
+            _traversalCoordinator?.ProcessMotorInput(input.MoveDirection, input.JumpRequested, IsGrounded);
+            _traversalCoordinator?.ApplyTraversal(
+                input.MoveDirection, input.MoveInput, transform.rotation, input.JumpRequested, IsGrounded);
+            return new NpcCrowdCommand
+            {
+                DesiredVelocity = input.MoveDirection * MaxMoveSpeed,
+                JumpRequested = input.JumpRequested,
+                TraversalState = _traversalCoordinator != null
+                    ? _traversalCoordinator.CurrentState
+                    : ActorTraversalState.Grounded,
+                WireAnchor = _traversalCoordinator != null ? _traversalCoordinator.WireAnchorPoint : Vector3.zero,
+                WireRopeLength = _traversalCoordinator != null ? _traversalCoordinator.WireRopeLength : 0f
+            };
+        }
+
+        private NpcControllerInputCommand BuildNpcInputCommand()
+        {
             UpdateAiInputSignal();
             var inputState = _inputSource.ReadState();
             _moveInput = inputState.Move;
@@ -62,17 +80,15 @@ namespace Koiusa.SteamMultiRuntime
             if (wireHeld)
                 _traversalCoordinator?.SetWireAimCursor(default, false, wireOrigin, wireTarget, true);
             _traversalCoordinator?.SetWireInput(wireHeld, wireFire, reelInput, wireOrigin, wireTarget);
-            _traversalCoordinator?.ProcessMotorInput(_moveDirection, jumpRequested, IsGrounded);
-            _traversalCoordinator?.ApplyTraversal(_moveDirection, _moveInput, transform.rotation, jumpRequested, IsGrounded);
-            return new NpcCrowdCommand
+            return new NpcControllerInputCommand
             {
-                DesiredVelocity = _moveDirection * MaxMoveSpeed,
+                MoveInput = _moveInput,
+                MoveDirection = _moveDirection,
                 JumpRequested = jumpRequested,
-                TraversalState = _traversalCoordinator != null
-                    ? _traversalCoordinator.CurrentState
-                    : ActorTraversalState.Grounded,
-                WireAnchor = _traversalCoordinator != null ? _traversalCoordinator.WireAnchorPoint : Vector3.zero,
-                WireRopeLength = _traversalCoordinator != null ? _traversalCoordinator.WireRopeLength : 0f
+                WireHeld = wireHeld,
+                WireFireRequested = wireFire,
+                ReelInput = reelInput,
+                WireTarget = wireTarget
             };
         }
 

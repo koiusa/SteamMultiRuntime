@@ -421,6 +421,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36d1dba6cfe79eb4a9508ccbacc38360, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
+  useCrowdSimulation: 1
   crowdContactSettings:
     EnablePlayerContacts: 1
     EnableNetworkPhysicsObjectContacts: 1

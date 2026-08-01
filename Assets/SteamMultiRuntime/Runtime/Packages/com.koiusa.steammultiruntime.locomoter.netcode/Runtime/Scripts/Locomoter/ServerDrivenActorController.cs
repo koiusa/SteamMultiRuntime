@@ -256,7 +256,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Update()
         {
-            if (!IsSpawned)
+            if (!IsSpawned || controlMode == NetworkControlMode.ServerNpc)
             {
                 return;
             }
@@ -295,7 +295,11 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        public void TickServerNpcPhysicsFromCrowd()
+        public void TickServerNpcPhysics(
+            ActorInputState inputState,
+            Vector3 moveDirection,
+            Quaternion moveReferenceRotation,
+            Vector3 grappleTargetPoint)
         {
             if (controlMode != NetworkControlMode.ServerNpc || !IsSpawned || !IsServer || motor == null)
                 return;
@@ -303,6 +307,21 @@ namespace Koiusa.SteamMultiRuntime
             if (targetRigidbody != null && targetRigidbody.interpolation != RigidbodyInterpolation.None)
                 targetRigidbody.interpolation = RigidbodyInterpolation.None;
 
+            if (inputState.JumpPressed)
+                jumpToken++;
+            if (inputState.GrappleFirePressed)
+                grappleFireToken++;
+            serverInputState = new ActorInputSyncState(
+                moveDirection,
+                inputState.Move,
+                moveReferenceRotation,
+                jumpToken,
+                inputState.IsStrafeMode,
+                default,
+                inputState.GrappleHeld,
+                inputState.ReelInput,
+                grappleTargetPoint,
+                grappleFireToken);
             TickServerPhysics();
             presentationSmoother?.CapturePhysicsPose();
         }
