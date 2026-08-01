@@ -28,26 +28,24 @@ NPC 1000体表示を目標とし、Crowd Backendを標準経路とする。現�
 
 | NPC | Frame平均 | P95 | FPS | Main Thread | Fixed steps/frame | 移動中 |
 |---:|---:|---:|---:|---:|---:|---:|
-| 100 | 10.305 ms | 19.305 ms | 97.0 | 10.274 ms | 0.51 | 71 / 100 |
-| 200 | 25.023 ms | 46.525 ms | 40.0 | 24.987 ms | 1.25 | 162 / 200 |
-| 300 | 45.453 ms | 73.620 ms | 22.0 | 45.411 ms | 2.27 | 237 / 300 |
+| 100 | 10.028 ms | 19.290 ms | 99.7 | 10.005 ms | 0.50 | 66 / 100 |
+| 200 | 27.341 ms | 50.758 ms | 36.6 | 27.297 ms | 1.34 | 160 / 200 |
+| 300 | 46.791 ms | 74.358 ms | 21.4 | 46.758 ms | 2.32 | 231 / 300 |
 
-直前の300体Network Crowd ON計測53.6msに対して45.453msとなり、約15.2%改善した。ただし固定条件のA/B計測ではないため参考値とする。
+モデル生成後に再有効化されていた`AutoBlinkforSD`など、揺れもの以外の不要Componentは型付きの一回限りガードで停止する。Spring Manager停止時には300体8.400msまで低下したが、揺れものが動作しないためこの構成は採用しない。
 
 300体の主要Markerは次の通り。
 
 | Marker | 平均時間 |
 |---|---:|
-| `LateBehaviourUpdate` | 18.693 ms |
-| `BehaviourUpdate` | 9.979 ms |
-| `Physics.NpcCrowd.PrepareProbes` | 3.717 ms |
-| `MeshSkinning.Skin` | 3.070 ms |
-| `FixedUpdate.PhysicsFixedUpdate` | 2.420 ms |
-| `Physics.SyncColliderTransformBatchJob` | 2.192 ms |
-| `BatchQuery.ExecuteCapsulecastJob` | 1.737 ms |
-| `UpdateRendererBoundingVolumes` | 1.422 ms |
+| `LateBehaviourUpdate` | 18.844 ms |
+| `BehaviourUpdate` | 10.636 ms |
+| `Physics.NpcCrowd.PrepareProbes` | 3.990 ms |
+| `MeshSkinning.Skin` | 2.999 ms |
+| `FixedUpdate.PhysicsFixedUpdate` | 2.577 ms |
+| `Physics.SyncColliderTransformBatchJob` | 2.309 ms |
 
-`BehaviourUpdate`は以前の約11.9msから9.979msへ低下したが、標準`NetworkTransform`による全NPC走査は残る。最大項目は`LateBehaviourUpdate`である。300体ではFixed stepも平均2.27回まで増え、catch-upによる非線形な悪化が始まっている。
+Spring Managerを停止すると300体8.400msまで低下するが、揺れものが動作しないため採用しない。採用構成では`LateBehaviourUpdate`が主要負荷として残る。
 
 ### 運用上の注意
 
@@ -59,4 +57,4 @@ NPC 1000体表示を目標とし、Crowd Backendを標準経路とする。現�
 
 ### 次の課題
 
-次は`LateBehaviourUpdate`の発生元分離と、NPCごとの`NetworkTransform`を置き換える一括同期を優先する。Animator、Spring Bone、Renderer、スキニングの方式変更は難易度が高いため、その後の課題とする。
+次はNPCごとの`NetworkTransform`を置き換える一括同期を優先する。Animator、Renderer、スキニングの方式変更は難易度が高いため、その後の課題とする。

@@ -14,24 +14,34 @@ namespace Koiusa.SteamMultiRuntime
             for (var i = 0; i < animators.Length; i++)
                 animators[i].applyRootMotion = false;
 
-            NpcCrowdSpringSimulation.RegisterModel(root);
-            ConfigureCosmeticBehaviours(root.GetComponentsInChildren<MonoBehaviour>(true));
+            DisableNpcLateUpdateBehaviours(root);
+            if (root.GetComponent<NpcCrowdModelLateUpdateGuard>() == null)
+                root.AddComponent<NpcCrowdModelLateUpdateGuard>();
         }
 
-        private static void ConfigureCosmeticBehaviours(MonoBehaviour[] behaviours)
+        internal static void DisableNpcLateUpdateBehaviours(GameObject root)
+        {
+            if (root == null)
+                return;
+            Disable(root.GetComponentsInChildren<UnityChan.SDRandomWind>(true));
+            Disable(root.GetComponentsInChildren<UnityChan.AutoBlinkforSD>(true));
+            Disable(root.GetComponentsInChildren<UTJ.HighLeg>(true));
+        }
+
+        private static void Disable<T>(T[] behaviours) where T : Behaviour
         {
             for (var i = 0; i < behaviours.Length; i++)
-            {
-                var behaviour = behaviours[i];
-                if (behaviour == null)
-                    continue;
-                var typeName = behaviour.GetType().FullName;
-                if (typeName == "UnityChan.SDRandomWind"
-                    || typeName == "UTJ.HighLeg"
-                    || typeName == "UnityChan.AutoBlinkforSD"
-                    || typeName == "Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver")
-                    behaviour.enabled = false;
-            }
+                if (behaviours[i] != null)
+                    behaviours[i].enabled = false;
+        }
+    }
+
+    internal sealed class NpcCrowdModelLateUpdateGuard : MonoBehaviour
+    {
+        private void Start()
+        {
+            NpcCrowdModelPresentation.DisableNpcLateUpdateBehaviours(gameObject);
+            Destroy(this);
         }
     }
 }
