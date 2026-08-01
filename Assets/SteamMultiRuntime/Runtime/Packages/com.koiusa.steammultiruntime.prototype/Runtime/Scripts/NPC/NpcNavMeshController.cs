@@ -79,8 +79,6 @@ namespace Koiusa.SteamMultiRuntime
         private float _nextSteeringUpdateTime;
         private float _avoidanceSideSign = 1f;
         private float _avoidanceSideLockUntilTime;
-        private int _jumpToken;
-        private int _lastConsumedJumpToken;
         private bool _clientSimulationDisabled;
         private Vector3 _crowdSteeringPlanar;
         private bool _hasCrowdSteering;
@@ -96,6 +94,10 @@ namespace Koiusa.SteamMultiRuntime
 
         public bool HasPath => _agent != null && _agent.isOnNavMesh && _agent.hasPath;
         public bool IsMoving => HorizontalVelocity > 0.01f;
+        internal bool DiagnosticIsOnNavMesh => _agent != null && _agent.enabled && _agent.isOnNavMesh;
+        internal bool DiagnosticPathPending => DiagnosticIsOnNavMesh && _agent.pathPending;
+        internal bool DiagnosticHasGoalVelocity => _cachedTargetPlanarVelocity.sqrMagnitude > 0.0001f;
+        internal bool DiagnosticHasSteeringVelocity => _crowdSteeringPlanar.sqrMagnitude > 0.0001f;
         public bool IsGrounded => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsGrounded : _networkPlayerController != null ? _networkPlayerController.IsGrounded : _motor != null && _motor.IsGrounded;
         public bool IsJumping => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsJumping : _networkPlayerController != null ? _networkPlayerController.IsJumping : _motor != null && _motor.IsJumping;
         public bool IsFreefall => useCrowdSimulation && _crowdMotor != null ? _crowdMotor.IsFreefall : _networkPlayerController != null ? _networkPlayerController.IsFreefall : _motor != null && _motor.IsFreefall;
@@ -168,8 +170,6 @@ namespace Koiusa.SteamMultiRuntime
                 _rigidbody.interpolation = RigidbodyInterpolation.None;
             }
 
-            ResetInputState();
-            _networkPlayerController?.SetInputSource(_inputSource, transform);
         }
 
         private void OnEnable()
@@ -183,12 +183,6 @@ namespace Koiusa.SteamMultiRuntime
                 if (_networkPlayerController == null)
                     NpcConventionalPhysicsLoop.Register(this);
             }
-            movement = GetComponent<NpcNavMeshMovementModule>();
-            speed = GetComponent<NpcNavMeshSpeedModule>();
-            jump = GetComponent<NpcNavMeshJumpModule>();
-            steering = GetComponent<NpcNavMeshSteeringModule>();
-            avoidance = GetComponent<NpcNavMeshAvoidanceModule>();
-            ApplyAgentSettings();
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted += OnReturnToCenterStarted;
@@ -286,7 +280,18 @@ namespace Koiusa.SteamMultiRuntime
             _agent.updateRotation = false;
             _agent.updateUpAxis = false;
             _agent.updatePosition = false;
-            _agent.autoRepath = true;
+            // Crowd owns recovery/repath decisions. NavMeshAgent auto-repath can enqueue
+            // a new path for most manually-positioned agents at once and starve the
+            // global pathfinding queue when hundreds of NPCs are active.
+            _agent.autoRepath = !useCrowdSimulation;
+
+            // Crowd steering already performs avoidance for every NPC in one Spatial
+            // Grid/Burst pass. Leaving NavMeshAgent avoidance enabled feeds its
+            // density-limited (often zero) desiredVelocity into that pass, so large
+            // groups can stop before the Crowd solver gets a usable goal velocity.
+            // Keep NavMeshAgent for path finding only when the Crowd backend is active.
+            if (useCrowdSimulation)
+                _agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
         }
 
         private void UpdateAiInputSignal()
@@ -355,8 +360,34 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return Vector3.zero;
-            if (_agent.pathPending || _agent.isStopped || !_agent.hasPath)
+            if (_agent.pathPending)
+            {
+                // Repath is asynchronous and the global NavMesh queue can take several
+                // frames for a large crowd. Continue the last valid corridor direction
+                // instead of stopping every NPC while its replacement path is pending.
+                return useCrowdSimulation ? _cachedTargetPlanarVelocity : Vector3.zero;
+            }
+            if (_agent.isStopped || !_agent.hasPath)
                 return Vector3.zero;
+
+            if (useCrowdSimulation)
+            {
+                var remainingDistance = _agent.remainingDistance;
+                if (!float.IsInfinity(remainingDistance)
+                    && !float.IsNaN(remainingDistance)
+                    && remainingDistance <= _agent.stoppingDistance + 0.15f)
+                    return Vector3.zero;
+
+                // NavMeshAgent is only the path provider for the Crowd backend.
+                // desiredVelocity is produced by Unity's per-agent movement simulation
+                // and can remain zero when many agents are active, even though a valid
+                // path exists. Read the next corridor target directly so every valid
+                // path continues to supply a goal to the shared Crowd solver.
+                var toSteeringTarget = Vector3.ProjectOnPlane(
+                    _agent.steeringTarget - transform.position, upAxis);
+                if (toSteeringTarget.sqrMagnitude > 0.0001f)
+                    return toSteeringTarget.normalized * MaxMoveSpeed;
+            }
 
             var desiredPlanar = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
             var desiredSpeed = desiredPlanar.magnitude;
@@ -392,10 +423,8 @@ namespace Koiusa.SteamMultiRuntime
                 return Vector3.ProjectOnPlane(blendedDirection.normalized * desiredSpeed, upAxis);
             }
 
-            // NavMeshAgent.path creates a managed NavMeshPath. With hundreds of NPCs,
-            // reading it on every steering refresh produced MBs of garbage per frame.
-            // desiredVelocity already follows the current corridor and its corners, so
-            // use that allocation-free result as the crowd goal velocity.
+            // steeringTarget can briefly coincide with the current pose while a corridor
+            // changes. Keep desiredVelocity as an allocation-free fallback for that frame.
             return desiredPlanar;
         }
 
@@ -621,8 +650,6 @@ namespace Koiusa.SteamMultiRuntime
             _nextSteeringUpdateTime = Time.time + Mathf.Max(0.01f, steeringUpdateInterval) * phase;
             _avoidanceSideSign = 1f;
             _avoidanceSideLockUntilTime = 0f;
-            _jumpToken = 0;
-            _lastConsumedJumpToken = 0;
             _inputSource.SetMove(Vector2.zero);
         }
 

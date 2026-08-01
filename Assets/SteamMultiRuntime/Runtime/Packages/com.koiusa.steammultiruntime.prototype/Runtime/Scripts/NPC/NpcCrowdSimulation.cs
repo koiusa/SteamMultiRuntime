@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -265,8 +266,16 @@ namespace Koiusa.SteamMultiRuntime
         private NativeArray<NpcCrowdMovementResult> movementResults;
         private int capacity;
         private float crowdStepAccumulator;
+        private int originalPathfindingIterationsPerFrame;
+        private int appliedPathfindingIterationsPerFrame;
         private const float CrowdStepInterval = 1f / 30f;
         private const float MaximumCrowdStep = 1f / 15f;
+
+        private void Awake()
+        {
+            originalPathfindingIterationsPerFrame = NavMesh.pathfindingIterationsPerFrame;
+            appliedPathfindingIterationsPerFrame = originalPathfindingIterationsPerFrame;
+        }
 
         private void Update()
         {
@@ -373,6 +382,7 @@ namespace Koiusa.SteamMultiRuntime
                     wallProbeCount++;
                 }
             }
+            UpdatePathfindingBudget(count);
 
             using (QueryMarker.Auto())
             {
@@ -448,8 +458,21 @@ namespace Koiusa.SteamMultiRuntime
             {
                 if (activeNpcs[i] != null)
                     continue;
+                activeNpcSet.Remove(activeNpcs[i]);
                 activeNpcs.RemoveAt(i);
             }
+        }
+
+        private void UpdatePathfindingBudget(int npcCount)
+        {
+            // The budget is per rendered frame. Scaling it with the crowd count keeps
+            // path throughput stable when FPS drops; lowering it adaptively was tested
+            // but increased pending paths without reducing measured Main Thread time.
+            var required = Mathf.Clamp(npcCount * 2, originalPathfindingIterationsPerFrame, 2048);
+            if (required == appliedPathfindingIterationsPerFrame)
+                return;
+            NavMesh.pathfindingIterationsPerFrame = required;
+            appliedPathfindingIterationsPerFrame = required;
         }
 
         private static int3 ToCell(float3 position) => (int3)math.floor(position / SpatialCellSize);

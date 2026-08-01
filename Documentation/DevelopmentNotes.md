@@ -8,80 +8,42 @@ Steamネットワークテストでテスト用App ID（480 / Spacewar）を使�
 
 ## 大規模NPC Crowd化
 
-### 現在の方針
+NPC 1000体表示を目標とし、Crowd Backendを標準経路とする。現状の実用目安は200体で、Crowd OFFは互換性確認とデバッグ用であり、大規模運用向けではない。
 
-NPC 1000体表示を目標とし、Crowd Backendを標準経路として維持する。Crowd OFFは互換性確認とデバッグ用であり、大規模運用向けではない。
-
-- Local NPCとServer Network NPCの移動、重力、接地、壁接触、移動床を`NpcCrowdSimulation`と`NpcCrowdMotor`で一括処理する。
+- Local NPCとServer Network NPCは、移動、重力、接地、壁接触、移動床を`NpcCrowdSimulation`と`NpcCrowdMotor`で一括処理する。
 - Boid／RVO近傍計算はSpatial GridとBurst Jobを使用する。
-- Network ClientはCrowd Simulationを重複実行せず、Serverの同期結果を表示する。
+- Network ClientはCrowd Simulationを実行せず、Serverの同期結果を表示する。
 - AI判断、FutureAction、Coordinator、疑似入力はCrowd ON／OFFで共通とする。
 - Playerは従来Motorを使用し、NPC Crowd Motorとは分離する。
 
-Crowd化によって移動Simulationは改善した。ただし1000体規模の最終的なボトルネックは、Animator評価、ボーンTransform更新、`SkinnedMeshRenderer`のスキニング、Renderer／Materialの描画である。Crowd Motorだけで1000体を達成できるとは扱わない。
+### 大量スポーン時の経路制御
 
-### 確定したBenchmark結果（2026-08-01）
+大量NPCではUnityのNavMesh経路計算キューが飽和し、経路計算待ちのNPCが停止していた。Crowdでは`NavMeshAgent`を経路探索専用とし、個別Obstacle Avoidance／Stuck再経路／`autoRepath`を使用しない。経路計算予算は登録NPC数に応じて調整し、再経路計算中も直前の進行方向を維持する。
 
-`NpcPerformanceBenchmark`を使用し、`ServerScene`、固定乱数seed、100／300体、180 frame Warmup、300 frame Samplingで計測する。Batch EditorではRender Thread、GPU、Draw Callsを正しく取得できないため、Main Thread、Frame time、GC、Subsystem Marker、fixed steps/frameを比較対象とする。
+Server Network NPC 300体の診断では、移動中40体から最新計測で250体へ改善した。残る停止数には目的地到着後の意図的な待機を含む。Crowd OFFの導入前比デグレは解消済み。
 
-Network計測では`-npcBenchmarkNetwork 1`を指定する。NetworkManagerをServer起動してからNetworkNPCを明示Spawnし、`ServerDrivenActorController`を持つ個体数が要求数と一致しない場合は計測失敗とする。以前のLocalNPCへフォールバックした結果をNetwork比較には使用しない。
+Main Thread CPU時間は次の通り。現在値は最小化EditorでON／OFFを同条件計測した結果。旧基準値とは実行条件が異なるため単純比較はしない。
 
-#### Server Network NPC
+| NPC | Crowd ON | Crowd OFF | ON FPS | ON移動中 |
+|---:|---:|---:|---:|---:|
+| 100 | 27.685 ms | 31.971 ms | 36.0 | 74 / 100 |
+| 200 | 56.273 ms | 56.770 ms | 17.7 | 144 / 200 |
+| 300 | 85.744 ms | 88.930 ms | 11.6 | 250 / 300 |
 
-| NPC | Crowd | Main Thread | FPS | Fixed steps/frame | GC/frame |
-|---:|:---:|---:|---:|---:|---:|
-| 100 | ON（現行） | 11.316 ms | 88.3 | 0.57 | 198,118 B |
-| 100 | OFF（現行・特殊移動要求時起動） | 13.041 ms | 76.7 | 0.65 | 219,189 B |
-| 300 | ON（現行） | 46.359 ms | 21.6 | 2.32 | 1,919,064 B |
-| 300 | OFF（修正前） | 176.931 ms | 5.7 | 8.84 | 8,792,191 B |
-| 300 | OFF（Wire休止後） | 130.712 ms | 7.6 | 6.54 | 6,111,124 B |
-| 300 | OFF（現行・従来経路復元後） | 70.180 ms | 14.3 | 3.51 | 2,773,286 B |
+経路制御変更前の旧基準値は、100体でON 11.009 ms／OFF 12.325 ms、300体でON 43.284 ms／OFF 59.737 ms。現在もCrowd ONはOFFより速いが、NavMesh経路予算増加により差が約5%まで縮小している。
 
-Crowd導入直前commit `4406a644`のServer Network NPC実測は100体12.355〜14.202 ms、300体58.507〜61.003 msだった。現行OFFは修正前176.931 msから70.180 msまで戻ったが、300体では導入前より約9〜12 ms遅いため、回帰修正はまだ完了扱いにしない。71.977 msの測定では従来Spatial Grid登録が欠落しており、Boid／RVO近傍が常に0だったため正式値には使用しない。
+計測は`NpcPerformanceBenchmark`を使用し、100／200／300体を比較する。Networkでは`-npcBenchmarkNetwork 1`を指定する。
 
-残差ではDynamic Rigidbodyと床接触によるFixedUpdate catch-upが支配的である。詳細計測時の導入前／現行300体は、`FixedBehaviourUpdate`相当9.476／14.090 ms、`PhysicsFixedUpdate` 10.927／15.570 ms、`LateBehaviourUpdate` 19.228／18.589 msだった。LateUpdateは同等で、残差は主にfixed steps/frame 3.05／3.69と各物理stepの差にある。
+### 運用上の注意
 
-#### Historical Local NPC参考値
+- `ServerScene`のNavMeshはScene全体を収集してベイクする。壁や梯子の追加後は再ベイクする。
+- 移動床は`NavMeshModifier.Ignore From Build`で静的NavMeshから除外する。Collider、接地、床上歩行、移動追従は維持し、自律的な乗降経路が必要な場合は動的Linkを別途用意する。
+- NPC同士のsolid Colliderは無効化するが、Player、床、移動床、Network Physics Objectとの接触は維持する。
+- Wire／Wall／Ladder Actionは疑似入力または継続中Actionがある間だけ起動する。
+- `NpcCrowdTraversalTestDriver`は既定OFFとし、特殊移動を手動検証する時だけ有効化する。
 
-Crowd導入直前のcommit `4406a644`を隔離worktreeで計測したLocalNPC参考値は、100体13.830 ms（72.3 FPS）、300体85.680 ms（11.7 FPS）だった。これはServer Network NPCのBaselineではないため、Network性能の回帰判定には使用しない。
+### 次の課題
 
-### 採用した改善
+Crowd化によって移動Simulationは改善したが、1000体規模ではAnimator評価、ボーンTransform更新、`SkinnedMeshRenderer`のスキニング、Renderer／Material描画がボトルネックになる。
 
-- Crowd OFFでは従来のBoid／RVO回避を使用する。Crowd Job導入時にOFF側まで省略されていた処理を復元した。
-- Crowd OFFのNPCを従来Spatial Gridへ登録し、Boid／RVOの近傍0件デグレを修正した。
-- Crowd OFFでは従来のNavMesh corner blendを復元し、Crowd ONだけ`desiredVelocity`直結のallocation-free経路を使用する。
-- Character model生成後にNPC間のCollider pair除外を更新し、遅延生成されたColliderも登録対象にする。
-- 従来Motorの接触点はSlope判定と移動床判定で共有し、同じ`Collision`を二重走査しない。既に追跡中の同一床では`IGroundMotionSource`の親階層探索も繰り返さない。
-- Crowd OFFのNPC同士のsolid Collider pairを除外し、Player、床、移動床、物理Objectとの接触は維持する。
-- Crowd OFFの個別`NpcNavMeshController.FixedUpdate`を`NpcConventionalPhysicsLoop`の単一callbackへ集約した。
-- AI判断と疑似入力生成はUpdateで1回だけ行い、複数回走り得るFixedUpdateでは最新commandを消費する。物理catch-up中の重複生成を防ぐ。
-- Local／Server Network NPCとも、Wire／Wall／Ladder Actionは疑似入力で要求された間だけ有効化し、終了後は休止する。
-- Crowd OFFの`ActorTraversalCoordinator`も、疑似入力または継続中の特殊移動がある間だけ有効化する。
-- Remote Clientへsimulationを引き渡す際は、replicated presentation用にWire Actionを復帰させる。
-- Animator距離LODは距離だけでなくRenderer可視性も確認し、視錐台外の近距離NPCでAnimator graphを再有効化しない。
-- 未接続かつblend完了後の`WireGroundAction`は補間計算を省略する。
-- Benchmarkは乱数seed、Network／Local区分、Network NPC実数、fixed steps/frameを記録する。
-- Benchmarkの全Subsystem Recorderは測定負荷になるため、`-npcBenchmarkSubsystems 0`で軽量な回帰判定を選択できる。
-
-### 採用しなかった案
-
-- Wire系ActionのFixedUpdate共通loop化：300体OFFの改善が小さく、300体ONが15.952 msから16.970 msへ悪化したため不採用。
-- GPU Instancing Crowd Renderer：顔、頭、髪、装飾、Blend Shape、モデル別bind pose／軸変換を正しく再現できず不採用。特にSD Unitychanはメッシュと腰骨の軸変換が他モデルと異なる。
-- 現行Prefabの一部を止めた状態を「Crowd導入前Baseline」とする方法：historical revisionそのものではなく、Fixed catch-upによる測定振れも大きいため回帰判定には使用しない。
-
-### 残課題
-
-次の機能課題へ進む前に、Crowd OFF 300体を導入前Server Network NPCの約58〜61 msと同等まで戻す。現在の機能同等条件は70.180 msであり、FixedUpdate／PhysX contact dispatchの残差を解消する。
-
-接触内訳の追加計測では300体・3.88 fixed steps/frame時に`Physics.SendContactEvents` 11.004 ms、そのうち`ActorMotor`の接触更新が4.072 msだった。追加された特殊移動Behaviourをすべて無効にした診断でも300体71.123 ms／3.55 stepsに留まり、Prefab追加機能だけでは導入前との差を説明できない。接触コールバック自体は導入前にも存在するため、残差は個別メソッドの追加より、移動状態とfixed catch-upによって1 frame当たりのPhysX接触dispatch回数が増えるフィードバックを優先して追う。
-
-その後の優先課題はスキンメッシュアニメーションと描画方式の再設計である。Unity標準描画を正解として、次の検証基盤を先に用意する。
-
-- `SkinnedMeshRenderer.BakeMesh`との頂点比較
-- bind pose時の単位行列検証
-- ボーンインデックスとウェイト形式の検査
-- モデル別の上方向／前方向と軸変換テスト
-- 顔のBlend Shape、複数Skinned Mesh、頭・髪・装飾・Spring Boneの検証
-- Humanoid Retargeting、遷移、特殊移動Animationとの同期確認
-
-検証後にGPU Skinning、Animation Texture、Compute Skinning、Entities Graphicsのいずれを採用するか判断する。Crowd OFFをさらに軽量化する場合はNPC Motorの低頻度化が必要だが、移動・加速・特殊Actionの時間刻みが変わるため、互換Backendではなく別の軽量Backendとして扱う。
+次はUnity標準描画を基準に、Blend Shape、複数Skinned Mesh、モデル別bind pose／軸変換、Humanoid Retargeting、頭・髪・装飾・Spring Boneを検証し、GPU Skinning、Animation Texture、Compute Skinning、Entities Graphicsの採用方式を判断する。

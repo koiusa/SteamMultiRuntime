@@ -39,7 +39,7 @@ NpcNavMeshController : INpcLocomotionState
 
 各Moduleは任意装着です。`NpcNavMeshController`は存在し、有効になっているModuleだけを利用します。回避方式を有効にした場合は`NavMeshAgent`標準回避を停止し、無効化時に復元します。
 
-回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路方向にはNavMeshAgentのallocation-freeな`desiredVelocity`を使い、`agent.path`取得によるNPC数比例のGCを発生させません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
+回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路方向にはNavMeshAgentのallocation-freeな`steeringTarget`を使い、`agent.path`取得によるNPC数比例のGCを発生させません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
 
 重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。
 
@@ -90,7 +90,7 @@ Crowd有効時も`ServerDrivenActorController.ApplyServerNpcCrowdState`が通常
 
 Crowd実装のファイル責務は次のように分離します。`NpcCrowdSimulation`は`NpcCrowdAgent`だけを登録し、30HzのPlayer Loop、Jobと一括Queryの編成を所有します。Native Collectionの確保・破棄は`NpcCrowdSimulation.Buffers`へ分離します。`NpcCrowdAgent`はSimulationとNPC一体分の実行境界であり、Probe、Movement Snapshot、結果適用、表示補間、Network状態反映を担当します。`NpcNavMeshController`はNavMesh AI判断、目的地、共通疑似入力とBackend選択を担当し、Simulationから直接参照されません。`NpcCrowdMotor`はKinematic状態、接地・壁・外部物体接触と移動結果を所有します。Job境界を通過するBlittable DTO、共通入力DTO、接触設定は`NpcCrowdData`、モデル生成時のAnimator／Spring／装飾設定は`NpcCrowdModelPresentation`が所有します。`NpcCrowdSpringSimulation.Registration`はモデル別Spring Rigの収集と無効化を所有します。Crowd有効時はLocal／Network Serverとも`NpcCrowdMotor`の一括Movement Job、無効時は`ActorCompositeMotor`の個別Physics Tickを使用します。
 
-NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`RaycastCommand.ScheduleBatch`で一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、Crowd Tickの実測間隔に対応する床の点速度・変位・回転をCrowd移動へ合成します。Castが継ぎ目で短時間外れてOverlapだけが残った場合も、床Bindingと変位を維持します。PlayerおよびCrowd無効NPCは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を使用します。
+NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`CapsulecastCommand`と`OverlapCapsuleCommand`のBatchで一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、Crowd Tickの実測間隔に対応する床の点速度・変位・回転をCrowd移動へ合成します。Castが継ぎ目で短時間外れてOverlapだけが残った場合も、床Bindingと変位を維持します。PlayerおよびCrowd無効NPCは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を使用します。
 
 NPCと`ServerDrivenNetworkRigidbody`の接触は権限側だけがImpulseを適用します。Network ServerではSpawn済みServer Instance、Local実行では未SpawnのLocal Instanceを対象とし、Network Client上のKinematic複製には適用しません。
 
@@ -136,10 +136,9 @@ Local／Network NPCはPlayerと同じ`PhysicsPresentationSmoother`を使用し�
 
 1. Moduleの装着、未装着、無効化が独立して動作するか
 2. AI入力がNPC自身のTransform基準になっているか
-3. Jump Tokenが一度だけ消費されるか
-4. Boid／RVO切替時にAgent設定が復元されるか
-5. 到着、スタック復旧、中心復帰が競合しないか
-6. Network NPCがサーバー所有になっているか
-7. Spawn、Despawn、途中参加時の同期が正しいか
-8. PlayerとNPCでPresentation補間が二重適用されていないか
-9. 多数のNPCが移動床へ乗った際に床行列がNPCごとに再計算されていないか
+3. Boid／RVO切替時にAgent設定が復元されるか
+4. 到着、スタック復旧、中心復帰が競合しないか
+5. Network NPCがサーバー所有になっているか
+6. Spawn、Despawn、途中参加時の同期が正しいか
+7. PlayerとNPCでPresentation補間が二重適用されていないか
+8. 多数のNPCが移動床へ乗った際に床行列がNPCごとに再計算されていないか

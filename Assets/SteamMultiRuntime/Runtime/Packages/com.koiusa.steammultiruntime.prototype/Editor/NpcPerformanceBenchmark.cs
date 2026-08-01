@@ -15,7 +15,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private const string LocalNpcPrefabPath = "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalNPC.prefab";
         private const string NetworkNpcPrefabPath = "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/NetworkNPC.prefab";
         private const string NetworkManagerResourcePath = "System/NetworkManager";
-        private static readonly int[] Counts = { 100, 300 };
+        private static readonly int[] Counts = { 100, 200, 300 };
         private const int WarmupFrames = 180;
         private const int SampleFrames = 300;
         private const int RandomSeed = 481516;
@@ -39,6 +39,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static bool usePreCrowdPrefabBaseline;
         private static bool useNetworkNpc;
         private static bool recordSubsystems = true;
+        private static bool useLegacyEnvironment;
         private static readonly HashSet<string> PostCrowdPrefabFeatureNames = new()
         {
             nameof(NpcCrowdTraversalTestDriver),
@@ -65,7 +66,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             public double Total;
         }
 
-        public static void Run200Vs300()
+        public static void Run100200300()
         {
             runIndex = 0;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
@@ -73,9 +74,12 @@ namespace Koiusa.SteamMultiRuntime.Editor
             StartRun();
         }
 
+        // Keep the former entry point for existing command lines and editor tooling.
+        public static void Run200Vs300() => Run100200300();
+
         public static void Run300Only()
         {
-            runIndex = 1;
+            runIndex = Array.IndexOf(Counts, 300);
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
             StartRun();
@@ -87,12 +91,15 @@ namespace Koiusa.SteamMultiRuntime.Editor
             usePreCrowdPrefabBaseline = ReadIntArgument("-npcBenchmarkPreCrowdPrefab", 0) != 0;
             useNetworkNpc = ReadIntArgument("-npcBenchmarkNetwork", 0) != 0;
             recordSubsystems = ReadIntArgument("-npcBenchmarkSubsystems", 1) != 0;
-            Run200Vs300();
+            useLegacyEnvironment = ReadIntArgument("-npcBenchmarkLegacyEnvironment", 0) != 0;
+            Run100200300();
         }
 
         private static void StartRun()
         {
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            if (useLegacyEnvironment)
+                DisableTraversalTestEnvironment();
             var spawner = UnityEngine.Object.FindFirstObjectByType<NetworkNpcRandomSpawnManager>();
             if (spawner == null)
             {
@@ -104,8 +111,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             serializedSpawner.FindProperty("spawnCount").intValue = Counts[runIndex];
             serializedSpawner.FindProperty("showNpcDestinationMarkers").boolValue = false;
             serializedSpawner.FindProperty("showCharacterDebugUi").boolValue = false;
-            if (useNetworkNpc)
-                serializedSpawner.FindProperty("spawnOnStart").boolValue = false;
+            serializedSpawner.FindProperty("spawnOnStart").boolValue = false;
             serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
 
             var prefabPath = useNetworkNpc ? NetworkNpcPrefabPath : LocalNpcPrefabPath;
@@ -129,16 +135,14 @@ namespace Koiusa.SteamMultiRuntime.Editor
             {
                 if (useNetworkNpc && !StartBenchmarkServer())
                     return;
-                if (useNetworkNpc)
+                var spawner = UnityEngine.Object.FindFirstObjectByType<NetworkNpcRandomSpawnManager>();
+                if (spawner == null)
                 {
-                    var spawner = UnityEngine.Object.FindFirstObjectByType<NetworkNpcRandomSpawnManager>();
-                    if (spawner == null)
-                    {
-                        Fail("NPC spawner disappeared before server spawn.");
-                        return;
-                    }
-                    spawner.SpawnNow();
+                    Fail("NPC spawner disappeared before benchmark spawn.");
+                    return;
                 }
+                spawner.SetDeterministicRandomSeed(RandomSeed);
+                spawner.SpawnNow();
                 if (usePreCrowdPrefabBaseline)
                     DisablePostCrowdPrefabFeatures();
                 frame = 0;
@@ -189,6 +193,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 return;
 
             var npcCount = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(FindObjectsSortMode.None).Length;
+            var controllers = UnityEngine.Object.FindObjectsByType<NpcNavMeshController>(FindObjectsSortMode.None);
             var networkNpcCount = CountNetworkNpcs();
             if (useNetworkNpc && networkNpcCount != Counts[runIndex])
             {
@@ -202,7 +207,8 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 : 0f;
             Debug.Log(
                 $"[NpcBenchmark] crowd={(useCrowdSimulation ? 1 : 0)} network={(useNetworkNpc ? 1 : 0)} " +
-                $"preCrowdPrefab={(usePreCrowdPrefabBaseline ? 1 : 0)} requested={Counts[runIndex]} " +
+                $"preCrowdPrefab={(usePreCrowdPrefabBaseline ? 1 : 0)} legacyEnvironment={(useLegacyEnvironment ? 1 : 0)} " +
+                $"requested={Counts[runIndex]} " +
                 $"actual={npcCount} networkActual={networkNpcCount} " +
                 $"mainThreadMs={mainThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"renderThreadMs={renderThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
@@ -212,6 +218,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 $"fixedStepsPerFrame={(Time.fixedTimeAsDouble - fixedTimeAtSampleStart) / Time.fixedDeltaTime / SampleFrames:F2} " +
                 $"gcBytesPerFrame={(double)gcBytes / SampleFrames:F1} " +
                 $"drawCalls={(double)drawCalls / SampleFrames:F1}");
+            LogMovementState(controllers);
 
             EditorApplication.update -= Sample;
             mainThreadRecorder.Dispose();
@@ -287,6 +294,18 @@ namespace Koiusa.SteamMultiRuntime.Editor
             }
         }
 
+        private static void DisableTraversalTestEnvironment()
+        {
+            var roots = EditorSceneManager.GetActiveScene().GetRootGameObjects();
+            for (var i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name != "Env")
+                    continue;
+                roots[i].SetActive(false);
+                return;
+            }
+        }
+
         private static bool StartBenchmarkServer()
         {
             var prefab = Resources.Load<GameObject>(NetworkManagerResourcePath);
@@ -343,6 +362,31 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 }
             }
             return count;
+        }
+
+        private static void LogMovementState(NpcNavMeshController[] controllers)
+        {
+            var onNavMesh = 0;
+            var pathPending = 0;
+            var hasPath = 0;
+            var hasGoal = 0;
+            var hasSteering = 0;
+            var moving = 0;
+            for (var i = 0; i < controllers.Length; i++)
+            {
+                var controller = controllers[i];
+                if (controller.DiagnosticIsOnNavMesh) onNavMesh++;
+                if (controller.DiagnosticPathPending) pathPending++;
+                if (controller.HasPath) hasPath++;
+                if (controller.DiagnosticHasGoalVelocity) hasGoal++;
+                if (controller.DiagnosticHasSteeringVelocity) hasSteering++;
+                if (controller.IsMoving) moving++;
+            }
+
+            Debug.Log(
+                $"[NpcBenchmarkMovement] crowd={(useCrowdSimulation ? 1 : 0)} requested={Counts[runIndex]} " +
+                $"total={controllers.Length} onNavMesh={onNavMesh} pathPending={pathPending} " +
+                $"hasPath={hasPath} hasGoal={hasGoal} hasSteering={hasSteering} moving={moving}");
         }
 
         private static int ReadIntArgument(string name, int fallback)

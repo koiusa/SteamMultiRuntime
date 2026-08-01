@@ -69,10 +69,9 @@ namespace Koiusa.SteamMultiRuntime
             if (movementCapsule != null)
                 movementCapsule.isTrigger = false;
 
-            NpcConventionalCollisionRegistry.Register(this, _rigidbody);
-            RegisterSpatialNpc(this);
-            if (_networkPlayerController == null)
-                NpcConventionalPhysicsLoop.Register(this);
+            // Lifecycle registration belongs to OnEnable/OnDisable. Registering here
+            // during Awake duplicated collision scans and spatial registration for
+            // every conventional NPC immediately before OnEnable did the same work.
         }
 
         private void Update()

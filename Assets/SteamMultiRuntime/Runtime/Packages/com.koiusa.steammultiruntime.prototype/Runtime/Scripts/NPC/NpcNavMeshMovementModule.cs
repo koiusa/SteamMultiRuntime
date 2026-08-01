@@ -66,6 +66,10 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 _previousPosition;
         private bool _hasPreviousPosition;
         private bool _waitingBeforeNextRandomDestination;
+        private bool _useExternalMotionState;
+        private float _observedPlanarSpeed;
+        private float _observedDesiredPlanarSpeed;
+        private Vector3 _observedPosition;
 
         public Vector3 SmoothedMoveDirection { get; private set; }
 
@@ -109,6 +113,21 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         public void ObserveState()
+        {
+            _useExternalMotionState = false;
+            ObserveStateInternal();
+        }
+
+        public void ObserveExternalMotionState(float planarSpeed, float desiredPlanarSpeed, Vector3 position)
+        {
+            _useExternalMotionState = true;
+            _observedPlanarSpeed = Mathf.Max(0f, planarSpeed);
+            _observedDesiredPlanarSpeed = Mathf.Max(0f, desiredPlanarSpeed);
+            _observedPosition = position;
+            ObserveStateInternal();
+        }
+
+        private void ObserveStateInternal()
         {
             if (!path.randomMoveEnabled)
                 return;
@@ -269,6 +288,12 @@ namespace Koiusa.SteamMultiRuntime
                     return;
                 }
 
+                // Crowd Motor resolves local wall/contact stalls itself. Per-agent
+                // progress monitoring causes hundreds of simultaneous SetDestination
+                // calls at low frame rates and leaves Unity's path queue saturated.
+                if (_useExternalMotionState)
+                    return;
+
                 if (!stuck.repathWhenStuck)
                     return;
 
@@ -276,7 +301,7 @@ namespace Koiusa.SteamMultiRuntime
                 var shouldRepathByNoMovement = UpdateNoMovementStuckState();
 
                 var shouldRepathByLowSpeed = false;
-                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, ActorMotor.GetUpAxis()).magnitude;
+                var planarSpeed = GetObservedPlanarSpeed();
                 if (_agent.remainingDistance > _agent.stoppingDistance + path.reachedBuffer && planarSpeed <= stuck.speedThreshold)
                 {
                     _lowSpeedDuration += Time.deltaTime;
@@ -314,6 +339,9 @@ namespace Koiusa.SteamMultiRuntime
                     return;
                 }
 
+                if (_useExternalMotionState)
+                    return;
+
                 if (!stuck.repathWhenStuck)
                     return;
 
@@ -321,7 +349,7 @@ namespace Koiusa.SteamMultiRuntime
                 var shouldRepathByNoMovement = UpdateNoMovementStuckState();
 
                 var shouldRepathByLowSpeed = false;
-                var planarSpeed = Vector3.ProjectOnPlane(_agent.velocity, ActorMotor.GetUpAxis()).magnitude;
+                var planarSpeed = GetObservedPlanarSpeed();
                 if (_agent.remainingDistance > _agent.stoppingDistance + path.reachedBuffer && planarSpeed <= stuck.speedThreshold)
                 {
                     _lowSpeedDuration += Time.deltaTime;
@@ -573,7 +601,9 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             var upAxis = ActorMotor.GetUpAxis();
-            var desiredPlanarSpeed = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis).magnitude;
+            var desiredPlanarSpeed = _useExternalMotionState
+                ? _observedDesiredPlanarSpeed
+                : Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis).magnitude;
             if (desiredPlanarSpeed < stuck.minDesiredSpeedForMovementCheck)
             {
                 _noMovementDuration = 0f;
@@ -582,7 +612,7 @@ namespace Koiusa.SteamMultiRuntime
                 return false;
             }
 
-            var currentPosition = _transform.position;
+            var currentPosition = _useExternalMotionState ? _observedPosition : _transform.position;
             if (!_hasPreviousPosition)
             {
                 _previousPosition = currentPosition;
@@ -599,6 +629,13 @@ namespace Koiusa.SteamMultiRuntime
 
             _previousPosition = currentPosition;
             return _noMovementDuration >= stuck.noMovementTimeout;
+        }
+
+        private float GetObservedPlanarSpeed()
+        {
+            return _useExternalMotionState
+                ? _observedPlanarSpeed
+                : Vector3.ProjectOnPlane(_agent.velocity, ActorMotor.GetUpAxis()).magnitude;
         }
 
         private bool ShouldForceRepathByPathStatus()

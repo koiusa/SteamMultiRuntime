@@ -432,7 +432,7 @@ NavMeshAgent:
   m_StoppingDistance: 2
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 0
-  m_AutoRepath: 1
+  m_AutoRepath: 0
   m_Height: 1
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
@@ -717,7 +717,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2824373030294622544}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 10cba3917e958b54d88848b3a8ca0378, type: 3}
   m_Name: 
@@ -735,11 +735,6 @@ MonoBehaviour:
   distanceToTarget: 0
   sentMoveInput: {x: 0, y: 0}
   status: Disabled
---- !u!4 &3936134579245457733 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
-  m_PrefabInstance: {fileID: 1053095907541532494}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &880000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -990,3 +985,8 @@ MonoBehaviour:
   facingRotationSpeed: 540
   strafeBlendDamping: 0.3
   facingBlendDamping: 0.12
+--- !u!4 &3936134579245457733 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+  m_PrefabInstance: {fileID: 1053095907541532494}
+  m_PrefabAsset: {fileID: 0}

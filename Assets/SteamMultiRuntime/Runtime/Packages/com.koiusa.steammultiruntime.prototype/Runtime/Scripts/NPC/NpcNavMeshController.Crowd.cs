@@ -23,7 +23,10 @@ namespace Koiusa.SteamMultiRuntime
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
             if (movement != null && movement.isActiveAndEnabled)
-                movement.ObserveState();
+                movement.ObserveExternalMotionState(
+                    HorizontalVelocity,
+                    _cachedTargetPlanarVelocity.magnitude,
+                    _rigidbody != null ? _rigidbody.position : transform.position);
             _agent.nextPosition = _rigidbody != null ? _rigidbody.position : transform.position;
         }
 
@@ -74,6 +77,21 @@ namespace Koiusa.SteamMultiRuntime
                 jumpRequested = false;
             if (_traversalTestDriver != null && _traversalTestDriver.ShouldTick)
                 _traversalTestDriver.TickTest(_traversalInput, _traversalCoordinator, IsGrounded);
+            if (!useCrowdSimulation
+                && (_traversalInput == null || !_traversalInput.HasPendingInput)
+                && !_onDemandWireFeaturesActive
+                && !_onDemandWallFeaturesActive
+                && !_onDemandLadderFeaturesActive)
+            {
+                _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
+                return new NpcControllerInputCommand
+                {
+                    MoveInput = _moveInput,
+                    MoveDirection = _moveDirection,
+                    JumpRequested = jumpRequested
+                };
+            }
+
             var wireHeld = false;
             var wireFire = false;
             var reelInput = 0f;

@@ -118,6 +118,7 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly List<NetworkNpcRandomSpawnManager> SpawnAnchors = new();
 
         private readonly SpawnedObjectCollection spawnedNpcs = new();
+        private System.Random deterministicRandom;
 
         [Header("NPC Prefab")]
         [SerializeField] private GameObject networkNpcPrefab;
@@ -267,7 +268,16 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SpawnNow()
         {
+            // NetworkManager may be created after this component's Awake/Start (for
+            // example a dedicated server bootstrap or benchmark). Ensure the typed
+            // handler exists before attaching per-spawn scene data.
+            RegisterNetworkPrefabHandler();
             TrySpawnOrSubscribe();
+        }
+
+        public void SetDeterministicRandomSeed(int seed)
+        {
+            deterministicRandom = new System.Random(seed);
         }
 
         public void SetNpcDestinationMarkersVisible(bool visible)
@@ -616,7 +626,7 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            networkModelSync.SelectedModelIndex.Value = Random.Range(0, npcModelIdList.modelIds.Length);
+            networkModelSync.SelectedModelIndex.Value = NextInt(0, npcModelIdList.modelIds.Length);
         }
 
         private void ApplyLocalModelSync(GameObject instance)
@@ -635,7 +645,7 @@ namespace Koiusa.SteamMultiRuntime
             localModelSync.modelIdList = npcModelIdList;
             if (randomizeModelOnSpawn && npcModelIdList.modelIds != null && npcModelIdList.modelIds.Length > 0)
             {
-                localModelSync.ApplyModelIndex(Random.Range(0, npcModelIdList.modelIds.Length));
+                localModelSync.ApplyModelIndex(NextInt(0, npcModelIdList.modelIds.Length));
             }
         }
 
@@ -704,13 +714,27 @@ namespace Koiusa.SteamMultiRuntime
         private Vector3 GetRandomOffset()
         {
             var y = areaSize.y > 0f
-                ? Random.Range(-areaSize.y * 0.5f, areaSize.y * 0.5f)
+                ? NextFloat(-areaSize.y * 0.5f, areaSize.y * 0.5f)
                 : 0f;
 
             return new Vector3(
-                Random.Range(-areaSize.x * 0.5f, areaSize.x * 0.5f),
+                NextFloat(-areaSize.x * 0.5f, areaSize.x * 0.5f),
                 y,
-                Random.Range(-areaSize.z * 0.5f, areaSize.z * 0.5f));
+                NextFloat(-areaSize.z * 0.5f, areaSize.z * 0.5f));
+        }
+
+        private int NextInt(int minInclusive, int maxExclusive)
+        {
+            return deterministicRandom != null
+                ? deterministicRandom.Next(minInclusive, maxExclusive)
+                : Random.Range(minInclusive, maxExclusive);
+        }
+
+        private float NextFloat(float minInclusive, float maxInclusive)
+        {
+            return deterministicRandom != null
+                ? minInclusive + (float)deterministicRandom.NextDouble() * (maxInclusive - minInclusive)
+                : Random.Range(minInclusive, maxInclusive);
         }
 
         private bool TrySampleNavMesh(

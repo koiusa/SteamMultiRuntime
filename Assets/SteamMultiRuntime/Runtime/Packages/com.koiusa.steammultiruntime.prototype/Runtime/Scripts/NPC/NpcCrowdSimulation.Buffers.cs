@@ -1,6 +1,7 @@
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -30,6 +31,8 @@ namespace Koiusa.SteamMultiRuntime
         private void OnDestroy()
         {
             DisposeNativeCollections();
+            if (appliedPathfindingIterationsPerFrame != originalPathfindingIterationsPerFrame)
+                NavMesh.pathfindingIterationsPerFrame = originalPathfindingIterationsPerFrame;
             if (instance == this)
                 instance = null;
         }
