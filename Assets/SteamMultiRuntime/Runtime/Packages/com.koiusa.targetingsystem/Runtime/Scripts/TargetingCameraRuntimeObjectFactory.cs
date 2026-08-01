@@ -12,6 +12,7 @@ namespace Koiusa.TargetingSystem.Runtime
         {
             if (parent == null) return null;
 
+            ownedObjects.RemoveWhere(host => host == null);
             var host = new GameObject("Targeting Camera Follow Target");
             host.transform.SetParent(parent, false);
             ownedObjects.Add(host);
@@ -20,7 +21,11 @@ namespace Koiusa.TargetingSystem.Runtime
 
         public void Release(Component component)
         {
-            if (component == null) return;
+            if (component == null)
+            {
+                ownedObjects.RemoveWhere(host => host == null);
+                return;
+            }
             var host = component.gameObject;
             if (!ownedObjects.Remove(host)) return;
             Destroy(host);

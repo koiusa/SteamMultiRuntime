@@ -90,7 +90,12 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void OnDestroy()
         {
-            runtimeObjectFactory?.Release(lookAtAnchor);
+            var anchor = lookAtAnchor;
+            lookAtAnchor = null;
+            if (runtimeObjectFactory != null && anchor != null)
+            {
+                runtimeObjectFactory.Release(anchor);
+            }
         }
 
         private void AddMember(Transform member)
@@ -114,7 +119,10 @@ namespace Koiusa.TargetingSystem.Runtime
             if (singleCamera == null) return;
 
             EnsureLookAtAnchor();
-            lookAtAnchor?.SetTarget(isTargeting ? primaryAimPoint : null);
+            if (lookAtAnchor != null)
+            {
+                lookAtAnchor.SetTarget(isTargeting ? primaryAimPoint : null);
+            }
             singleCamera.Follow = isTargeting && lookAtAnchor != null ? lookAtAnchor.transform : playerAnchor;
             singleCamera.LookAt = isTargeting && primaryAimPoint != null ? primaryAimPoint : playerAnchor;
         }
@@ -124,7 +132,10 @@ namespace Koiusa.TargetingSystem.Runtime
             if (multiCamera == null) return;
 
             EnsureLookAtAnchor();
-            if (isTargeting) lookAtAnchor?.SetTarget(primaryAimPoint);
+            if (isTargeting && lookAtAnchor != null)
+            {
+                lookAtAnchor.SetTarget(primaryAimPoint);
+            }
             multiCamera.Follow = isTargeting && lookAtAnchor != null ? lookAtAnchor.transform : playerAnchor;
             multiCamera.LookAt = isTargeting && framingGroup?.CameraTarget != null
                 ? framingGroup.CameraTarget
@@ -188,11 +199,11 @@ namespace Koiusa.TargetingSystem.Runtime
 
         private void RecreateLookAtAnchor()
         {
-            if (lookAtAnchor != null)
+            var oldAnchor = lookAtAnchor;
+            lookAtAnchor = null;
+            if (runtimeObjectFactory != null && oldAnchor != null)
             {
-                var oldAnchor = lookAtAnchor;
-                lookAtAnchor = null;
-                runtimeObjectFactory?.Release(oldAnchor);
+                runtimeObjectFactory.Release(oldAnchor);
             }
             if (playerAnchor == null) return;
             if (runtimeObjectFactory == null)
