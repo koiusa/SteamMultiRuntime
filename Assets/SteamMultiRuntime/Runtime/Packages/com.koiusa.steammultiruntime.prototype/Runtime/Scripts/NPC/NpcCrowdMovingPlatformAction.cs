@@ -19,6 +19,16 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (collider != groundCollider)
                 Bind(collider);
+            SampleBound(samplePoint, deltaTime, out velocity, out displacement, out rotationDelta);
+        }
+
+        internal void SampleBound(
+            Vector3 samplePoint,
+            float deltaTime,
+            out Vector3 velocity,
+            out Vector3 displacement,
+            out Quaternion rotationDelta)
+        {
             if (snapshotSource != null)
             {
                 snapshotSource.GetGroundMotion(samplePoint, deltaTime, out velocity, out displacement, out rotationDelta);
@@ -31,7 +41,7 @@ namespace Koiusa.SteamMultiRuntime
                 rotationDelta = motionSource.GetRotationDelta(deltaTime);
                 return;
             }
-            var body = collider != null ? collider.attachedRigidbody : null;
+            var body = groundCollider != null ? groundCollider.attachedRigidbody : null;
             velocity = body != null ? body.GetPointVelocity(samplePoint) : Vector3.zero;
             displacement = velocity * deltaTime;
             rotationDelta = Quaternion.identity;

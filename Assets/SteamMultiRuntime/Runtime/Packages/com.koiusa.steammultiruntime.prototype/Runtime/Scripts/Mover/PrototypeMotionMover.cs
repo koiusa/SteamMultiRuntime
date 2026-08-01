@@ -60,6 +60,11 @@ namespace Koiusa.SteamMultiRuntime
         private Quaternion physicsRotationDelta = Quaternion.identity;
         private float localMotionStartFixedTime;
         private float lastPhysicsSampleTime = float.NegativeInfinity;
+        private int intervalSampleFrame = -1;
+        private float intervalSampleDuration = -1f;
+        private Matrix4x4 intervalPreviousMatrix;
+        private Matrix4x4 intervalPreviousInverseMatrix;
+        private Matrix4x4 intervalCurrentMatrix;
 
         private void Awake()
         {
@@ -156,12 +161,41 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            EnsurePhysicsSample();
-            var localPoint = previousPhysicsInverseMatrix.MultiplyPoint3x4(samplePoint);
-            var movedPoint = currentPhysicsMatrix.MultiplyPoint3x4(localPoint);
+            Matrix4x4 previousMatrix;
+            Matrix4x4 previousInverseMatrix;
+            Matrix4x4 currentMatrix;
+            if (Mathf.Approximately(deltaTime, Time.fixedDeltaTime))
+            {
+                EnsurePhysicsSample();
+                previousMatrix = previousPhysicsMatrix;
+                previousInverseMatrix = previousPhysicsInverseMatrix;
+                currentMatrix = currentPhysicsMatrix;
+            }
+            else
+            {
+                EnsureIntervalSample(deltaTime);
+                previousMatrix = intervalPreviousMatrix;
+                previousInverseMatrix = intervalPreviousInverseMatrix;
+                currentMatrix = intervalCurrentMatrix;
+            }
+            var localPoint = previousInverseMatrix.MultiplyPoint3x4(samplePoint);
+            var movedPoint = currentMatrix.MultiplyPoint3x4(localPoint);
             pointDisplacement = movedPoint - samplePoint;
             pointVelocity = pointDisplacement / deltaTime;
-            rotationDelta = physicsRotationDelta;
+            rotationDelta = currentMatrix.rotation * Quaternion.Inverse(previousMatrix.rotation);
+        }
+
+        private void EnsureIntervalSample(float deltaTime)
+        {
+            if (intervalSampleFrame == Time.frameCount && Mathf.Approximately(intervalSampleDuration, deltaTime))
+                return;
+
+            var motionTime = GetMotionTime();
+            intervalPreviousMatrix = GetMotionMatrix(motionTime - deltaTime);
+            intervalPreviousInverseMatrix = intervalPreviousMatrix.inverse;
+            intervalCurrentMatrix = GetMotionMatrix(motionTime);
+            intervalSampleFrame = Time.frameCount;
+            intervalSampleDuration = deltaTime;
         }
 
         private void EnsurePhysicsSample()

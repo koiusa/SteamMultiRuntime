@@ -47,12 +47,22 @@ namespace Koiusa.SteamMultiRuntime
                 _motor.enabled = true;
             if (_presentationSmoother != null)
                 _presentationSmoother.enabled = true;
+            var groundMotionTracker = GetComponent<GroundMotionTracker>();
+            if (groundMotionTracker != null)
+                groundMotionTracker.enabled = true;
+            var slopeContactResolver = GetComponent<SlopeContactResolver>();
+            if (slopeContactResolver != null)
+                slopeContactResolver.enabled = true;
             if (_rigidbody != null)
             {
                 _rigidbody.isKinematic = false;
+                _rigidbody.useGravity = true;
                 _rigidbody.freezeRotation = true;
                 _rigidbody.interpolation = RigidbodyInterpolation.None;
             }
+            var movementCapsule = GetComponent<CapsuleCollider>();
+            if (movementCapsule != null)
+                movementCapsule.isTrigger = false;
         }
 
         private void Update()

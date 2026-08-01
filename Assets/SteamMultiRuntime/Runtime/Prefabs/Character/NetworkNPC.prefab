@@ -279,6 +279,48 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 950000000000000010}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000001}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000002}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000003}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000004}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000005}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000006}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000007}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000008}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000009}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000010}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000011}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000012}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000013}
+    - targetCorrespondingSourceObject: {fileID: 3003735386717007390, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 880000000000000014}
   m_SourcePrefab: {fileID: 100100000, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
 --- !u!1 &2824373030294622544 stripped
 GameObject:
@@ -698,3 +740,253 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4035978081068949003, guid: b37a8401011b1f94cb111958484f3a4e, type: 3}
   m_PrefabInstance: {fileID: 1053095907541532494}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &880000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6907f93f7aba43b798ed7a5427378da2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallTraversalFeature
+--- !u!114 &880000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78810bb3b75b24945b59408c3ea69138, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallRunAction
+  settings:
+    WallRunSpeed: 7
+    WallRunAcceleration: 20
+    WallRunGravityMultiplier: 0.35
+    WallRunMaxFallSpeed: 2
+    WallMaxUpDot: 0.2
+    WallRunStartContactFrames: 2
+    WallRunAwayFromWallMinSpeed: 0
+    WallRunInputReleaseGraceTime: 0.2
+    VerticalMotionMode: 0
+    HeightHoldAcceleration: 12
+    ArcInitialUpSpeed: 1.5
+    ArcGravityMultiplier: 0.45
+    EnterMinimumAlongWallSpeed: 4
+    MaintainMinimumAlongWallSpeed: 4
+    EnterMinimumAlongWallRatio: 0.45
+    MaintainMinimumAlongWallRatio: 0.25
+    ExitAwayInputDot: 0.25
+    MinimumMoveInputMagnitude: 0.25
+--- !u!114 &880000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4725918b45dda4247833b2ba741a1d6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallSlideAction
+  settings:
+    WallMaxUpDot: 0.2
+    WallSlideGravityMultiplier: 0.5
+    WallSlideMaxFallSpeed: 3
+    WallSlideMinDownSpeed: 1.5
+    WallSlideStartContactFrames: 2
+    WallSlideExitMoveOppositeNormalDot: 0.3
+    AllowWallSlideLateralMovement: 0
+    WallSlideAwayFromWallMinSpeed: 0
+--- !u!114 &880000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f07ec851fddbe8442b9e9dc78968eb8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.WallJumpAction
+  settings:
+    WallMaxUpDot: 0.2
+    WallJumpUpForce: 6.5
+    WallJumpAwayForce: 5
+    TriangleKickForwardForce: 3
+    WallJumpTrajectoryMode: 0
+    SameWallKickLockDuration: 0.2
+    SameWallNormalDotThreshold: 0.97
+--- !u!114 &880000000000000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3808a72c22c47145a3583d68821ab98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderTraversalFeature
+  settings:
+    ClimbSpeed: 4
+    ClimbAcceleration: 20
+    ExitTopBoostSpeed: 2
+    DirectionalDetachReattachDelay: 0
+    JumpDetachReattachDelay: 0.12
+    WallTraversalBlockDuration: 0.3
+    LateralDetachInputThreshold: 0.2
+    GroundEnterDetachGraceTime: 0.2
+    FacingRotationSpeed: 720
+    SideViewEnterFaceAlignment: 0
+    SideViewExitFaceAlignment: 0
+    LateralMoveSpeed: 0
+    LateralMoveAcceleration: 0
+    LateralEdgePadding: 0
+--- !u!114 &880000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5bbcc5fbc3845d599340678b032cd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderClimbAction
+--- !u!114 &880000000000000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f9f7930211461ea57ae185dc840b1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::Koiusa.SteamMultiRuntime.LadderDetachAction
+--- !u!114 &880000000000000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6bb8109e634dce9e88d9cc8a73df01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGrappleTargetingFeature
+  aimTransform: {fileID: 0}
+  maximumRange: 45
+  grappleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  triggerInteraction: 1
+--- !u!114 &880000000000000009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ae9e3279ba4d07a61f2633528fe124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireLineVisualFeature
+  wireOrigin: {fileID: 0}
+  lineRenderer: {fileID: 0}
+  wireMaterial: {fileID: 0}
+  wireWidth: 0.035
+  wireColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &880000000000000010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f83ca47bdd1d49d7a69dac9f1d637dcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireTraversalFeature
+  visual: {fileID: 880000000000000009}
+  constraintMode: 0
+  elasticStretchLimit: 1.5
+  minimumRopeLength: 2
+  maximumRopeLength: 20
+  excessReelSpeed: 12
+  ropeSlack: 0.15
+  pullAcceleration: 55
+  radialVelocityDamping: 1
+--- !u!114 &880000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1498a24b344a47e3ac327ca5a749574c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireAttachAction
+--- !u!114 &880000000000000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0bfe2db5b7f48ea981c40c8527f8873, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireSwingAction
+  swingAcceleration: 16
+  maximumInputSwingSpeed: 8
+--- !u!114 &880000000000000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14337169162a44d8bd110162076d8a2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireReelAction
+  reelSpeed: 12
+  stepDistance: 1.5
+--- !u!114 &880000000000000014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824373030294622544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 967f4462d4f94edc899f064c3af77f29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Locomoter.Runtime::Koiusa.SteamMultiRuntime.WireGroundAction
+  objectSwingAcceleration: 12
+  maximumObjectSwingSpeed: 10
+  objectPullAcceleration: 55
+  outwardVelocityDamping: 1
+  facingRotationSpeed: 540
+  strafeBlendDamping: 0.3
+  facingBlendDamping: 0.12

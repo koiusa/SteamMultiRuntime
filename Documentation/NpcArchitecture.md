@@ -82,11 +82,15 @@ NPC Modules / FutureAction / Test Driver（Serverのみ更新）
 
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
 
+`LocalNPC.prefab`と`NetworkNPC.prefab`は、Wall／Ladder／WireのFeature・Action一式を同じGameObject構成で保持します。特殊ActionはPrefabへ明示的にSerializeし、Runtime Spawn時には追加しません。
+
+Crowd有効時も`ServerDrivenActorController.ApplyServerNpcCrowdState`が通常のNetwork Motorと同じ`ActorMovementFlagsState`と`WireSwingNetworkState`を送信します。Ladder状態／速度、WallRun状態／法線、Wire Anchor／Rope LengthをRemote Clientへ同期し、Client側のCoordinatorは受信したWire状態だけを表示へ適用します。
+
 `Use Crowd Simulation`が有効なLocal／Network Server NPCのPhysics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`から30Hzで一括実行します。描画が遅れた場合も1描画フレームにつき最大1回とし、FixedUpdateのcatch-upがCrowd全体を複数回評価する負荷循環を防ぎます。空中・特殊移動中の壁Probeは毎Crowd Tick、通常接地移動中はNPCごとに位相をずらして隔Tickで実行します。無効時は比較用の従来経路としてNPCごとの`FixedUpdate`から`ActorCompositeMotor`を駆動します。
 
 Crowd実装のファイル責務は次のように分離します。`NpcCrowdSimulation`は`NpcCrowdAgent`だけを登録し、30HzのPlayer Loop、Jobと一括Queryの編成を所有します。Native Collectionの確保・破棄は`NpcCrowdSimulation.Buffers`へ分離します。`NpcCrowdAgent`はSimulationとNPC一体分の実行境界であり、Probe、Movement Snapshot、結果適用、表示補間、Network状態反映を担当します。`NpcNavMeshController`はNavMesh AI判断、目的地、共通疑似入力とBackend選択を担当し、Simulationから直接参照されません。`NpcCrowdMotor`はKinematic状態、接地・壁・外部物体接触と移動結果を所有します。Job境界を通過するBlittable DTO、共通入力DTO、接触設定は`NpcCrowdData`、モデル生成時のAnimator／Spring／装飾設定は`NpcCrowdModelPresentation`が所有します。`NpcCrowdSpringSimulation.Registration`はモデル別Spring Rigの収集と無効化を所有します。Crowd有効時はLocal／Network Serverとも`NpcCrowdMotor`の一括Movement Job、無効時は`ActorCompositeMotor`の個別Physics Tickを使用します。
 
-NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`RaycastCommand.ScheduleBatch`で一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、床の点速度と変位をCrowd移動へ合成します。Playerは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を維持します。
+NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`RaycastCommand.ScheduleBatch`で一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、Crowd Tickの実測間隔に対応する床の点速度・変位・回転をCrowd移動へ合成します。Castが継ぎ目で短時間外れてOverlapだけが残った場合も、床Bindingと変位を維持します。PlayerおよびCrowd無効NPCは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を使用します。
 
 NPCと`ServerDrivenNetworkRigidbody`の接触は権限側だけがImpulseを適用します。Network ServerではSpawn済みServer Instance、Local実行では未SpawnのLocal Instanceを対象とし、Network Client上のKinematic複製には適用しません。
 

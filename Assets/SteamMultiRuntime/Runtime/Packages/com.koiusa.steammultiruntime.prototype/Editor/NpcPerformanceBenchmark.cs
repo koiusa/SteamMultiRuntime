@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
     public static class NpcPerformanceBenchmark
     {
         private const string ScenePath = "Assets/SteamMultiRuntime/Samples/Gameplay/Stages/ServerScene.unity";
+        private const string LocalNpcPrefabPath = "Assets/SteamMultiRuntime/Runtime/Prefabs/Character/LocalNPC.prefab";
         private static readonly int[] Counts = { 100, 300 };
         private const int WarmupFrames = 180;
         private const int SampleFrames = 300;
@@ -30,6 +31,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static ProfilerRecorder gcRecorder;
         private static ProfilerRecorder drawCallRecorder;
         private static readonly List<NamedRecorder> subsystemRecorders = new();
+        private static bool useCrowdSimulation = true;
 
         private sealed class NamedRecorder
         {
@@ -54,6 +56,12 @@ namespace Koiusa.SteamMultiRuntime.Editor
             StartRun();
         }
 
+        public static void RunCrowdComparisonFromCommandLine()
+        {
+            useCrowdSimulation = ReadIntArgument("-npcBenchmarkCrowd", 1) != 0;
+            Run200Vs300();
+        }
+
         private static void StartRun()
         {
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -66,7 +74,20 @@ namespace Koiusa.SteamMultiRuntime.Editor
 
             var serializedSpawner = new SerializedObject(spawner);
             serializedSpawner.FindProperty("spawnCount").intValue = Counts[runIndex];
+            serializedSpawner.FindProperty("showNpcDestinationMarkers").boolValue = false;
+            serializedSpawner.FindProperty("showCharacterDebugUi").boolValue = false;
             serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(LocalNpcPrefabPath);
+            var controller = prefab != null ? prefab.GetComponent<NpcNavMeshController>() : null;
+            if (controller == null)
+            {
+                Fail("LocalNPC NpcNavMeshController was not found.");
+                return;
+            }
+            var serializedController = new SerializedObject(controller);
+            serializedController.FindProperty("useCrowdSimulation").boolValue = useCrowdSimulation;
+            serializedController.ApplyModifiedPropertiesWithoutUndo();
             EditorApplication.EnterPlaymode();
         }
 
@@ -123,7 +144,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 ? frameTimesMs[Mathf.Clamp(Mathf.CeilToInt(frameTimesMs.Count * 0.95f) - 1, 0, frameTimesMs.Count - 1)]
                 : 0f;
             Debug.Log(
-                $"[NpcBenchmark] requested={Counts[runIndex]} actual={npcCount} " +
+                $"[NpcBenchmark] crowd={(useCrowdSimulation ? 1 : 0)} requested={Counts[runIndex]} actual={npcCount} " +
                 $"mainThreadMs={mainThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"renderThreadMs={renderThreadNanoseconds / SampleFrames / 1_000_000d:F3} " +
                 $"gpuFrameMs={gpuFrameNanoseconds / SampleFrames / 1_000_000d:F3} " +
@@ -177,7 +198,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 .OrderByDescending(item => item.Total)
                 .Take(20);
             foreach (var item in top)
-                Debug.Log($"[NpcBenchmarkDetail] requested={Counts[runIndex]} marker={item.Name} ms={item.Total / SampleFrames / 1_000_000d:F3}");
+                Debug.Log($"[NpcBenchmarkDetail] crowd={(useCrowdSimulation ? 1 : 0)} requested={Counts[runIndex]} marker={item.Name} ms={item.Total / SampleFrames / 1_000_000d:F3}");
             for (var i = 0; i < subsystemRecorders.Count; i++)
                 subsystemRecorders[i].Recorder.Dispose();
             subsystemRecorders.Clear();
@@ -188,6 +209,18 @@ namespace Koiusa.SteamMultiRuntime.Editor
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             Debug.Log("[NpcBenchmark] complete");
             EditorApplication.Exit(0);
+        }
+
+        private static int ReadIntArgument(string name, int fallback)
+        {
+            var args = Environment.GetCommandLineArgs();
+            for (var i = 0; i + 1 < args.Length; i++)
+            {
+                if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase)
+                    && int.TryParse(args[i + 1], out var value))
+                    return value;
+            }
+            return fallback;
         }
 
         private static void Fail(string message)

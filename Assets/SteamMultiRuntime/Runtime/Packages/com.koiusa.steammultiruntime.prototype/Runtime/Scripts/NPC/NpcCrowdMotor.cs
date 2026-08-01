@@ -283,19 +283,19 @@ namespace Koiusa.SteamMultiRuntime
                 if (grounded && overlapHit.collider != null)
                 {
                     consecutiveGroundMisses = 0;
-                    groundDisplacement = Vector3.zero;
-                    groundVelocity = Vector3.zero;
-                    groundRotationDelta = Quaternion.identity;
-                    movingPlatform.Clear();
+                    hasGroundSurface = true;
+                    movingPlatform.Sample(overlapHit.collider, body.position, simulationDeltaTime,
+                        out groundVelocity, out groundDisplacement, out groundRotationDelta);
+                    groundCoordinate += Vector3.Dot(groundDisplacement, UpAxis);
                     return;
                 }
                 consecutiveGroundMisses++;
                 if (grounded && consecutiveGroundMisses <= 2)
                 {
-                    groundDisplacement = Vector3.zero;
-                    groundVelocity = Vector3.zero;
-                    groundRotationDelta = Quaternion.identity;
-                    movingPlatform.Clear();
+                    // Keep the last floor binding through short cast gaps at moving seams.
+                    movingPlatform.SampleBound(body.position, simulationDeltaTime,
+                        out groundVelocity, out groundDisplacement, out groundRotationDelta);
+                    groundCoordinate += Vector3.Dot(groundDisplacement, UpAxis);
                     return;
                 }
                 hasGroundSurface = false;

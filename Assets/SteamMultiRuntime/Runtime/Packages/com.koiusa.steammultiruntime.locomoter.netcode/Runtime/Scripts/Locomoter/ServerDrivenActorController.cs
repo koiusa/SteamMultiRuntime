@@ -340,12 +340,16 @@ namespace Koiusa.SteamMultiRuntime
             serverNpcCrowdKinematicState = new ActorKinematicState(horizontalVelocity, verticalVelocity);
             serverNpcCrowdMovementState = new ActorMovementFlagsState(
                 isGrounded, isJumping, isFreefall, isFallingAfterJump,
-                false, 0f, false, Vector3.zero);
+                traversalCoordinator != null && traversalCoordinator.IsOnLadder,
+                traversalCoordinator != null ? traversalCoordinator.LadderSpeed : 0f,
+                traversalCoordinator != null && traversalCoordinator.IsWallRunning,
+                traversalCoordinator != null ? traversalCoordinator.WallNormal : Vector3.zero);
             if (Time.unscaledTime < nextStateSyncTime)
                 return;
             nextStateSyncTime = Time.unscaledTime + ControlPolicy.StateSyncInterval;
             netKinematicState.Value = serverNpcCrowdKinematicState;
             netMovementFlagsState.Value = serverNpcCrowdMovementState;
+            netWireSwingState.Value = CreateWireSwingState();
         }
 
         private void ReadAndSendInput()
