@@ -44,7 +44,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float midAnimationDistance = 30f;
         [SerializeField, Min(0.1f)] private float nearAnimationUpdateRate = 30f;
         [SerializeField, Min(0.1f)] private float midAnimationUpdateRate = 15f;
-        [SerializeField, Min(0.1f)] private float farAnimationUpdateRate = 2f;
+        [SerializeField, Min(0.1f)] private float farAnimationUpdateRate = 5f;
 
         private readonly System.Collections.Generic.Dictionary<string, int> animatorParameterHashes = new();
         private RuntimeAnimatorController cachedAnimatorController;
@@ -64,6 +64,7 @@ namespace Koiusa.SteamMultiRuntime
         internal float MidAnimationUpdateInterval => 1f / Mathf.Max(0.1f, midAnimationUpdateRate);
         internal float FarAnimationUpdateInterval => 1f / Mathf.Max(0.1f, farAnimationUpdateRate);
         internal bool IsPresentationVisible => IsAnyRendererVisible();
+        public int LastScheduledFrame { get; private set; } = -1;
 
         private void Reset()
         {
@@ -105,6 +106,7 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void TickScheduled(float deltaTime)
         {
+            LastScheduledFrame = Time.frameCount;
             scheduledDeltaTime = Mathf.Max(0.0001f, deltaTime);
             UpdateAnimatorState(scheduledDeltaTime);
         }

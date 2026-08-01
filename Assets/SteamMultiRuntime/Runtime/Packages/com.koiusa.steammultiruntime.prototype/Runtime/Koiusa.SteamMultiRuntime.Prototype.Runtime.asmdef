@@ -15,6 +15,7 @@
 		"Unity.Burst",
 		"Unity.Collections",
 		"Unity.Mathematics"
+		,"Koiusa.SteamMultiRuntime.AnimationDriver.Runtime"
 		,"Koiusa.SteamMultiRuntime.Thirdparty.Runtime"
 		,"UnityChan.Common"
 	],

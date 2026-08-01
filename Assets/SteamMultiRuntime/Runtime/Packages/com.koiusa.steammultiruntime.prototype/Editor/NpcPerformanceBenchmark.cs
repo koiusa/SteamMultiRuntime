@@ -40,6 +40,8 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static bool useNetworkNpc;
         private static bool recordSubsystems = true;
         private static bool useLegacyEnvironment;
+        private static bool diagnoseSpringStages;
+        private static bool disableSpringColliders;
         private static readonly HashSet<string> PostCrowdPrefabFeatureNames = new()
         {
             nameof(NpcCrowdTraversalTestDriver),
@@ -92,6 +94,10 @@ namespace Koiusa.SteamMultiRuntime.Editor
             useNetworkNpc = ReadIntArgument("-npcBenchmarkNetwork", 0) != 0;
             recordSubsystems = ReadIntArgument("-npcBenchmarkSubsystems", 1) != 0;
             useLegacyEnvironment = ReadIntArgument("-npcBenchmarkLegacyEnvironment", 0) != 0;
+            diagnoseSpringStages = ReadIntArgument("-npcBenchmarkSpringStages", 0) != 0;
+            disableSpringColliders = ReadIntArgument("-npcBenchmarkSpringColliders", 1) == 0;
+            NpcCrowdSpringSimulation.DiagnosticCompleteStages = diagnoseSpringStages;
+            NpcCrowdSpringSimulation.DiagnosticDisableColliders = disableSpringColliders;
             Run100200300();
         }
 
@@ -248,6 +254,21 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 if (recorder.Valid)
                     subsystemRecorders.Add(new NamedRecorder { Name = name, Recorder = recorder });
             }
+            AddExplicitRecorder(ProfilerCategory.Scripts, "Animation.NpcCrowdSpring.TransformJob");
+            AddExplicitRecorder(ProfilerCategory.Scripts, "Animation.NpcCrowdSpring.Snapshot");
+            AddExplicitRecorder(ProfilerCategory.Scripts, "Animation.NpcCrowdSpring.ColliderSnapshot");
+            AddExplicitRecorder(ProfilerCategory.Scripts, "Animation.NpcCrowdSpring.Solve");
+            AddExplicitRecorder(ProfilerCategory.Scripts, "Animation.NpcCrowdSpring.Apply");
+        }
+
+        private static void AddExplicitRecorder(ProfilerCategory category, string name)
+        {
+            for (var i = 0; i < subsystemRecorders.Count; i++)
+                if (string.Equals(subsystemRecorders[i].Name, name, StringComparison.Ordinal))
+                    return;
+            var recorder = ProfilerRecorder.StartNew(category, name, 1);
+            if (recorder.Valid)
+                subsystemRecorders.Add(new NamedRecorder { Name = name, Recorder = recorder });
         }
 
         private static bool ContainsAny(string value, params string[] fragments)

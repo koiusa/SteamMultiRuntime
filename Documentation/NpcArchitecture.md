@@ -106,11 +106,11 @@ NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor
 
 NPCと`ServerDrivenNetworkRigidbody`の接触は権限側だけがImpulseを適用します。Network ServerではSpawn済みServer Instance、Local実行では未SpawnのLocal Instanceを対象とし、Network Client上のKinematic複製には適用しません。
 
-Player／NPC共通の`ActorAnimatorStateDriver`は個別`LateUpdate`を持たず、単一SchedulerがCamera距離に応じて更新頻度を切り替えます。各`ActorAnimatorStateDriver`のInspectorにある`Animation Update LOD`で近距離／中距離の境界と近距離／中距離／遠距離の各更新Hzを設定できます。遠距離ActorはAnimator状態を保持したまま更新時だけ評価し、Cameraが存在しないDedicated ServerではAnimatorを停止します。初期値は近距離12m・30Hz、中距離30m・15Hz、遠距離2Hzです。
+Player／NPC共通の`ActorAnimatorStateDriver`は個別`LateUpdate`を持たず、単一SchedulerがCamera距離に応じて更新頻度を切り替えます。各`ActorAnimatorStateDriver`のInspectorにある`Animation Update LOD`で近距離／中距離の境界と近距離／中距離／遠距離の各更新Hzを設定できます。遠距離ActorはAnimator状態を保持したまま更新時だけ評価し、Cameraが存在しないDedicated ServerではAnimatorを停止します。初期値は近距離12m・30Hz、中距離30m・15Hz、遠距離5Hzです。
 
-NPCモデルの`UTJ.SpringManager`と`UnityChan.SpringManager`はモデル固有の挙動と見た目を維持するため、標準のSpring Bone更新を使用します。中央Spring Solverへの置換は見た目の互換性を満たしていないため使用しません。
+NPCモデルの`UTJ.SpringManager`と`UnityChan.SpringManager`は、モデル生成時に型付きAdapterから`NpcCrowdSpringSimulation`へ登録します。元のManager／Boneの個別`LateUpdate`は停止し、ばね演算とSphere／Capsule／Panel Collider解決をBurst Jobで一括処理します。Animator Schedulerが姿勢を更新したRigだけをSnapshotし、NPC Rig単位のJob内で親から子を順に解決します。Jobは同じフレームに待たず、次フレームで完了済みの場合だけLocal Rotationを適用し、未完了なら前回姿勢を維持します。Camera距離に応じて30Hz／15Hz／5Hzへ更新頻度を落とします。
 
-モデル生成時とモデルの`OnEnable`完了後に型付きの一回限りガードを適用し、NPC上の`AutoBlinkforSD`、`SDRandomWind`、`UTJ.HighLeg`だけを停止します。Spring Manager／Boneは停止しません。型名文字列探索、Reflection、毎フレーム監視は使用しません。
+モデル生成時とモデルの`OnEnable`完了後に型付きの一回限りガードを適用し、NPC上の`AutoBlinkforSD`、`SDRandomWind`、`UTJ.HighLeg`を停止します。Spring Manager／Boneは中央Solverへの登録後に個別更新を停止します。型名文字列探索、Reflection、毎フレーム監視は使用しません。
 
 Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
 

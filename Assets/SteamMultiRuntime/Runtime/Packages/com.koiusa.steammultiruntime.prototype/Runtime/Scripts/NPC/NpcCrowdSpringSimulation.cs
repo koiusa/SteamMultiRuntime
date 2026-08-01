@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Profiling;
@@ -48,6 +49,26 @@ namespace Koiusa.SteamMultiRuntime
             public float HalfHeight;
         }
 
+        private struct AnimatedPose
+        {
+            public float3 Position;
+            public quaternion WorldRotation;
+            public quaternion LocalRotation;
+        }
+
+        private struct SolvedPose
+        {
+            public float3 Position;
+            public quaternion WorldRotation;
+            public quaternion LocalRotation;
+        }
+
+        private struct RigRange
+        {
+            public int Start;
+            public int Count;
+        }
+
         [BurstCompile]
         private struct ColliderSnapshotJob : IJobParallelForTransform
         {
@@ -78,24 +99,76 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         [BurstCompile]
-        private struct SpringTransformJob : IJobParallelForTransform
+        private struct PoseSnapshotJob : IJobParallelForTransform
         {
-            public NativeArray<SpringData> Data;
-            [ReadOnly] public NativeArray<int> ColliderIndices;
-            [ReadOnly] public NativeArray<ColliderStatic> ColliderStatics;
-            [ReadOnly] public NativeArray<ColliderWorld> ColliderWorlds;
+            [ReadOnly] public NativeArray<SpringData> Data;
+            [WriteOnly] public NativeArray<AnimatedPose> Poses;
 
             public void Execute(int index, TransformAccess transform)
             {
-                var data = Data[index];
-                if (data.Active == 0)
+                if (Data[index].Active == 0)
                     return;
+                Poses[index] = new AnimatedPose
+                {
+                    Position = ToFloat3(transform.position),
+                    WorldRotation = ToMath(transform.rotation),
+                    LocalRotation = ToMath(transform.localRotation)
+                };
+            }
+
+            private static float3 ToFloat3(Vector3 value) => new(value.x, value.y, value.z);
+            private static quaternion ToMath(Quaternion value) => new(value.x, value.y, value.z, value.w);
+        }
+
+        [BurstCompile]
+        private struct SpringRigJob : IJobParallelFor
+        {
+            [NativeDisableParallelForRestriction] public NativeArray<SpringData> Data;
+            [ReadOnly] public NativeArray<AnimatedPose> AnimatedPoses;
+            [NativeDisableParallelForRestriction] public NativeArray<SolvedPose> SolvedPoses;
+            [ReadOnly] public NativeArray<int> ParentSpringIndices;
+            [ReadOnly] public NativeArray<RigRange> RigRanges;
+            [ReadOnly] public NativeArray<int> ActiveRigIndices;
+            [ReadOnly] public NativeArray<int> ColliderIndices;
+            [ReadOnly] public NativeArray<ColliderStatic> ColliderStatics;
+            [ReadOnly] public NativeArray<ColliderWorld> ColliderWorlds;
+            public int DisableColliders;
+
+            public void Execute(int rigIndex)
+            {
+                var range = RigRanges[ActiveRigIndices[rigIndex]];
+                for (var offset = 0; offset < range.Count; offset++)
+                    Solve(range.Start + offset);
+            }
+
+            private void Solve(int index)
+            {
+                var data = Data[index];
+                var animated = AnimatedPoses[index];
+                var head = animated.Position;
+                var worldAnimated = animated.WorldRotation;
+                var parentSpringIndex = ParentSpringIndices[index];
+                if (parentSpringIndex >= 0)
+                {
+                    var animatedParent = AnimatedPoses[parentSpringIndex];
+                    var solvedParent = SolvedPoses[parentSpringIndex];
+                    var parentDelta = math.mul(solvedParent.WorldRotation, math.inverse(animatedParent.WorldRotation));
+                    head = solvedParent.Position + math.mul(parentDelta, animated.Position - animatedParent.Position);
+                    worldAnimated = math.mul(parentDelta, animated.WorldRotation);
+                }
+                if (data.Active == 0)
+                {
+                    SolvedPoses[index] = new SolvedPose
+                    {
+                        Position = head,
+                        WorldRotation = worldAnimated,
+                        LocalRotation = animated.LocalRotation
+                    };
+                    return;
+                }
                 data.Active = 0;
 
-                var animatedLocal = ToMath(transform.localRotation);
-                var worldAnimated = ToMath(transform.rotation);
-                var parentRotation = math.mul(worldAnimated, math.inverse(animatedLocal));
-                var head = ToFloat3(transform.position);
+                var parentRotation = math.mul(worldAnimated, math.inverse(animated.LocalRotation));
                 var restDirection = math.normalizesafe(
                     math.mul(worldAnimated, data.LocalAxis), new float3(0f, -1f, 0f));
                 var restTip = head + restDirection * data.RestLength;
@@ -115,7 +188,7 @@ namespace Koiusa.SteamMultiRuntime
 
                 var direction = math.normalizesafe(nextTip - head, restDirection);
                 nextTip = head + direction * data.RestLength;
-                for (var colliderOffset = 0; colliderOffset < data.ColliderCount; colliderOffset++)
+                for (var colliderOffset = 0; DisableColliders == 0 && colliderOffset < data.ColliderCount; colliderOffset++)
                 {
                     var colliderIndex = ColliderIndices[data.ColliderStart + colliderOffset];
                     var colliderStatic = ColliderStatics[colliderIndex];
@@ -138,8 +211,14 @@ namespace Koiusa.SteamMultiRuntime
                 var delta = FromTo(restDirection, direction);
                 var springWorld = math.mul(delta, worldAnimated);
                 var springLocal = math.mul(math.inverse(parentRotation), springWorld);
-                transform.localRotation = ToUnity(math.slerp(
-                    animatedLocal, springLocal, math.saturate(data.DynamicRatio)));
+                var localRotation = math.slerp(
+                    animated.LocalRotation, springLocal, math.saturate(data.DynamicRatio));
+                SolvedPoses[index] = new SolvedPose
+                {
+                    Position = head,
+                    WorldRotation = math.mul(parentRotation, localRotation),
+                    LocalRotation = localRotation
+                };
                 data.PreviousTip = data.CurrentTip;
                 data.CurrentTip = nextTip;
                 Data[index] = data;
@@ -195,10 +274,6 @@ namespace Koiusa.SteamMultiRuntime
                 return math.normalize(new quaternion(cross.x, cross.y, cross.z, 1f + dot));
             }
 
-            private static float3 ToFloat3(Vector3 value) => new(value.x, value.y, value.z);
-            private static quaternion ToMath(Quaternion value) => new(value.x, value.y, value.z, value.w);
-            private static Quaternion ToUnity(quaternion value) =>
-                new(value.value.x, value.value.y, value.value.z, value.value.w);
         }
 
         private sealed class Bone
@@ -231,6 +306,7 @@ namespace Koiusa.SteamMultiRuntime
         private sealed class Rig
         {
             public GameObject Root;
+            public ActorAnimatorStateDriver AnimatorDriver;
             public readonly List<Bone> Bones = new();
             public float NextTick;
             public float LastTick;
@@ -238,30 +314,55 @@ namespace Koiusa.SteamMultiRuntime
 
         private static NpcCrowdSpringSimulation instance;
         private static readonly ProfilerMarker JobMarker = new("Animation.NpcCrowdSpring.TransformJob");
+        private static readonly ProfilerMarker SnapshotMarker = new("Animation.NpcCrowdSpring.Snapshot");
+        private static readonly ProfilerMarker ColliderMarker = new("Animation.NpcCrowdSpring.ColliderSnapshot");
+        private static readonly ProfilerMarker SolveMarker = new("Animation.NpcCrowdSpring.Solve");
+        private static readonly ProfilerMarker ApplyMarker = new("Animation.NpcCrowdSpring.Apply");
+        internal static bool DiagnosticCompleteStages { get; set; }
+        internal static bool DiagnosticDisableColliders { get; set; }
         private readonly List<Rig> rigs = new();
         private readonly HashSet<int> registeredRoots = new();
         private NativeArray<SpringData> data;
-        private TransformAccessArray transforms;
+        private TransformAccessArray boneTransforms;
+        private NativeArray<AnimatedPose> animatedPoses;
+        private NativeArray<SolvedPose> solvedPoses;
+        private NativeArray<int> parentSpringIndices;
+        private NativeArray<RigRange> rigRanges;
+        private NativeArray<int> activeRigIndices;
         private NativeArray<ColliderStatic> colliderStatics;
         private NativeArray<ColliderWorld> colliderWorlds;
         private NativeArray<int> colliderIndices;
         private TransformAccessArray colliderTransforms;
         private bool layoutDirty;
+        private JobHandle pendingSpringHandle;
+        private bool springPending;
+        private readonly List<int> pendingBoneIndices = new();
+        private readonly List<Transform> indexedBoneTransforms = new();
 
         private void LateUpdate()
         {
             RemoveDestroyedRigs();
+            if (springPending)
+            {
+                if (!pendingSpringHandle.IsCompleted && !layoutDirty && !DiagnosticCompleteStages)
+                    return;
+                CompleteAndApplyPending();
+            }
             if (layoutDirty)
                 RebuildLayout();
-            if (!data.IsCreated || !transforms.isCreated || transforms.length == 0)
+            if (!data.IsCreated || !boneTransforms.isCreated || boneTransforms.length == 0)
                 return;
 
             var now = Time.time;
             var camera = Camera.main;
-            var anyActive = false;
+            var activeRigCount = 0;
+            pendingBoneIndices.Clear();
             for (var i = 0; i < rigs.Count; i++)
             {
                 var rig = rigs[i];
+                if (rig.AnimatorDriver != null
+                    && rig.AnimatorDriver.LastScheduledFrame != Time.frameCount)
+                    continue;
                 if (now < rig.NextTick)
                     continue;
                 var distance = camera != null
@@ -271,35 +372,80 @@ namespace Koiusa.SteamMultiRuntime
                 var deltaTime = Mathf.Clamp(now - rig.LastTick, 1f / 120f, 0.2f);
                 rig.LastTick = now;
                 rig.NextTick = now + 1f / frequency;
-                for (var j = 0; j < rig.Bones.Count; j++)
+                activeRigIndices[activeRigCount++] = i;
+                for (var boneIndex = 0; boneIndex < rig.Bones.Count; boneIndex++)
                 {
-                    var index = rig.Bones[j].Index;
+                    var index = rig.Bones[boneIndex].Index;
                     var item = data[index];
                     item.DeltaTime = deltaTime;
                     item.Active = 1;
                     data[index] = item;
+                    pendingBoneIndices.Add(index);
                 }
-                anyActive = true;
             }
-            if (!anyActive)
+            if (activeRigCount == 0)
                 return;
             using (JobMarker.Auto())
             {
-                var colliderHandle = colliderTransforms.isCreated && colliderTransforms.length > 0
+                var colliderHandle = !DiagnosticDisableColliders
+                    && colliderTransforms.isCreated && colliderTransforms.length > 0
                     ? new ColliderSnapshotJob
                     {
                         Statics = colliderStatics,
                         Worlds = colliderWorlds
                     }.Schedule(colliderTransforms)
                     : default;
-                new SpringTransformJob
+                var snapshotHandle = new PoseSnapshotJob
                 {
                     Data = data,
+                    Poses = animatedPoses
+                }.Schedule(boneTransforms);
+                if (DiagnosticCompleteStages)
+                {
+                    using (SnapshotMarker.Auto()) snapshotHandle.Complete();
+                    using (ColliderMarker.Auto()) colliderHandle.Complete();
+                }
+                var inputHandle = JobHandle.CombineDependencies(snapshotHandle, colliderHandle);
+                var springHandle = new SpringRigJob
+                {
+                    Data = data,
+                    AnimatedPoses = animatedPoses,
+                    SolvedPoses = solvedPoses,
+                    ParentSpringIndices = parentSpringIndices,
+                    RigRanges = rigRanges,
+                    ActiveRigIndices = activeRigIndices,
                     ColliderIndices = colliderIndices,
                     ColliderStatics = colliderStatics,
-                    ColliderWorlds = colliderWorlds
-                }.Schedule(transforms, colliderHandle).Complete();
+                    ColliderWorlds = colliderWorlds,
+                    DisableColliders = DiagnosticDisableColliders ? 1 : 0
+                }.Schedule(activeRigCount, 1, inputHandle);
+                pendingSpringHandle = springHandle;
+                springPending = true;
+                if (DiagnosticCompleteStages)
+                    using (SolveMarker.Auto()) CompleteAndApplyPending();
             }
+        }
+
+        private void CompleteAndApplyPending()
+        {
+            if (!springPending)
+                return;
+            pendingSpringHandle.Complete();
+            using (ApplyMarker.Auto())
+                for (var i = 0; i < pendingBoneIndices.Count; i++)
+                {
+                    var index = pendingBoneIndices[i];
+                    if ((uint)index >= solvedPoses.Length)
+                        continue;
+                    var transform = (uint)index < indexedBoneTransforms.Count
+                        ? indexedBoneTransforms[index]
+                        : null;
+                    if (transform == null)
+                        continue;
+                    var value = solvedPoses[index].LocalRotation.value;
+                    transform.localRotation = new Quaternion(value.x, value.y, value.z, value.w);
+                }
+            springPending = false;
         }
 
         private void RemoveDestroyedRigs()
@@ -328,22 +474,29 @@ namespace Koiusa.SteamMultiRuntime
                     }
                 data.Dispose();
             }
-            if (transforms.isCreated)
-                transforms.Dispose();
+            DisposeBoneLayout();
             if (colliderStatics.IsCreated) colliderStatics.Dispose();
             if (colliderWorlds.IsCreated) colliderWorlds.Dispose();
             if (colliderIndices.IsCreated) colliderIndices.Dispose();
             if (colliderTransforms.isCreated) colliderTransforms.Dispose();
 
             var count = 0;
-            for (var i = 0; i < rigs.Count; i++)
+            for (var i = rigs.Count - 1; i >= 0; i--)
+            {
                 for (var j = rigs[i].Bones.Count - 1; j >= 0; j--)
                 {
                     if (rigs[i].Bones[j].Transform == null)
                         rigs[i].Bones.RemoveAt(j);
-                    else
-                        count++;
                 }
+                if (rigs[i].Bones.Count == 0)
+                {
+                    rigs.RemoveAt(i);
+                    continue;
+                }
+                rigs[i].Bones.Sort((left, right) =>
+                    GetHierarchyDepth(left.Transform).CompareTo(GetHierarchyDepth(right.Transform)));
+                count += rigs[i].Bones.Count;
+            }
             if (count == 0)
             {
                 layoutDirty = false;
@@ -367,7 +520,6 @@ namespace Koiusa.SteamMultiRuntime
                         uniqueColliders.Add(collider);
                     }
             data = new NativeArray<SpringData>(count, Allocator.Persistent);
-            transforms = new TransformAccessArray(count);
             colliderStatics = new NativeArray<ColliderStatic>(uniqueColliders.Count, Allocator.Persistent);
             colliderWorlds = new NativeArray<ColliderWorld>(uniqueColliders.Count, Allocator.Persistent);
             colliderIndices = new NativeArray<int>(colliderReferenceCount, Allocator.Persistent);
@@ -386,12 +538,13 @@ namespace Koiusa.SteamMultiRuntime
             }
             var index = 0;
             var colliderReferenceIndex = 0;
+            indexedBoneTransforms.Clear();
             for (var i = 0; i < rigs.Count; i++)
                 for (var j = 0; j < rigs[i].Bones.Count; j++)
                 {
                     var bone = rigs[i].Bones[j];
                     bone.Index = index;
-                    transforms.Add(bone.Transform);
+                    indexedBoneTransforms.Add(bone.Transform);
                     var colliderStart = colliderReferenceIndex;
                     for (var k = 0; k < bone.Colliders.Count; k++)
                     {
@@ -416,13 +569,69 @@ namespace Koiusa.SteamMultiRuntime
                         ColliderCount = colliderReferenceIndex - colliderStart
                     };
                 }
+            BuildBoneLayout(count);
             layoutDirty = false;
+        }
+
+        private static int GetHierarchyDepth(Transform transform)
+        {
+            var depth = 0;
+            for (var parent = transform.parent; parent != null; parent = parent.parent)
+                depth++;
+            return depth;
+        }
+
+        private void BuildBoneLayout(int count)
+        {
+            boneTransforms = new TransformAccessArray(count);
+            animatedPoses = new NativeArray<AnimatedPose>(count, Allocator.Persistent);
+            solvedPoses = new NativeArray<SolvedPose>(count, Allocator.Persistent);
+            parentSpringIndices = new NativeArray<int>(count, Allocator.Persistent);
+            rigRanges = new NativeArray<RigRange>(rigs.Count, Allocator.Persistent);
+            activeRigIndices = new NativeArray<int>(rigs.Count, Allocator.Persistent);
+            var transformToIndex = new Dictionary<Transform, int>(count);
+            for (var i = 0; i < rigs.Count; i++)
+                for (var j = 0; j < rigs[i].Bones.Count; j++)
+                {
+                    var bone = rigs[i].Bones[j];
+                    boneTransforms.Add(bone.Transform);
+                    transformToIndex.Add(bone.Transform, bone.Index);
+                }
+            for (var i = 0; i < rigs.Count; i++)
+            {
+                var rig = rigs[i];
+                rigRanges[i] = new RigRange { Start = rig.Bones[0].Index, Count = rig.Bones.Count };
+                for (var j = 0; j < rigs[i].Bones.Count; j++)
+                {
+                    var bone = rigs[i].Bones[j];
+                    parentSpringIndices[bone.Index] = -1;
+                    for (var parent = bone.Transform.parent; parent != null; parent = parent.parent)
+                        if (transformToIndex.TryGetValue(parent, out var parentIndex))
+                        {
+                            parentSpringIndices[bone.Index] = parentIndex;
+                            break;
+                        }
+                }
+            }
+        }
+
+        private void DisposeBoneLayout()
+        {
+            if (boneTransforms.isCreated) boneTransforms.Dispose();
+            if (animatedPoses.IsCreated) animatedPoses.Dispose();
+            if (solvedPoses.IsCreated) solvedPoses.Dispose();
+            if (parentSpringIndices.IsCreated) parentSpringIndices.Dispose();
+            if (rigRanges.IsCreated) rigRanges.Dispose();
+            if (activeRigIndices.IsCreated) activeRigIndices.Dispose();
+            indexedBoneTransforms.Clear();
         }
 
         private void OnDestroy()
         {
+            if (springPending)
+                pendingSpringHandle.Complete();
             if (data.IsCreated) data.Dispose();
-            if (transforms.isCreated) transforms.Dispose();
+            DisposeBoneLayout();
             if (colliderStatics.IsCreated) colliderStatics.Dispose();
             if (colliderWorlds.IsCreated) colliderWorlds.Dispose();
             if (colliderIndices.IsCreated) colliderIndices.Dispose();

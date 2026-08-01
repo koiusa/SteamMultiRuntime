@@ -15,6 +15,7 @@ namespace Koiusa.SteamMultiRuntime
                 animators[i].applyRootMotion = false;
 
             DisableNpcLateUpdateBehaviours(root);
+            NpcCrowdSpringSimulation.RegisterModel(root);
             if (root.GetComponent<NpcCrowdModelLateUpdateGuard>() == null)
                 root.AddComponent<NpcCrowdModelLateUpdateGuard>();
         }
@@ -23,8 +24,8 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (root == null)
                 return;
-            Disable(root.GetComponentsInChildren<UnityChan.SDRandomWind>(true));
-            Disable(root.GetComponentsInChildren<UnityChan.AutoBlinkforSD>(true));
+            Disable(root.GetComponentsInChildren<global::UnityChan.SDRandomWind>(true));
+            Disable(root.GetComponentsInChildren<global::UnityChan.AutoBlinkforSD>(true));
             Disable(root.GetComponentsInChildren<UTJ.HighLeg>(true));
         }
 

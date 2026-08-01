@@ -1,6 +1,7 @@
 using UnityEngine;
-using LegacySpringBone = UnityChan.SpringBone;
-using LegacySpringManager = UnityChan.SpringManager;
+using LegacySpringBone = global::UnityChan.SpringBone;
+using LegacySpringCollider = global::UnityChan.SpringCollider;
+using LegacySpringManager = global::UnityChan.SpringManager;
 using UtjSpringBone = UTJ.SpringBone;
 using UtjCapsuleCollider = UTJ.SpringCapsuleCollider;
 using UtjSpringManager = UTJ.SpringManager;
@@ -34,7 +35,13 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (!registeredRoots.Add(root.GetInstanceID()))
                 return;
-            var rig = new Rig { Root = root, LastTick = Time.time };
+            var rig = new Rig
+            {
+                Root = root,
+                AnimatorDriver = root.GetComponentInParent<ActorAnimatorStateDriver>()
+                    ?? root.GetComponentInChildren<ActorAnimatorStateDriver>(true),
+                LastTick = Time.time
+            };
             var utjManagers = root.GetComponentsInChildren<UtjSpringManager>(true);
             for (var i = 0; i < utjManagers.Length; i++)
             {
@@ -88,7 +95,7 @@ namespace Koiusa.SteamMultiRuntime
         private static void AddBone(Rig rig, Transform transform, Vector3 axis, Vector3 tip,
             float stiffness, float drag, Vector3 force, float ratio, bool legacy, float radius,
             UtjSphereCollider[] spheres, UtjCapsuleCollider[] capsules, UtjPanelCollider[] panels,
-            UnityChan.SpringCollider[] legacySpheres)
+            LegacySpringCollider[] legacySpheres)
         {
             var bone = new Bone
             {
