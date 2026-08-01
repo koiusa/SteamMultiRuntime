@@ -92,7 +92,7 @@ Network NPCのServer／Remote ClientにおけるDynamic／Kinematic切替は、`
 
 `NpcNavMeshController`も個別`Update`を持ちません。従来Rigidbody Backendだけを`NpcConventionalUpdateLoop`へ登録してAI計画を一括更新し、Crowd BackendのNPCが従来経路判定のためだけに空の`Update` callbackを受けないようにします。
 
-目的地Markerの終了判定は`NpcNavMeshMovementModule.OnDestinationArrived`からのpush通知で行います。Local markerとNetwork marker同期は個別`Update`やNavMesh到着判定を重複実行せず、この通知で表示を閉じます。
+目的地Markerの終了判定は`NpcNavMeshMovementModule.OnDestinationArrived`からのpush通知で行います。Local markerとNetwork marker同期は個別`Update`やNavMesh到着判定を重複実行せず、この通知で表示を閉じます。Marker Objectは到着ごとに破棄せず非表示で再利用し、目的地更新のたびに`Instantiate`／`Awake`を発生させません。
 
 Wire未接続ActorはWire用`FixedUpdate`／`LateUpdate`を持ちません。接続時に`WireTraversalUpdateLoop`へ登録し、接続中の`WireTraversalFeature`、`WireSwingAction`、`WireGroundAction`だけを単一のFixed／Late callbackから更新して、待機中NPCの空振りcallbackを除外します。
 
@@ -122,7 +122,7 @@ Marie／Tokoが使用するTokoChanz版`UTJ.SpringBone`は、初期Local Rotatio
 
 モデル生成時とモデルの`OnEnable`完了後に型付きの一回限りガードを適用し、NPC上の`AutoBlinkforSD`、`SDRandomWind`、`UTJ.HighLeg`を停止します。Spring Manager／Boneは中央Solverへの登録後に個別更新を停止します。型名文字列探索、Reflection、毎フレーム監視は使用しません。
 
-Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayの登録・解除も既存Overlay全体を再走査しません。
+Spawn位置の最小距離判定は共有Spatial Gridへ登録済みの近傍Cellだけを調べます。生成済み全位置との総当たり比較は行わず、大量生成時の位置決定をO(N²)にしません。Character Debug Overlayは各Actorを表示候補として登録しますが、個別`Update`を持たず単一の中央Loopが現在のUI所有者だけを更新します。
 
 ## 目的地デバッグ表示
 

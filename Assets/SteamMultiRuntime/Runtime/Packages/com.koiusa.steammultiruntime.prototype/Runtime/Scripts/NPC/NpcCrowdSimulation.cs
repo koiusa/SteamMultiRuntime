@@ -18,6 +18,12 @@ namespace Koiusa.SteamMultiRuntime
     {
         private const int GroundOverlapHitsPerNpc = 4;
         private static readonly ProfilerMarker PrepareMarker = new("Physics.NpcCrowd.PrepareProbes");
+        private static readonly ProfilerMarker RecoveryMarker = new("Physics.NpcCrowd.Prepare.Recovery");
+        private static readonly ProfilerMarker CommandMarker = new("Physics.NpcCrowd.Prepare.Commands");
+        private static readonly ProfilerMarker ProbeCommandMarker = new("Physics.NpcCrowd.Prepare.ProbeCommands");
+        private static readonly ProfilerMarker PresentationMarker = new("Physics.NpcCrowd.Presentation");
+        private static readonly ProfilerMarker MaintenanceMarker = new("Physics.NpcCrowd.Maintenance");
+        private static readonly ProfilerMarker PathfindingBudgetMarker = new("Physics.NpcCrowd.PathfindingBudget");
         private static readonly ProfilerMarker QueryMarker = new("Physics.NpcCrowd.QueryAndSteeringWait");
         private static readonly ProfilerMarker ProbeApplyMarker = new("Physics.NpcCrowd.ApplyProbeResults");
         private static readonly ProfilerMarker PenetrationMarker = new("Physics.NpcCrowd.ResolvePenetration");
@@ -291,6 +297,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Update()
         {
             var deltaTime = Time.deltaTime;
+            using (PresentationMarker.Auto())
             for (var i = activeNpcs.Count - 1; i >= 0; i--)
             {
                 var npc = activeNpcs[i];
@@ -362,20 +369,33 @@ namespace Koiusa.SteamMultiRuntime
 
         private void RunCrowdStep(float deltaTime)
         {
-            RemoveDeadEntries();
+            using (MaintenanceMarker.Auto())
+            {
+                RemoveDeadEntries();
+                EnsureCapacity(activeNpcs.Count);
+            }
             var count = activeNpcs.Count;
             if (count == 0)
                 return;
 
-            EnsureCapacity(count);
             wallProbePhase ^= 1;
             var wallProbeCount = 0;
             using (PrepareMarker.Auto())
+            {
+            using (RecoveryMarker.Auto())
+            for (var i = 0; i < count; i++)
+                activeNpcs[i].TickRecovery();
+
+            using (CommandMarker.Auto())
             for (var i = 0; i < count; i++)
             {
-                activeNpcs[i].TickRecovery();
                 activeNpcs[i].Prepare(deltaTime);
                 agents[i] = activeNpcs[i].CaptureAgentData();
+            }
+
+            using (ProbeCommandMarker.Auto())
+            for (var i = 0; i < count; i++)
+            {
                 activeNpcs[i].CreateGroundProbes(out var castCommand, out var overlapCommand);
                 groundCommands[i] = castCommand;
                 groundOverlapCommands[i] = overlapCommand;
@@ -393,7 +413,9 @@ namespace Koiusa.SteamMultiRuntime
                     wallProbeCount++;
                 }
             }
-            UpdatePathfindingBudget(count);
+            }
+            using (PathfindingBudgetMarker.Auto())
+                UpdatePathfindingBudget(count);
 
             using (QueryMarker.Auto())
             {

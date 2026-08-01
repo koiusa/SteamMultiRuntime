@@ -64,3 +64,7 @@ Pause MenuからCharacter SelectをPushするときは`CharacterSelectMenuRegist
 - `CharacterDebugOverlay`はGameplay／Animator／Network参照をラベルから直接読みません。`ICharacterDebugSnapshotSource`が0.1秒ごとに再利用可能な`CharacterDebugSnapshot`へ値を取得し、UIはSnapshotだけを描画します。Animator Parameter定義とSnapshot内Listは再利用します。
 - Character Debugの使用Character名と実行Mode（`Local`／`Host`／`Server`／`Client`）は、STATE／ANIMATIONタブに依存しない固定サマリーとしてタブの上へ表示します。Player Object名は上部のTarget Selectorへ表示します。
 - Stage Select／Steam LobbyのF3は通常の`IUiMenu`遷移として扱い、Overlayとは分離します。
+
+## World Space UI
+
+Actorの名前・HP表示は専用Overlay Cameraで深度クリア後に描画します。距離フェードが完全に0になるActorは`ActorWorldSpaceOverlay`が`UIDocument`を停止し、Overlay Cameraの描画登録から外します。Cameraが表示距離内へ戻ったときだけ再登録するため、不可視の遠距離ActorをCamera CullingとUI描画へ残しません。

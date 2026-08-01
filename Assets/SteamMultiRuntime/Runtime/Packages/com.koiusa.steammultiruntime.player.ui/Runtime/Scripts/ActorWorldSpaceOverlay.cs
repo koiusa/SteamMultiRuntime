@@ -19,6 +19,9 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         private int originalLayer;
         private Vector3 baseLocalScale;
         private float referenceProjectionScale;
+        private bool overlayRegistered;
+        private bool renderActive;
+        private bool renderStateInitialized;
 
         private void Awake()
         {
@@ -48,13 +51,22 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         {
             if (!Application.isPlaying) return;
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
-            WorldSpaceUiOverlayCamera.Register(gameObject, originalLayer);
+            var camera = Camera.main;
+            SetRenderActive(camera == null || IsWithinFadeDistance(camera));
         }
 
         private void OnDisable()
         {
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
-            WorldSpaceUiOverlayCamera.Unregister(gameObject);
+            if (overlayRegistered)
+            {
+                WorldSpaceUiOverlayCamera.Unregister(gameObject);
+                overlayRegistered = false;
+            }
+            if (document != null)
+                document.enabled = true;
+            renderActive = false;
+            renderStateInitialized = false;
             transform.localScale = baseLocalScale;
         }
 
@@ -66,16 +78,53 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
 
         private void OnBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {
+            if (camera == null || camera.cameraType != CameraType.Game
+                || camera.GetComponent<WorldSpaceUiOverlayCameraMarker>() != null) return;
+
+            if (camera.CompareTag("MainCamera"))
+                SetRenderActive(IsWithinFadeDistance(camera));
+            if (!renderActive)
+                return;
+
             var overlayRoot = document?.rootVisualElement?.Q<VisualElement>(className: "player-name-overlay")
                 ?? document?.rootVisualElement?.Q<VisualElement>(className: "player-health-overlay");
-            if (camera == null || overlayRoot == null || camera.cameraType != CameraType.Game
-                || camera.GetComponent<WorldSpaceUiOverlayCameraMarker>() != null) return;
+            if (overlayRoot == null)
+                return;
 
             transform.rotation = camera.transform.rotation;
             var distance = Vector3.Distance(camera.transform.position, transform.position);
             transform.localScale = baseLocalScale * (CalculateScreenSizeScale(camera) * screenSizeMultiplier);
             var fadeRange = Mathf.Max(0.01f, fadeEndDistance - fadeStartDistance);
             overlayRoot.style.opacity = 1f - Mathf.Clamp01((distance - fadeStartDistance) / fadeRange);
+        }
+
+        private bool IsWithinFadeDistance(Camera camera)
+        {
+            var maximumDistance = Mathf.Max(fadeStartDistance, fadeEndDistance);
+            return (camera.transform.position - transform.position).sqrMagnitude
+                <= maximumDistance * maximumDistance;
+        }
+
+        private void SetRenderActive(bool active)
+        {
+            if (renderStateInitialized && renderActive == active)
+                return;
+            renderStateInitialized = true;
+            renderActive = active;
+            if (document != null)
+                document.enabled = active;
+            if (active)
+            {
+                if (overlayRegistered)
+                    return;
+                WorldSpaceUiOverlayCamera.Register(gameObject, originalLayer);
+                overlayRegistered = true;
+                return;
+            }
+            if (!overlayRegistered)
+                return;
+            WorldSpaceUiOverlayCamera.Unregister(gameObject);
+            overlayRegistered = false;
         }
 
         private float CalculateScreenSizeScale(Camera camera)

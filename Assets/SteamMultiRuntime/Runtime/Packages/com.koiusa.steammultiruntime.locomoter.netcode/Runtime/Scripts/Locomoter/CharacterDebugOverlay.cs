@@ -37,6 +37,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private static readonly List<CharacterDebugOverlay> ActiveInstances = new();
         private static int selectedInstanceIndex;
+        private static CharacterDebugOverlay currentUiOwner;
+        private static CharacterDebugOverlayUpdateLoop updateLoop;
 
         private readonly List<LabelBinding> labelBindings = new();
         private readonly CharacterDebugSnapshot debugSnapshot = new();
@@ -74,24 +76,21 @@ namespace Koiusa.SteamMultiRuntime
         private void OnEnable()
         {
             ActiveInstances.Add(this);
+            EnsureUpdateLoop();
         }
 
         private void OnDisable()
         {
             ActiveInstances.Remove(this);
+            if (ReferenceEquals(currentUiOwner, this))
+                currentUiOwner = null;
             if (selectedInstanceIndex >= ActiveInstances.Count)
                 selectedInstanceIndex = Mathf.Max(0, ActiveInstances.Count - 1);
             DestroyUi();
         }
 
-        private void Update()
+        private void Tick()
         {
-            if (!ShouldOwnUi())
-            {
-                DestroyUi();
-                return;
-            }
-
             EnsureUi();
             UpdateVisibility();
             if (!isVisible || Time.unscaledTime < nextRefreshTime) return;
@@ -107,6 +106,47 @@ namespace Koiusa.SteamMultiRuntime
             target?.CaptureDebugSnapshot();
             UpdateBoundLabels();
             UpdateTargetSelector(target);
+        }
+
+        private static void EnsureUpdateLoop()
+        {
+            if (updateLoop != null)
+                return;
+            var host = new GameObject(nameof(CharacterDebugOverlay) + "UpdateLoop")
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            DontDestroyOnLoad(host);
+            updateLoop = host.AddComponent<CharacterDebugOverlayUpdateLoop>();
+        }
+
+        internal static void TickActiveOverlay()
+        {
+            CharacterDebugOverlay owner = null;
+            for (var i = 0; i < ActiveInstances.Count; i++)
+            {
+                var candidate = ActiveInstances[i];
+                if (candidate == null || !candidate.ShouldOwnUi())
+                    continue;
+                owner = candidate;
+                break;
+            }
+
+            if (!ReferenceEquals(currentUiOwner, owner))
+            {
+                currentUiOwner?.DestroyUi();
+                currentUiOwner = owner;
+            }
+            currentUiOwner?.Tick();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            ActiveInstances.Clear();
+            selectedInstanceIndex = 0;
+            currentUiOwner = null;
+            updateLoop = null;
         }
 
         public void Toggle() { isVisible = !isVisible; UpdateVisibility(); }
@@ -595,5 +635,11 @@ namespace Koiusa.SteamMultiRuntime
             return -1;
         }
 
+    }
+
+    [DisallowMultipleComponent]
+    internal sealed class CharacterDebugOverlayUpdateLoop : MonoBehaviour
+    {
+        private void Update() => CharacterDebugOverlay.TickActiveOverlay();
     }
 }

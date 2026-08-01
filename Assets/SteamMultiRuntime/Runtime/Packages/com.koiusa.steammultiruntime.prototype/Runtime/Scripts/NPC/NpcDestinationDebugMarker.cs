@@ -99,7 +99,8 @@ namespace Koiusa.SteamMultiRuntime
         public void ClearDestination()
         {
             _hasDestination = false;
-            DestroyMarker();
+            if (_marker != null)
+                _marker.SetActive(false);
         }
 
         public void SetMarkerParent(Transform markerParent)
