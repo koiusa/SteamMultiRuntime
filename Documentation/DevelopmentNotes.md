@@ -114,6 +114,12 @@ NPC補助状態の3個の`NetworkVariable`について、代入前に明示的�
 
 続けて型付きComponent列挙で実動作経路を確認した。100／200／300体の全Runで中央Simulation、Rig、登録Boneはいずれも0だった。一方300体ではUTJ Manager 149個（`automaticUpdates` 149）、UTJ Bone 3,502本、Legacy Manager 85個、Legacy Bone 2,295本が存在し、Manager／Boneはすべて有効だった。約19msは元のUTJ／Legacy Spring実装が個別更新している負荷であり、中央化処理はモデル生成経路へ接続されていない。次は`NpcCrowdModelPresentation.Configure`の通知購読順序を修正し、生成済みモデルを型付きで明示登録してから再計測する。
 
+Network NPCでは`CharacterPrefabLoader`がPrefabに存在せず`OnNetworkSpawn`で動的追加されるため、NPC `Awake`時の個別購読がモデル生成通知を取りこぼしていた。Loaderの共通生成通知を中央Solverが1回だけ購読し、事前登録済みNPC Rootに属するモデルだけを処理するpush経路へ変更した。300体で234 Rig／5,797 Boneを中央Solverへ登録し、UTJ Manager 149個とLegacy Manager 85個は全て停止した。診断時にAnimator連携条件を解除してもSample中186回の非同期Applyを確認でき、中央Solverが実際に演算・適用している。
+
+診断コード撤去後の最終構成はCrowd ONが100体1.689ms、200体3.126ms、300体8.414ms（P95 37.699ms）、Crowd OFFが100体2.343ms、200体5.748ms、300体13.308ms（P95 42.647ms）だった。中央Springを強制Scheduleした診断でもCrowd ON 300体8.268ms、P95 37.946msである。旧個別Spring構成のCrowd ON 300体43.124ms、Crowd OFF 55.326msから大幅に改善し、`LateBehaviourUpdate`約19msも上位Markerから消えた。CameraがないDedicated ServerではAnimator連携によりSpring評価も停止する。
+
+画面確認で旧`UnityChan.SpringBone`のSDモデルは正常だった一方、TokoChanz版`UTJ.SpringBone`を使うMarie／Tokoは揺れ方向が逆だった。UTJ元実装は初期Local Rotationを基準にBone AxisからTip方向へのAim Rotationを作るため、現在のAnimator姿勢差分を使うLegacy式との共通化をやめ、型別に回転復元した。修正後のCrowd ONは100体1.988ms、200体3.352ms、300体7.171ms（P95 18.951ms）で、性能退行はない。向きはMarie／Tokoの画面付きPlay Modeで再確認する。
+
 ### 運用上の注意
 
 - `ServerScene`のNavMeshはScene全体を収集してベイクする。壁や梯子の追加後は再ベイクする。

@@ -12,6 +12,25 @@ namespace Koiusa.SteamMultiRuntime
 {
     internal sealed partial class NpcCrowdSpringSimulation
     {
+        private readonly System.Collections.Generic.HashSet<int> observedNpcRoots = new();
+
+        internal static void ObserveNpc(GameObject npcRoot)
+        {
+            if (npcRoot == null)
+                return;
+            var simulation = EnsureInstance();
+            simulation.observedNpcRoots.Add(npcRoot.GetInstanceID());
+            var loader = npcRoot.GetComponent<CharacterPrefabLoader>();
+            if (loader != null && loader.LastInstantiatedObject != null)
+                NpcCrowdModelPresentation.Configure(loader.LastInstantiatedObject);
+        }
+
+        internal static void UnobserveNpc(GameObject npcRoot)
+        {
+            if (instance != null && npcRoot != null)
+                instance.observedNpcRoots.Remove(npcRoot.GetInstanceID());
+        }
+
         internal static void RegisterModel(GameObject root)
         {
             if (root != null)
@@ -31,6 +50,17 @@ namespace Koiusa.SteamMultiRuntime
             return instance;
         }
 
+        private void OnEnable() => CharacterPrefabLoader.AnyPrefabInstantiated += OnAnyPrefabInstantiated;
+
+        private void OnDisable() => CharacterPrefabLoader.AnyPrefabInstantiated -= OnAnyPrefabInstantiated;
+
+        private void OnAnyPrefabInstantiated(CharacterPrefabLoader loader, GameObject model)
+        {
+            if (loader == null || model == null || !observedNpcRoots.Contains(loader.gameObject.GetInstanceID()))
+                return;
+            NpcCrowdModelPresentation.Configure(model);
+        }
+
         private void Register(GameObject root)
         {
             if (!registeredRoots.Add(root.GetInstanceID()))
@@ -46,8 +76,14 @@ namespace Koiusa.SteamMultiRuntime
             for (var i = 0; i < utjManagers.Length; i++)
             {
                 var manager = utjManagers[i];
-                for (var j = 0; manager.springBones != null && j < manager.springBones.Length; j++)
-                    AddUtjBone(rig, manager, manager.springBones[j]);
+                var bones = manager.springBones;
+                if (bones == null || bones.Length == 0)
+                    bones = manager.GetComponentsInChildren<UtjSpringBone>(true);
+                var previousBoneCount = rig.Bones.Count;
+                for (var j = 0; j < bones.Length; j++)
+                    AddUtjBone(rig, manager, bones[j]);
+                if (rig.Bones.Count == previousBoneCount)
+                    continue;
                 manager.automaticUpdates = false;
                 manager.enabled = false;
             }
@@ -56,8 +92,13 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var manager = legacyManagers[i];
                 var bones = manager.GetSpringBones();
+                if (bones == null || bones.Length == 0)
+                    bones = manager.GetComponentsInChildren<LegacySpringBone>(true);
+                var previousBoneCount = rig.Bones.Count;
                 for (var j = 0; bones != null && j < bones.Length; j++)
                     AddLegacyBone(rig, manager, bones[j]);
+                if (rig.Bones.Count == previousBoneCount)
+                    continue;
                 manager.enabled = false;
             }
             if (rig.Bones.Count == 0)
@@ -101,6 +142,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 Transform = transform,
                 LocalAxis = axis,
+                InitialLocalRotation = transform.localRotation,
                 RestLength = Mathf.Max(0.0001f, Vector3.Distance(transform.position, tip)),
                 Stiffness = Mathf.Max(0f, stiffness),
                 Drag = Mathf.Clamp01(drag),

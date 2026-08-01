@@ -14,6 +14,8 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public class CharacterPrefabLoader : MonoBehaviour, ICharacterPrefabLoader
     {
+        public static event Action<CharacterPrefabLoader, GameObject> AnyPrefabInstantiated;
+
         public GameObject LoadedPrefab { get; private set; }
         public GameObject LastInstantiatedObject { get; private set; }
         public GameObject InstantiatedCharacter => LastInstantiatedObject;
@@ -23,6 +25,9 @@ namespace Koiusa.SteamMultiRuntime
         public event Action<GameObject> PrefabLoaded;
         public event Action<GameObject> PrefabInstantiated;
         public event Action<string> LoadFailed;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticEvents() => AnyPrefabInstantiated = null;
 
         public void SetPrefabSource(CharacterPrefabSourceSettings sourceSettings)
         {
@@ -71,6 +76,7 @@ namespace Koiusa.SteamMultiRuntime
             var instance = Instantiate(LoadedPrefab, position, rotation, parent);
             LastInstantiatedObject = instance;
             PrefabInstantiated?.Invoke(instance);
+            AnyPrefabInstantiated?.Invoke(this, instance);
             return instance;
         }
 

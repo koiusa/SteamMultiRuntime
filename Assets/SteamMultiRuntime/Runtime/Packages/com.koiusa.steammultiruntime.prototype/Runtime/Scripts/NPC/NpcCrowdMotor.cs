@@ -11,7 +11,6 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField] private ActorMotorSettings settings = default;
         private Rigidbody body;
         private NpcCrowdMovingPlatformAction movingPlatform;
-        private CharacterPrefabLoader characterPrefabLoader;
         private CapsuleCollider movementCapsule;
         private Vector3 velocity;
         private Vector3 desiredPlanarVelocity;
@@ -106,16 +105,6 @@ namespace Koiusa.SteamMultiRuntime
             velocity = Vector3.zero;
             groundCoordinate = bodyCoordinate;
             grounded = true;
-            NpcCrowdModelPresentation.Configure(gameObject);
-            characterPrefabLoader = GetComponent<CharacterPrefabLoader>();
-            if (characterPrefabLoader != null)
-                characterPrefabLoader.PrefabInstantiated += NpcCrowdModelPresentation.Configure;
-        }
-
-        private void OnDestroy()
-        {
-            if (characterPrefabLoader != null)
-                characterPrefabLoader.PrefabInstantiated -= NpcCrowdModelPresentation.Configure;
         }
 
         internal void SetCommand(Vector3 desiredVelocity, bool wantsJump)

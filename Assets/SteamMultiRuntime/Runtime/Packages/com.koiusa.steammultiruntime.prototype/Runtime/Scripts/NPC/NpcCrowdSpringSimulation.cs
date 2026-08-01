@@ -16,6 +16,7 @@ namespace Koiusa.SteamMultiRuntime
         private struct SpringData
         {
             public float3 LocalAxis;
+            public quaternion InitialLocalRotation;
             public float RestLength;
             public float Stiffness;
             public float Drag;
@@ -169,8 +170,11 @@ namespace Koiusa.SteamMultiRuntime
                 data.Active = 0;
 
                 var parentRotation = math.mul(worldAnimated, math.inverse(animated.LocalRotation));
+                var baseWorldRotation = data.Legacy != 0
+                    ? worldAnimated
+                    : math.mul(parentRotation, data.InitialLocalRotation);
                 var restDirection = math.normalizesafe(
-                    math.mul(worldAnimated, data.LocalAxis), new float3(0f, -1f, 0f));
+                    math.mul(baseWorldRotation, data.LocalAxis), new float3(0f, -1f, 0f));
                 var restTip = head + restDirection * data.RestLength;
                 var inertia = (data.CurrentTip - data.PreviousTip) * math.saturate(1f - data.Drag);
                 float3 nextTip;
@@ -208,9 +212,20 @@ namespace Koiusa.SteamMultiRuntime
                     direction = math.normalizesafe(nextTip - head, restDirection);
                     nextTip = head + direction * data.RestLength;
                 }
-                var delta = FromTo(restDirection, direction);
-                var springWorld = math.mul(delta, worldAnimated);
-                var springLocal = math.mul(math.inverse(parentRotation), springWorld);
+                quaternion springLocal;
+                if (data.Legacy != 0)
+                {
+                    var delta = FromTo(restDirection, direction);
+                    var springWorld = math.mul(delta, worldAnimated);
+                    springLocal = math.mul(math.inverse(parentRotation), springWorld);
+                }
+                else
+                {
+                    var localDirection = math.normalizesafe(
+                        math.mul(math.inverse(baseWorldRotation), direction), data.LocalAxis);
+                    var aimRotation = FromTo(data.LocalAxis, localDirection);
+                    springLocal = math.mul(data.InitialLocalRotation, aimRotation);
+                }
                 var localRotation = math.slerp(
                     animated.LocalRotation, springLocal, math.saturate(data.DynamicRatio));
                 SolvedPoses[index] = new SolvedPose
@@ -280,6 +295,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             public Transform Transform;
             public Vector3 LocalAxis;
+            public Quaternion InitialLocalRotation;
             public float RestLength;
             public float Stiffness;
             public float Drag;
@@ -556,6 +572,7 @@ namespace Koiusa.SteamMultiRuntime
                     data[index++] = new SpringData
                     {
                         LocalAxis = bone.LocalAxis,
+                        InitialLocalRotation = bone.InitialLocalRotation,
                         RestLength = bone.RestLength,
                         Stiffness = bone.Stiffness,
                         Drag = bone.Drag,

@@ -155,7 +155,10 @@ namespace Koiusa.SteamMultiRuntime
             _traversalTestDriver = GetComponent<NpcCrowdTraversalTestDriver>();
             _characterPrefabLoader = GetComponent<CharacterPrefabLoader>();
             if (_characterPrefabLoader != null)
+            {
                 _characterPrefabLoader.PrefabInstantiated += OnCharacterPrefabInstantiated;
+            }
+            NpcCrowdSpringSimulation.ObserveNpc(gameObject);
             ConfigureMovementBackend();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
@@ -225,6 +228,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
+            NpcCrowdSpringSimulation.UnobserveNpc(gameObject);
             if (_characterPrefabLoader != null)
                 _characterPrefabLoader.PrefabInstantiated -= OnCharacterPrefabInstantiated;
             _crowdAgent?.Deactivate();
