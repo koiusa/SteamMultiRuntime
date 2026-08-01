@@ -25,6 +25,10 @@ NpcNavMeshController : INpcLocomotionState
 ├─ NpcNavMeshJumpModule
 │  └─ 確率、クールダウン、最低移動速度
 ├─ AiActorInputSource : IActorInputSource
+├─ NpcCrowdAgent
+│  └─ NpcCrowdSimulationとの実行境界
+├─ NpcCrowdMotor
+│  └─ Kinematic移動、接地、壁、移動床、外部物体接触
 ├─ NpcDestinationDebugMarker
 └─ NpcDestinationDebugMarkerNetSync（Network NPCのみ）
 ```
@@ -61,6 +65,8 @@ NPC Modules（Serverのみ更新）
 Network NPCはサーバー所有を前提とします。ClientはNavMesh、AI、物理を再計算せず、同期された移動・接地・ジャンプ・Traversal状態を表示します。
 
 Local／Network Server NPCのCrowd Physics Tickは、個別Componentの`FixedUpdate`ではなく`NpcCrowdSimulation`から30Hzで一括実行します。描画が遅れた場合も1描画フレームにつき最大1回とし、FixedUpdateのcatch-upがCrowd全体を複数回評価する負荷循環を防ぎます。空中・特殊移動中の壁Probeは毎Crowd Tick、通常接地移動中はNPCごとに位相をずらして隔Tickで実行します。Player用`ServerDrivenActorController`の個別Tickは維持し、`ServerNpc` ModeだけをCrowd側へ委譲します。
+
+Crowd実装のファイル責務は次のように分離します。`NpcCrowdSimulation`は`NpcCrowdAgent`だけを登録し、30HzのPlayer Loop、Jobと一括Queryの編成を所有します。Native Collectionの確保・破棄は`NpcCrowdSimulation.Buffers`へ分離します。`NpcCrowdAgent`はSimulationとNPC一体分の実行境界であり、Probe、Movement Snapshot、結果適用、表示補間、Network状態反映を担当します。`NpcNavMeshController`はNavMesh AI判断、目的地、疑似入力、Traversal Command生成を担当し、Simulationから直接参照されません。`NpcCrowdMotor`はKinematic状態、接地・壁・外部物体接触と移動結果を所有します。Job境界を通過するBlittable DTOと接触設定は`NpcCrowdData`、モデル生成時のAnimator／Spring／装飾設定は`NpcCrowdModelPresentation`が所有します。`NpcCrowdSpringSimulation.Registration`はモデル別Spring Rigの収集と無効化を所有します。旧Player Motor直接Tickは使用せず、Local／Network Serverとも`NpcCrowdMotor`の一括Movement Jobへ統一します。
 
 NPCの通常移動・加減速・ジャンプ・重力・接地は`NpcCrowdMotor`のNative状態としてBurst Jobで計算します。NPC RigidbodyはKinematic、Colliderは攻撃Overlap用Triggerとして残します。接地は`RaycastCommand.ScheduleBatch`で一括取得します。`NpcCrowdMovingPlatformAction`は接地した`IGroundMotionSnapshotSource`の床Snapshotを共有利用し、床の点速度と変位をCrowd移動へ合成します。Playerは従来のDynamic Rigidbody Motorと`GroundMotionTracker`を維持します。
 

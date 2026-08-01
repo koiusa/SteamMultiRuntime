@@ -4,67 +4,10 @@ using Koiusa.SteamMultiRuntime.Core;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    [System.Serializable]
-    public struct NpcCrowdContactSettings
-    {
-        public bool EnablePlayerContacts;
-        public bool EnableNetworkPhysicsObjectContacts;
-        [Min(0f)] public float BroadphasePadding;
-        [Range(0f, 1f)] public float PenetrationResolution;
-        public bool ApplyImpulse;
-        [Min(0f)] public float ImpulseMassScale;
-        [Min(0f)] public float MaxImpulse;
-
-        public static NpcCrowdContactSettings CreateDefault() => new()
-        {
-            EnablePlayerContacts = true,
-            EnableNetworkPhysicsObjectContacts = true,
-            BroadphasePadding = 0.5f,
-            PenetrationResolution = 1f,
-            ApplyImpulse = true,
-            ImpulseMassScale = 0.2f,
-            MaxImpulse = 5f
-        };
-    }
-
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
     public sealed class NpcCrowdMotor : MonoBehaviour, IFallRecoveryMotionReset, ITraversalVelocityAdapter
     {
-        internal struct MovementData
-        {
-            public float3 Position;
-            public float3 Velocity;
-            public float3 DesiredPlanarVelocity;
-            public float3 UpAxis;
-            public float3 GroundDisplacement;
-            public float3 GroundVelocity;
-            public float GroundCoordinate;
-            public int HasGroundSurface;
-            public float MoveSpeed;
-            public float Acceleration;
-            public float RotationSpeed;
-            public float JumpSpeed;
-            public float Gravity;
-            public int Grounded;
-            public int JumpRequested;
-            public int AirborneFromJump;
-            public int TraversalMode;
-            public float3 WireAnchor;
-            public float WireRopeLength;
-            public float3 WallNormal;
-            public float WallDistance;
-            public int HasWall;
-        }
-
-        internal struct MovementResult
-        {
-            public float3 Position;
-            public float3 Velocity;
-            public int Grounded;
-            public int AirborneFromJump;
-        }
-
         [SerializeField] private ActorMotorSettings settings = default;
         private Rigidbody body;
         private NpcCrowdMovingPlatformAction movingPlatform;
@@ -163,51 +106,16 @@ namespace Koiusa.SteamMultiRuntime
             velocity = Vector3.zero;
             groundCoordinate = bodyCoordinate;
             grounded = true;
-            ConfigureCrowdAnimators(gameObject);
+            NpcCrowdModelPresentation.Configure(gameObject);
             characterPrefabLoader = GetComponent<CharacterPrefabLoader>();
             if (characterPrefabLoader != null)
-                characterPrefabLoader.PrefabInstantiated += ConfigureCrowdAnimators;
+                characterPrefabLoader.PrefabInstantiated += NpcCrowdModelPresentation.Configure;
         }
 
         private void OnDestroy()
         {
             if (characterPrefabLoader != null)
-                characterPrefabLoader.PrefabInstantiated -= ConfigureCrowdAnimators;
-        }
-
-        private static void ConfigureCrowdAnimators(GameObject root)
-        {
-            if (root == null)
-                return;
-            var animators = root.GetComponentsInChildren<Animator>(true);
-            for (var i = 0; i < animators.Length; i++)
-                animators[i].applyRootMotion = false;
-
-            NpcCrowdSpringSimulation.RegisterModel(root);
-
-            // Keep secondary hair/accessory motion enabled for both local and network NPCs.
-            // Other model-side cosmetic callbacks remain disabled below.
-            var behaviours = root.GetComponentsInChildren<MonoBehaviour>(true);
-            for (var i = 0; i < behaviours.Length; i++)
-            {
-                var behaviour = behaviours[i];
-                if (behaviour == null)
-                    continue;
-                var typeName = behaviour.GetType().FullName;
-                if (typeName == "UTJ.SpringManager"
-                    || typeName == "UnityChan.SpringManager"
-                    || typeName == "SpringManager"
-                    || typeName == "UnityChan.SDRandomWind")
-                {
-                    if (typeName == "UnityChan.SDRandomWind")
-                        behaviour.enabled = false;
-                    continue;
-                }
-                if (typeName == "UTJ.HighLeg"
-                    || typeName == "UnityChan.AutoBlinkforSD"
-                    || typeName == "Koiusa.SteamMultiRuntime.UnityChan.FaceAnimationDriver")
-                    behaviour.enabled = false;
-            }
+                characterPrefabLoader.PrefabInstantiated -= NpcCrowdModelPresentation.Configure;
         }
 
         internal void SetCommand(Vector3 desiredVelocity, bool wantsJump)
@@ -216,11 +124,12 @@ namespace Koiusa.SteamMultiRuntime
             jumpRequested |= wantsJump;
         }
 
-        internal void SetTraversalState(IActorTraversalCoordinator coordinator)
+        internal void ApplyCommand(NpcCrowdCommand command)
         {
-            traversalState = coordinator != null ? coordinator.CurrentState : ActorTraversalState.Grounded;
-            wireAnchor = coordinator != null ? coordinator.WireAnchorPoint : Vector3.zero;
-            wireRopeLength = coordinator != null ? coordinator.WireRopeLength : 0f;
+            SetCommand(command.DesiredVelocity, command.JumpRequested);
+            traversalState = command.TraversalState;
+            wireAnchor = command.WireAnchor;
+            wireRopeLength = command.WireRopeLength;
         }
 
         public void ResetAfterFallRecovery(Vector3 position, Quaternion rotation)
@@ -468,10 +377,10 @@ namespace Koiusa.SteamMultiRuntime
             otherBody.WakeUp();
         }
 
-        internal MovementData CaptureMovementData()
+        internal NpcCrowdMovementData CaptureMovementData()
         {
             var acceleration = grounded ? settings.GroundAcceleration : settings.AirAcceleration;
-            return new MovementData
+            return new NpcCrowdMovementData
             {
                 Position = body.position,
                 Velocity = velocity,
@@ -498,7 +407,7 @@ namespace Koiusa.SteamMultiRuntime
             };
         }
 
-        internal void ApplyMovement(MovementResult result)
+        internal void ApplyMovement(NpcCrowdMovementResult result)
         {
             jumpRequested = false;
             velocity = result.Velocity;

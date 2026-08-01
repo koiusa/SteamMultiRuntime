@@ -23,41 +23,30 @@ namespace Koiusa.SteamMultiRuntime
             spatialIndexFrame = -1;
         }
 
-        private static int GetSpatialNeighbors(
-            NpcNavMeshController self,
-            float radius,
-            NpcNavMeshController[] results)
+        private static int GetSpatialNeighbors(NpcNavMeshController self, float radius, NpcNavMeshController[] results)
         {
             RebuildSpatialIndexOncePerFrame();
-
             var position = self.transform.position;
             var center = ToSpatialCell(position);
             var cellRange = Mathf.CeilToInt(radius / SpatialCellSize);
             var radiusSqr = radius * radius;
             var count = 0;
-
             for (var y = -cellRange; y <= cellRange && count < results.Length; y++)
+            for (var z = -cellRange; z <= cellRange && count < results.Length; z++)
+            for (var x = -cellRange; x <= cellRange && count < results.Length; x++)
             {
-                for (var z = -cellRange; z <= cellRange && count < results.Length; z++)
+                var key = new Vector3Int(center.x + x, center.y + y, center.z + z);
+                if (!SpatialCells.TryGetValue(key, out var cell))
+                    continue;
+                for (var i = 0; i < cell.Count && count < results.Length; i++)
                 {
-                    for (var x = -cellRange; x <= cellRange && count < results.Length; x++)
-                    {
-                        var key = new Vector3Int(center.x + x, center.y + y, center.z + z);
-                        if (!SpatialCells.TryGetValue(key, out var cell))
-                            continue;
-
-                        for (var i = 0; i < cell.Count && count < results.Length; i++)
-                        {
-                            var candidate = cell[i];
-                            if (candidate == null || candidate == self || !candidate.isActiveAndEnabled)
-                                continue;
-                            if ((candidate.transform.position - position).sqrMagnitude <= radiusSqr)
-                                results[count++] = candidate;
-                        }
-                    }
+                    var candidate = cell[i];
+                    if (candidate == null || candidate == self || !candidate.isActiveAndEnabled)
+                        continue;
+                    if ((candidate.transform.position - position).sqrMagnitude <= radiusSqr)
+                        results[count++] = candidate;
                 }
             }
-
             return count;
         }
 
@@ -65,11 +54,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (spatialIndexFrame == Time.frameCount)
                 return;
-
             spatialIndexFrame = Time.frameCount;
             foreach (var cell in SpatialCells.Values)
                 cell.Clear();
-
             for (var i = ActiveNpcs.Count - 1; i >= 0; i--)
             {
                 var npc = ActiveNpcs[i];
@@ -80,7 +67,6 @@ namespace Koiusa.SteamMultiRuntime
                 }
                 if (!npc.isActiveAndEnabled)
                     continue;
-
                 var key = ToSpatialCell(npc.transform.position);
                 if (!SpatialCells.TryGetValue(key, out var cell))
                 {
@@ -91,12 +77,9 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        private static Vector3Int ToSpatialCell(Vector3 position)
-        {
-            return new Vector3Int(
-                Mathf.FloorToInt(position.x / SpatialCellSize),
-                Mathf.FloorToInt(position.y / SpatialCellSize),
-                Mathf.FloorToInt(position.z / SpatialCellSize));
-        }
+        private static Vector3Int ToSpatialCell(Vector3 position) => new(
+            Mathf.FloorToInt(position.x / SpatialCellSize),
+            Mathf.FloorToInt(position.y / SpatialCellSize),
+            Mathf.FloorToInt(position.z / SpatialCellSize));
     }
 }

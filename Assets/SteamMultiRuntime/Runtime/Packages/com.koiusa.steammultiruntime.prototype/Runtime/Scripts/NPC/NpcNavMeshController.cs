@@ -59,6 +59,7 @@ namespace Koiusa.SteamMultiRuntime
         private ServerDrivenActorController _networkPlayerController;
         private PhysicsPresentationSmoother _presentationSmoother;
         private NpcCrowdMotor _crowdMotor;
+        private NpcCrowdAgent _crowdAgent;
         private Core.FallRecovery _fallRecovery;
         private ActorSkillCoordinator _skillCoordinator;
         private IActorTraversalCoordinator _traversalCoordinator;
@@ -146,6 +147,10 @@ namespace Koiusa.SteamMultiRuntime
             if (_crowdMotor == null)
                 _crowdMotor = gameObject.AddComponent<NpcCrowdMotor>();
             _crowdMotor.Initialize(_baseMotor, crowdContactSettings);
+            _crowdAgent = GetComponent<NpcCrowdAgent>();
+            if (_crowdAgent == null)
+                _crowdAgent = gameObject.AddComponent<NpcCrowdAgent>();
+            _crowdAgent.Initialize(this);
             if (_baseMotor is Behaviour baseMotorBehaviour)
                 baseMotorBehaviour.enabled = false;
             if (_motor != null)
@@ -170,7 +175,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnEnable()
         {
-            NpcCrowdSimulation.Register(this);
+            _crowdAgent?.Activate();
             movement = GetComponent<NpcNavMeshMovementModule>();
             speed = GetComponent<NpcNavMeshSpeedModule>();
             jump = GetComponent<NpcNavMeshJumpModule>();
@@ -192,7 +197,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDisable()
         {
-            NpcCrowdSimulation.Unregister(this);
+            _crowdAgent?.Deactivate();
             if (movement != null)
             {
                 movement.OnReturnToCenterStarted -= OnReturnToCenterStarted;
@@ -211,194 +216,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
-            NpcCrowdSimulation.Unregister(this);
+            _crowdAgent?.Deactivate();
             StopAgent();
             ResetAgentPath();
-        }
-
-        internal void TickCrowdUpdate(float deltaTime)
-        {
-            _presentationSmoother?.TickPresentation();
-            _skillCoordinator?.TickSkills(deltaTime);
-
-            if (_networkPlayerController != null)
-            {
-                if (!_networkPlayerController.IsSpawned)
-                    return;
-
-                if (!_networkPlayerController.IsServer)
-                {
-                    DisableClientSimulation();
-                    return;
-                }
-            }
-
-            if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
-                return;
-
-            if (movement != null && movement.isActiveAndEnabled)
-                movement.ObserveState();
-
-            if (_rigidbody != null)
-                _agent.nextPosition = _rigidbody.position;
-            else
-                _agent.nextPosition = transform.position;
-
-        }
-
-        internal void TickCrowdRecovery() => _fallRecovery?.TickRecovery();
-
-        private void DisableClientSimulation()
-        {
-            if (_clientSimulationDisabled)
-                return;
-
-            _clientSimulationDisabled = true;
-
-            // Remote clients receive the authoritative pose through NetworkTransform.
-            // NavMesh and all AI planning are server-only and otherwise add one simulation
-            // agent per NPC to every client for no visual benefit.
-            if (movement != null)
-                movement.enabled = false;
-            if (speed != null)
-                speed.enabled = false;
-            if (jump != null)
-                jump.enabled = false;
-            if (steering != null)
-                steering.enabled = false;
-            if (avoidance != null)
-                avoidance.enabled = false;
-            if (_agent != null)
-                _agent.enabled = false;
-
-            _inputSource?.Disable();
-            enabled = false;
-        }
-
-        internal void TickCrowdPhysics()
-        {
-            if (_networkPlayerController != null)
-            {
-                _networkPlayerController.TickServerNpcPhysicsFromCrowd();
-                return;
-            }
-
-            if (_motor == null)
-                return;
-
-            UpdateAiInputSignal();
-
-            var inputState = _inputSource.ReadState();
-            _moveInput = inputState.Move;
-            _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
-
-            if (inputState.JumpPressed)
-                _jumpToken++;
-
-            var jumpThisFrame = _jumpToken != _lastConsumedJumpToken;
-            if (jumpThisFrame)
-                _lastConsumedJumpToken = _jumpToken;
-
-            _baseMotor?.SetStrafeMode(false);
-            _moveInputReceiver?.SetMoveInput(_moveInput);
-            _moveInputReceiver?.SetMoveReferenceRotation(transform.rotation);
-            _motor.Tick(_moveDirection, jumpThisFrame);
-            _presentationSmoother?.CapturePhysicsPose();
-
-            if (_agent != null && _agent.isOnNavMesh && _rigidbody != null)
-                _agent.nextPosition = _rigidbody.position;
-        }
-
-        internal void PrepareCrowdPhysics(float deltaTime)
-        {
-            _crowdMotor.BeginSimulationStep(deltaTime);
-            UpdateAiInputSignal();
-            var inputState = _inputSource.ReadState();
-            _moveInput = inputState.Move;
-            var jumpRequested = inputState.JumpPressed;
-            if (_traversalTestDriver != null && _traversalTestDriver.IsControlling)
-                jumpRequested = false;
-            if (_traversalTestDriver != null && _traversalTestDriver.ShouldTick)
-                _traversalTestDriver.TickTest(_traversalInput, _traversalCoordinator, IsGrounded);
-            _traversalInput.Consume(ref _moveInput, ref jumpRequested, out var wireHeld,
-                out var wireFire, out var reelInput, out var wireTarget);
-            _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
-            var wireOrigin = _rigidbody.worldCenterOfMass;
-            if (wireHeld)
-            {
-                // SetWireInput caches its aim result by requested target point. A Crowd
-                // NPC can approach a fixed target after an out-of-range result, so the
-                // changing origin must explicitly refresh that cached aim before retrying.
-                _traversalCoordinator?.SetWireAimCursor(default, false, wireOrigin, wireTarget, true);
-            }
-            _traversalCoordinator?.SetWireInput(wireHeld, wireFire, reelInput, wireOrigin, wireTarget);
-            _traversalCoordinator?.ProcessMotorInput(_moveDirection, jumpRequested, IsGrounded);
-            _traversalCoordinator?.ApplyTraversal(_moveDirection, _moveInput, transform.rotation, jumpRequested, IsGrounded);
-            _crowdMotor.SetTraversalState(_traversalCoordinator);
-            _crowdMotor.SetCommand(_moveDirection * MaxMoveSpeed, jumpRequested);
-        }
-
-        internal void CreateCrowdGroundProbes(out CapsulecastCommand castCommand, out OverlapCapsuleCommand overlapCommand) =>
-            _crowdMotor.CreateGroundProbes(out castCommand, out overlapCommand);
-        internal void CreateCrowdWallProbes(out CapsulecastCommand forward, out CapsulecastCommand left, out CapsulecastCommand right) =>
-            _crowdMotor.CreateWallProbes(_moveDirection, out forward, out left, out right);
-        internal bool ShouldProbeCrowdWalls => _crowdMotor.ShouldProbeWalls;
-        internal bool ShouldProbeCrowdWallsEveryFixedStep => _crowdMotor.ShouldProbeWallsEveryFixedStep;
-        internal void ApplyCrowdGroundProbe(RaycastHit hit, ColliderHit overlapHit) => _crowdMotor.ApplyGroundProbe(hit, overlapHit);
-        internal void ResolveCrowdEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3) =>
-            _crowdMotor.ResolveEnvironmentOverlaps(hit0, hit1, hit2, hit3);
-        internal void ApplyCrowdWallProbes(RaycastHit forward, RaycastHit left, RaycastHit right) =>
-            _crowdMotor.ApplyWallProbes(forward, left, right);
-        internal void ClearCrowdWallProbe() => _crowdMotor.ClearWallProbe();
-        internal NpcCrowdMotor.MovementData CaptureCrowdMovementData() => _crowdMotor.CaptureMovementData();
-
-        internal void ApplyCrowdMovement(NpcCrowdMotor.MovementResult result, float deltaTime)
-        {
-            _crowdMotor.ApplyMovement(result);
-            _presentationSmoother?.CapturePhysicsPose(deltaTime);
-            if (_agent != null && _agent.enabled && _agent.isOnNavMesh && _crowdMotor.IsGrounded)
-                _agent.nextPosition = _rigidbody.position;
-            _networkPlayerController?.ApplyServerNpcCrowdState(
-                HorizontalVelocity,
-                VerticalVelocity,
-                IsGrounded,
-                IsJumping,
-                IsFreefall,
-                IsFallingAfterJump);
-        }
-
-        internal NpcCrowdSimulation.AgentData CaptureCrowdAgentData()
-        {
-            var mode = avoidance != null ? (int)avoidance.Mode : 0;
-            var isRvo = mode == (int)NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo;
-            return new NpcCrowdSimulation.AgentData
-            {
-                Position = transform.position,
-                Velocity = _rigidbody != null ? _rigidbody.linearVelocity : Vector3.zero,
-                GoalVelocity = _cachedTargetPlanarVelocity,
-                UpAxis = ActorMotor.GetUpAxis(),
-                Radius = isRvo ? rvoNeighborRadius : boidSeparationRadius,
-                TimeHorizon = isRvo ? rvoTimeHorizon : 1f,
-                GoalWeight = isRvo ? rvoGoalWeight : boidGoalWeight,
-                AvoidanceWeight = isRvo ? rvoAvoidanceWeight : boidSeparationWeight,
-                SeparationExponent = isRvo ? 1f : boidSeparationExponent,
-                MinApproachSpeed = isRvo ? rvoMinApproachSpeed : 0f,
-                ForwardDotMin = isRvo ? -1f : boidNeighborForwardDotMin,
-                MaxNeighbors = isRvo ? rvoMaxNeighbors : boidMaxNeighbors,
-                Mode = mode,
-                UseForwardFilter = !isRvo && boidUseForwardNeighborFilter ? 1 : 0
-            };
-        }
-
-        internal void ApplyCrowdSteering(float3 steering)
-        {
-            // PrepareCrowdPhysics already wrote the deterministic test command.
-            // Applying the random NavMesh/boid steering afterward would replace it.
-            if (_traversalTestDriver != null && _traversalTestDriver.IsControlling)
-                return;
-            _crowdSteeringPlanar = new Vector3(steering.x, steering.y, steering.z);
-            _hasCrowdSteering = true;
-            _crowdMotor?.SetCommand(_crowdSteeringPlanar, false);
         }
 
         private void OnRandomDestinationNeeded()

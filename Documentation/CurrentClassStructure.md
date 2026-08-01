@@ -79,7 +79,10 @@ SteamMultiRuntime
 ├─ NPC
 │  ├─ NpcNavMeshController
 │  ├─ NavMesh機能モジュール
-│  └─ AiActorInputSource
+│  ├─ AiActorInputSource
+│  ├─ NpcCrowdAgent
+│  ├─ NpcCrowdMotor
+│  └─ NpcCrowdSimulation
 │
 ├─ Character
 │  ├─ Runtime User Profile
@@ -118,7 +121,8 @@ ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState
 │  ├─ IActorInputSource
 │  │  ├─ PlayerGameplayInputReader（Network Player）
 │  │  └─ AiActorInputSource（Network NPC）
-│  ├─ ActorCompositeMotor
+│  ├─ ActorCompositeMotor（Network Player）
+│  ├─ NpcCrowdAgent / NpcCrowdMotor（Network Server NPC）
 │  └─ Network同期状態
 │     ├─ ActorInputSyncState
 │     ├─ ActorKinematicState
@@ -143,7 +147,41 @@ Traversalは`Wall`、`Ladder`、`Wire`の3領域で構成され、共有状態�
 
 ## NPC
 
-NPCはNavMesh Moduleの判断を`AiActorInputSource`へ変換し、Player用Motorを再利用します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
+NPCはAI判断とCrowd実行を分離します。`NpcNavMeshController`はNavMesh Moduleの判断を`AiActorInputSource`へ変換し、Playerと共通のTraversal Coordinatorへ疑似入力を送って`NpcCrowdCommand`を生成します。`NpcCrowdAgent`がCommand、Probe、Snapshot、結果適用の境界となり、`NpcCrowdSimulation`と`NpcCrowdMotor`はAI判断を参照しません。
+
+```text
+NpcNavMeshController : INpcLocomotionState
+├─ NpcNavMeshMovementModule
+├─ NpcNavMeshSpeedModule
+├─ NpcNavMeshSteeringModule
+├─ NpcNavMeshAvoidanceModule
+├─ NpcNavMeshJumpModule
+├─ AiActorInputSource
+└─ NpcCrowdCommand生成
+        │
+        ▼
+NpcCrowdAgent
+├─ NpcCrowdSimulationへの登録／解除
+├─ Capsulecast／Overlap Queryの受け渡し
+├─ NpcCrowdAgentData／NpcCrowdMovementData Snapshot
+├─ Movement結果とPhysicsPresentationSmootherへの反映
+└─ Network Server NPC状態の反映
+        │
+        ▼
+NpcCrowdMotor
+├─ Kinematic移動、加減速、ジャンプ、重力
+├─ 接地、壁、Overlap解決
+├─ NpcCrowdMovingPlatformAction
+└─ Player／Network Physics Objectとの接触
+
+NpcCrowdSimulation
+├─ NpcCrowdAgentだけを登録
+├─ 30Hzの共有Player Loop
+├─ Burst Spatial Grid／Boid／RVO／Movement Job
+└─ 一括Capsulecast／Overlap Query
+```
+
+通常移動はPlayerのDynamic Rigidbody Motorを直接Tickせず、NPC専用のKinematic Crowd Motorで処理します。一方、`IActorMotor`設定、`IActorTraversalCoordinator`、Actor状態契約、Animator Driver、表示補間はPlayerと共通化を維持します。Moduleの責務、Local／Network経路、Server所有契約は[NpcArchitecture.md](NpcArchitecture.md)を正本とします。
 
 ## Character ModelとProfile
 

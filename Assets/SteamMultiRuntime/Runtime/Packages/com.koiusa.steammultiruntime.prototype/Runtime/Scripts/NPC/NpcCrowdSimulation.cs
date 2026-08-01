@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime
     /// components register by lifecycle and never receive FixedUpdate themselves.
     /// </summary>
     [DisallowMultipleComponent]
-    internal sealed class NpcCrowdSimulation : MonoBehaviour
+    internal sealed partial class NpcCrowdSimulation : MonoBehaviour
     {
         private const int GroundOverlapHitsPerNpc = 4;
         private static readonly ProfilerMarker PrepareMarker = new("Physics.NpcCrowd.PrepareProbes");
@@ -22,28 +22,10 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly ProfilerMarker PenetrationMarker = new("Physics.NpcCrowd.ResolvePenetration");
         private static readonly ProfilerMarker MovementJobMarker = new("Physics.NpcCrowd.MovementJob");
         private static readonly ProfilerMarker MovementApplyMarker = new("Physics.NpcCrowd.ApplyMovementAndContacts");
-        internal struct AgentData
-        {
-            public float3 Position;
-            public float3 Velocity;
-            public float3 GoalVelocity;
-            public float3 UpAxis;
-            public float Radius;
-            public float TimeHorizon;
-            public float GoalWeight;
-            public float AvoidanceWeight;
-            public float SeparationExponent;
-            public float MinApproachSpeed;
-            public float ForwardDotMin;
-            public int MaxNeighbors;
-            public int Mode;
-            public int UseForwardFilter;
-        }
-
         [BurstCompile]
         private struct BuildSpatialGridJob : IJobParallelFor
         {
-            [ReadOnly] public NativeArray<AgentData> Agents;
+            [ReadOnly] public NativeArray<NpcCrowdAgentData> Agents;
             public NativeParallelMultiHashMap<int, int>.ParallelWriter Grid;
 
             public void Execute(int index)
@@ -55,7 +37,7 @@ namespace Koiusa.SteamMultiRuntime
         [BurstCompile]
         private struct SteeringJob : IJobParallelFor
         {
-            [ReadOnly] public NativeArray<AgentData> Agents;
+            [ReadOnly] public NativeArray<NpcCrowdAgentData> Agents;
             [ReadOnly] public NativeParallelMultiHashMap<int, int> Grid;
             [WriteOnly] public NativeArray<float3> Results;
 
@@ -144,8 +126,8 @@ namespace Koiusa.SteamMultiRuntime
         [BurstCompile]
         private struct MovementJob : IJobParallelFor
         {
-            [ReadOnly] public NativeArray<NpcCrowdMotor.MovementData> Inputs;
-            [WriteOnly] public NativeArray<NpcCrowdMotor.MovementResult> Results;
+            [ReadOnly] public NativeArray<NpcCrowdMovementData> Inputs;
+            [WriteOnly] public NativeArray<NpcCrowdMovementResult> Results;
             public float DeltaTime;
 
             public void Execute(int index)
@@ -195,7 +177,7 @@ namespace Koiusa.SteamMultiRuntime
                         }
                     }
 
-                    Results[index] = new NpcCrowdMotor.MovementResult
+                    Results[index] = new NpcCrowdMovementResult
                     {
                         Position = traversalPosition,
                         Velocity = traversalVelocity,
@@ -254,7 +236,7 @@ namespace Koiusa.SteamMultiRuntime
                     grounded = true;
                     airborneFromJump = false;
                 }
-                Results[index] = new NpcCrowdMotor.MovementResult
+                Results[index] = new NpcCrowdMovementResult
                 {
                     Position = position,
                     Velocity = velocity,
@@ -266,9 +248,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private const float SpatialCellSize = 2f;
         private static NpcCrowdSimulation instance;
-        private readonly List<NpcNavMeshController> activeNpcs = new(256);
-        private readonly HashSet<NpcNavMeshController> activeNpcSet = new();
-        private NativeArray<AgentData> agents;
+        private readonly List<NpcCrowdAgent> activeNpcs = new(256);
+        private readonly HashSet<NpcCrowdAgent> activeNpcSet = new();
+        private NativeArray<NpcCrowdAgentData> agents;
         private NativeArray<float3> steeringResults;
         private NativeParallelMultiHashMap<int, int> spatialGrid;
         private NativeArray<CapsulecastCommand> groundCommands;
@@ -279,8 +261,8 @@ namespace Koiusa.SteamMultiRuntime
         private NativeArray<RaycastHit> wallHits;
         private NativeArray<int> wallOwners;
         private int wallProbePhase;
-        private NativeArray<NpcCrowdMotor.MovementData> movementInputs;
-        private NativeArray<NpcCrowdMotor.MovementResult> movementResults;
+        private NativeArray<NpcCrowdMovementData> movementInputs;
+        private NativeArray<NpcCrowdMovementResult> movementResults;
         private int capacity;
         private float crowdStepAccumulator;
         private const float CrowdStepInterval = 1f / 30f;
@@ -293,7 +275,7 @@ namespace Koiusa.SteamMultiRuntime
             {
                 var npc = activeNpcs[i];
                 if (npc != null && npc.isActiveAndEnabled)
-                    npc.TickCrowdUpdate(deltaTime);
+                    npc.TickPresentation(deltaTime);
             }
 
             // Crowd bodies are kinematic and use their own Burst integration. Keeping
@@ -315,14 +297,14 @@ namespace Koiusa.SteamMultiRuntime
             instance = null;
         }
 
-        internal static void Register(NpcNavMeshController npc)
+        internal static void Register(NpcCrowdAgent npc)
         {
             if (npc == null)
                 return;
             EnsureInstance().Add(npc);
         }
 
-        internal static void Unregister(NpcNavMeshController npc)
+        internal static void Unregister(NpcCrowdAgent npc)
         {
             if (instance != null)
                 instance.Remove(npc);
@@ -340,13 +322,13 @@ namespace Koiusa.SteamMultiRuntime
             return instance;
         }
 
-        private void Add(NpcNavMeshController npc)
+        private void Add(NpcCrowdAgent npc)
         {
             if (activeNpcSet.Add(npc))
                 activeNpcs.Add(npc);
         }
 
-        private void Remove(NpcNavMeshController npc)
+        private void Remove(NpcCrowdAgent npc)
         {
             if (!activeNpcSet.Remove(npc))
                 return;
@@ -371,18 +353,18 @@ namespace Koiusa.SteamMultiRuntime
             using (PrepareMarker.Auto())
             for (var i = 0; i < count; i++)
             {
-                activeNpcs[i].TickCrowdRecovery();
-                activeNpcs[i].PrepareCrowdPhysics(deltaTime);
-                agents[i] = activeNpcs[i].CaptureCrowdAgentData();
-                activeNpcs[i].CreateCrowdGroundProbes(out var castCommand, out var overlapCommand);
+                activeNpcs[i].TickRecovery();
+                activeNpcs[i].Prepare(deltaTime);
+                agents[i] = activeNpcs[i].CaptureAgentData();
+                activeNpcs[i].CreateGroundProbes(out var castCommand, out var overlapCommand);
                 groundCommands[i] = castCommand;
                 groundOverlapCommands[i] = overlapCommand;
-                var probeWalls = activeNpcs[i].ShouldProbeCrowdWalls
-                    && (activeNpcs[i].ShouldProbeCrowdWallsEveryFixedStep || ((i + wallProbePhase) & 1) == 0);
+                var probeWalls = activeNpcs[i].ShouldProbeWalls
+                    && (activeNpcs[i].ShouldProbeWallsEveryStep || ((i + wallProbePhase) & 1) == 0);
                 if (probeWalls)
                 {
-                    activeNpcs[i].ClearCrowdWallProbe();
-                    activeNpcs[i].CreateCrowdWallProbes(out var wallForward, out var wallLeft, out var wallRight);
+                    activeNpcs[i].ClearWallProbe();
+                    activeNpcs[i].CreateWallProbes(out var wallForward, out var wallLeft, out var wallRight);
                     var wallIndex = wallProbeCount * 3;
                     wallCommands[wallIndex] = wallForward;
                     wallCommands[wallIndex + 1] = wallLeft;
@@ -423,14 +405,14 @@ namespace Koiusa.SteamMultiRuntime
             {
             for (var i = 0; i < count; i++)
             {
-                activeNpcs[i].ApplyCrowdSteering(steeringResults[i]);
+                activeNpcs[i].ApplySteering(steeringResults[i]);
                 var overlapIndex = i * GroundOverlapHitsPerNpc;
-                activeNpcs[i].ApplyCrowdGroundProbe(groundHits[i], groundOverlapHits[overlapIndex]);
+                activeNpcs[i].ApplyGroundProbe(groundHits[i], groundOverlapHits[overlapIndex]);
             }
             for (var probeIndex = 0; probeIndex < wallProbeCount; probeIndex++)
             {
                 var wallIndex = probeIndex * 3;
-                activeNpcs[wallOwners[probeIndex]].ApplyCrowdWallProbes(
+                activeNpcs[wallOwners[probeIndex]].ApplyWallProbes(
                     wallHits[wallIndex], wallHits[wallIndex + 1], wallHits[wallIndex + 2]);
             }
             }
@@ -441,12 +423,12 @@ namespace Koiusa.SteamMultiRuntime
                 // This also recovers contacts when a fast/thin obstacle started inside
                 // the cast volume and therefore produced no sweep hit.
                 var overlapIndex = i * GroundOverlapHitsPerNpc;
-                activeNpcs[i].ResolveCrowdEnvironmentOverlaps(
+                activeNpcs[i].ResolveEnvironmentOverlaps(
                     groundOverlapHits[overlapIndex],
                     groundOverlapHits[overlapIndex + 1],
                     groundOverlapHits[overlapIndex + 2],
                     groundOverlapHits[overlapIndex + 3]);
-                movementInputs[i] = activeNpcs[i].CaptureCrowdMovementData();
+                movementInputs[i] = activeNpcs[i].CaptureMovementData();
             }
             using (MovementJobMarker.Auto())
                 new MovementJob
@@ -457,7 +439,7 @@ namespace Koiusa.SteamMultiRuntime
                 }.Schedule(count, 64).Complete();
             using (MovementApplyMarker.Auto())
             for (var i = 0; i < count; i++)
-                activeNpcs[i].ApplyCrowdMovement(movementResults[i], deltaTime);
+                activeNpcs[i].ApplyMovement(movementResults[i], deltaTime);
         }
 
         private void RemoveDeadEntries()
@@ -468,49 +450,6 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 activeNpcs.RemoveAt(i);
             }
-        }
-
-        private void EnsureCapacity(int required)
-        {
-            if (capacity >= required)
-                return;
-            DisposeNativeCollections();
-            capacity = math.ceilpow2(math.max(64, required));
-            agents = new NativeArray<AgentData>(capacity, Allocator.Persistent);
-            steeringResults = new NativeArray<float3>(capacity, Allocator.Persistent);
-            spatialGrid = new NativeParallelMultiHashMap<int, int>(capacity * 2, Allocator.Persistent);
-            groundCommands = new NativeArray<CapsulecastCommand>(capacity, Allocator.Persistent);
-            groundHits = new NativeArray<RaycastHit>(capacity, Allocator.Persistent);
-            groundOverlapCommands = new NativeArray<OverlapCapsuleCommand>(capacity, Allocator.Persistent);
-            groundOverlapHits = new NativeArray<ColliderHit>(capacity * GroundOverlapHitsPerNpc, Allocator.Persistent);
-            wallCommands = new NativeArray<CapsulecastCommand>(capacity * 3, Allocator.Persistent);
-            wallHits = new NativeArray<RaycastHit>(capacity * 3, Allocator.Persistent);
-            wallOwners = new NativeArray<int>(capacity, Allocator.Persistent);
-            movementInputs = new NativeArray<NpcCrowdMotor.MovementData>(capacity, Allocator.Persistent);
-            movementResults = new NativeArray<NpcCrowdMotor.MovementResult>(capacity, Allocator.Persistent);
-        }
-
-        private void OnDestroy()
-        {
-            DisposeNativeCollections();
-            if (instance == this)
-                instance = null;
-        }
-
-        private void DisposeNativeCollections()
-        {
-            if (agents.IsCreated) agents.Dispose();
-            if (steeringResults.IsCreated) steeringResults.Dispose();
-            if (spatialGrid.IsCreated) spatialGrid.Dispose();
-            if (groundCommands.IsCreated) groundCommands.Dispose();
-            if (groundHits.IsCreated) groundHits.Dispose();
-            if (groundOverlapCommands.IsCreated) groundOverlapCommands.Dispose();
-            if (groundOverlapHits.IsCreated) groundOverlapHits.Dispose();
-            if (wallCommands.IsCreated) wallCommands.Dispose();
-            if (wallHits.IsCreated) wallHits.Dispose();
-            if (wallOwners.IsCreated) wallOwners.Dispose();
-            if (movementInputs.IsCreated) movementInputs.Dispose();
-            if (movementResults.IsCreated) movementResults.Dispose();
         }
 
         private static int3 ToCell(float3 position) => (int3)math.floor(position / SpatialCellSize);
