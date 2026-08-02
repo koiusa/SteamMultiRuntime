@@ -50,6 +50,8 @@ Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレーム
 
 毎フレームの`Debug.Log`は計測対象そのものを重くするため行いません。Release BuildにはLoggerを含めません。Network RoleはNetcode上の実状態で、Hostは`role=Host`、Dedicated Serverは`role=Server`、接続側は`role=Client`です。
 
+`Tools > SteamMultiRuntime > Diagnostics > Automatic Behaviour Profiler`はRaw Profiler FrameをEditor上で走査する調査用機能であり、実行中の定常FPS計測ではOFFにします。ONのままでは周期的な`EditorLoop`停止が計測結果へ混入します。定常計測はRaw Frameを走査しない`RuntimeFrameRateLogger`の`[FrameRate]`／`[FrameRateDetail]`を使用します。
+
 ## 移動床
 
 Server側では、Overlap候補の選別、幾何距離によるBinding保持、移動床のPhysics姿勢適用直後にBinding中NPCだけを追従させる中央通知を採用しています。これによりServer側のすり抜けは大幅に減りましたが、全条件で解消したとは断定しません。

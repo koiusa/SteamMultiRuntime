@@ -1,3 +1,4 @@
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -5,13 +6,26 @@ namespace Koiusa.SteamMultiRuntime
     [DisallowMultipleComponent]
     public sealed class NpcCrowdMovingPlatformAction : MonoBehaviour
     {
+        private static readonly ProfilerMarker BindingMarker = new("Physics.NpcCrowd.MovingPlatformBinding");
         internal event System.Action<bool> MovingPlatformBindingChanged;
+        internal event System.Action<IGroundMotionPhysicsPoseSource> PhysicsPoseSourceBindingChanged;
 
         private Collider groundCollider;
+        private Collider actorCollider;
         private IGroundMotionSource motionSource;
         private IGroundMotionSnapshotSource snapshotSource;
         private bool hasMovingPlatformBinding;
         private Vector3 physicsFollowVelocity;
+
+        internal bool HasPhysicsPoseSource => snapshotSource is IGroundMotionPhysicsPoseSource;
+
+        internal void Initialize(Collider locomotionCollider) => actorCollider = locomotionCollider;
+
+        internal void IgnorePhysicsPair(Collider collider)
+        {
+            if (actorCollider != null && collider != null && collider != actorCollider)
+                Physics.IgnoreCollision(actorCollider, collider, true);
+        }
 
         internal void Sample(
             Collider collider,
@@ -35,7 +49,10 @@ namespace Koiusa.SteamMultiRuntime
         {
             if (snapshotSource != null)
             {
-                if (snapshotSource is PrototypeMotionMover)
+                // Physics-pose sources already push their exact fixed-step delta to
+                // bound followers. Do not apply the same displacement again at the
+                // lower-rate Crowd step, regardless of the concrete implementation.
+                if (snapshotSource is IGroundMotionPhysicsPoseSource)
                 {
                     velocity = physicsFollowVelocity;
                     displacement = Vector3.zero;
@@ -60,10 +77,16 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void Clear() => Bind(null);
 
+        internal void ClearPhysicsPoseSource(IGroundMotionPhysicsPoseSource source)
+        {
+            if (source != null && ReferenceEquals(snapshotSource, source))
+                Bind(null);
+        }
+
         internal bool IsBoundTo(Collider collider) => collider != null && collider == groundCollider;
 
         internal bool TrySamplePhysicsFollow(
-            PrototypeMotionMover source,
+            IGroundMotionPhysicsPoseSource source,
             Vector3 samplePoint,
             float deltaTime,
             out Vector3 displacement,
@@ -95,23 +118,28 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Bind(Collider collider)
         {
+            using var marker = BindingMarker.Auto();
+            var previousPhysicsPoseSource = snapshotSource as IGroundMotionPhysicsPoseSource;
             groundCollider = collider;
             motionSource = null;
             snapshotSource = null;
             physicsFollowVelocity = Vector3.zero;
             if (collider == null)
             {
+                if (previousPhysicsPoseSource != null)
+                    PhysicsPoseSourceBindingChanged?.Invoke(null);
                 SetMovingPlatformBinding(false);
                 return;
             }
-            var behaviours = collider.GetComponentsInParent<MonoBehaviour>();
-            for (var i = 0; i < behaviours.Length; i++)
-            {
-                motionSource ??= behaviours[i] as IGroundMotionSource;
-                snapshotSource ??= behaviours[i] as IGroundMotionSnapshotSource;
-                if (motionSource != null && snapshotSource != null)
-                    break;
-            }
+
+            GroundMotionSourceResolver.Resolve(collider.transform, out motionSource, out snapshotSource);
+            var physicsPoseSource = snapshotSource as IGroundMotionPhysicsPoseSource;
+            // Registered moving floors are prepared before contact. Retain this only
+            // for ordinary ground so the contact path never repeats moving-floor setup.
+            if (physicsPoseSource == null)
+                IgnorePhysicsPair(collider);
+            if (!ReferenceEquals(previousPhysicsPoseSource, physicsPoseSource))
+                PhysicsPoseSourceBindingChanged?.Invoke(physicsPoseSource);
             SetMovingPlatformBinding(motionSource != null || snapshotSource != null);
         }
 

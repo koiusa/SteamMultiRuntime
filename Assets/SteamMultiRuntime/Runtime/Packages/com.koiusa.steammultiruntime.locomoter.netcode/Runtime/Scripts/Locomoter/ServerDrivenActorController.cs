@@ -2,6 +2,7 @@ using Koiusa.Input;
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using Unity.Profiling;
 
 namespace Koiusa.SteamMultiRuntime
 {
@@ -12,6 +13,7 @@ namespace Koiusa.SteamMultiRuntime
     [RequireComponent(typeof(NetworkRigidbody))]
     public class ServerDrivenActorController : NetworkBehaviour, IActorLocomotionState, IActorLadderState, IActorWallRunState
     {
+        private static readonly ProfilerMarker MovingPlatformSyncMarker = new("Network.NpcMovingPlatformSync");
         private const float MovingPlatformPositionThreshold = 0.02f;
         [Header("Input")]
         [SerializeField] private InputActionsConfig inputActionsConfig;
@@ -256,6 +258,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public void SetServerNpcMovingPlatformSync(bool enabled)
         {
+            using var marker = MovingPlatformSyncMarker.Auto();
             if (controlMode != NetworkControlMode.ServerNpc || useMovingPlatformSync == enabled)
                 return;
             useMovingPlatformSync = enabled;

@@ -24,8 +24,11 @@ namespace Koiusa.SteamMultiRuntime
                 _crowdAgent.enabled = true;
                 _crowdAgent.Initialize(this);
 
+                // Presentation is centrally ticked by GroundMotionPresentationScheduler.
+                // Keep the component enabled so it remains registered; Crowd no longer
+                // invokes the smoother through a second, backend-specific path.
                 if (_presentationSmoother != null)
-                    _presentationSmoother.enabled = false;
+                    _presentationSmoother.enabled = true;
 
                 if (_baseMotor is Behaviour baseMotorBehaviour)
                     baseMotorBehaviour.enabled = false;

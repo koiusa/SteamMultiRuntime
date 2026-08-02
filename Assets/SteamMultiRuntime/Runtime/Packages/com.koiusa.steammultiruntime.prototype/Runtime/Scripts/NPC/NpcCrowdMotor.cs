@@ -51,6 +51,8 @@ namespace Koiusa.SteamMultiRuntime
         public float HorizontalVelocity => Vector3.ProjectOnPlane(velocity, UpAxis).magnitude;
         public float VerticalVelocity => Vector3.Dot(velocity, UpAxis);
         public Vector3 Velocity => velocity;
+        internal bool UsesMovingPlatformPhysicsPresentation =>
+            movingPlatform != null && movingPlatform.HasPhysicsPoseSource;
         internal bool ShouldProbeWalls => desiredPlanarVelocity.sqrMagnitude > 0.0025f || !grounded
             || traversalState == ActorTraversalState.WallRun
             || traversalState == ActorTraversalState.WallSlide
@@ -84,6 +86,7 @@ namespace Koiusa.SteamMultiRuntime
             // and must not change the Crowd Motor's foot coordinate.
             var colliders = body.GetComponents<Collider>();
             movementCapsule = body.GetComponent<CapsuleCollider>();
+            movingPlatform.Initialize(movementCapsule);
             var bodyCoordinate = Vector3.Dot(body.position, UpAxis);
             var lowestColliderCoordinate = float.PositiveInfinity;
             for (var i = 0; i < colliders.Length; i++)
@@ -121,7 +124,7 @@ namespace Koiusa.SteamMultiRuntime
         private void OnMovingPlatformBindingChanged(bool isBound) =>
             networkController?.SetServerNpcMovingPlatformSync(isBound);
 
-        internal bool FollowMovingPlatformPhysicsPose(PrototypeMotionMover source, float deltaTime)
+        internal bool FollowMovingPlatformPhysicsPose(IGroundMotionPhysicsPoseSource source, float deltaTime)
         {
             if (!grounded || movingPlatform == null
                 || !movingPlatform.TrySamplePhysicsFollow(
@@ -377,7 +380,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void SelectGroundOverlapCandidate(Collider candidate, ref Collider best, ref float bestUpDot)
         {
-            if (candidate == null || candidate == movementCapsule || candidate.isTrigger
+            if (movementCapsule == null || candidate == null || candidate == movementCapsule || candidate.isTrigger
                 || candidate.transform.IsChildOf(transform))
                 return;
             if (!Physics.ComputePenetration(
@@ -399,6 +402,8 @@ namespace Koiusa.SteamMultiRuntime
 
         internal void ResolveEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3)
         {
+            if (movementCapsule == null)
+                return;
             ResolveEnvironmentOverlap(hit0.collider);
             ResolveEnvironmentOverlap(hit1.collider);
             ResolveEnvironmentOverlap(hit2.collider);

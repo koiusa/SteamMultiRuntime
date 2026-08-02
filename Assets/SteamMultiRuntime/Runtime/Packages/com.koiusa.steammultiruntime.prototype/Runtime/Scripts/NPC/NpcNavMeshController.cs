@@ -141,7 +141,6 @@ namespace Koiusa.SteamMultiRuntime
             if (_presentationSmoother == null)
                 _presentationSmoother = gameObject.AddComponent<PhysicsPresentationSmoother>();
             _presentationSmoother.Initialize(_rigidbody);
-            _presentationSmoother.enabled = false;
             _fallRecovery = GetComponent<Core.FallRecovery>();
             if (_fallRecovery != null)
                 _fallRecovery.enabled = !useCrowdSimulation;

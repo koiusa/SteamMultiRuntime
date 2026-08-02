@@ -111,7 +111,7 @@ namespace Koiusa.SteamMultiRuntime
             UpdateAnimatorState(scheduledDeltaTime);
         }
 
-        internal void TickFarScheduled(float deltaTime)
+        internal void TickDiscreteScheduled(float deltaTime)
         {
             if (targetAnimator == null)
                 return;

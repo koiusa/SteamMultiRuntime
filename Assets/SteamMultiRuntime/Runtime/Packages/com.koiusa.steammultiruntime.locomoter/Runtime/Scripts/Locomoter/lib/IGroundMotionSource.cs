@@ -22,4 +22,14 @@ namespace Koiusa.SteamMultiRuntime
             out Vector3 pointDisplacement,
             out Quaternion rotationDelta);
     }
+
+    /// <summary>
+    /// Optional push notification for snapshot sources that apply a discrete physics
+    /// pose. Kinematic followers can subscribe only while bound to the source.
+    /// </summary>
+    public interface IGroundMotionPhysicsPoseSource : IGroundMotionSnapshotSource
+    {
+        event System.Action<IGroundMotionPhysicsPoseSource, float> PhysicsPoseApplied;
+        Collider[] InteractionColliders { get; }
+    }
 }

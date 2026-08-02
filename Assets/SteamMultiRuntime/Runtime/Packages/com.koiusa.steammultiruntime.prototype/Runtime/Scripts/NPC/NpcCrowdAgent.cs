@@ -18,6 +18,7 @@ namespace Koiusa.SteamMultiRuntime
         private PhysicsPresentationSmoother presentationSmoother;
         private ServerDrivenActorController networkController;
         private Core.FallRecovery fallRecovery;
+        private NpcCrowdMovingPlatformAction movingPlatform;
         private bool registered;
 
         internal void Initialize(NpcNavMeshController source)
@@ -29,6 +30,11 @@ namespace Koiusa.SteamMultiRuntime
             presentationSmoother = GetComponent<PhysicsPresentationSmoother>();
             networkController = GetComponent<ServerDrivenActorController>();
             fallRecovery = GetComponent<Core.FallRecovery>();
+            if (movingPlatform != null)
+                movingPlatform.PhysicsPoseSourceBindingChanged -= OnPhysicsPoseSourceBindingChanged;
+            movingPlatform = GetComponent<NpcCrowdMovingPlatformAction>();
+            if (movingPlatform != null)
+                movingPlatform.PhysicsPoseSourceBindingChanged += OnPhysicsPoseSourceBindingChanged;
         }
 
         internal void Activate()
@@ -47,9 +53,15 @@ namespace Koiusa.SteamMultiRuntime
             NpcCrowdSimulation.Unregister(this);
         }
 
-        private void OnDestroy() => Deactivate();
+        private void OnDestroy()
+        {
+            Deactivate();
+            if (movingPlatform != null)
+                movingPlatform.PhysicsPoseSourceBindingChanged -= OnPhysicsPoseSourceBindingChanged;
+        }
 
-        internal void TickPresentationSmoothing() => presentationSmoother?.TickPresentation();
+        private void OnPhysicsPoseSourceBindingChanged(IGroundMotionPhysicsPoseSource source) =>
+            NpcCrowdSimulation.SetMovingPlatformBinding(this, source);
 
         internal void TickCrowdSkill(float deltaTime) => controller.TickCrowdSkill(deltaTime);
 
@@ -76,7 +88,12 @@ namespace Koiusa.SteamMultiRuntime
         internal void ApplyMovement(NpcCrowdMovementResult result, float deltaTime)
         {
             motor.ApplyMovement(result);
-            presentationSmoother?.CapturePhysicsPose(deltaTime);
+            // A physics-pose floor supplies fixed-rate samples immediately after it
+            // moves. Mixing these 50 Hz samples with the 30 Hz Crowd sample stream
+            // continually changes the interpolator interval and appears as judder.
+            // While bound, the floor notification is the sole presentation clock.
+            if (!motor.UsesMovingPlatformPhysicsPresentation)
+                presentationSmoother?.CapturePhysicsPose(deltaTime);
             // Movement is the authoritative Crowd pose update. Synchronize the
             // NavMesh shadow position here instead of repeating it every render frame.
             if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
@@ -90,7 +107,7 @@ namespace Koiusa.SteamMultiRuntime
                 motor.IsFallingAfterJump);
         }
 
-        internal void FollowMovingPlatformPhysicsPose(PrototypeMotionMover source, float deltaTime)
+        internal void FollowMovingPlatformPhysicsPose(IGroundMotionPhysicsPoseSource source, float deltaTime)
         {
             if (!motor.FollowMovingPlatformPhysicsPose(source, deltaTime))
                 return;
@@ -98,6 +115,11 @@ namespace Koiusa.SteamMultiRuntime
             if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
                 navMeshAgent.nextPosition = body.position;
         }
+
+        internal void IgnorePhysicsPair(Collider collider) => movingPlatform?.IgnorePhysicsPair(collider);
+
+        internal void ClearMovingPlatformSource(IGroundMotionPhysicsPoseSource source) =>
+            movingPlatform?.ClearPhysicsPoseSource(source);
 
         internal void CreateGroundProbes(out CapsulecastCommand cast, out OverlapCapsuleCommand overlap) =>
             motor.CreateGroundProbes(out cast, out overlap);

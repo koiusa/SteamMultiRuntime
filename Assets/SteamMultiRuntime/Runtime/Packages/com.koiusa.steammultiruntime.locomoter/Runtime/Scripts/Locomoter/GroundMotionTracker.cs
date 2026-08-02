@@ -246,16 +246,8 @@ namespace Koiusa.SteamMultiRuntime
 
         private static IGroundMotionSource GetMotionSource(Transform groundTransform)
         {
-            var behaviours = groundTransform.GetComponentsInParent<MonoBehaviour>();
-            for (var i = 0; i < behaviours.Length; i++)
-            {
-                if (behaviours[i] is IGroundMotionSource motionSource)
-                {
-                    return motionSource;
-                }
-            }
-
-            return null;
+            GroundMotionSourceResolver.Resolve(groundTransform, out var motionSource, out _);
+            return motionSource;
         }
 
         private static bool IsInGroundLayer(int layer, LayerMask groundLayer)

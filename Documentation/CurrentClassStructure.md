@@ -90,6 +90,7 @@ SteamMultiRuntime
 │  └─ Character Prefab Loader
 │
 ├─ Presentation
+│  ├─ GroundMotionPresentationScheduler
 │  ├─ ActorAnimatorStateDriver
 │  ├─ PhysicsPresentationSmoother
 │  ├─ GuardShieldVisual
@@ -222,6 +223,8 @@ Camera
 ```
 
 `ActorAnimatorStateDriver`は入力を再判定せず、ControllerとCoordinatorが公開する確定済み状態をAnimatorパラメータへ変換します。
+
+`GroundMotionPresentationScheduler`は移動床の表示姿勢を先に、`PhysicsPresentationSmoother`を使用するActorの表示姿勢を後に適用します。床やActorの個別`Update`、Crowd Backendからの手動呼び出しと重複させません。`ActorAnimatorUpdateScheduler`はAnimator状態更新、`NpcCrowdSpringSimulation`はAnimator後のSpring姿勢計算を所有するため、これらはPresentation姿勢適用とは別責務です。
 
 Camera Mixer、Focus Marker、入力割り当て、障害物回避の詳細は[CameraArchitecture.md](CameraArchitecture.md)を正本とします。
 

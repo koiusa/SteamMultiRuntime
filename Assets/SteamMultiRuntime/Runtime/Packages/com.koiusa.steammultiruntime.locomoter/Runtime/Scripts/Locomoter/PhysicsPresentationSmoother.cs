@@ -24,6 +24,10 @@ namespace Koiusa.SteamMultiRuntime
             EnsurePresentationRoot();
         }
 
+        private void OnEnable() => GroundMotionPresentationScheduler.RegisterActor(this);
+
+        private void OnDisable() => GroundMotionPresentationScheduler.UnregisterActor(this);
+
         public void CapturePhysicsPose()
         {
             CapturePhysicsPoseInternal(false, Time.fixedDeltaTime);
@@ -60,11 +64,6 @@ namespace Koiusa.SteamMultiRuntime
             previousRotation = currentRotation;
             currentPosition = targetRigidbody.position;
             currentRotation = targetRigidbody.rotation;
-        }
-
-        private void Update()
-        {
-            TickPresentation();
         }
 
         public void TickPresentation()

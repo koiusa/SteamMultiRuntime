@@ -21,6 +21,7 @@ namespace Koiusa.SteamMultiRuntime
             groundHits = new NativeArray<RaycastHit>(capacity, Allocator.Persistent);
             groundOverlapCommands = new NativeArray<OverlapCapsuleCommand>(capacity, Allocator.Persistent);
             groundOverlapHits = new NativeArray<ColliderHit>(capacity * GroundOverlapHitsPerNpc, Allocator.Persistent);
+            groundProbeOwners = new NativeArray<int>(capacity, Allocator.Persistent);
             wallCommands = new NativeArray<CapsulecastCommand>(capacity * 3, Allocator.Persistent);
             wallHits = new NativeArray<RaycastHit>(capacity * 3, Allocator.Persistent);
             wallOwners = new NativeArray<int>(capacity, Allocator.Persistent);
@@ -30,7 +31,12 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy()
         {
-            PrototypeMotionMover.PhysicsPoseApplied -= OnMovingPlatformPhysicsPoseApplied;
+            GroundMotionPhysicsPoseSourceRegistry.SourceRegistered -= OnMovingPlatformSourceRegistered;
+            GroundMotionPhysicsPoseSourceRegistry.SourceUnregistered -= OnMovingPlatformSourceUnregistered;
+            foreach (var source in movingPlatformFollowers.Keys)
+                source.PhysicsPoseApplied -= OnMovingPlatformPhysicsPoseApplied;
+            movingPlatformFollowers.Clear();
+            boundMovingPlatforms.Clear();
             DisposeNativeCollections();
             if (appliedPathfindingIterationsPerFrame != originalPathfindingIterationsPerFrame)
                 NavMesh.pathfindingIterationsPerFrame = originalPathfindingIterationsPerFrame;
@@ -47,6 +53,7 @@ namespace Koiusa.SteamMultiRuntime
             if (groundHits.IsCreated) groundHits.Dispose();
             if (groundOverlapCommands.IsCreated) groundOverlapCommands.Dispose();
             if (groundOverlapHits.IsCreated) groundOverlapHits.Dispose();
+            if (groundProbeOwners.IsCreated) groundProbeOwners.Dispose();
             if (wallCommands.IsCreated) wallCommands.Dispose();
             if (wallHits.IsCreated) wallHits.Dispose();
             if (wallOwners.IsCreated) wallOwners.Dispose();

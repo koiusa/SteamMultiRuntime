@@ -4,9 +4,10 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource, IGroundMotionSnapshotSource
+    public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource,
+        IGroundMotionPhysicsPoseSource, IGroundMotionPresentationUpdater
     {
-        internal static event System.Action<PrototypeMotionMover, float> PhysicsPoseApplied;
+        public event System.Action<IGroundMotionPhysicsPoseSource, float> PhysicsPoseApplied;
         private static readonly ProfilerMarker FixedMarker = new("Physics.MovingPlatform.FixedUpdate");
         private static readonly ProfilerMarker SampleMarker = new("Physics.MovingPlatform.SamplePose");
         private static readonly ProfilerMarker ApplyMarker = new("Physics.MovingPlatform.ApplyPose");
@@ -53,6 +54,7 @@ namespace Koiusa.SteamMultiRuntime
             NetworkVariableWritePermission.Server);
 
         private Transform cachedTransform;
+        private Collider[] interactionColliders;
         private Vector3 initialPosition;
         private Vector3 initialLocalPosition;
         private Quaternion initialRotation;
@@ -76,6 +78,7 @@ namespace Koiusa.SteamMultiRuntime
         private void Awake()
         {
             cachedTransform = transform;
+            interactionColliders = GetComponentsInChildren<Collider>(true);
             initialPosition = cachedTransform.position;
             initialLocalPosition = cachedTransform.localPosition;
             initialRotation = cachedTransform.rotation;
@@ -87,6 +90,20 @@ namespace Koiusa.SteamMultiRuntime
             previousPhysicsInverseMatrix = previousPhysicsMatrix.inverse;
             currentPhysicsMatrix = previousPhysicsMatrix;
             localMotionStartFixedTime = Time.fixedTime;
+        }
+
+        public Collider[] InteractionColliders => interactionColliders;
+
+        private void OnEnable()
+        {
+            GroundMotionPhysicsPoseSourceRegistry.Register(this);
+            GroundMotionPresentationScheduler.RegisterSource(this);
+        }
+
+        private void OnDisable()
+        {
+            GroundMotionPresentationScheduler.UnregisterSource(this);
+            GroundMotionPhysicsPoseSourceRegistry.Unregister(this);
         }
 
         public override void OnNetworkSpawn()
@@ -117,10 +134,7 @@ namespace Koiusa.SteamMultiRuntime
             }
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => PhysicsPoseApplied = null;
-
-        private void Update()
+        public void TickGroundMotionPresentation()
         {
             if (!ShouldApplyMotionLocally() || presentationTransform == null || Time.fixedDeltaTime <= 0f)
             {
