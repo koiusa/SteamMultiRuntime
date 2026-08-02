@@ -55,15 +55,27 @@ namespace Koiusa.SteamMultiRuntime
             "Physics.NpcCrowd.PrepareProbes",
             "Physics.NpcCrowd.Prepare.Recovery",
             "Physics.NpcCrowd.Prepare.Commands",
+              "Physics.NpcCrowd.Prepare.Motor",
+              "Physics.NpcCrowd.Prepare.ControllerCommand",
+              "Physics.NpcCrowd.Prepare.AgentSnapshot",
             "Physics.NpcCrowd.Prepare.ProbeCommands",
             "Physics.NpcCrowd.Presentation",
+            "Physics.NpcCrowd.Presentation.Smoothing",
+            "Physics.NpcCrowd.Presentation.Controller",
+            "Physics.NpcCrowd.Presentation.Skill",
+            "Physics.NpcCrowd.Presentation.Navigation",
             "Physics.NpcCrowd.Maintenance",
             "Physics.NpcCrowd.PathfindingBudget",
             "Physics.NpcCrowd.QueryAndSteeringWait",
             "Physics.NpcCrowd.ApplyProbeResults",
             "Physics.NpcCrowd.ResolvePenetration",
             "Physics.NpcCrowd.MovementJob",
-            "Physics.NpcCrowd.ApplyMovementAndContacts"
+            "Physics.NpcCrowd.ApplyMovementAndContacts",
+            "Physics.NpcCrowd.MovingPlatformFollow",
+            "Physics.MovingPlatform.FixedUpdate",
+            "Physics.MovingPlatform.SamplePose",
+            "Physics.MovingPlatform.ApplyPose",
+            "Physics.MovingPlatform.NotifyCrowd"
         };
 
         private sealed class MarkerRecorder : IDisposable
@@ -180,8 +192,15 @@ namespace Koiusa.SteamMultiRuntime
                 "Physics.NpcCrowd.PrepareProbes",
                 "Physics.NpcCrowd.Prepare.Recovery",
                 "Physics.NpcCrowd.Prepare.Commands",
+                  "Physics.NpcCrowd.Prepare.Motor",
+                  "Physics.NpcCrowd.Prepare.ControllerCommand",
+                  "Physics.NpcCrowd.Prepare.AgentSnapshot",
                 "Physics.NpcCrowd.Prepare.ProbeCommands",
                 "Physics.NpcCrowd.Presentation",
+                "Physics.NpcCrowd.Presentation.Smoothing",
+                "Physics.NpcCrowd.Presentation.Controller",
+                "Physics.NpcCrowd.Presentation.Skill",
+                "Physics.NpcCrowd.Presentation.Navigation",
                 "Physics.NpcCrowd.Maintenance",
                 "Physics.NpcCrowd.PathfindingBudget",
                 "Physics.NpcCrowd.QueryAndSteeringWait",
@@ -189,6 +208,12 @@ namespace Koiusa.SteamMultiRuntime
                 "Physics.NpcCrowd.ResolvePenetration",
                 "Physics.NpcCrowd.MovementJob",
                 "Physics.NpcCrowd.ApplyMovementAndContacts");
+            AddExplicitMarkerRecorders(ProfilerCategory.Scripts,
+                "Physics.NpcCrowd.MovingPlatformFollow",
+                "Physics.MovingPlatform.FixedUpdate",
+                "Physics.MovingPlatform.SamplePose",
+                "Physics.MovingPlatform.ApplyPose",
+                "Physics.MovingPlatform.NotifyCrowd");
         }
 
         private void AddExplicitMarkerRecorders(ProfilerCategory category, params string[] names)

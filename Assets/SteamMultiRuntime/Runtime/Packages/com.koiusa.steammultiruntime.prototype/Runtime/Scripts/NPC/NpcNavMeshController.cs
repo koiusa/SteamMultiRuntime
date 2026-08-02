@@ -82,6 +82,7 @@ namespace Koiusa.SteamMultiRuntime
         private bool _clientSimulationDisabled;
         private Vector3 _crowdSteeringPlanar;
         private bool _hasCrowdSteering;
+        private NpcCrowdAgentData _crowdAgentTemplate;
 
         private readonly NpcNavMeshController[] _npcNeighborBuffer = new NpcNavMeshController[32];
         private readonly float[] _avoidanceCandidateScores = new float[32];
@@ -165,6 +166,7 @@ namespace Koiusa.SteamMultiRuntime
             jump = GetComponent<NpcNavMeshJumpModule>();
             steering = GetComponent<NpcNavMeshSteeringModule>();
             avoidance = GetComponent<NpcNavMeshAvoidanceModule>();
+            RefreshCrowdAgentTemplate();
 
             ApplyAgentSettings();
 
@@ -363,7 +365,15 @@ namespace Koiusa.SteamMultiRuntime
                 nextMoveInput = nextMoveInput.normalized;
 
             _moveInput = nextMoveInput;
-            _moveDirection = ActorMotor.GetMoveDirection(transform, nextMoveInput);
+            // steeringPlanar is already a gravity-plane world direction. Converting it
+            // to local input and immediately rebuilding the same world direction through
+            // projected Transform forward/right repeated two normalizations per NPC.
+            // Keep local input for traversal, but preserve its adaptive magnitude directly
+            // on the already filtered world-space steering vector.
+            var steeringMagnitude = steeringPlanar.magnitude;
+            _moveDirection = steeringMagnitude > 0.0001f
+                ? steeringPlanar * (nextMoveInput.magnitude / steeringMagnitude)
+                : Vector3.zero;
             _inputSource.SetMove(nextMoveInput);
 
             if (steeringPlanUpdated && jump != null

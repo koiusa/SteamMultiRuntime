@@ -49,21 +49,23 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnDestroy() => Deactivate();
 
-        internal void TickPresentation(float deltaTime)
-        {
-            presentationSmoother?.TickPresentation();
-            controller.TickCrowdUpdate(deltaTime);
-        }
+        internal void TickPresentationSmoothing() => presentationSmoother?.TickPresentation();
+
+        internal void TickCrowdSkill(float deltaTime) => controller.TickCrowdSkill(deltaTime);
+
+        internal void TickCrowdNavigation(bool observeMovementState) =>
+            controller.TickCrowdNavigation(observeMovementState);
+
+        internal Vector3 Position => body.position;
 
         internal void TickRecovery() => fallRecovery?.TickRecovery();
 
-        internal void Prepare(float deltaTime)
-        {
-            motor.BeginSimulationStep(deltaTime);
-            motor.ApplyCommand(controller.BuildCrowdCommand());
-        }
+        internal void BeginSimulationStep(float deltaTime) => motor.BeginSimulationStep(deltaTime);
 
-        internal NpcCrowdAgentData CaptureAgentData() => controller.CaptureCrowdAgentData();
+        internal void BuildAndApplyCommand() => motor.ApplyCommand(controller.BuildCrowdCommand());
+
+        internal NpcCrowdAgentData CaptureAgentData(Vector3 upAxis) =>
+            controller.CaptureCrowdAgentData(body.position, motor.Velocity, upAxis);
         internal NpcCrowdMovementData CaptureMovementData() => motor.CaptureMovementData();
         internal void ApplySteering(float3 value)
         {
@@ -75,7 +77,9 @@ namespace Koiusa.SteamMultiRuntime
         {
             motor.ApplyMovement(result);
             presentationSmoother?.CapturePhysicsPose(deltaTime);
-            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh && motor.IsGrounded)
+            // Movement is the authoritative Crowd pose update. Synchronize the
+            // NavMesh shadow position here instead of repeating it every render frame.
+            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
                 navMeshAgent.nextPosition = body.position;
             networkController?.ApplyServerNpcCrowdState(
                 motor.HorizontalVelocity,

@@ -5,10 +5,14 @@ namespace Koiusa.SteamMultiRuntime
 {
     public partial class NpcNavMeshController
     {
-        internal void TickCrowdUpdate(float deltaTime)
+        internal void TickCrowdSkill(float deltaTime)
         {
-            _skillCoordinator?.TickSkills(deltaTime);
+            if (_skillCoordinator != null && _skillCoordinator.ActiveSkill != null)
+                _skillCoordinator.TickSkills(deltaTime);
+        }
 
+        internal void TickCrowdNavigation(bool observeMovementState)
+        {
             if (_networkPlayerController != null)
             {
                 if (!_networkPlayerController.IsSpawned)
@@ -22,12 +26,11 @@ namespace Koiusa.SteamMultiRuntime
 
             if (_agent == null || !_agent.enabled || !_agent.isOnNavMesh)
                 return;
-            if (movement != null && movement.isActiveAndEnabled)
+            if (observeMovementState && movement != null && movement.isActiveAndEnabled)
                 movement.ObserveExternalMotionState(
                     HorizontalVelocity,
                     _cachedTargetPlanarVelocity.magnitude,
                     _rigidbody != null ? _rigidbody.position : transform.position);
-            _agent.nextPosition = _rigidbody != null ? _rigidbody.position : transform.position;
         }
 
         private void DisableClientSimulation()
@@ -77,13 +80,13 @@ namespace Koiusa.SteamMultiRuntime
                 jumpRequested = false;
             if (_traversalTestDriver != null && _traversalTestDriver.ShouldTick)
                 _traversalTestDriver.TickTest(_traversalInput, _traversalCoordinator, IsGrounded);
-            if (!useCrowdSimulation
-                && (_traversalInput == null || !_traversalInput.HasPendingInput)
+            if ((_traversalInput == null || !_traversalInput.HasPendingInput)
+                && (_traversalTestDriver == null
+                    || (!_traversalTestDriver.ShouldTick && !_traversalTestDriver.IsControlling))
                 && !_onDemandWireFeaturesActive
                 && !_onDemandWallFeaturesActive
                 && !_onDemandLadderFeaturesActive)
             {
-                _moveDirection = ActorMotor.GetMoveDirection(transform, _moveInput);
                 return new NpcControllerInputCommand
                 {
                     MoveInput = _moveInput,
@@ -129,27 +132,38 @@ namespace Koiusa.SteamMultiRuntime
 
         internal Vector3 CrowdMoveDirection => _moveDirection;
 
-        internal NpcCrowdAgentData CaptureCrowdAgentData()
+        private void RefreshCrowdAgentTemplate()
         {
-            var mode = avoidance != null ? (int)avoidance.Mode : 0;
+            var mode = avoidance != null
+                ? (int)avoidance.Mode
+                : (int)NpcNavMeshAvoidanceModule.AvoidanceMode.Boid;
             var isRvo = mode == (int)NpcNavMeshAvoidanceModule.AvoidanceMode.Rvo;
-            return new NpcCrowdAgentData
+            _crowdAgentTemplate = new NpcCrowdAgentData
             {
-                Position = transform.position,
-                Velocity = _rigidbody != null ? _rigidbody.linearVelocity : Vector3.zero,
-                GoalVelocity = _cachedTargetPlanarVelocity,
-                UpAxis = ActorMotor.GetUpAxis(),
-                Radius = isRvo ? rvoNeighborRadius : boidSeparationRadius,
-                TimeHorizon = isRvo ? rvoTimeHorizon : 1f,
-                GoalWeight = isRvo ? rvoGoalWeight : boidGoalWeight,
-                AvoidanceWeight = isRvo ? rvoAvoidanceWeight : boidSeparationWeight,
-                SeparationExponent = isRvo ? 1f : boidSeparationExponent,
-                MinApproachSpeed = isRvo ? rvoMinApproachSpeed : 0f,
-                ForwardDotMin = isRvo ? -1f : boidNeighborForwardDotMin,
-                MaxNeighbors = isRvo ? rvoMaxNeighbors : boidMaxNeighbors,
+                Radius = avoidance == null ? 1.6f : isRvo ? rvoNeighborRadius : boidSeparationRadius,
+                TimeHorizon = avoidance != null && isRvo ? rvoTimeHorizon : 1f,
+                GoalWeight = avoidance == null ? 1f : isRvo ? rvoGoalWeight : boidGoalWeight,
+                AvoidanceWeight = avoidance == null ? 0f : isRvo ? rvoAvoidanceWeight : boidSeparationWeight,
+                SeparationExponent = avoidance != null && !isRvo ? boidSeparationExponent : 1f,
+                MinApproachSpeed = avoidance != null && isRvo ? rvoMinApproachSpeed : 0f,
+                ForwardDotMin = avoidance != null && !isRvo ? boidNeighborForwardDotMin : -1f,
+                MaxNeighbors = avoidance == null ? 0 : isRvo ? rvoMaxNeighbors : boidMaxNeighbors,
                 Mode = mode,
-                UseForwardFilter = !isRvo && boidUseForwardNeighborFilter ? 1 : 0
+                UseForwardFilter = avoidance != null && !isRvo && boidUseForwardNeighborFilter ? 1 : 0
             };
+        }
+
+        internal NpcCrowdAgentData CaptureCrowdAgentData(
+            Vector3 position,
+            Vector3 velocity,
+            Vector3 upAxis)
+        {
+            var data = _crowdAgentTemplate;
+            data.Position = position;
+            data.Velocity = velocity;
+            data.GoalVelocity = _cachedTargetPlanarVelocity;
+            data.UpAxis = upAxis;
+            return data;
         }
 
         internal bool TryApplyCrowdSteering(float3 steering, out Vector3 desiredVelocity)

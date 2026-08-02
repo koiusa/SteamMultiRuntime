@@ -143,6 +143,8 @@ namespace Koiusa.SteamMultiRuntime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
+            if (updateLoop != null)
+                Destroy(updateLoop.gameObject);
             ActiveInstances.Clear();
             selectedInstanceIndex = 0;
             currentUiOwner = null;

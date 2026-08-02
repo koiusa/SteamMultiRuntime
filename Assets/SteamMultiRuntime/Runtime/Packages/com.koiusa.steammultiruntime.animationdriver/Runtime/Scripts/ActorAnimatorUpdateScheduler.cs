@@ -11,7 +11,12 @@ namespace Koiusa.SteamMultiRuntime
         private readonly Dictionary<ActorAnimatorStateDriver, float> nextUpdates = new(256);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => instance = null;
+        private static void ResetStatics()
+        {
+            if (instance != null)
+                Destroy(instance.gameObject);
+            instance = null;
+        }
 
         internal static void Register(ActorAnimatorStateDriver driver)
         {

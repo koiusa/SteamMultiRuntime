@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
@@ -6,6 +7,10 @@ namespace Koiusa.SteamMultiRuntime
     public class PrototypeMotionMover : NetworkBehaviour, IGroundMotionSource, IGroundMotionSnapshotSource
     {
         internal static event System.Action<PrototypeMotionMover, float> PhysicsPoseApplied;
+        private static readonly ProfilerMarker FixedMarker = new("Physics.MovingPlatform.FixedUpdate");
+        private static readonly ProfilerMarker SampleMarker = new("Physics.MovingPlatform.SamplePose");
+        private static readonly ProfilerMarker ApplyMarker = new("Physics.MovingPlatform.ApplyPose");
+        private static readonly ProfilerMarker NotifyMarker = new("Physics.MovingPlatform.NotifyCrowd");
 
         private static readonly Vector3 UnitScale = Vector3.one;
 
@@ -101,9 +106,15 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             }
 
-            EnsurePhysicsSample();
-            ApplyMotionMatrix(currentPhysicsMatrix);
-            PhysicsPoseApplied?.Invoke(this, Time.fixedDeltaTime);
+            using (FixedMarker.Auto())
+            {
+                using (SampleMarker.Auto())
+                    EnsurePhysicsSample();
+                using (ApplyMarker.Auto())
+                    ApplyMotionMatrix(currentPhysicsMatrix);
+                using (NotifyMarker.Auto())
+                    PhysicsPoseApplied?.Invoke(this, Time.fixedDeltaTime);
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

@@ -20,8 +20,15 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly ProfilerMarker PrepareMarker = new("Physics.NpcCrowd.PrepareProbes");
         private static readonly ProfilerMarker RecoveryMarker = new("Physics.NpcCrowd.Prepare.Recovery");
         private static readonly ProfilerMarker CommandMarker = new("Physics.NpcCrowd.Prepare.Commands");
+        private static readonly ProfilerMarker MotorPrepareMarker = new("Physics.NpcCrowd.Prepare.Motor");
+        private static readonly ProfilerMarker ControllerCommandMarker = new("Physics.NpcCrowd.Prepare.ControllerCommand");
+        private static readonly ProfilerMarker AgentSnapshotMarker = new("Physics.NpcCrowd.Prepare.AgentSnapshot");
         private static readonly ProfilerMarker ProbeCommandMarker = new("Physics.NpcCrowd.Prepare.ProbeCommands");
         private static readonly ProfilerMarker PresentationMarker = new("Physics.NpcCrowd.Presentation");
+        private static readonly ProfilerMarker PresentationSmoothingMarker = new("Physics.NpcCrowd.Presentation.Smoothing");
+        private static readonly ProfilerMarker PresentationControllerMarker = new("Physics.NpcCrowd.Presentation.Controller");
+        private static readonly ProfilerMarker PresentationSkillMarker = new("Physics.NpcCrowd.Presentation.Skill");
+        private static readonly ProfilerMarker PresentationNavigationMarker = new("Physics.NpcCrowd.Presentation.Navigation");
         private static readonly ProfilerMarker MaintenanceMarker = new("Physics.NpcCrowd.Maintenance");
         private static readonly ProfilerMarker PathfindingBudgetMarker = new("Physics.NpcCrowd.PathfindingBudget");
         private static readonly ProfilerMarker QueryMarker = new("Physics.NpcCrowd.QueryAndSteeringWait");
@@ -29,6 +36,7 @@ namespace Koiusa.SteamMultiRuntime
         private static readonly ProfilerMarker PenetrationMarker = new("Physics.NpcCrowd.ResolvePenetration");
         private static readonly ProfilerMarker MovementJobMarker = new("Physics.NpcCrowd.MovementJob");
         private static readonly ProfilerMarker MovementApplyMarker = new("Physics.NpcCrowd.ApplyMovementAndContacts");
+        private static readonly ProfilerMarker MovingPlatformFollowMarker = new("Physics.NpcCrowd.MovingPlatformFollow");
         [BurstCompile]
         private struct BuildSpatialGridJob : IJobParallelFor
         {
@@ -257,6 +265,8 @@ namespace Koiusa.SteamMultiRuntime
         private static NpcCrowdSimulation instance;
         private readonly List<NpcCrowdAgent> activeNpcs = new(256);
         private readonly HashSet<NpcCrowdAgent> activeNpcSet = new();
+        private readonly List<float> nextAiCommandTimes = new(256);
+        private readonly List<float> nextNavigationObservationTimes = new(256);
         private NativeArray<NpcCrowdAgentData> agents;
         private NativeArray<float3> steeringResults;
         private NativeParallelMultiHashMap<int, int> spatialGrid;
@@ -272,9 +282,19 @@ namespace Koiusa.SteamMultiRuntime
         private NativeArray<NpcCrowdMovementResult> movementResults;
         private int capacity;
         private float crowdStepAccumulator;
+        private float probeAccumulator;
+        private bool crowdStateInitialized;
+        private Transform lodCameraTransform;
+        private float nextLodCameraLookupTime;
         private int originalPathfindingIterationsPerFrame;
         private int appliedPathfindingIterationsPerFrame;
         private const float CrowdStepInterval = 1f / 30f;
+        private const float ProbeInterval = 1f / 15f;
+        private const float NearDecisionInterval = 1f / 10f;
+        private const float MidDecisionInterval = 1f / 5f;
+        private const float FarDecisionInterval = 1f / 2f;
+        private const float NearDecisionDistanceSqr = 12f * 12f;
+        private const float MidDecisionDistanceSqr = 30f * 30f;
         private const float MaximumCrowdStep = 1f / 15f;
 
         private void Awake()
@@ -286,6 +306,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OnMovingPlatformPhysicsPoseApplied(PrototypeMotionMover source, float deltaTime)
         {
+            using var marker = MovingPlatformFollowMarker.Auto();
             for (var i = activeNpcs.Count - 1; i >= 0; i--)
             {
                 var npc = activeNpcs[i];
@@ -298,11 +319,43 @@ namespace Koiusa.SteamMultiRuntime
         {
             var deltaTime = Time.deltaTime;
             using (PresentationMarker.Auto())
-            for (var i = activeNpcs.Count - 1; i >= 0; i--)
             {
-                var npc = activeNpcs[i];
-                if (npc != null && npc.isActiveAndEnabled)
-                    npc.TickPresentation(deltaTime);
+                using (PresentationSmoothingMarker.Auto())
+                for (var i = activeNpcs.Count - 1; i >= 0; i--)
+                {
+                    var npc = activeNpcs[i];
+                    if (npc != null && npc.isActiveAndEnabled)
+                        npc.TickPresentationSmoothing();
+                }
+
+                using (PresentationControllerMarker.Auto())
+                {
+                    using (PresentationSkillMarker.Auto())
+                    for (var i = activeNpcs.Count - 1; i >= 0; i--)
+                    {
+                        var npc = activeNpcs[i];
+                        if (npc != null && npc.isActiveAndEnabled)
+                            npc.TickCrowdSkill(deltaTime);
+                    }
+
+                    var now = Time.time;
+                    var hasLodCamera = TryGetLodCameraPosition(out var lodCameraPosition);
+                    using (PresentationNavigationMarker.Auto())
+                    for (var i = activeNpcs.Count - 1; i >= 0; i--)
+                    {
+                        if (now < nextNavigationObservationTimes[i])
+                            continue;
+                        var npc = activeNpcs[i];
+                        if (npc == null || !npc.isActiveAndEnabled)
+                            continue;
+                        npc.TickCrowdNavigation(true);
+                        var position = crowdStateInitialized && agents.IsCreated && i < agents.Length
+                            ? agents[i].Position
+                            : (float3)npc.Position;
+                        nextNavigationObservationTimes[i] = now
+                            + GetDecisionInterval(position, hasLodCamera, lodCameraPosition);
+                    }
+                }
             }
 
             // Crowd bodies are kinematic and use their own Burst integration. Keeping
@@ -321,6 +374,8 @@ namespace Koiusa.SteamMultiRuntime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
+            if (instance != null)
+                Destroy(instance.gameObject);
             instance = null;
         }
 
@@ -352,7 +407,15 @@ namespace Koiusa.SteamMultiRuntime
         private void Add(NpcCrowdAgent npc)
         {
             if (activeNpcSet.Add(npc))
+            {
                 activeNpcs.Add(npc);
+                var phase = GetSchedulePhase(npc);
+                nextAiCommandTimes.Add(Time.time + NearDecisionInterval * phase);
+                nextNavigationObservationTimes.Add(Time.time + NearDecisionInterval * phase);
+                // Native buffers can still contain data from the previous crowd layout.
+                // Force commands and probes to initialize before the new layout moves.
+                crowdStateInitialized = false;
+            }
         }
 
         private void Remove(NpcCrowdAgent npc)
@@ -364,7 +427,11 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             var last = activeNpcs.Count - 1;
             activeNpcs[index] = activeNpcs[last];
+            nextAiCommandTimes[index] = nextAiCommandTimes[last];
+            nextNavigationObservationTimes[index] = nextNavigationObservationTimes[last];
             activeNpcs.RemoveAt(last);
+            nextAiCommandTimes.RemoveAt(last);
+            nextNavigationObservationTimes.RemoveAt(last);
         }
 
         private void RunCrowdStep(float deltaTime)
@@ -376,43 +443,83 @@ namespace Koiusa.SteamMultiRuntime
             }
             var count = activeNpcs.Count;
             if (count == 0)
+            {
+                crowdStateInitialized = false;
+                probeAccumulator = 0f;
                 return;
+            }
+
+            probeAccumulator += deltaTime;
+            var initializeCrowdState = !crowdStateInitialized;
+            var updateProbes = initializeCrowdState || probeAccumulator >= ProbeInterval;
+            if (initializeCrowdState)
+            {
+                probeAccumulator = 0f;
+            }
+            else
+            {
+                if (updateProbes)
+                    probeAccumulator = Mathf.Max(0f, probeAccumulator - ProbeInterval);
+            }
+            crowdStateInitialized = true;
 
             wallProbePhase ^= 1;
             var wallProbeCount = 0;
             using (PrepareMarker.Auto())
             {
-            using (RecoveryMarker.Auto())
-            for (var i = 0; i < count; i++)
-                activeNpcs[i].TickRecovery();
+                using (RecoveryMarker.Auto())
+                for (var i = 0; i < count; i++)
+                    activeNpcs[i].TickRecovery();
 
-            using (CommandMarker.Auto())
-            for (var i = 0; i < count; i++)
-            {
-                activeNpcs[i].Prepare(deltaTime);
-                agents[i] = activeNpcs[i].CaptureAgentData();
-            }
-
-            using (ProbeCommandMarker.Auto())
-            for (var i = 0; i < count; i++)
-            {
-                activeNpcs[i].CreateGroundProbes(out var castCommand, out var overlapCommand);
-                groundCommands[i] = castCommand;
-                groundOverlapCommands[i] = overlapCommand;
-                var probeWalls = activeNpcs[i].ShouldProbeWalls
-                    && (activeNpcs[i].ShouldProbeWallsEveryStep || ((i + wallProbePhase) & 1) == 0);
-                if (probeWalls)
+                using (CommandMarker.Auto())
                 {
-                    activeNpcs[i].ClearWallProbe();
-                    activeNpcs[i].CreateWallProbes(out var wallForward, out var wallLeft, out var wallRight);
-                    var wallIndex = wallProbeCount * 3;
-                    wallCommands[wallIndex] = wallForward;
-                    wallCommands[wallIndex + 1] = wallLeft;
-                    wallCommands[wallIndex + 2] = wallRight;
-                    wallOwners[wallProbeCount] = i;
-                    wallProbeCount++;
+                    using (MotorPrepareMarker.Auto())
+                    for (var i = 0; i < count; i++)
+                        activeNpcs[i].BeginSimulationStep(deltaTime);
+
+                    var now = Time.time;
+                    var hasLodCamera = TryGetLodCameraPosition(out var lodCameraPosition);
+                    using (ControllerCommandMarker.Auto())
+                    for (var i = 0; i < count; i++)
+                    {
+                        if (!initializeCrowdState && now < nextAiCommandTimes[i])
+                            continue;
+                        activeNpcs[i].BuildAndApplyCommand();
+                        var interval = initializeCrowdState
+                            ? NearDecisionInterval
+                            : GetDecisionInterval(agents[i].Position, hasLodCamera, lodCameraPosition);
+                        nextAiCommandTimes[i] = now + interval;
+                    }
+
+                    var upAxis = ActorMotor.GetUpAxis();
+                    using (AgentSnapshotMarker.Auto())
+                    for (var i = 0; i < count; i++)
+                        agents[i] = activeNpcs[i].CaptureAgentData(upAxis);
                 }
-            }
+
+                if (updateProbes)
+                {
+                    using (ProbeCommandMarker.Auto())
+                    for (var i = 0; i < count; i++)
+                    {
+                        activeNpcs[i].CreateGroundProbes(out var castCommand, out var overlapCommand);
+                        groundCommands[i] = castCommand;
+                        groundOverlapCommands[i] = overlapCommand;
+                        var probeWalls = activeNpcs[i].ShouldProbeWalls
+                            && (activeNpcs[i].ShouldProbeWallsEveryStep || ((i + wallProbePhase) & 1) == 0);
+                        if (probeWalls)
+                        {
+                            activeNpcs[i].ClearWallProbe();
+                            activeNpcs[i].CreateWallProbes(out var wallForward, out var wallLeft, out var wallRight);
+                            var wallIndex = wallProbeCount * 3;
+                            wallCommands[wallIndex] = wallForward;
+                            wallCommands[wallIndex + 1] = wallLeft;
+                            wallCommands[wallIndex + 2] = wallRight;
+                            wallOwners[wallProbeCount] = i;
+                            wallProbeCount++;
+                        }
+                    }
+                }
             }
             using (PathfindingBudgetMarker.Auto())
                 UpdatePathfindingBudget(count);
@@ -429,13 +536,17 @@ namespace Koiusa.SteamMultiRuntime
                     Agents = agents.GetSubArray(0, count), Grid = spatialGrid,
                     Results = steeringResults.GetSubArray(0, count)
                 }.Schedule(count, 64, buildHandle);
-                var groundHandle = CapsulecastCommand.ScheduleBatch(
-                    groundCommands.GetSubArray(0, count), groundHits.GetSubArray(0, count), 32, 1);
-                var overlapHandle = OverlapCapsuleCommand.ScheduleBatch(
-                    groundOverlapCommands.GetSubArray(0, count),
-                    groundOverlapHits.GetSubArray(0, count * GroundOverlapHitsPerNpc),
-                    32, GroundOverlapHitsPerNpc, default);
-                var wallHandle = wallProbeCount > 0
+                var groundHandle = updateProbes
+                    ? CapsulecastCommand.ScheduleBatch(
+                        groundCommands.GetSubArray(0, count), groundHits.GetSubArray(0, count), 32, 1)
+                    : default;
+                var overlapHandle = updateProbes
+                    ? OverlapCapsuleCommand.ScheduleBatch(
+                        groundOverlapCommands.GetSubArray(0, count),
+                        groundOverlapHits.GetSubArray(0, count * GroundOverlapHitsPerNpc),
+                        32, GroundOverlapHitsPerNpc, default)
+                    : default;
+                var wallHandle = updateProbes && wallProbeCount > 0
                     ? CapsulecastCommand.ScheduleBatch(
                         wallCommands.GetSubArray(0, wallProbeCount * 3),
                         wallHits.GetSubArray(0, wallProbeCount * 3), 32, 1)
@@ -444,38 +555,44 @@ namespace Koiusa.SteamMultiRuntime
                 JobHandle.CombineDependencies(groundAndSteeringHandle, wallHandle).Complete();
             }
 
-            using (ProbeApplyMarker.Auto())
+            if (updateProbes)
             {
+                using (ProbeApplyMarker.Auto())
+                {
+                    for (var i = 0; i < count; i++)
+                    {
+                        var overlapIndex = i * GroundOverlapHitsPerNpc;
+                        activeNpcs[i].ApplyGroundProbe(
+                            groundHits[i],
+                            groundOverlapHits[overlapIndex],
+                            groundOverlapHits[overlapIndex + 1],
+                            groundOverlapHits[overlapIndex + 2],
+                            groundOverlapHits[overlapIndex + 3]);
+                    }
+                    for (var probeIndex = 0; probeIndex < wallProbeCount; probeIndex++)
+                    {
+                        var wallIndex = probeIndex * 3;
+                        activeNpcs[wallOwners[probeIndex]].ApplyWallProbes(
+                            wallHits[wallIndex], wallHits[wallIndex + 1], wallHits[wallIndex + 2]);
+                    }
+                }
+                using (PenetrationMarker.Auto())
+                for (var i = 0; i < count; i++)
+                {
+                    // Resolve the exact movement capsule after the predictive wall casts.
+                    // This also recovers contacts when a fast/thin obstacle started inside
+                    // the cast volume and therefore produced no sweep hit.
+                    var overlapIndex = i * GroundOverlapHitsPerNpc;
+                    activeNpcs[i].ResolveEnvironmentOverlaps(
+                        groundOverlapHits[overlapIndex],
+                        groundOverlapHits[overlapIndex + 1],
+                        groundOverlapHits[overlapIndex + 2],
+                        groundOverlapHits[overlapIndex + 3]);
+                }
+            }
             for (var i = 0; i < count; i++)
             {
                 activeNpcs[i].ApplySteering(steeringResults[i]);
-                var overlapIndex = i * GroundOverlapHitsPerNpc;
-                activeNpcs[i].ApplyGroundProbe(
-                    groundHits[i],
-                    groundOverlapHits[overlapIndex],
-                    groundOverlapHits[overlapIndex + 1],
-                    groundOverlapHits[overlapIndex + 2],
-                    groundOverlapHits[overlapIndex + 3]);
-            }
-            for (var probeIndex = 0; probeIndex < wallProbeCount; probeIndex++)
-            {
-                var wallIndex = probeIndex * 3;
-                activeNpcs[wallOwners[probeIndex]].ApplyWallProbes(
-                    wallHits[wallIndex], wallHits[wallIndex + 1], wallHits[wallIndex + 2]);
-            }
-            }
-            using (PenetrationMarker.Auto())
-            for (var i = 0; i < count; i++)
-            {
-                // Resolve the exact movement capsule after the predictive wall casts.
-                // This also recovers contacts when a fast/thin obstacle started inside
-                // the cast volume and therefore produced no sweep hit.
-                var overlapIndex = i * GroundOverlapHitsPerNpc;
-                activeNpcs[i].ResolveEnvironmentOverlaps(
-                    groundOverlapHits[overlapIndex],
-                    groundOverlapHits[overlapIndex + 1],
-                    groundOverlapHits[overlapIndex + 2],
-                    groundOverlapHits[overlapIndex + 3]);
                 movementInputs[i] = activeNpcs[i].CaptureMovementData();
             }
             using (MovementJobMarker.Auto())
@@ -498,7 +615,44 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 activeNpcSet.Remove(activeNpcs[i]);
                 activeNpcs.RemoveAt(i);
+                nextAiCommandTimes.RemoveAt(i);
+                nextNavigationObservationTimes.RemoveAt(i);
             }
+        }
+
+        private bool TryGetLodCameraPosition(out Vector3 position)
+        {
+            if (lodCameraTransform == null && Time.unscaledTime >= nextLodCameraLookupTime)
+            {
+                nextLodCameraLookupTime = Time.unscaledTime + 1f;
+                var camera = Camera.main;
+                if (camera != null)
+                    lodCameraTransform = camera.transform;
+            }
+            if (lodCameraTransform != null)
+            {
+                position = lodCameraTransform.position;
+                return true;
+            }
+            position = default;
+            return false;
+        }
+
+        private static float GetDecisionInterval(float3 npcPosition, bool hasCamera, Vector3 cameraPosition)
+        {
+            if (!hasCamera)
+                return NearDecisionInterval;
+            var delta = (Vector3)npcPosition - cameraPosition;
+            var distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr <= NearDecisionDistanceSqr)
+                return NearDecisionInterval;
+            return distanceSqr <= MidDecisionDistanceSqr ? MidDecisionInterval : FarDecisionInterval;
+        }
+
+        private static float GetSchedulePhase(NpcCrowdAgent npc)
+        {
+            var hash = unchecked((uint)npc.GetInstanceID() * 2654435761u);
+            return (hash & 1023u) / 1024f;
         }
 
         private void UpdatePathfindingBudget(int npcCount)
