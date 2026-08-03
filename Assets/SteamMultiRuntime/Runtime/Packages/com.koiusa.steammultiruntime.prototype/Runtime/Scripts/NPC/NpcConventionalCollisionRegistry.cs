@@ -9,6 +9,7 @@ namespace Koiusa.SteamMultiRuntime
         {
             internal NpcNavMeshController Controller;
             internal Collider[] SolidColliders;
+            internal bool CollisionsEnabled;
         }
 
         private static readonly List<Entry> Entries = new();
@@ -16,7 +17,10 @@ namespace Koiusa.SteamMultiRuntime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => Entries.Clear();
 
-        internal static void Register(NpcNavMeshController controller, Rigidbody body)
+        internal static void Register(
+            NpcNavMeshController controller,
+            Rigidbody body,
+            bool collisionsEnabled)
         {
             if (controller == null || body == null || Find(controller) >= 0)
                 return;
@@ -29,18 +33,30 @@ namespace Koiusa.SteamMultiRuntime
                 if (collider != null && !collider.isTrigger && collider.attachedRigidbody == body)
                     solidColliders.Add(collider);
             }
-            var entry = new Entry { Controller = controller, SolidColliders = solidColliders.ToArray() };
+            var entry = new Entry
+            {
+                Controller = controller,
+                SolidColliders = solidColliders.ToArray(),
+                CollisionsEnabled = collisionsEnabled
+            };
             for (var i = 0; i < Entries.Count; i++)
-                SetIgnored(entry.SolidColliders, Entries[i].SolidColliders, true);
+            {
+                var other = Entries[i];
+                var shouldCollide = entry.CollisionsEnabled && other.CollisionsEnabled;
+                SetIgnored(entry.SolidColliders, other.SolidColliders, !shouldCollide);
+            }
             Entries.Add(entry);
         }
 
-        internal static void Refresh(NpcNavMeshController controller, Rigidbody body)
+        internal static void Refresh(
+            NpcNavMeshController controller,
+            Rigidbody body,
+            bool collisionsEnabled)
         {
             if (controller == null || body == null)
                 return;
             Unregister(controller);
-            Register(controller, body);
+            Register(controller, body, collisionsEnabled);
         }
 
         internal static void Unregister(NpcNavMeshController controller)

@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             public GameObject Prefab;
             public string Path;
             public bool UseCrowdSimulation;
+            public bool EnableNpcRigidbodyCollisions;
             public bool IsEditable;
             public int ControllerCount;
         }
@@ -24,7 +25,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private static void Open()
         {
             var window = GetWindow<NpcCrowdBackendWindow>("NPC Crowd ON/OFF");
-            window.minSize = new Vector2(560f, 260f);
+            window.minSize = new Vector2(680f, 260f);
             window.RefreshPrefabList();
         }
 
@@ -56,6 +57,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
                 GUILayout.Label("Crowd", GUILayout.Width(48f));
+                GUILayout.Label("NPC Collision", GUILayout.Width(92f));
                 GUILayout.Label("Prefab", GUILayout.Width(210f));
                 GUILayout.Label("Asset Path");
             }
@@ -77,8 +79,29 @@ namespace Koiusa.SteamMultiRuntime.Editor
                     var enabled = EditorGUILayout.Toggle(entry.UseCrowdSimulation, GUILayout.Width(48f));
                     if (EditorGUI.EndChangeCheck())
                     {
-                        if (ApplyToPrefab(entry, enabled))
+                        if (ApplyToPrefab(
+                                entry,
+                                "useCrowdSimulation",
+                                enabled,
+                                "NPC Crowd simulation"))
                             entry.UseCrowdSimulation = enabled;
+                    }
+                }
+
+                using (new EditorGUI.DisabledScope(!canEdit || entry.UseCrowdSimulation))
+                {
+                    EditorGUI.BeginChangeCheck();
+                    var collisionsEnabled = EditorGUILayout.Toggle(
+                        entry.EnableNpcRigidbodyCollisions,
+                        GUILayout.Width(92f));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        if (ApplyToPrefab(
+                                entry,
+                                "enableNpcRigidbodyCollisions",
+                                collisionsEnabled,
+                                "NPC Rigidbody collisions"))
+                            entry.EnableNpcRigidbodyCollisions = collisionsEnabled;
                     }
                 }
 
@@ -117,15 +140,17 @@ namespace Koiusa.SteamMultiRuntime.Editor
                     continue;
 
                 var serializedController = new SerializedObject(controllers[0]);
-                var property = serializedController.FindProperty("useCrowdSimulation");
-                if (property == null)
+                var crowdProperty = serializedController.FindProperty("useCrowdSimulation");
+                var collisionProperty = serializedController.FindProperty("enableNpcRigidbodyCollisions");
+                if (crowdProperty == null || collisionProperty == null)
                     continue;
 
                 entries.Add(new PrefabEntry
                 {
                     Prefab = prefab,
                     Path = path,
-                    UseCrowdSimulation = property.boolValue,
+                    UseCrowdSimulation = crowdProperty.boolValue,
+                    EnableNpcRigidbodyCollisions = collisionProperty.boolValue,
                     IsEditable = IsEditablePrefab(path),
                     ControllerCount = controllers.Length
                 });
@@ -146,7 +171,11 @@ namespace Koiusa.SteamMultiRuntime.Editor
                    package.source == UnityEditor.PackageManager.PackageSource.Local;
         }
 
-        private static bool ApplyToPrefab(PrefabEntry entry, bool enabled)
+        private static bool ApplyToPrefab(
+            PrefabEntry entry,
+            string propertyName,
+            bool enabled,
+            string displayName)
         {
             GameObject root = null;
             try
@@ -156,7 +185,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                 foreach (var controller in controllers)
                 {
                     var serializedController = new SerializedObject(controller);
-                    var property = serializedController.FindProperty("useCrowdSimulation");
+                    var property = serializedController.FindProperty(propertyName);
                     if (property == null)
                         continue;
 
@@ -168,7 +197,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
                     throw new InvalidOperationException("プレファブを保存できませんでした。");
 
                 Debug.Log(
-                    $"[RuntimeTools] {entry.Prefab.name}: NPC Crowd simulation=" +
+                    $"[RuntimeTools] {entry.Prefab.name}: {displayName}=" +
                     $"{(enabled ? "ON" : "OFF")} (applies on next Play)",
                     entry.Prefab);
                 return true;

@@ -65,9 +65,9 @@ WireTraversalFeature
 ## NPC Inspector
 
 `NpcNavMeshControllerEditor`は、同じGameObjectに装着されたNPC Moduleを一覧表示します。
-Custom Editor上部には`NpcNavMeshController`の全SerializedFieldを標準描画し、今後設定が追加された場合も省略しません。`Movement Backend > Use Crowd Simulation`で起動時のCrowd／従来Motorを切り替え、`Crowd Contact`でCrowd有効時の接触設定を編集します。Backendの変更は次回のPlay開始時に反映され、Play中の切り替えは対象外です。
+Custom Editor上部には`NpcNavMeshController`の全SerializedFieldを標準描画し、今後設定が追加された場合も省略しません。`Movement Backend > Use Crowd Simulation`で起動時のCrowd／従来Motorを切り替え、`Enable Npc Rigidbody Collisions`でCrowd OFF時のNPC同士のPhysX衝突を選択し、`Crowd Contact`でCrowd有効時の接触設定を編集します。BackendとNPC衝突設定の変更は次回のPlay開始時に反映され、Play中の切り替えは対象外です。
 
-`Tools > SteamMultiRuntime > Configuration > NPC > Crowd Simulation`は専用ウィンドウを開きます。AssetDatabase全体を検索し、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブを一覧表示します。各行のチェックを変更すると、そのプレファブ内の全`NpcNavMeshController.Use Crowd Simulation`へ直ちに設定を保存します。読み取り専用Packageの行も表示しますが変更操作は無効です。Scene上のInstanceやEditor全体のPlayerPrefsは変更しません。
+`Tools > SteamMultiRuntime > Configuration > NPC > Crowd Simulation`は専用ウィンドウを開きます。AssetDatabase全体を検索し、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブを一覧表示します。各行で`Use Crowd Simulation`と、Crowd OFF時だけ編集可能な`Enable Npc Rigidbody Collisions`を変更すると、そのプレファブ内の全`NpcNavMeshController`へ直ちに設定を保存します。読み取り専用Packageの行も表示しますが変更操作は無効です。Scene上のInstanceやEditor全体のPlayerPrefsは変更しません。
 
 ```text
 Attached NPC Features

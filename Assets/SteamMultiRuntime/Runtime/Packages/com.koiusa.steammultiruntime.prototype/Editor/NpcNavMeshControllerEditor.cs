@@ -21,7 +21,8 @@ namespace Koiusa.SteamMultiRuntime
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.HelpBox(
-                "Use Crowd Simulationの変更は次回のPlay開始時に反映されます。" +
+                "Use Crowd SimulationとEnable Npc Rigidbody Collisionsの変更は" +
+                "次回のPlay開始時に反映されます。" +
                 "Play中のBackend切り替えには対応していません。",
                 MessageType.None);
 

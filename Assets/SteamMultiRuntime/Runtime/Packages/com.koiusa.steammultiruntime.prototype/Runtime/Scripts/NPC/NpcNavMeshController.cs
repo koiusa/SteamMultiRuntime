@@ -14,6 +14,8 @@ namespace Koiusa.SteamMultiRuntime
         [Header("Movement Backend")]
         [Tooltip("Enabled: shared Burst Crowd simulation. Disabled: conventional per-NPC Rigidbody motor.")]
         [SerializeField] private bool useCrowdSimulation = true;
+        [Tooltip("Crowd OFF only. Enables PhysX collisions between NPCs when both NPCs opt in.")]
+        [SerializeField] private bool enableNpcRigidbodyCollisions;
 
         [Header("Crowd Contact")]
         [SerializeField] private NpcCrowdContactSettings crowdContactSettings = NpcCrowdContactSettings.CreateDefault();
@@ -185,7 +187,10 @@ namespace Koiusa.SteamMultiRuntime
             {
                 NpcConventionalUpdateLoop.Register(this);
                 RegisterSpatialNpc(this);
-                NpcConventionalCollisionRegistry.Register(this, _rigidbody);
+                NpcConventionalCollisionRegistry.Register(
+                    this,
+                    _rigidbody,
+                    enableNpcRigidbodyCollisions);
                 if (_networkPlayerController == null)
                     NpcConventionalPhysicsLoop.Register(this);
             }
@@ -244,7 +249,10 @@ namespace Koiusa.SteamMultiRuntime
         private void OnCharacterPrefabInstantiated(GameObject instance)
         {
             if (!useCrowdSimulation && isActiveAndEnabled)
-                NpcConventionalCollisionRegistry.Refresh(this, _rigidbody);
+                NpcConventionalCollisionRegistry.Refresh(
+                    this,
+                    _rigidbody,
+                    enableNpcRigidbodyCollisions);
         }
 
         private void OnRandomDestinationNeeded()
