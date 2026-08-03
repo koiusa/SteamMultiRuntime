@@ -394,27 +394,26 @@ namespace Koiusa.SteamMultiRuntime
             if (_agent.isStopped || !_agent.hasPath)
                 return Vector3.zero;
 
-            if (useCrowdSimulation)
-            {
-                var remainingDistance = _agent.remainingDistance;
-                if (!float.IsInfinity(remainingDistance)
-                    && !float.IsNaN(remainingDistance)
-                    && remainingDistance <= _agent.stoppingDistance + 0.15f)
-                    return Vector3.zero;
-
-                // NavMeshAgent is only the path provider for the Crowd backend.
-                // desiredVelocity is produced by Unity's per-agent movement simulation
-                // and can remain zero when many agents are active, even though a valid
-                // path exists. Read the next corridor target directly so every valid
-                // path continues to supply a goal to the shared Crowd solver.
-                var toSteeringTarget = Vector3.ProjectOnPlane(
-                    _agent.steeringTarget - transform.position, upAxis);
-                if (toSteeringTarget.sqrMagnitude > 0.0001f)
-                    return toSteeringTarget.normalized * MaxMoveSpeed;
-            }
+            var remainingDistance = _agent.remainingDistance;
+            if (!float.IsInfinity(remainingDistance)
+                && !float.IsNaN(remainingDistance)
+                && remainingDistance <= _agent.stoppingDistance + 0.15f)
+                return Vector3.zero;
 
             var desiredPlanar = Vector3.ProjectOnPlane(_agent.desiredVelocity, upAxis);
             var desiredSpeed = desiredPlanar.magnitude;
+
+            // Unity's per-agent movement simulation can return a zero desiredVelocity for
+            // some agents at high density even while their path remains valid. Crowd uses
+            // the corridor direction unconditionally because it owns all movement. For the
+            // conventional backend, preserve its normal desiredVelocity/corner blending and
+            // use the corridor only as a zero-velocity fallback.
+            var toSteeringTarget = Vector3.ProjectOnPlane(
+                _agent.steeringTarget - transform.position, upAxis);
+            if (toSteeringTarget.sqrMagnitude > 0.0001f
+                && (useCrowdSimulation || desiredSpeed <= 0.0001f))
+                return toSteeringTarget.normalized * (useCrowdSimulation ? MaxMoveSpeed : _agent.speed);
+
             if (desiredSpeed <= 0.0001f)
                 return Vector3.zero;
 

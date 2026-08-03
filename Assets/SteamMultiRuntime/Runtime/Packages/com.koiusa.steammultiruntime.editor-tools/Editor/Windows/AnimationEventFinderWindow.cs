@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private Vector2 scrollPosition = Vector2.zero;
         private List<AnimationEventResult> results = new List<AnimationEventResult>();
 
-        [MenuItem("Tools/SteamMultiRuntime/Read Only/Animation Events/Event Finder")]
+        [MenuItem("Tools/SteamMultiRuntime/Diagnostics/Animation Events/Event Finder")]
         private static void Open()
         {
             var window = GetWindow<AnimationEventFinderWindow>("Animation Event Finder");

@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
     /// </summary>
     internal static class NetworkAnimatorParameterSynchronizer
     {
-        private const string MenuPath = "Tools/SteamMultiRuntime/Modify Project Files/Sync Network Animator Parameters";
+        private const string MenuPath = "Tools/SteamMultiRuntime/Configuration/Animation/Sync Network Animator Parameters";
 
         [MenuItem(MenuPath)]
         private static void SyncAllFromMenu()

@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         private const string IndicatorAssetRoot =
             "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.targetingsystem/Runtime/Resources/UI/";
 
-        [MenuItem("Tools/SteamMultiRuntime/Targeting/Migrate Gameplay Targeting Prefab")]
+        [MenuItem("Tools/SteamMultiRuntime/Maintenance/Targeting/Migrate Gameplay Targeting Prefab")]
         public static void Migrate()
         {
             TargetingCameraPrefabMigration.Migrate();

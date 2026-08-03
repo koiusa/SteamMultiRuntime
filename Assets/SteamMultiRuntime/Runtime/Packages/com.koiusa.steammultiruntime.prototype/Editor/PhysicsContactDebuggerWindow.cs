@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
         private Vector2 scroll;
         private int selectedIndex = -1;
 
-        [MenuItem("Tools/SteamMultiRuntime/Debug/Physics Contact Debugger")]
+        [MenuItem("Tools/SteamMultiRuntime/Diagnostics/Physics/Contact Debugger")]
         private static void Open() => GetWindow<PhysicsContactDebuggerWindow>("Contact Debugger");
 
         private void OnEnable()

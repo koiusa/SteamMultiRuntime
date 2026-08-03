@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
     internal static class RuntimeToolSettingsMenu
     {
         private const string FrameRateMenuPath =
-            "Tools/SteamMultiRuntime/Diagnostics/FPS Logging";
+            "Tools/SteamMultiRuntime/Diagnostics/Performance/FPS Logging";
 
         [MenuItem(FrameRateMenuPath)]
         private static void ToggleFrameRateLogging()

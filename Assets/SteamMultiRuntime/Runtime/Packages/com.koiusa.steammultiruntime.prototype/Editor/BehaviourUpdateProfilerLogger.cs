@@ -25,7 +25,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private const string EnabledPreference =
             "Koiusa.SteamMultiRuntime.BehaviourProfiler.Enabled";
         private const string MenuPath =
-            "Tools/SteamMultiRuntime/Diagnostics/Automatic Behaviour Profiler";
+            "Tools/SteamMultiRuntime/Diagnostics/Performance/Automatic Behaviour Profiler";
 
         private sealed class Timing
         {

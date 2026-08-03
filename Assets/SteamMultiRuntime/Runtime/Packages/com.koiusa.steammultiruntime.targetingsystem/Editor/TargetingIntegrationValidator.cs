@@ -6,7 +6,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
 {
     public static class TargetingIntegrationValidator
     {
-        [MenuItem("Tools/SteamMultiRuntime/Read Only/Targeting/Validate Production Input")]
+        [MenuItem("Tools/SteamMultiRuntime/Validation/Targeting/Validate Production Input")]
         public static void ValidateProductionInput()
         {
             var guids = AssetDatabase.FindAssets($"t:{nameof(SteamMultiRuntimeTargetingInputActions)}");

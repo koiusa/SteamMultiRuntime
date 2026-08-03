@@ -39,13 +39,13 @@ NpcNavMeshController : INpcLocomotionState
 
 各Moduleは任意装着です。`NpcNavMeshController`は存在し、有効になっているModuleだけを利用します。回避方式を有効にした場合は`NavMeshAgent`標準回避を停止し、無効化時に復元します。
 
-回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。経路方向にはNavMeshAgentのallocation-freeな`steeringTarget`を使い、`agent.path`取得によるNPC数比例のGCを発生させません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
+回避のNPC近傍検索は`NpcCrowdSimulation`がPersistent Native Collection上へ構築する共有Spatial Gridを使用します。Grid構築とBoid／RVO計画はBurst Jobで並列実行し、Main ThreadにはUnity ObjectからのSnapshot取得、結果適用、Motor Tickだけを残します。各NPCがPhysics World全体へOverlap Queryを発行しないため、NPC数増加時も近傍Cellだけを調べます。Crowd Backendの経路方向にはNavMeshAgentのallocation-freeな`steeringTarget`を使い、`agent.path`取得によるNPC数比例のGCを発生させません。現在の標準PrefabはNetwork NPCがBoid、Local NPCがRVOを使用します。
 
-重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。Crowd NPCのNavMesh `nextPosition`はMovement適用時と移動床追従時に同期し、到着・中心復帰の状態観測は距離LODされた期限で行います。
+重いSteering計画は設定周期で更新しますが、その計画値に対するLow-passと最大旋回速度の適用はPlayer Loopごとに連続更新します。方向角Deadband以内の微小な左右変化は現在の進行方向を維持します。Boid／RVOの回避成分は目標速度成分の75%以下へ制限し、目標速度がない場合は回避移動を生成しません。これにより、計画値の段階更新、回避方向の符号反転、低速時の回避過多による蛇行とその場旋回を抑えます。標準Local／Network NPCはLow-pass 1.5 Hz、方向角Deadband 3度、最大旋回速度120度／秒です。Crowd ONはNavMesh経路方向を`steeringTarget`から取得します。Crowd OFFは通常の`desiredVelocity`とコーナー補間を維持し、大量Agent時に`desiredVelocity`が0となっても有効な経路がある場合だけ`steeringTarget`へフォールバックします。Crowd NPCのNavMesh `nextPosition`はMovement適用時と移動床追従時に同期し、到着・中心復帰の状態観測は距離LODされた期限で行います。
 
 ## 駆動経路
 
-`Tools > SteamMultiRuntime > NPC > Crowd Simulation`で専用ウィンドウを開くと、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブが一覧表示されます。各プレファブのチェックでCrowd ON／OFFを選び、そのプレファブの移動Backendを次回Play開始時から切り替えます。有効時は`NpcCrowdAgent`／`NpcCrowdMotor`による共有Burst Crowd、無効時は`ActorCompositeMotor`／Dynamic Rigidbodyによる従来のNPC個別更新です。設定は`NpcNavMeshController.Use Crowd Simulation`としてプレファブへ保存されるため、Local／Network NPCを個別に設定できます。読み取り専用Packageは一覧へ含めますが編集しません。AI判断、NavMesh目的地、FutureAction／テストドライバからの疑似入力、Wire入力は`BuildNpcInputCommand`で一度だけ生成し、Crowd Commandまたは従来Motor入力へ変換します。Playerと共通のMotor／Traversal契約はどちらでも維持します。実行中のHot Swapは状態移行の不整合を避けるため対象外です。
+`Tools > SteamMultiRuntime > Configuration > NPC > Crowd Simulation`で専用ウィンドウを開くと、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブが一覧表示されます。各プレファブのチェックでCrowd ON／OFFを選び、そのプレファブの移動Backendを次回Play開始時から切り替えます。有効時は`NpcCrowdAgent`／`NpcCrowdMotor`による共有Burst Crowd、無効時は`ActorCompositeMotor`／Dynamic Rigidbodyによる従来のNPC個別更新です。設定は`NpcNavMeshController.Use Crowd Simulation`としてプレファブへ保存されるため、Local／Network NPCを個別に設定できます。読み取り専用Packageは一覧へ含めますが編集しません。AI判断、NavMesh目的地、FutureAction／テストドライバからの疑似入力、Wire入力は`BuildNpcInputCommand`で一度だけ生成し、Crowd Commandまたは従来Motor入力へ変換します。Playerと共通のMotor／Traversal契約はどちらでも維持します。実行中のHot Swapは状態移行の不整合を避けるため対象外です。
 
 ### Local NPC
 

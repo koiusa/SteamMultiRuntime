@@ -41,7 +41,7 @@ Game Viewを表示するClientで`RuntimeFrameRateLogger`を使用した定常�
 
 ## FPS診断ログ
 
-Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレームをサンプリングし、1秒ごとに`[FrameRate]`を出力します。`Tools > SteamMultiRuntime > Diagnostics > FPS Logging`で永続的にON／OFFでき、Play中の切替も即時反映します。初期値はONです。
+Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレームをサンプリングし、1秒ごとに`[FrameRate]`を出力します。`Tools > SteamMultiRuntime > Diagnostics > Performance > FPS Logging`で永続的にON／OFFでき、Play中の切替も即時反映します。初期値はONです。
 
 - 平均／最低／最高FPS
 - 平均／最大Frame Time
@@ -50,7 +50,7 @@ Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレーム
 
 毎フレームの`Debug.Log`は計測対象そのものを重くするため行いません。Release BuildにはLoggerを含めません。Network RoleはNetcode上の実状態で、Hostは`role=Host`、Dedicated Serverは`role=Server`、接続側は`role=Client`です。
 
-`Tools > SteamMultiRuntime > Diagnostics > Automatic Behaviour Profiler`はRaw Profiler FrameをEditor上で走査する調査用機能であり、実行中の定常FPS計測ではOFFにします。ONのままでは周期的な`EditorLoop`停止が計測結果へ混入します。定常計測はRaw Frameを走査しない`RuntimeFrameRateLogger`の`[FrameRate]`／`[FrameRateDetail]`を使用します。
+`Tools > SteamMultiRuntime > Diagnostics > Performance > Automatic Behaviour Profiler`はRaw Profiler FrameをEditor上で走査する調査用機能であり、実行中の定常FPS計測ではOFFにします。ONのままでは周期的な`EditorLoop`停止が計測結果へ混入します。定常計測はRaw Frameを走査しない`RuntimeFrameRateLogger`の`[FrameRate]`／`[FrameRateDetail]`を使用します。
 
 ## 移動床
 

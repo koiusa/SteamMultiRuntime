@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private readonly Dictionary<string, bool> foldoutStateByPath = new Dictionary<string, bool>();
         private Vector2 scroll;
 
-        [MenuItem("Tools/SteamMultiRuntime/Read Only/ModelIdList Path Viewer")]
+        [MenuItem("Tools/SteamMultiRuntime/Diagnostics/Resources/Model ID List Path Viewer")]
         public static void Open()
         {
             var window = GetWindow<ModelIdListPathViewerWindow>("ModelIdList Paths");

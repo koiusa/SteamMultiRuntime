@@ -9,7 +9,7 @@
 - 不足コンポーネントは`Undo.AddComponent`を使って追加・修復する
 - Editor操作後はObjectとSceneをDirtyにする
 - 実行時状態は原則として読み取り専用で表示する
-- 調査用Windowは`Tools/SteamMultiRuntime/Read Only`以下に配置する
+- メニューは操作種別ごとに`Configuration`、`Maintenance`、`Diagnostics`、`Validation`へ分類し、その下を機能別に分ける
 
 ## Player／Traversal Inspector
 
@@ -39,7 +39,7 @@ Skill Featureには紫の専用アイコンを表示します。
 Wire構成の一括追加は次のメニューからも実行できます。
 
 ```text
-Tools/SteamMultiRuntime/Setup Wire Actions On Selected Player
+Tools/SteamMultiRuntime/Configuration/Player/Setup Wire Actions On Selected Player
 ```
 
 Wireの完全構成は次のとおりです。
@@ -67,7 +67,7 @@ WireTraversalFeature
 `NpcNavMeshControllerEditor`は、同じGameObjectに装着されたNPC Moduleを一覧表示します。
 Custom Editor上部には`NpcNavMeshController`の全SerializedFieldを標準描画し、今後設定が追加された場合も省略しません。`Movement Backend > Use Crowd Simulation`で起動時のCrowd／従来Motorを切り替え、`Crowd Contact`でCrowd有効時の接触設定を編集します。Backendの変更は次回のPlay開始時に反映され、Play中の切り替えは対象外です。
 
-`Tools > SteamMultiRuntime > NPC > Crowd Simulation`は専用ウィンドウを開きます。AssetDatabase全体を検索し、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブを一覧表示します。各行のチェックを変更すると、そのプレファブ内の全`NpcNavMeshController.Use Crowd Simulation`へ直ちに設定を保存します。読み取り専用Packageの行も表示しますが変更操作は無効です。Scene上のInstanceやEditor全体のPlayerPrefsは変更しません。
+`Tools > SteamMultiRuntime > Configuration > NPC > Crowd Simulation`は専用ウィンドウを開きます。AssetDatabase全体を検索し、`Assets`と`Packages`にある`NpcNavMeshController`を含むプレファブを一覧表示します。各行のチェックを変更すると、そのプレファブ内の全`NpcNavMeshController.Use Crowd Simulation`へ直ちに設定を保存します。読み取り専用Packageの行も表示しますが変更操作は無効です。Scene上のInstanceやEditor全体のPlayerPrefsは変更しません。
 
 ```text
 Attached NPC Features
@@ -119,7 +119,7 @@ Assets/Create/SteamMultiRuntime/Stage Scene List
 Assets/Create/SteamMultiRuntime/Loading Splash Settings
 Assets/Create/SteamMultiRuntime/Steam Lobby UI Assets
 Assets/Create/SteamMultiRuntime/Stage Select UI Assets
-Tools/SteamMultiRuntime/Create Assets/Loading Splash Settings
+Tools/SteamMultiRuntime/Maintenance/Assets/Create Loading Splash Settings
 ```
 
 ## UI Sorting Order検証
@@ -135,23 +135,23 @@ Screen Space `UIDocument`は次の予約帯を使用します。
 | 100–109 | Character Select／Key ConfigなどChild／Modal Menu |
 | 110–119 | Loading／Blocking Dialog |
 
-`Tools/SteamMultiRuntime/Read Only/UI/Validate UIDocument Sorting Orders`は、Production Prefabを変更せずに読み込み、GameObject名から判定できるUIが予約帯を外れていないか検査します。違反時はAsset Path、Hierarchy Path、現在値、期待範囲をConsoleへ出力します。自動修正は行いません。
+`Tools/SteamMultiRuntime/Validation/UI/Validate UIDocument Sorting Orders`は、Production Prefabを変更せずに読み込み、GameObject名から判定できるUIが予約帯を外れていないか検査します。違反時はAsset Path、Hierarchy Path、現在値、期待範囲をConsoleへ出力します。自動修正は行いません。
 
 ## 補助Window／ツール
 
 | メニュー | 用途 | 変更 |
 |---|---|---|
-| `Read Only/Animation Events/Event Finder` | Animation Eventの検索 | なし |
-| `Read Only/Animation Events/Receiver Visualizer` | Event受信関係の可視化 | なし |
-| `Read Only/ModelIdList Path Viewer` | Model IDと参照先Pathの確認 | なし |
-| `Read Only/Scene List Viewer` | Scene Listの内容確認 | なし |
-| `Read Only/UI/Validate UIDocument Sorting Orders` | Prefab内UIDocumentの予約帯検査 | なし |
-| `Debug/Physics Contact Debugger` | Moverの物理接触とGround判定の監視 | なし |
-| `Modify Project Files/Facepunch AppID` | Steam App ID関連ファイルの設定 | あり |
+| `Diagnostics/Animation Events/Event Finder` | Animation Eventの検索 | なし |
+| `Diagnostics/Animation Events/Receiver Visualizer` | Event受信関係の可視化 | なし |
+| `Diagnostics/Resources/Model ID List Path Viewer` | Model IDと参照先Pathの確認 | なし |
+| `Diagnostics/Scenes/Scene List Viewer` | Scene Listの内容確認 | なし |
+| `Validation/UI/Validate UIDocument Sorting Orders` | Prefab内UIDocumentの予約帯検査 | なし |
+| `Diagnostics/Physics/Contact Debugger` | Moverの物理接触とGround判定の監視 | なし |
+| `Configuration/Steam/Facepunch App ID` | Steam App ID関連ファイルの設定 | あり |
 
 上表のメニューは、特記がない限り`Tools/SteamMultiRuntime/`以下です。
 
-`GroundContactDebugDisplay`はRuntimeで接触情報の収集とScene Gizmo描画だけを担当します。Game View上のIMGUI表示は持たず、詳細表示は`Tools/SteamMultiRuntime/Debug/Physics Contact Debugger`から開くEditor専用Windowが内部Snapshotを読み取ります。Prefab上のコンポーネントが無効な場合は接触を収集しないため、調査対象のインスタンスで有効化して使用します。
+`GroundContactDebugDisplay`はRuntimeで接触情報の収集とScene Gizmo描画だけを担当します。Game View上のIMGUI表示は持たず、詳細表示は`Tools/SteamMultiRuntime/Diagnostics/Physics/Contact Debugger`から開くEditor専用Windowが内部Snapshotを読み取ります。Prefab上のコンポーネントが無効な場合は接触を収集しないため、調査対象のインスタンスで有効化して使用します。
 
 `NetworkAnimatorParameterSynchronizer`はAnimator ControllerとNetworkAnimatorの同期対象パラメータを比較・更新します。変更前に確認Windowを表示する設計です。
 

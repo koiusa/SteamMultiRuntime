@@ -15,7 +15,7 @@ namespace Koiusa.SteamMultiRuntime
         private const float LabelWidth = 190f;
         private const float HierarchyIndent = 22f;
 
-        [MenuItem("Tools/SteamMultiRuntime/Debug/Player Movement Debugger")]
+        [MenuItem("Tools/SteamMultiRuntime/Diagnostics/Player/Movement Debugger")]
         private static void Open() => GetWindow<ActorMovementDebuggerWindow>("Movement Debugger");
 
         private void OnEnable()

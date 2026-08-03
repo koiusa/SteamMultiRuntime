@@ -63,8 +63,8 @@ Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab
 ```
 
 ```text
-Tools/SteamMultiRuntime/Targeting/Install Production Setup
-Tools/SteamMultiRuntime/Read Only/Targeting/Validate Production Setup
+Tools/SteamMultiRuntime/Maintenance/Targeting/Install Production Setup
+Tools/SteamMultiRuntime/Validation/Targeting/Validate Production Setup
 ```
 
 The installer updates Local and Network player, NPC, camera, Gameplay System, and shared System prefabs through Unity's public Prefab API.
@@ -74,7 +74,7 @@ The installer updates Local and Network player, NPC, camera, Gameplay System, an
 Import `Targeting Showcase` for a prebuilt Cinemachine, production-input, UI Toolkit, random-spawner, and random-mover example. Regenerate it after changing the sample composition:
 
 ```text
-Tools/SteamMultiRuntime/Targeting/Rebuild Showcase Sample
+Tools/SteamMultiRuntime/Maintenance/Targeting/Rebuild Showcase Sample
 ```
 
 The base package's Basic sample remains a smaller standalone example without Steam Multi Runtime ownership or production input.

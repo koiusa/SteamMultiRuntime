@@ -6,7 +6,7 @@ production input adapter, Cinemachine cameras, polished UI Toolkit indicators, a
 The spawned prefab and its default material are reusable Runtime assets from the base
 `com.koiusa.targetingsystem` package; the Showcase does not keep duplicate copies.
 
-Use `Tools > SteamMultiRuntime > Targeting > Rebuild Showcase Sample` to regenerate the serialized
+Use `Tools > SteamMultiRuntime > Maintenance > Targeting > Rebuild Showcase Sample` to regenerate the serialized
 scene and its target prefab after changing the sample composition.
 
 Production controls:

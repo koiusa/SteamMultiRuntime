@@ -17,7 +17,7 @@ namespace Koiusa.SteamMultiRuntime.Localization.Editor
         private const string Root = "Assets/SteamMultiRuntimeGenerated/Localization";
         private const string TableName = GameLocalization.TableName;
 
-        [MenuItem("Tools/SteamMultiRuntime/Localization/Install or Update Localization Tables")]
+        [MenuItem("Tools/SteamMultiRuntime/Maintenance/Localization/Install or Update Tables")]
         public static void Install()
         {
             if (!ValidateCatalog(out var error))
@@ -45,7 +45,7 @@ namespace Koiusa.SteamMultiRuntime.Localization.Editor
                 "Addressables entries were updated without replacing the consuming project's settings.");
         }
 
-        [MenuItem("Tools/SteamMultiRuntime/Localization/Validate Installation")]
+        [MenuItem("Tools/SteamMultiRuntime/Validation/Localization/Validate Installation")]
         public static void ValidateInstallation()
         {
             if (!ValidateCatalog(out var error))

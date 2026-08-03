@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             "Assets/SteamMultiRuntime/Runtime/Resources/System/Network Mixing Camera.prefab"
         };
 
-        [MenuItem("Tools/SteamMultiRuntime/Targeting/Migrate Camera Targeting Prefab")]
+        [MenuItem("Tools/SteamMultiRuntime/Maintenance/Targeting/Migrate Camera Targeting Prefab")]
         public static void Migrate()
         {
             CreateSharedPrefab();

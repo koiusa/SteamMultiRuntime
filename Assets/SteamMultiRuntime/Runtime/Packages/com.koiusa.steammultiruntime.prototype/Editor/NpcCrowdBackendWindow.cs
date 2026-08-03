@@ -16,7 +16,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
             public int ControllerCount;
         }
 
-        private const string MenuPath = "Tools/SteamMultiRuntime/NPC/Crowd Simulation";
+        private const string MenuPath = "Tools/SteamMultiRuntime/Configuration/NPC/Crowd Simulation";
         private readonly List<PrefabEntry> entries = new();
         private Vector2 scrollPosition;
 

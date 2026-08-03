@@ -17,7 +17,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
         private const string TargetingCameraPrefabPath =
             "Assets/SteamMultiRuntime/Runtime/Prefabs/Camera/Targeting Camera System.prefab";
 
-        [MenuItem("Tools/SteamMultiRuntime/Targeting/Rebuild Showcase Sample")]
+        [MenuItem("Tools/SteamMultiRuntime/Maintenance/Targeting/Rebuild Showcase Sample")]
         public static void Rebuild()
         {
             var previousSceneSetup = EditorSceneManager.GetSceneManagerSetup();

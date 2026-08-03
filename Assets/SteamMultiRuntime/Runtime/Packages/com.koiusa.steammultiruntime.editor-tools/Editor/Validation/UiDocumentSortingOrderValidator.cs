@@ -40,7 +40,7 @@ namespace Koiusa.SteamMultiRuntime.EditorTools
             new("HUD / overlay", 0, 49, "Hud", "HUD", "Overlay", "Compass", "PlayerName")
         };
 
-        [MenuItem("Tools/SteamMultiRuntime/Read Only/UI/Validate UIDocument Sorting Orders")]
+        [MenuItem("Tools/SteamMultiRuntime/Validation/UI/Validate UIDocument Sorting Orders")]
         public static void ValidateAll()
         {
             var issues = CollectIssues();

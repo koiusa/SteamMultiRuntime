@@ -129,7 +129,7 @@ Player側に次を配置します。
 
 上記Componentは標準Local／Network Player Prefabへ適用済みです。全標準Player／NPC Proxyは`TargetMarker`を持ち、既存`ForcusTarget`の`CameraTrackMarker` Transformを`AimPoint`として共有します。Indicator、Camera注視、Viewport判定はPlayer Root原点ではなくこの調整済み位置を使用します。Targetは`System.prefab`配下の`Targeting System.prefab`にある`TargetMarkerRegistry`へ有効化イベントで登録します。Local／Network Mixing Camera PrefabにはSingle／Multi Camera、Target Group、`LocalTargetingCameraConnector`を適用済みです。
 
-同じ構成を再生成するEditor操作は`Tools/SteamMultiRuntime/Targeting/Install Production Setup`です。処理はUnityのPrefab／Asset公開APIを使用し、Reflectionは使用しません。
+同じ構成を再生成するEditor操作は`Tools/SteamMultiRuntime/Maintenance/Targeting/Install Production Setup`です。処理はUnityのPrefab／Asset公開APIを使用し、Reflectionは使用しません。
 
 検証用Sceneは次です。
 

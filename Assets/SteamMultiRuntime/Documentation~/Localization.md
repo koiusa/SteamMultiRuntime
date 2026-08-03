@@ -17,7 +17,7 @@ Steam Multi Runtime自身の開発プロジェクトでサンプルを実行す�
 1. 参照側プロジェクトへ `com.koiusa.steammultiruntime` をインストールします。
 2. 参照側プロジェクトのUnity Editorで、次のメニューを一度実行します。
 
-   `Tools > SteamMultiRuntime > Localization > Install or Update Localization Tables`
+   `Tools > SteamMultiRuntime > Maintenance > Localization > Install or Update Tables`
 
 3. 次のアセットが参照側プロジェクトに生成されます。
 
@@ -32,7 +32,7 @@ Steam Multi Runtime自身の開発プロジェクトでサンプルを実行す�
 
 セットアップ状態を確認するには、次を実行します。
 
-`Tools > SteamMultiRuntime > Localization > Validate Installation`
+`Tools > SteamMultiRuntime > Validation > Localization > Validate Installation`
 
 不足しているLocale、テーブル、固定キーがConsoleへ表示されます。
 

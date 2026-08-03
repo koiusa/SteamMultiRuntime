@@ -25,9 +25,9 @@ namespace Koiusa.SteamMultiRuntime
                 EnsureStack(connection.gameObject);
         }
 
-        [MenuItem("Tools/SteamMultiRuntime/Setup Wire Actions On Selected Player", priority = 120)]
+        [MenuItem("Tools/SteamMultiRuntime/Configuration/Player/Setup Wire Actions On Selected Player", priority = 120)]
         private static void Setup() { if (Selection.activeGameObject != null) EnsureStack(Selection.activeGameObject); }
-        [MenuItem("Tools/SteamMultiRuntime/Setup Wire Actions On Selected Player", true)]
+        [MenuItem("Tools/SteamMultiRuntime/Configuration/Player/Setup Wire Actions On Selected Player", true)]
         private static bool ValidateSetup() => Selection.activeGameObject != null && Selection.activeGameObject.GetComponent<ActorMotor>() != null;
 
         public static void EnsureStack(GameObject gameObject)

@@ -30,7 +30,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             "Assets/SteamMultiRuntime/Runtime/Resources/System/Network Mixing Camera.prefab",
         };
 
-        [MenuItem("Tools/SteamMultiRuntime/Targeting/Install Production Setup")]
+        [MenuItem("Tools/SteamMultiRuntime/Maintenance/Targeting/Install Production Setup")]
         public static void InstallProductionSetup()
         {
             TargetingGameplayPrefabMigration.Migrate();
@@ -45,7 +45,7 @@ namespace Koiusa.SteamMultiRuntime.TargetingSystem.Editor
             Debug.Log("Production Targeting setup installed.");
         }
 
-        [MenuItem("Tools/SteamMultiRuntime/Read Only/Targeting/Validate Production Setup")]
+        [MenuItem("Tools/SteamMultiRuntime/Validation/Targeting/Validate Production Setup")]
         public static void ValidateProductionSetup()
         {
             var errors = new List<string>();

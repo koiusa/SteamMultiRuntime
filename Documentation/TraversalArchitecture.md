@@ -139,7 +139,7 @@ Cooldown
 
 主な公開契約は`IActorTraversalCoordinator`です。
 
-`Tools > SteamMultiRuntime > Debug > Player Movement Debugger`から専用のEditorWindowを開けます。実行中の
+`Tools > SteamMultiRuntime > Diagnostics > Player > Movement Debugger`から専用のEditorWindowを開けます。実行中の
 `ActorCompositeMotor`を対象に、Composite MotorとBase Motor、その配下の`ActorTraversalCoordinator`の
 State、Intent、Wall制限、Wire照準結果と、Wall／Ladder／Wireの
 各FeatureおよびActionの状態をまとめて監視します。診断値はFeatureごとのinternalな
