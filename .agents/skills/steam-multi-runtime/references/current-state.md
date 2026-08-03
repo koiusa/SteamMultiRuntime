@@ -40,11 +40,21 @@ The pause controller is on the root `System` GameObject in `Assets/SteamMultiRun
 - Recompute the shield center when Guard activates after the character model is available. Exclude the shield renderer itself from bounds calculation and avoid per-frame center recomputation, which causes jitter.
 - Guard hit feedback uses `PlayerDamageRequest.Point`; environment intersection uses URP Scene Depth. Depth Texture must remain enabled for the relevant URP assets.
 
+## NPC movement and presentation
+
+- `NpcNavMeshController` selects the movement backend at startup. Crowd ON uses the shared Burst `NpcCrowdSimulation` / `NpcCrowdMotor` path; Crowd OFF uses the conventional Dynamic Rigidbody `ActorCompositeMotor` path. Runtime hot swap is unsupported.
+- Crowd movement is evaluated centrally at 30 Hz, at most once per rendered frame. Ground and wall probes run at 15 Hz, while AI command and NavMesh observations use camera-distance LOD (10 / 5 / 2 Hz); Dedicated Server keeps 10 Hz.
+- Local NPCs and authoritative Network Server NPCs run the selected movement backend. Remote Network Clients do not run NavMesh, AI, physics, or Crowd simulation and only present synchronized state.
+- Crowd NPCs follow `IGroundMotionPhysicsPoseSource` platforms through typed push notifications while bound. Do not add per-NPC platform polling, execution-order attributes, or reflection.
+- Crowd ON keeps its Rigidbody kinematic and its Collider as a query/attack trigger. Crowd OFF may opt into NPC-to-NPC PhysX collisions with `Enable Npc Rigidbody Collisions`; the default is OFF and changes apply on the next Play start.
+- NPC spring rigs are registered with the central Burst `NpcCrowdSpringSimulation` for both backends. Its camera-distance update rates are 30 / 15 / 5 Hz, and only successfully registered rigs have their original Spring Manager updates disabled.
+- Local and Network Server NPCs share `PhysicsPresentationSmoother` with Player presentation. `GroundMotionPresentationScheduler` applies platform presentation before actor presentation; remote Network Clients present `NetworkTransform` interpolation instead.
+
 ## Architecture and removals
 
 - Local Stage Selectの切替処理はUIの自動Closeではキャンセルせず、新StageをActiveにした後で旧StageをUnloadするまで継続します。
 - Player skills are coordinated through `PlayerCharacterCoordinator`; Network requests cross RPC boundaries and resolve authoritatively on the server.
-- Local and NPC presentation should share the same interpolation contract, but moving-platform work must not add execution-order attributes or per-NPC platform polling that scales poorly.
+- Player and local/authoritative NPC presentation share the same interpolation contract. Moving-platform work must preserve the typed push path and must not add execution-order attributes or per-NPC platform polling that scales poorly.
 - `Documentation/PackageArchitecture.md` is the source of truth for typed package connections and the project's no-reflection policy.
 - The Build Profile creation/editor tool and its sample, presets, and documentation are removed. Do not reference it as a supported tool.
 - `AnimationEventReceiverVisualizerWindow` may enumerate Animation Event receivers via reflection because the Unity feature itself resolves named receiver methods dynamically.
