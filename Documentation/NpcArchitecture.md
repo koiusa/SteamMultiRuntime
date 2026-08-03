@@ -2,7 +2,7 @@
 
 この文書をNPCのNavMesh機能、Player入力への変換、Local／Network駆動に関する詳細仕様の正本とします。全体配置は[CurrentClassStructure.md](CurrentClassStructure.md)、Inspector操作は[EditorSpecification.md](EditorSpecification.md)を参照してください。
 
-大量NPC対応で得られた成果と、スキンメッシュアニメーション／描画に残る性能課題は[Development Notes](DevelopmentNotes.md#大規模npc-crowd化の到達点と残課題)に記録します。
+大量NPC対応で得られた成果と、スキンメッシュアニメーション／描画に残る性能課題は[Development Notes](DevelopmentNotes.md#大規模npcの現状)に記録します。
 
 ## クラス構成
 

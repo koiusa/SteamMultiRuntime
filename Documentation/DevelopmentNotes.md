@@ -37,7 +37,18 @@ Game Viewを表示するClientで`RuntimeFrameRateLogger`を使用した定常�
 | GPU Frame Time平均 | 3.01～3.41 ms |
 | 最大Frame Time | 62.33～89.55 ms |
 
-この計測ではCPUが律速で、GPUは律速ではありません。ロード直後に記録された約1.2秒のFrameは定常性能から除外します。現時点ではCPU内訳をMarker別に採取していないため、Animator、Transform階層、Spring、Skinning、NetworkBehaviourのどれが最大要因かは未確定です。「Springのボトルネックを完全に解消した」「Client側も300体で高FPSになった」とは結論しません。
+この計測ではCPUが律速で、GPUは律速ではありません。ロード直後に記録された約1.2秒のFrameは定常性能から除外します。この後のHost比較により、フルキャラクターモデルではAnimator、Transform階層、Skinning、Renderer／Cullingが主要な追加負荷になることを確認しています。「Springのボトルネックを完全に解消した」「Client側も300体で高FPSになった」とは結論しません。
+
+## Host 300体のモデル有無比較（2026-08-03）
+
+同じCrowd Backendで、通常のスキンメッシュ／アニメーション付きモデルと、スキンメッシュを持たない単純なカプセル表示を比較しました。
+
+| 表示構成 | 平均FPS | 平均Frame Time | PlayerLoop |
+|---|---:|---:|---:|
+| 通常スキンモデル | 24.6～24.8 FPS | 40.29～40.73 ms | 26.37～26.47 ms |
+| 単純なカプセル | 69.5～73.8 FPS | 13.54～14.39 ms | 8.05～8.10 ms |
+
+カプセル構成ではCrowdのGround Probeが約0.5ms、Movement適用が約0.44ms、Presentationが約0.5msであり、NPC数増加による大幅なFPS低下は通常モデルより起きにくいことを確認しました。通常モデルとの差は主にSkinning、Animator、Bone Transform伝播、Renderer Bounds、Cullingおよびモデル階層に付随するCollider同期です。したがって、カプセル構成の結果をそのままスキンメッシュ付きNPCの表示性能として扱いません。一方、Crowd移動Simulation単体のスケーリング確認にはカプセル構成を使用できます。
 
 ## FPS診断ログ
 
