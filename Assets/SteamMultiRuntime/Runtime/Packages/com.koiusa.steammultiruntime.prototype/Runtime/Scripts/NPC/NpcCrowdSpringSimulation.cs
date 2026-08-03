@@ -170,9 +170,7 @@ namespace Koiusa.SteamMultiRuntime
                 data.Active = 0;
 
                 var parentRotation = math.mul(worldAnimated, math.inverse(animated.LocalRotation));
-                var baseWorldRotation = data.Legacy != 0
-                    ? worldAnimated
-                    : math.mul(parentRotation, data.InitialLocalRotation);
+                var baseWorldRotation = math.mul(parentRotation, data.InitialLocalRotation);
                 var restDirection = math.normalizesafe(
                     math.mul(baseWorldRotation, data.LocalAxis), new float3(0f, -1f, 0f));
                 var restTip = head + restDirection * data.RestLength;
@@ -216,7 +214,7 @@ namespace Koiusa.SteamMultiRuntime
                 if (data.Legacy != 0)
                 {
                     var delta = FromTo(restDirection, direction);
-                    var springWorld = math.mul(delta, worldAnimated);
+                    var springWorld = math.mul(delta, baseWorldRotation);
                     springLocal = math.mul(math.inverse(parentRotation), springWorld);
                 }
                 else
@@ -226,8 +224,11 @@ namespace Koiusa.SteamMultiRuntime
                     var aimRotation = FromTo(data.LocalAxis, localDirection);
                     springLocal = math.mul(data.InitialLocalRotation, aimRotation);
                 }
+                var animationLocalRotation = data.Legacy != 0
+                    ? data.InitialLocalRotation
+                    : animated.LocalRotation;
                 var localRotation = math.slerp(
-                    animated.LocalRotation, springLocal, math.saturate(data.DynamicRatio));
+                    animationLocalRotation, springLocal, math.saturate(data.DynamicRatio));
                 SolvedPoses[index] = new SolvedPose
                 {
                     Position = head,
