@@ -301,13 +301,21 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         internal void ApplyGroundProbe(
-            RaycastHit hit,
+            RaycastHit hit0,
+            RaycastHit hit1,
+            RaycastHit hit2,
+            RaycastHit hit3,
             ColliderHit overlapHit0,
             ColliderHit overlapHit1,
             ColliderHit overlapHit2,
             ColliderHit overlapHit3)
         {
-            var valid = hit.collider != null && Vector3.Dot(hit.normal, UpAxis) >= settings.MinGroundNormalDot;
+            var hit = default(RaycastHit);
+            SelectGroundCastHit(hit0, ref hit);
+            SelectGroundCastHit(hit1, ref hit);
+            SelectGroundCastHit(hit2, ref hit);
+            SelectGroundCastHit(hit3, ref hit);
+            var valid = hit.collider != null;
             if (!valid)
             {
                 var overlapCollider = SelectGroundOverlap(
@@ -360,6 +368,14 @@ namespace Koiusa.SteamMultiRuntime
                 grounded = gap <= Mathf.Max(0.05f, settings.NearbyGroundDistance);
             }
             movingPlatform.Sample(hit.collider, body.position, simulationDeltaTime, out groundVelocity, out groundDisplacement, out groundRotationDelta);
+        }
+
+        private void SelectGroundCastHit(RaycastHit candidate, ref RaycastHit best)
+        {
+            if (candidate.collider == null || Vector3.Dot(candidate.normal, UpAxis) < settings.MinGroundNormalDot)
+                return;
+            if (best.collider == null || candidate.distance < best.distance)
+                best = candidate;
         }
 
         private Collider SelectGroundOverlap(Collider hit0, Collider hit1, Collider hit2, Collider hit3)

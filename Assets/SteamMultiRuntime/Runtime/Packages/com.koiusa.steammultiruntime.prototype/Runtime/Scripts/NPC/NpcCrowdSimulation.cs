@@ -17,6 +17,7 @@ namespace Koiusa.SteamMultiRuntime
     internal sealed partial class NpcCrowdSimulation : MonoBehaviour
     {
         private const int GroundOverlapHitsPerNpc = 4;
+        private const int GroundCastHitsPerNpc = 4;
         private static readonly ProfilerMarker PrepareMarker = new("Physics.NpcCrowd.PrepareProbes");
         private static readonly ProfilerMarker RecoveryMarker = new("Physics.NpcCrowd.Prepare.Recovery");
         private static readonly ProfilerMarker CommandMarker = new("Physics.NpcCrowd.Prepare.Commands");
@@ -604,7 +605,8 @@ namespace Koiusa.SteamMultiRuntime
                 var groundHandle = groundProbeCount > 0
                     ? CapsulecastCommand.ScheduleBatch(
                         groundCommands.GetSubArray(0, groundProbeCount),
-                        groundHits.GetSubArray(0, groundProbeCount), 32, 1)
+                        groundHits.GetSubArray(0, groundProbeCount * GroundCastHitsPerNpc),
+                        32, GroundCastHitsPerNpc)
                     : default;
                 var overlapHandle = groundProbeCount > 0
                     ? OverlapCapsuleCommand.ScheduleBatch(
@@ -625,9 +627,13 @@ namespace Koiusa.SteamMultiRuntime
             {
                 for (var probeIndex = 0; probeIndex < groundProbeCount; probeIndex++)
                 {
+                    var castIndex = probeIndex * GroundCastHitsPerNpc;
                     var overlapIndex = probeIndex * GroundOverlapHitsPerNpc;
                     activeNpcs[groundProbeOwners[probeIndex]].ApplyGroundProbe(
-                        groundHits[probeIndex],
+                        groundHits[castIndex],
+                        groundHits[castIndex + 1],
+                        groundHits[castIndex + 2],
+                        groundHits[castIndex + 3],
                         groundOverlapHits[overlapIndex],
                         groundOverlapHits[overlapIndex + 1],
                         groundOverlapHits[overlapIndex + 2],

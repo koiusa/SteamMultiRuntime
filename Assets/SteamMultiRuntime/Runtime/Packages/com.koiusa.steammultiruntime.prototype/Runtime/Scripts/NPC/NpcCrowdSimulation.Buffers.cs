@@ -18,7 +18,7 @@ namespace Koiusa.SteamMultiRuntime
             steeringResults = new NativeArray<float3>(capacity, Allocator.Persistent);
             spatialGrid = new NativeParallelMultiHashMap<int, int>(capacity * 2, Allocator.Persistent);
             groundCommands = new NativeArray<CapsulecastCommand>(capacity, Allocator.Persistent);
-            groundHits = new NativeArray<RaycastHit>(capacity, Allocator.Persistent);
+            groundHits = new NativeArray<RaycastHit>(capacity * GroundCastHitsPerNpc, Allocator.Persistent);
             groundOverlapCommands = new NativeArray<OverlapCapsuleCommand>(capacity, Allocator.Persistent);
             groundOverlapHits = new NativeArray<ColliderHit>(capacity * GroundOverlapHitsPerNpc, Allocator.Persistent);
             groundProbeOwners = new NativeArray<int>(capacity, Allocator.Persistent);

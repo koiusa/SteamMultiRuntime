@@ -124,12 +124,15 @@ namespace Koiusa.SteamMultiRuntime
         internal void CreateGroundProbes(out CapsulecastCommand cast, out OverlapCapsuleCommand overlap) =>
             motor.CreateGroundProbes(out cast, out overlap);
         internal void ApplyGroundProbe(
-            RaycastHit hit,
+            RaycastHit hit0,
+            RaycastHit hit1,
+            RaycastHit hit2,
+            RaycastHit hit3,
             ColliderHit overlap0,
             ColliderHit overlap1,
             ColliderHit overlap2,
             ColliderHit overlap3) =>
-            motor.ApplyGroundProbe(hit, overlap0, overlap1, overlap2, overlap3);
+            motor.ApplyGroundProbe(hit0, hit1, hit2, hit3, overlap0, overlap1, overlap2, overlap3);
         internal void ResolveEnvironmentOverlaps(ColliderHit hit0, ColliderHit hit1, ColliderHit hit2, ColliderHit hit3) =>
             motor.ResolveEnvironmentOverlaps(hit0, hit1, hit2, hit3);
 
