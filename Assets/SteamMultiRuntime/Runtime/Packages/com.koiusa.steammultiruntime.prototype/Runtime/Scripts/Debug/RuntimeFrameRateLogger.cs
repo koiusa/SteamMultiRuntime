@@ -9,6 +9,11 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
+    public static class RuntimeFrameRateLogging
+    {
+        public static void Refresh() => RuntimeFrameRateLogger.RefreshInstallation();
+    }
+
     /// <summary>Samples every rendered frame and emits one aggregate line per second.</summary>
     [DisallowMultipleComponent]
     internal sealed class RuntimeFrameRateLogger : MonoBehaviour
@@ -122,12 +127,31 @@ namespace Koiusa.SteamMultiRuntime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
         {
-            if (instance != null)
+            if (!Application.isPlaying
+                || !RuntimeToolSettings.FrameRateLoggingEnabled
+                || instance != null)
                 return;
             var host = new GameObject("RuntimeFrameRateLogger");
             host.hideFlags = HideFlags.HideAndDontSave;
             DontDestroyOnLoad(host);
             instance = host.AddComponent<RuntimeFrameRateLogger>();
+        }
+
+        internal static void RefreshInstallation()
+        {
+            // The Tools menu is also available in Edit Mode. In that state only the
+            // persisted preference changes; runtime object lifetime starts with Play.
+            if (!Application.isPlaying)
+                return;
+
+            if (RuntimeToolSettings.FrameRateLoggingEnabled)
+            {
+                Install();
+                return;
+            }
+
+            if (instance != null)
+                Destroy(instance.gameObject);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

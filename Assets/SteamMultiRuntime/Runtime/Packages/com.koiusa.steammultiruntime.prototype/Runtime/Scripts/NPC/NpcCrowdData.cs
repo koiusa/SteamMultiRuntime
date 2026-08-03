@@ -49,8 +49,6 @@ namespace Koiusa.SteamMultiRuntime
         [Min(0f)] public float BroadphasePadding;
         [Range(0f, 1f)] public float PenetrationResolution;
         public bool ApplyImpulse;
-        [Min(0f)] public float ImpulseMassScale;
-        [Min(0f)] public float MaxImpulse;
 
         public static NpcCrowdContactSettings CreateDefault() => new()
         {
@@ -58,9 +56,7 @@ namespace Koiusa.SteamMultiRuntime
             EnableNetworkPhysicsObjectContacts = true,
             BroadphasePadding = 0.5f,
             PenetrationResolution = 1f,
-            ApplyImpulse = true,
-            ImpulseMassScale = 0.2f,
-            MaxImpulse = 5f
+            ApplyImpulse = true
         };
     }
 

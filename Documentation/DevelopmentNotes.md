@@ -41,7 +41,7 @@ Game Viewを表示するClientで`RuntimeFrameRateLogger`を使用した定常�
 
 ## FPS診断ログ
 
-Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレームをサンプリングし、1秒ごとに`[FrameRate]`を出力します。
+Editor／Development Buildでは`RuntimeFrameRateLogger`が全描画フレームをサンプリングし、1秒ごとに`[FrameRate]`を出力します。`Tools > SteamMultiRuntime > Diagnostics > FPS Logging`で永続的にON／OFFでき、Play中の切替も即時反映します。初期値はONです。
 
 - 平均／最低／最高FPS
 - 平均／最大Frame Time

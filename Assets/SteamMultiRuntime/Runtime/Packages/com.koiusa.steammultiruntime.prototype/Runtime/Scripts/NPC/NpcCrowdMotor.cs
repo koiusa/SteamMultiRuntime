@@ -431,10 +431,12 @@ namespace Koiusa.SteamMultiRuntime
                 return;
 
             body.position += direction * distance;
+            // Transfer the pre-resolution closing velocity to the dynamic body.
+            // Resolving our motor velocity first would make the physical impulse zero.
+            ApplyOverlapImpulse(other, direction, body.position);
             var inwardSpeed = Vector3.Dot(velocity, direction);
             if (inwardSpeed < 0f)
                 velocity -= direction * inwardSpeed;
-            ApplyOverlapImpulse(other, direction, distance, body.position);
             detectedWallNormal = direction;
             detectedWallDistance = 0f;
             hasDetectedWall = true;
@@ -442,7 +444,7 @@ namespace Koiusa.SteamMultiRuntime
         }
 
         private void ApplyOverlapImpulse(Collider other, Vector3 separationDirection,
-            float separationDistance, Vector3 contactPosition)
+            Vector3 contactPosition)
         {
             if (!contactSettings.ApplyImpulse)
                 return;
@@ -451,13 +453,18 @@ namespace Koiusa.SteamMultiRuntime
                 return;
             var relativeVelocity = velocity - otherBody.linearVelocity;
             var inwardSpeed = Mathf.Max(0f, -Vector3.Dot(relativeVelocity, separationDirection));
-            var correctionSpeed = separationDistance / Mathf.Max(simulationDeltaTime, 0.001f);
-            var impulse = Mathf.Min(
-                Mathf.Max(0f, contactSettings.MaxImpulse),
-                (inwardSpeed + correctionSpeed) * Mathf.Max(
-                    1f, body.mass * Mathf.Max(0f, contactSettings.ImpulseMassScale)));
+            var impulse = CalculateDynamicContactImpulse(otherBody, inwardSpeed);
             otherBody.AddForceAtPosition(-separationDirection * impulse, contactPosition, ForceMode.Impulse);
             otherBody.WakeUp();
+        }
+
+        private float CalculateDynamicContactImpulse(Rigidbody otherBody, float inwardSpeed)
+        {
+            if (inwardSpeed <= 0f)
+                return 0f;
+            var inverseNpcMass = 1f / Mathf.Max(body.mass, Mathf.Epsilon);
+            var inverseOtherMass = 1f / Mathf.Max(otherBody.mass, Mathf.Epsilon);
+            return inwardSpeed / (inverseNpcMass + inverseOtherMass);
         }
 
         internal NpcCrowdMovementData CaptureMovementData()
@@ -572,10 +579,7 @@ namespace Koiusa.SteamMultiRuntime
                 velocity += separationDirection * inwardSpeed;
                 if (contactSettings.ApplyImpulse && !otherBody.isKinematic)
                 {
-                    var correctionSpeed = separationDistance / Mathf.Max(simulationDeltaTime, 0.001f);
-                    var impulse = Mathf.Min(
-                        Mathf.Max(0f, contactSettings.MaxImpulse),
-                        (inwardSpeed + correctionSpeed) * Mathf.Max(1f, body.mass * Mathf.Max(0f, contactSettings.ImpulseMassScale)));
+                    var impulse = CalculateDynamicContactImpulse(otherBody, inwardSpeed);
                     otherBody.AddForceAtPosition(-separationDirection * impulse, npcPosition, ForceMode.Impulse);
                     otherBody.WakeUp();
                 }

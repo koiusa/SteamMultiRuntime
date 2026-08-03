@@ -428,8 +428,6 @@ MonoBehaviour:
     BroadphasePadding: 0.5
     PenetrationResolution: 1
     ApplyImpulse: 1
-    ImpulseMassScale: 0.2
-    MaxImpulse: 5
 --- !u!114 &6060798533999104801
 MonoBehaviour:
   m_ObjectHideFlags: 0
