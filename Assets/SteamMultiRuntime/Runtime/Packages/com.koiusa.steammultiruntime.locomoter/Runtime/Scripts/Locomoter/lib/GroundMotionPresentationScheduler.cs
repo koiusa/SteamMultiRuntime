@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
     }
 
     /// <summary>
-    /// Applies moving-floor presentation before actor presentation in one Update.
+    /// Applies moving-floor presentation before actor presentation after movement updates.
     /// Physics ownership remains in FixedUpdate; this scheduler only orders visuals.
     /// </summary>
     public sealed class GroundMotionPresentationScheduler : MonoBehaviour
@@ -59,7 +59,7 @@ namespace Koiusa.SteamMultiRuntime
             return instance;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             for (var i = sources.Count - 1; i >= 0; i--)
             {

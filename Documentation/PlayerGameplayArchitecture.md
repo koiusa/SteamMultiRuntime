@@ -22,6 +22,8 @@ com.koiusa.steammultiruntime.player.netcode
 
 `ActorCharacterCoordinator`を中心とするPlayer Gameplayの基盤コードと、標準Character Prefabへの適用は完了しています。Local Playerでは`PlayerSkillInputController`、Network Playerでは`NetworkPlayerSkillController`が`Combat/Attack`、`Player/Dash`、`Player/Guard`、`Player/Heal`を読み取ります。Network Playerの発動可否、Hit判定、Damage、HealをServer Authorityで確定します。DashはStrafe移動方向へ対応し、GuardはLocal／Remote双方のShield表示へ接続済みです。Combat全般のPlay Mode検証は継続中です。
 
+Network Playerの移動はServer Authorityです。Ownerは入力だけをServerへ送り、Physics Root、Collision、Traversal、確定TransformはServerが更新します。Client表示はNGO `NetworkTransform`のTick Buffer `Lerp`を使用し、Position／RotationのLerp SmoothingとHalf Float Precisionを有効にします。Owner専用の座標予測やPresentation補正は行いません。
+
 ### 実装済み
 
 - `ActorCharacterCoordinator`をMovement、Skill、Combatへの共通アクセスポイントとして追加

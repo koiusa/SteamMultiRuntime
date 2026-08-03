@@ -382,12 +382,15 @@ namespace Koiusa.SteamMultiRuntime
                         var npc = activeNpcs[i];
                         if (npc == null || !npc.isActiveAndEnabled)
                             continue;
-                        npc.TickCrowdNavigation(true);
                         var position = crowdStateInitialized && agents.IsCreated && i < agents.Length
                             ? agents[i].Position
                             : (float3)npc.Position;
+                        // Navigation callbacks may deactivate and unregister this NPC,
+                        // shrinking all parallel lists. Commit the next deadline before
+                        // invoking user/module code and never index the lists afterward.
                         nextNavigationObservationTimes[i] = now
                             + GetDecisionInterval(position, hasLodCamera, lodCameraPosition);
+                        npc.TickCrowdNavigation(true);
                     }
                 }
             }

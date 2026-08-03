@@ -100,27 +100,14 @@ namespace Koiusa.SteamMultiRuntime
                     continue;
                 }
 
-                if (distanceSqr > nearDistance * nearDistance)
-                {
-                    var midInterval = driver.MidAnimationUpdateInterval;
-                    if (now < nextUpdates[driver])
-                    {
-                        driver.SetScheduledAnimatorActive(false);
-                        continue;
-                    }
-                    nextUpdates[driver] = now + midInterval;
-                    driver.TickDiscreteScheduled(midInterval);
-                    continue;
-                }
-
-                // Near actors retain continuous Animator evaluation for visual quality.
-                // State parameter writes remain rate-limited independently.
                 driver.SetScheduledAnimatorActive(true);
-                var nearInterval = driver.NearAnimationUpdateInterval;
+                var interval = distanceSqr <= nearDistance * nearDistance
+                    ? driver.NearAnimationUpdateInterval
+                    : driver.MidAnimationUpdateInterval;
                 if (now < nextUpdates[driver])
                     continue;
-                nextUpdates[driver] = now + nearInterval;
-                driver.TickScheduled(nearInterval);
+                nextUpdates[driver] = now + interval;
+                driver.TickScheduled(interval);
             }
         }
 

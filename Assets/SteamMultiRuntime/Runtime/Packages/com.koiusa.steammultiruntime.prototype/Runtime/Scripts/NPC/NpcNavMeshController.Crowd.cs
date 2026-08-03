@@ -7,6 +7,22 @@ namespace Koiusa.SteamMultiRuntime
     {
         internal void TickCrowdSkill(float deltaTime)
         {
+            // Network spawn can happen after OnEnable registered this NPC with the
+            // persistent Crowd simulation. Gate the remote replica before any Crowd
+            // movement can capture a local presentation pose. Waiting for the
+            // distance-LOD navigation tick can leave the model pinned to that stale
+            // pose while NetworkTransform continues moving the physics root.
+            if (_networkPlayerController != null)
+            {
+                if (!_networkPlayerController.IsSpawned)
+                    return;
+                if (!_networkPlayerController.IsServer)
+                {
+                    DisableClientSimulation();
+                    return;
+                }
+            }
+
             if (_skillCoordinator != null && _skillCoordinator.ActiveSkill != null)
                 _skillCoordinator.TickSkills(deltaTime);
         }
