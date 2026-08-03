@@ -40,7 +40,7 @@ SteamMultiRuntimeの設計・運用資料の索引です。
 |---|---|
 | [Sample Setup](../Assets/SteamMultiRuntime/Documentation~/Samples.md) | SampleのImport、Build Profile、更新手順 |
 | [Localization Setup](../Assets/SteamMultiRuntime/Documentation~/Localization.md) | Localizationの導入手順 |
-| [Development Notes](DevelopmentNotes.md) | 開発時に判明した環境依存の注意事項 |
+| [Development Notes](DevelopmentNotes.md) | 計測結果や環境依存の注意事項をまとめた事象別ノートの索引 |
 
 機能単位のSample一覧と追加規約は[Samples README](../Assets/SteamMultiRuntime/Samples/README.md)を参照してください。
 
@@ -57,5 +57,6 @@ SteamMultiRuntimeの設計・運用資料の索引です。
 - Input Actionまたは既定Bindingの変更は`InputBindings.md`と、必要に応じてルート`README.md`の操作表へ反映する。
 - Inspector、Editor Window、Repair操作の変更は`EditorSpecification.md`へ反映する。
 - Sampleの導入手順、Scene List、更新手順の変更はPackage内の`Documentation~/Samples.md`へ反映する。
+- 開発中に確認した個別事象は`DevelopmentNotes/`へファイルを分け、`DevelopmentNotes.md`の索引からリンクする。
 - 検証前の計画や未確認事項は、検証済みの現行仕様と区別して記載する。
 

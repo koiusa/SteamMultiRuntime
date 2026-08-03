@@ -1,0 +1,9 @@
+# NPCの移動床追従
+
+関連する現行仕様は[NPC Architecture](../NpcArchitecture.md)を参照してください。
+
+Server側では、Overlap候補の選別、幾何距離によるBinding保持、移動床のPhysics姿勢適用直後にBinding中NPCだけを追従させる中央通知を採用しています。これによりServer側のすり抜けは大幅に減りましたが、全条件で解消したとは断定しません。
+
+Network NPCは通常時の`NetworkTransform.PositionThreshold`を0.1mとし、移動床Binding中だけ0.02mへ下げ、解除時に戻します。Client側で床とActorへ別の座標上書きや決定論的時刻再生を行う案は、操作や表示の退行があったため採用していません。
+
+Player、Network NPC、NetworkMoverは現在のPrefabに保存された通常の`NetworkTransform`補間を使用します。補間方式はNetcode 2.7.0の新しいBuffer Queue方式で速度変化も平滑化する`Smooth Dampening`を使用し、`PositionLerpSmoothing`はON、Position／Rotationの最大補間時間は0.1秒です。旧`LegacyLerp`は使用しません。床とNPCで最大補間時間を一致させ、相対的な表示遅延を作りません。補間はNetwork Tick間の見た目を滑らかにしますが、実描画FPSそのものは増やしません。
