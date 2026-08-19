@@ -7,6 +7,8 @@ description: Implement, diagnose, review, or document the SteamMultiRuntime Unit
 
 Work from the repository's current code and serialized assets; do not infer prefab, scene, or Input Action state from C# alone. Target the Unity version in `ProjectSettings/ProjectVersion.txt` and the package versions already pinned by the project.
 
+When Unity-specific APIs, package-management practices, UI workflows, multiplayer setup, build tooling, or other Unity conventions are unclear, consult the relevant official skill or reference in [Unity-Technologies/skills](https://github.com/Unity-Technologies/skills). Use it as supplementary guidance: the project's pinned Unity/package versions, serialized assets, architecture documentation, and local constraints remain authoritative. Read only the relevant upstream skill, and verify that its guidance applies to this project's Unity version before acting.
+
 ## Workflow
 
 1. Check `git status --short` and preserve unrelated or pre-existing changes.
