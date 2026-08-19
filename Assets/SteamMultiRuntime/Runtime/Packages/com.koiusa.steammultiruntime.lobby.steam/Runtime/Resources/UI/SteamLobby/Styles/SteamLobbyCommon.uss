@@ -247,14 +247,14 @@
     border-right-color: rgba(108, 230, 255, 230);
 }
 
-.smr-theme .focus-group-title {
+.koiusa-theme .focus-group-title {
     margin-bottom: 8px;
     color: rgba(168, 181, 187, 255);
     font-size: 14px;
     -unity-font-style: bold;
 }
 
-.smr-theme .lobby-focus-group--active > .focus-group-title {
+.koiusa-theme .lobby-focus-group--active > .focus-group-title {
     color: rgba(185, 218, 215, 255);
 }
 

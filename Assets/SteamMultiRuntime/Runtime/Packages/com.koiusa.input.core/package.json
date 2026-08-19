@@ -5,5 +5,11 @@
   "unity": "6000.3",
   "description": "Reusable Input System configuration and action lifetime utilities.",
   "author": { "name": "koiusa" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koiusa/SteamMultiRuntime.git",
+    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core"
+  },
+  "publishConfig": { "access": "public" },
   "dependencies": { "com.unity.inputsystem": "1.18.0" }
 }

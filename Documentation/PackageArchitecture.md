@@ -28,7 +28,7 @@ Samples / Prototype / Integration
 |---|---|
 | `com.koiusa.system.core` | 終了処理などUnityプロジェクト全般で使えるシステム機能 |
 | `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
-| `com.koiusa.ui.common` | 特定ゲームやLocalizationに依存しないUIテーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
+| `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
 | `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
 | `com.koiusa.targetingsystem` | ターゲット検出、ロックオン、Camera連携 |
 

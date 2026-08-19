@@ -183,9 +183,9 @@
 	margin-bottom: 12px;
 }
 
-.smr-theme .keyconfig-map-tab-button:hover,
-.smr-theme .keyconfig-map-tab-button:focus,
-.smr-theme .keyconfig-map-tab-button.active {
+.koiusa-theme .keyconfig-map-tab-button:hover,
+.koiusa-theme .keyconfig-map-tab-button:focus,
+.koiusa-theme .keyconfig-map-tab-button.active {
 	-unity-font-style: normal;
 }
 

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Koiusa.UI.Common;
+using Koiusa.UI.Core;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -218,7 +218,7 @@ namespace Koiusa.SteamMultiRuntime
             styleSheet ??= Resources.Load<StyleSheet>(DefaultStyleSheetPath);
             if (styleSheet != null && !root.styleSheets.Contains(styleSheet))
                 root.styleSheets.Add(styleSheet);
-            CommonUiTheme.Apply(root);
+            KoiusaUiTheme.Apply(root);
             root.style.position = Position.Absolute;
             root.style.left = 0;
             root.style.top = 0;

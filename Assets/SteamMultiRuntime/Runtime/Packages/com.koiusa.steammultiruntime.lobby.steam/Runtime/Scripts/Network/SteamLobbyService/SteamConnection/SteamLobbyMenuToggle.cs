@@ -2,7 +2,7 @@ using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using Koiusa.UI.Common;
+using Koiusa.UI.Core;
 
 namespace Koiusa.SteamMultiRuntime
 {

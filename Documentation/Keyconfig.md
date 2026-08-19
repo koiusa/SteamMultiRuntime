@@ -11,6 +11,44 @@ Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有
 
 汎用KeyconfigはSteamMultiRuntimeを参照しません。SteamMultiRuntime側が`IKeyConfigLocalizer`を実装して接続します。
 
+## npm / Unity Package Managerからの導入
+
+`com.koiusa.input.core`、`com.koiusa.ui.core`、`com.koiusa.keyconfig`はnpmレジストリへ同じバージョン系列で公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。
+
+Unityから利用するプロジェクトでは、`Packages/manifest.json`の`scopedRegistries`へnpmを登録します。
+
+```json
+{
+  "scopedRegistries": [
+    {
+      "name": "npmjs",
+      "url": "https://registry.npmjs.org",
+      "scopes": ["com.koiusa"]
+    }
+  ],
+  "dependencies": {
+    "com.koiusa.keyconfig": "0.1.0"
+  }
+}
+```
+
+通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
+
+公開はGitHub Actionsの`Publish reusable Unity packages to npm`を手動実行します。既定はdry-runで、成果物の内容だけを検証します。実公開時は`publish`を有効にし、依存順の`input.core`、`ui.core`、`keyconfig`で未公開バージョンだけを公開します。`NPM_TOKEN` secretが必要です。
+
+### パッケージ境界の判断
+
+`input.core`と`ui.core`はKeyconfig以外の画面やGameplay入力からも利用される共有基盤なので、Keyconfigへ統合しません。3パッケージを個別に公開し、利用者は`keyconfig`だけを直接指定して残りを推移依存として解決する構成を維持します。
+
+一方、入力ガイドと内蔵アイコンはKeyconfigのリバインド機能そのものには必須ではなく、配布容量の大部分を占めます。初回公開後に互換性を壊して分離することを避けるため、正式な`1.0.0`公開前に次を判断します。
+
+- リバインドUIと文字列フォールバックを`com.koiusa.keyconfig`へ残す。
+- `InputGuideOverlay`、デバイスレイアウト、標準アイコンを任意の`com.koiusa.keyconfig.icons`へ分離する。
+- SVG原稿はRuntime配布物へ含めず、生成元またはDocumentation用Assetとして管理する。
+- アイコンの出典、改変条件、npmでの再配布可否を確定し、ライセンス文書を同梱する。
+
+現状のnpm tarballは、`input.core`が約5 KB、`ui.core`が約4 KB、`keyconfig`が約1.9 MBです。Keyconfigの展開後約4.3 MBのうち、SVG原稿が約2.0 MB、PNGが約1.7 MBを占めます。このため、パッケージ数を減らすよりアイコンを任意依存へ分離する方が効果的です。
+
 ## レイアウト
 
 Keyconfig Panelは画面内の利用可能な高さを満たします。Binding Listは項目数に関係なく、Table Headerと下部Button Rowの間にある残り領域を埋めます。
@@ -66,7 +104,7 @@ Keyboard、Mouse／Pointer、Gamepad、DualShock、基本的なJoystick入力は
 
 ## 共通Scrollbar
 
-Scrollbarは`com.koiusa.ui.common`の`SteamMultiRuntimeScrollView.uss`を共有します。個別画面で太さを上書きせず、共通USSを修正します。
+Scrollbarは`com.koiusa.ui.core`の`KoiusaScrollView.uss`を共有します。個別画面で太さを上書きせず、共通USSを修正します。
 
 ## 資産の配置
 

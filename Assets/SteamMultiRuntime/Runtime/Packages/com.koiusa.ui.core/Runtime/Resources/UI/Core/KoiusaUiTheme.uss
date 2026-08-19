@@ -1,11 +1,11 @@
 /* Shared visual language derived from the runtime input-device monitor. */
-.smr-theme .input-guide-panel,
-.smr-theme .input-operation-panel,
-.smr-theme .character-select-panel,
-.smr-theme .keyconfig-panel,
-.smr-theme .main-panel,
-.smr-theme .stage-select-panel,
-.smr-theme #character-debug-window {
+.koiusa-theme .input-guide-panel,
+.koiusa-theme .input-operation-panel,
+.koiusa-theme .character-select-panel,
+.koiusa-theme .keyconfig-panel,
+.koiusa-theme .main-panel,
+.koiusa-theme .stage-select-panel,
+.koiusa-theme #character-debug-window {
     color: rgb(207, 221, 240);
     background-color: rgba(9, 14, 23, 0.94);
     border-left-width: 1px;
@@ -22,42 +22,42 @@
     border-bottom-right-radius: 8px;
 }
 
-.smr-theme .input-guide-title,
-.smr-theme .character-select-title,
-.smr-theme .keyconfig-title,
-.smr-theme .title,
-.smr-theme .character-debug-title {
+.koiusa-theme .input-guide-title,
+.koiusa-theme .character-select-title,
+.koiusa-theme .keyconfig-title,
+.koiusa-theme .title,
+.koiusa-theme .character-debug-title {
     color: rgb(238, 245, 255);
     -unity-font-style: bold;
     letter-spacing: 2px;
 }
 
-.smr-theme .character-select-title,
-.smr-theme .keyconfig-title,
-.smr-theme .title {
+.koiusa-theme .character-select-title,
+.koiusa-theme .keyconfig-title,
+.koiusa-theme .title {
     border-left-width: 3px;
     border-left-color: rgb(102, 164, 145);
     padding-left: 10px;
 }
 
-.smr-theme .focus-group-title,
-.smr-theme .keyconfig-th,
-.smr-theme .character-debug-section > Toggle {
+.koiusa-theme .focus-group-title,
+.koiusa-theme .keyconfig-th,
+.koiusa-theme .character-debug-section > Toggle {
     color: rgb(158, 185, 178);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
 
-.smr-theme .section-title {
+.koiusa-theme .section-title {
     color: rgb(174, 194, 201);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
 
-.smr-theme .section-panel,
-.smr-theme .input-operation-section,
-.smr-theme .keyconfig-input-monitor,
-.smr-theme .character-debug-section {
+.koiusa-theme .section-panel,
+.koiusa-theme .input-operation-section,
+.koiusa-theme .keyconfig-input-monitor,
+.koiusa-theme .character-debug-section {
     background-color: rgba(20, 28, 40, 0.72);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
@@ -65,14 +65,14 @@
     border-bottom-right-radius: 5px;
 }
 
-.smr-theme .character-select-option,
-.smr-theme .keyconfig-button,
-.smr-theme .keyconfig-map-tab-button,
-.smr-theme .button,
-.smr-theme .join-button,
-.smr-theme .character-debug-refresh,
-.smr-theme .character-debug-launcher,
-.smr-theme .character-debug-selector > Button {
+.koiusa-theme .character-select-option,
+.koiusa-theme .keyconfig-button,
+.koiusa-theme .keyconfig-map-tab-button,
+.koiusa-theme .button,
+.koiusa-theme .join-button,
+.koiusa-theme .character-debug-refresh,
+.koiusa-theme .character-debug-launcher,
+.koiusa-theme .character-debug-selector > Button {
     color: rgb(207, 221, 240);
     background-color: rgb(28, 36, 49);
     border-left-width: 1px;
@@ -89,14 +89,14 @@
     border-bottom-right-radius: 5px;
 }
 
-.smr-theme .character-select-option:hover,
-.smr-theme .keyconfig-button:hover,
-.smr-theme .keyconfig-map-tab-button:hover,
-.smr-theme .button:hover,
-.smr-theme .join-button:hover,
-.smr-theme .character-debug-refresh:hover,
-.smr-theme .character-debug-launcher:hover,
-.smr-theme .character-debug-selector > Button:hover {
+.koiusa-theme .character-select-option:hover,
+.koiusa-theme .keyconfig-button:hover,
+.koiusa-theme .keyconfig-map-tab-button:hover,
+.koiusa-theme .button:hover,
+.koiusa-theme .join-button:hover,
+.koiusa-theme .character-debug-refresh:hover,
+.koiusa-theme .character-debug-launcher:hover,
+.koiusa-theme .character-debug-selector > Button:hover {
     color: rgb(245, 255, 251);
     background-color: rgb(35, 150, 112);
     border-left-color: rgb(83, 245, 181);
@@ -105,10 +105,10 @@
     border-bottom-color: rgb(18, 74, 57);
 }
 
-.smr-theme .character-select-option:focus,
-.smr-theme .keyconfig-map-tab-button.active,
-.smr-theme .button:focus,
-.smr-theme .join-button:focus {
+.koiusa-theme .character-select-option:focus,
+.koiusa-theme .keyconfig-map-tab-button.active,
+.koiusa-theme .button:focus,
+.koiusa-theme .join-button:focus {
     color: rgb(245, 255, 251);
     background-color: rgb(35, 150, 112);
     border-left-color: rgb(83, 245, 181);
@@ -118,11 +118,11 @@
     -unity-font-style: bold;
 }
 
-.smr-theme .field > .unity-base-text-field__input,
-.smr-theme .field > .unity-text-field__input,
-.smr-theme .field > .unity-base-popup-field__input,
-.smr-theme .stage-dropdown > .unity-base-popup-field__input,
-.smr-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input {
+.koiusa-theme .field > .unity-base-text-field__input,
+.koiusa-theme .field > .unity-text-field__input,
+.koiusa-theme .field > .unity-base-popup-field__input,
+.koiusa-theme .stage-dropdown > .unity-base-popup-field__input,
+.koiusa-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input {
     color: rgb(207, 221, 240);
     background-color: rgba(1, 5, 10, 0.65);
     border-left-width: 1px;
@@ -139,11 +139,11 @@
     border-bottom-right-radius: 4px;
 }
 
-.smr-theme .field > .unity-base-text-field__input:focus,
-.smr-theme .field > .unity-text-field__input:focus,
-.smr-theme .field > .unity-base-popup-field__input:focus,
-.smr-theme .stage-dropdown > .unity-base-popup-field__input:focus,
-.smr-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input:focus {
+.koiusa-theme .field > .unity-base-text-field__input:focus,
+.koiusa-theme .field > .unity-text-field__input:focus,
+.koiusa-theme .field > .unity-base-popup-field__input:focus,
+.koiusa-theme .stage-dropdown > .unity-base-popup-field__input:focus,
+.koiusa-theme .keyconfig-binding-group-dropdown > .unity-base-popup-field__input:focus {
     background-color: rgba(35, 150, 112, 0.28);
     border-left-color: rgb(83, 245, 181);
     border-right-color: rgb(83, 245, 181);
@@ -151,29 +151,29 @@
     border-bottom-color: rgb(83, 245, 181);
 }
 
-.smr-theme .field > .unity-base-field__label,
-.smr-theme .stage-dropdown > .unity-base-field__label,
-.smr-theme .keyconfig-binding-group-dropdown > .unity-base-field__label,
-.smr-theme .muted,
-.smr-theme .keyconfig-status,
-.smr-theme .keyconfig-input-help {
+.koiusa-theme .field > .unity-base-field__label,
+.koiusa-theme .stage-dropdown > .unity-base-field__label,
+.koiusa-theme .keyconfig-binding-group-dropdown > .unity-base-field__label,
+.koiusa-theme .muted,
+.koiusa-theme .keyconfig-status,
+.koiusa-theme .keyconfig-input-help {
     color: rgb(119, 149, 184);
 }
 
-.smr-theme .keyconfig-table-header {
+.koiusa-theme .keyconfig-table-header {
     background-color: rgba(42, 61, 80, 0.55);
     border-bottom-color: rgba(145, 175, 215, 0.16);
 }
 
-.smr-theme .keyconfig-row,
-.smr-theme .input-operation-row {
+.koiusa-theme .keyconfig-row,
+.koiusa-theme .input-operation-row {
     border-bottom-color: rgba(145, 175, 215, 0.1);
 }
 
-.smr-theme .keyconfig-row:hover {
+.koiusa-theme .keyconfig-row:hover {
     background-color: rgba(35, 150, 112, 0.16);
 }
 
-.smr-theme .keyconfig-row.input-active {
+.koiusa-theme .keyconfig-row.input-active {
     border-left-color: rgb(83, 245, 181);
 }

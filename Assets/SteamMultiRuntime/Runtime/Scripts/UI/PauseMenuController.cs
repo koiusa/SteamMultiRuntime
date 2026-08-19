@@ -1,7 +1,7 @@
 using Koiusa.Input;
 using Koiusa.Keyconfig.Runtime;
 using Koiusa.SteamMultiRuntime.Character.UI;
-using Koiusa.UI.Common;
+using Koiusa.UI.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;

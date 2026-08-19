@@ -1,0 +1,23 @@
+{
+  "name": "com.koiusa.ui.core",
+  "displayName": "Koiusa UI Core",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Shared runtime UI Toolkit theme, controls, and styling utilities.",
+  "author": {
+    "name": "koiusa"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koiusa/SteamMultiRuntime.git",
+    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "ui-toolkit",
+    "theme",
+    "runtime"
+  ]
+}

@@ -2,7 +2,7 @@
 
 Steam Multi Runtime は、Unity Localization 1.5.9とAddressablesを使用して日本語・英語のUIを提供します。
 
-ローカライズ機能は共通内部パッケージ `com.koiusa.steammultiruntime.localization` に分離されています。ランタイムAPI、固定キーのカタログ、UI Toolkit連携、導入先設定を生成するEditorツールをこのパッケージへ集約し、機能パッケージ同士は参照しません。`com.koiusa.ui.common` もLocalizationへ依存しません。
+ローカライズ機能は共通内部パッケージ `com.koiusa.steammultiruntime.localization` に分離されています。ランタイムAPI、固定キーのカタログ、UI Toolkit連携、導入先設定を生成するEditorツールをこのパッケージへ集約し、機能パッケージ同士は参照しません。`com.koiusa.ui.core` もLocalizationへ依存しません。
 
 ## どのプロジェクトで設定するか
 

@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Koiusa.UI.Common;
+using Koiusa.UI.Core;
 
 namespace Koiusa.Keyconfig.Runtime
 {

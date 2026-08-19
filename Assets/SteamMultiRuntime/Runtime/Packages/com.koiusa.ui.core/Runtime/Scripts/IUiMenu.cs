@@ -1,4 +1,4 @@
-namespace Koiusa.UI.Common
+namespace Koiusa.UI.Core
 {
     public interface IUiMenu
     {

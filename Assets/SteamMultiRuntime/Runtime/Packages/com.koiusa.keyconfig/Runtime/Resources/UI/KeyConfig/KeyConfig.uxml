@@ -1,8 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-	<ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
-	<ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeScrollView.uss" />
+	<ui:Style src="../../../../../com.koiusa.ui.core/Runtime/Resources/UI/Core/KoiusaUiTheme.uss" />
+	<ui:Style src="../../../../../com.koiusa.ui.core/Runtime/Resources/UI/Core/KoiusaScrollView.uss" />
 	<ui:Style src="KeyConfig.uss" />
-	<ui:VisualElement class="smr-theme keyconfig-root">
+	<ui:VisualElement class="koiusa-theme keyconfig-root">
 		<ui:VisualElement class="keyconfig-panel">
 			<ui:Label text="キーコンフィグ" class="keyconfig-title" />
 			<ui:Label text="キーやボタンを押すと、対応する操作がリアルタイムに点灯します。" class="keyconfig-input-help" />

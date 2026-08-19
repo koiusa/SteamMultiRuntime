@@ -1,8 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
+    <ui:Style src="../../../../../com.koiusa.ui.core/Runtime/Resources/UI/Core/KoiusaUiTheme.uss" />
 	<ui:Style src="LocalStageSelectCommon.uss" />
 	<ui:Style src="LocalStageSelectTheme.uss" />
-	<ui:VisualElement class="smr-theme root">
+	<ui:VisualElement class="koiusa-theme root">
 		<ui:VisualElement class="panel stage-select-panel">
 			<ui:Label text="Stage Selection" class="title" />
 			<ui:VisualElement class="stage-controls">

@@ -44,7 +44,7 @@
 	color: rgba(117, 236, 255, 220);
 }
 
-/* DropdownField creates its menu under the panel root, outside .smr-theme. */
+/* DropdownField creates its menu under the panel root, outside .koiusa-theme. */
 .unity-base-dropdown__container-outer,
 .unity-base-dropdown__container-inner,
 .unity-base-dropdown .unity-scroll-view__content-viewport,

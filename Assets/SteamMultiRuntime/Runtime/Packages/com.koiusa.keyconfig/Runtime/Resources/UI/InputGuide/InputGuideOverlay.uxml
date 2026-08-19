@@ -1,10 +1,10 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Style src="../../../../../com.koiusa.ui.common/Runtime/Resources/UI/Common/SteamMultiRuntimeTheme.uss" />
+    <ui:Style src="../../../../../com.koiusa.ui.core/Runtime/Resources/UI/Core/KoiusaUiTheme.uss" />
     <ui:Style src="InputGuideOverlay.uss" />
     <ui:Template name="InputGuideKeyboard" src="InputGuideKeyboard.uxml" />
     <ui:Template name="InputGuideMouse" src="InputGuideMouse.uxml" />
     <ui:Template name="InputGuideGamepad" src="InputGuideGamepad.uxml" />
-    <ui:VisualElement name="input-guide-overlay" class="smr-theme input-guide-screen" picking-mode="Ignore">
+    <ui:VisualElement name="input-guide-overlay" class="koiusa-theme input-guide-screen" picking-mode="Ignore">
         <ui:VisualElement class="input-guide-panel">
             <ui:VisualElement class="input-guide-header">
                 <ui:VisualElement class="input-guide-accent" />

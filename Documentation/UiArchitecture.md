@@ -14,7 +14,7 @@
 
 ## メニュー遷移
 
-`com.koiusa.ui.common`の`IUiMenu`は表示状態、Activate、Deactivate、初期フォーカスだけを定義します。`UiMenuNavigator`はRoot表示、子メニューのPush、Backによる親メニュー復帰、シーン変更時のCloseAllを管理します。
+`com.koiusa.ui.core`の`IUiMenu`は表示状態、Activate、Deactivate、初期フォーカスだけを定義します。`UiMenuNavigator`はRoot表示、子メニューのPush、Backによる親メニュー復帰、シーン変更時のCloseAllを管理します。
 
 Pause MenuからKey ConfigまたはCharacter Selectを開く場合はPushし、子画面を決定またはCancelで閉じるとPause Menuを再表示します。Character Select、Stage Select、Steam Lobbyをショートカットから直接開く場合はRootとして表示します。
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Koiusa.UI.Common
+namespace Koiusa.UI.Core
 {
     public static class UiMenuNavigator
     {
