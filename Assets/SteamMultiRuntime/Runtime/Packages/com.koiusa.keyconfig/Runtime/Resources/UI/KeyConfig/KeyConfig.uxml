@@ -4,26 +4,26 @@
 	<ui:Style src="KeyConfig.uss" />
 	<ui:VisualElement class="koiusa-theme keyconfig-root">
 		<ui:VisualElement class="keyconfig-panel">
-			<ui:Label text="キーコンフィグ" class="keyconfig-title" />
-			<ui:Label text="キーやボタンを押すと、対応する操作がリアルタイムに点灯します。" class="keyconfig-input-help" />
+			<ui:Label text="keyconfig.title" class="keyconfig-title" />
+			<ui:Label text="keyconfig.help" class="keyconfig-input-help" />
 			<ui:VisualElement class="keyconfig-input-monitor">
 				<ui:Label name="input-monitor-dot" text="●" class="keyconfig-input-monitor-dot" />
-				<ui:Label text="INPUT MONITOR" class="keyconfig-input-monitor-title" />
+				<ui:Label text="keyconfig.input_monitor" class="keyconfig-input-monitor-title" />
 				<ui:VisualElement class="keyconfig-input-monitor-spacer" />
 				<ui:Label name="input-monitor-status" text="WAITING FOR INPUT" class="keyconfig-input-monitor-status" />
 			</ui:VisualElement>
 			<ui:Label name="status-label" text="Ready" class="keyconfig-status" />
 			<ui:VisualElement name="table-header" class="keyconfig-table-header">
-				<ui:Label text="アクション" class="keyconfig-th keyconfig-th-action" />
-				<ui:Label text="キー / ボタン" class="keyconfig-th keyconfig-th-binding" />
+				<ui:Label text="keyconfig.action" class="keyconfig-th keyconfig-th-action" />
+				<ui:Label text="keyconfig.binding" class="keyconfig-th keyconfig-th-binding" />
 				<ui:Label text="" class="keyconfig-th keyconfig-th-buttons" />
 			</ui:VisualElement>
 			<ui:ScrollView name="binding-list-view" mode="Vertical" class="keyconfig-list" />
 			<ui:VisualElement class="keyconfig-buttons-row">
-				<ui:Button name="load-button" text="読込" class="keyconfig-button" />
-				<ui:Button name="save-button" text="保存" class="keyconfig-button" />
-				<ui:Button name="reset-all-button" text="全リセット" class="keyconfig-button" />
-				<ui:Button name="close-button" text="閉じる" class="keyconfig-button" />
+				<ui:Button name="load-button" text="keyconfig.load" class="keyconfig-button" />
+				<ui:Button name="save-button" text="keyconfig.save" class="keyconfig-button" />
+				<ui:Button name="reset-all-button" text="keyconfig.reset_all" class="keyconfig-button" />
+				<ui:Button name="close-button" text="keyconfig.close" class="keyconfig-button" />
 			</ui:VisualElement>
 		</ui:VisualElement>
 	</ui:VisualElement>

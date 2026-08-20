@@ -386,7 +386,7 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            mapLabel.text = Nicify(map.name);
+            mapLabel.text = KeyConfigLocalization.Get(Nicify(map.name));
             UpdateInputModeLabel();
             SetGamepadLayout(IsGamepadLike(lastActiveDevice));
             UpdateGamepadFaceLabels(lastActiveDevice);

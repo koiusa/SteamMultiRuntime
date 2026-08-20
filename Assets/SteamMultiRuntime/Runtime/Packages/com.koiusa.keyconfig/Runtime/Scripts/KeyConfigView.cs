@@ -475,10 +475,8 @@ namespace Koiusa.Keyconfig.Runtime
                         selectedMapName = mapName;
                         RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
                         EnterBindingList();
-                    })
-                    {
-                        text = mapName
-                    };
+                    });
+                    BindRow(tabButton, mapName);
 
                     tabButton.AddToClassList("keyconfig-map-tab-button");
                     tabButton.SetEnabled(isInteractive);
@@ -508,7 +506,8 @@ namespace Koiusa.Keyconfig.Runtime
                     currentProfileName = null;
                     currentActionName = null;
 
-                    var schemeHeader = new Label(currentSchemeName);
+                    var schemeHeader = new Label();
+                    BindRow(schemeHeader, currentSchemeName);
                     schemeHeader.AddToClassList("keyconfig-scheme-group-header");
                     bindingListView.Add(schemeHeader);
                 }
@@ -518,7 +517,8 @@ namespace Koiusa.Keyconfig.Runtime
                     currentProfileName = entry.ProfileName;
                     currentActionName = null;
 
-                    var profileHeader = new Label(currentProfileName);
+                    var profileHeader = new Label();
+                    BindRow(profileHeader, currentProfileName);
                     profileHeader.AddToClassList("keyconfig-profile-group-header");
                     bindingListView.Add(profileHeader);
                 }
@@ -688,7 +688,7 @@ namespace Koiusa.Keyconfig.Runtime
             container.style.paddingBottom = 24;
             root.Add(container);
 
-            var title = new Label("キーコンフィグ");
+            var title = new Label("keyconfig.title");
             title.style.fontSize = 30;
             title.style.unityFontStyleAndWeight = FontStyle.Bold;
             title.style.marginBottom = 12;
@@ -726,10 +726,10 @@ namespace Koiusa.Keyconfig.Runtime
             buttonRow.style.justifyContent = Justify.FlexEnd;
             container.Add(buttonRow);
 
-            loadButton = new Button { text = "読込" };
-            saveButton = new Button { text = "保存" };
-            resetAllButton = new Button { text = "全リセット" };
-            closeButton = new Button { text = "閉じる" };
+            loadButton = new Button { text = "keyconfig.load" };
+            saveButton = new Button { text = "keyconfig.save" };
+            resetAllButton = new Button { text = "keyconfig.reset_all" };
+            closeButton = new Button { text = "keyconfig.close" };
 
             loadButton.style.width = 110;
             saveButton.style.width = 110;

@@ -11,6 +11,11 @@ Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有
 
 汎用KeyconfigはSteamMultiRuntimeを参照しません。SteamMultiRuntime側が`IKeyConfigLocalizer`を実装して接続します。
 
+`Provider`を設定しない場合は、OSのUI言語を初期値とする日本語・英語の内蔵ローカライザーを使用します。実行中の切替は
+`KeyConfigLocalization.BuiltInLocale = KeyConfigLocale.Japanese`（または`English`）で行えます。独自の翻訳を使う場合は
+`KeyConfigLocalization.Provider`へ`IKeyConfigLocalizer`実装を設定し、言語変更時にその`LocaleChanged`を発火してください。
+Action Map、Action、Composite、スキーム、プロファイルの各名前は元の名前をキーとしてProviderへ渡されます。
+
 ## npm / Unity Package Managerからの導入
 
 `com.koiusa.input.core`、`com.koiusa.ui.core`、`com.koiusa.keyconfig`はnpmレジストリへ同じバージョン系列で公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。
@@ -74,6 +79,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - `Save`／`Load`でユーザー設定を保存／復元します。Change／Reset／Reset Allは画面内の編集中状態へ即時反映されますが、`Save`せずに閉じた場合は画面を開いた時点の設定へ戻ります。
 - 疑似デバイスUIとOperationパネルはInput SystemのBinding変更通知を購読し、Change／Reset／Loadで現在のOverrideへ自動更新します。
 - Player、System、UIタブでAction Mapを切り替えます。
+- 実行中に日本語／英語を切り替え、標準ボタン、Action Mapタブ、Action、Composite、スキーム、プロファイル見出しが即時更新されることを確認します。
 - Action Mapを切り替えたときは一覧を先頭へ戻し、Binding Groupとデバイス名の見出しを表示します。
 - 最初のフォーカス行より前に編集不可行や見出しがある場合も、上端への移動ではScrollViewを完全に先頭へ戻します。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。

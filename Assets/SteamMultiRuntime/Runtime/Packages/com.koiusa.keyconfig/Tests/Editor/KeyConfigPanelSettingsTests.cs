@@ -1,4 +1,4 @@
-using System.IO;
+using System;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -13,11 +13,10 @@ namespace Koiusa.KeyConfig.Tests
         [Test]
         public void PackagedPanelSettings_HasThemeAndJapaneseFontFallback()
         {
-            var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(
-                typeof(KeyConfigPanelSettingsTests).Assembly);
-            Assert.That(package, Is.Not.Null, "The test assembly must belong to com.koiusa.keyconfig.");
-
-            var assetPath = Path.Combine(package.assetPath, PanelSettingsRelativePath).Replace('\\', '/');
+            var assetPath = Array.Find(
+                AssetDatabase.FindAssets("t:PanelSettings KeyConfig"),
+                guid => AssetDatabase.GUIDToAssetPath(guid).EndsWith(PanelSettingsRelativePath, StringComparison.Ordinal));
+            assetPath = string.IsNullOrEmpty(assetPath) ? string.Empty : AssetDatabase.GUIDToAssetPath(assetPath);
             var panelSettings = AssetDatabase.LoadAssetAtPath<PanelSettings>(assetPath);
             Assert.That(panelSettings, Is.Not.Null, $"PanelSettings was not found at {assetPath}.");
 
