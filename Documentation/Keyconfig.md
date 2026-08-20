@@ -27,7 +27,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.0"
+    "com.koiusa.keyconfig": "0.1.1"
   }
 }
 ```
