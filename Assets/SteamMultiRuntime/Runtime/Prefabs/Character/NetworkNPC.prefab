@@ -517,6 +517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Prototype.Runtime::Koiusa.SteamMultiRuntime.NpcNavMeshController
   useCrowdSimulation: 1
+  enableNpcRigidbodyCollisions: 0
   crowdContactSettings:
     EnablePlayerContacts: 1
     EnableNetworkPhysicsObjectContacts: 1
