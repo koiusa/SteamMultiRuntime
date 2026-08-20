@@ -4,6 +4,12 @@
 [![GitHub issues](https://img.shields.io/github/issues/koiusa/SteamMultiRuntime)](https://github.com/koiusa/SteamMultiRuntime/issues)
 [![GitHub license](https://img.shields.io/github/license/koiusa/SteamMultiRuntime)](https://github.com/koiusa/SteamMultiRuntime/blob/main/LICENSE.md)
 
+Current Versions
+----------------
+
+- SteamMultiRuntime: `0.10.3`
+- `com.koiusa.keyconfig`: `0.1.3`
+
 Install
 -------
 
@@ -45,6 +51,12 @@ Localization Setup
 ローカライズを使用する場合は、パッケージを参照する側のプロジェクトで初期設定が必要です。
 
 [日本語・英語ローカライズの導入手順](Assets/SteamMultiRuntime/Documentation~/Localization.md)
+
+Keyconfig `0.1.3`は、Provider未設定時も標準UIを日本語または英語で表示します。
+SteamMultiRuntimeではAction Map、Action、Composite、スキーム、デバイス／プロファイル名も
+アプリ側Localization Tableを通して表示され、実行中の言語変更へ追従します。
+
+[Keyconfigの導入・ローカライズ設定](Documentation/Keyconfig.md)
 
 Documentation
 -------------
