@@ -104,6 +104,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 
 操作ガイドだけを表示する場合は`Runtime/Resources/System/InputGuideOverlay.prefab`を使用できます。
 `InputGuideOverlay`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、複数MapはMap名ごとのセクションとして表示されます。実行時は`SetActionMaps`、`SetMapFilter`、`Refresh`で対象を変更できます。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Mapの有効状態またはBinding変更時には表示と入力ハイライトが再構築されます。従来の`actionMapName`は`Specified`で複数Map名が空の場合のフォールバックとして維持されます。
+操作一覧は画面上部の全幅を使い、各Mapを1列としてスクロールなしで横一列に表示します。
 
 ## 入力アイコン
 

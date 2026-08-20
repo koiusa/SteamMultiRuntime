@@ -17,8 +17,8 @@
 .input-operation-panel {
     position: absolute;
     left: 0;
+    right: 0;
     top: 0;
-    width: 500px;
     padding: 12px;
 }
 
@@ -36,26 +36,29 @@
 
 .input-operation-sections {
     flex-grow: 1;
+    width: 100%;
 }
 
 .input-operation-list {
+    width: 100%;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: flex-start;
     justify-content: space-between;
-    flex-grow: 1;
 }
 
 .input-operation-section {
-    width: 48.7%;
-    margin-bottom: 9px;
-    padding-bottom: 4px;
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-bottom: 2px;
 }
 
 .input-operation-section-title {
-    height: 22px;
+    height: 19px;
     padding-left: 7px;
-    padding-top: 5px;
+    padding-top: 3px;
     font-size: 8px;
     -unity-font-style: bold;
     letter-spacing: 1px;
@@ -66,7 +69,7 @@
 }
 
 .input-operation-row {
-    min-height: 22px;
+    min-height: 18px;
     padding-left: 6px;
     padding-right: 6px;
     flex-direction: row;
@@ -78,14 +81,14 @@
 .input-operation-action {
     width: 102px;
     flex-shrink: 0;
-    font-size: 9px;
+    font-size: 8px;
     -unity-font-style: bold;
     color: rgb(207, 221, 240);
 }
 
 .input-operation-binding {
     flex-grow: 1;
-    font-size: 8px;
+    font-size: 7px;
     color: rgb(119, 149, 184);
     overflow: hidden;
     white-space: nowrap;

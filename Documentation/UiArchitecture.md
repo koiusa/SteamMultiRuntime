@@ -58,7 +58,7 @@ Pause MenuからCharacter SelectをPushするときは`CharacterSelectMenuRegist
 
 本番のCharacter Select、Stage Select、Steam Lobby Menu／Document／Loading Splashは、同一Composition Root内のシリアライズ参照または親子Componentだけを使用します。参照欠落時に別Sceneや別Runtime ProfileのUI／Serviceを`FindFirstObjectByType`で選びません。設定不備は起動時エラーとして扱います。Loading Splashの`PanelSettings`は専用設定を優先し、未設定時も他画面の`UIDocument`から借用せず、Splash自身がRuntime設定を所有します。
 
-- Input GuideはF1入力を`InputActionBinding`で所有し、疑似デバイス表示とOperationパネルを同じInputActionAssetから構築します。`InputGuideOverlay`は入力監視と表示モードを、`InputGuideOperationPanel`はBinding Groupで絞った操作一覧の生成とデバイス別表示を所有します。
+- Input GuideはF1入力を`InputActionBinding`で所有し、疑似デバイス表示とOperationパネルを同じInputActionAssetから構築します。`InputGuideOverlay`は入力監視と表示モードを、`InputGuideOperationPanel`はBinding Groupで絞った操作一覧の生成とデバイス別表示を所有します。Operationパネルは画面上部の全幅を使い、各Mapを1列としてスクロールなしで横一列に表示します。
 - Character DebugのF2購読は`CharacterDebugToggleController`が所有し、NPC Spawn ManagerはNPC群の表示状態だけを所有します。
 - `ServerScene`のCharacter Debugは初期非表示とし、必要なときだけF2で表示を切り替えます。
 - Character Debugのテレメトリ更新は連続状態のため0.1秒間隔のポーリングを許可します。非表示時や表示担当でないInstanceはUIを更新しません。
