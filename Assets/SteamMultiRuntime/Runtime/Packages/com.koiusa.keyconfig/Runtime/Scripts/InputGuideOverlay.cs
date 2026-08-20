@@ -8,6 +8,13 @@ using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
 {
+    public enum InputGuideMapFilter
+    {
+        Specified,
+        All,
+        EnabledOnly
+    }
+
     /// <summary>Gameplay HUD that visualizes the current bindings and their live input state.</summary>
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
@@ -28,8 +35,10 @@ namespace Koiusa.Keyconfig.Runtime
 
         [Header("Input")]
         [SerializeField] private KeyConfigInputActionsConfig inputActionsConfig;
-        [Tooltip("Empty displays the first action map.")]
+        [Tooltip("Legacy single-map setting. Used when Map Filter is Specified and Action Map Names is empty.")]
         [SerializeField] private string actionMapName = string.Empty;
+        [SerializeField] private InputGuideMapFilter mapFilter = InputGuideMapFilter.Specified;
+        [SerializeField] private List<string> actionMapNames = new List<string>();
         [Tooltip("Empty displays bindings from every control scheme.")]
         [SerializeField] private string bindingGroup = string.Empty;
 
@@ -74,6 +83,7 @@ namespace Koiusa.Keyconfig.Runtime
         private OverlayDisplayMode displayMode = OverlayDisplayMode.Hidden;
         private LocalizedVisualTree localizedTree;
         private bool bindingRefreshScheduled;
+        private readonly List<InputActionMap> displayedMaps = new List<InputActionMap>();
 
         private sealed class GuideRow
         {
@@ -87,6 +97,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public bool IsVisible => displayMode != OverlayDisplayMode.Hidden;
         public OverlayDisplayMode DisplayMode => displayMode;
+        public InputGuideMapFilter MapFilter => mapFilter;
 
         private void Awake()
         {
@@ -261,9 +272,54 @@ namespace Koiusa.Keyconfig.Runtime
             SetDisplayMode(previousMode);
         }
 
+        public void SetActionMaps(IEnumerable<string> mapNames)
+        {
+            actionMapNames.Clear();
+            if (mapNames != null)
+            {
+                foreach (var mapName in mapNames)
+                {
+                    if (!string.IsNullOrWhiteSpace(mapName) && !actionMapNames.Contains(mapName))
+                    {
+                        actionMapNames.Add(mapName);
+                    }
+                }
+            }
+
+            mapFilter = InputGuideMapFilter.Specified;
+            RebuildIfActive();
+        }
+
+        public void SetMapFilter(InputGuideMapFilter filter)
+        {
+            if (mapFilter == filter)
+            {
+                return;
+            }
+
+            mapFilter = filter;
+            RebuildIfActive();
+        }
+
+        private void RebuildIfActive()
+        {
+            if (!isActiveAndEnabled || uiDocument == null)
+            {
+                return;
+            }
+
+            var previousMode = displayMode;
+            Build();
+            SetDisplayMode(previousMode);
+        }
+
         private void OnInputActionChange(object changedObject, InputActionChange change)
         {
-            if (change != InputActionChange.BoundControlsChanged ||
+            if ((change != InputActionChange.BoundControlsChanged &&
+                change != InputActionChange.ActionMapEnabled &&
+                change != InputActionChange.ActionMapDisabled &&
+                change != InputActionChange.ActionEnabled &&
+                change != InputActionChange.ActionDisabled) ||
                 bindingRefreshScheduled ||
                 !BelongsToInputAsset(changedObject))
             {
@@ -276,7 +332,7 @@ namespace Koiusa.Keyconfig.Runtime
                 bindingRefreshScheduled = false;
                 if (isActiveAndEnabled)
                 {
-                    Refresh();
+                    RebuildIfActive();
                 }
             });
         }
@@ -315,6 +371,7 @@ namespace Koiusa.Keyconfig.Runtime
             var root = uiDocument.rootVisualElement;
             root.Clear();
             rows.Clear();
+            displayedMaps.Clear();
 
             var layout = layoutAsset != null
                 ? layoutAsset
@@ -377,33 +434,40 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var map = string.IsNullOrWhiteSpace(actionMapName)
-                ? (inputActionAsset.actionMaps.Count > 0 ? inputActionAsset.actionMaps[0] : null)
-                : inputActionAsset.FindActionMap(actionMapName, false);
-            if (map == null)
+            InputGuideMapSelection.Select(inputActionAsset, mapFilter, actionMapNames, actionMapName, displayedMaps);
+            if (displayedMaps.Count == 0)
             {
                 KeyConfigLocalization.Set(mapLabel, "keyconfig.action_map_missing");
+                UpdateInputModeLabel();
                 return;
             }
 
-            mapLabel.text = KeyConfigLocalization.Get(Nicify(map.name));
+            var localizedMapNames = new List<string>(displayedMaps.Count);
+            foreach (var displayedMap in displayedMaps)
+            {
+                localizedMapNames.Add(KeyConfigLocalization.Get(displayedMap.name));
+            }
+            mapLabel.text = string.Join(" / ", localizedMapNames);
             UpdateInputModeLabel();
             SetGamepadLayout(IsGamepadLike(lastActiveDevice));
             UpdateGamepadFaceLabels(lastActiveDevice);
-            foreach (var action in map.actions)
+            foreach (var map in displayedMaps)
             {
-                for (var bindingIndex = 0; bindingIndex < action.bindings.Count; bindingIndex++)
+                foreach (var action in map.actions)
                 {
-                    var binding = action.bindings[bindingIndex];
-                    if (binding.isComposite || !IsInBindingGroup(binding.groups))
+                    for (var bindingIndex = 0; bindingIndex < action.bindings.Count; bindingIndex++)
                     {
-                        continue;
-                    }
+                        var binding = action.bindings[bindingIndex];
+                        if (binding.isComposite || !IsInBindingGroup(binding.groups))
+                        {
+                            continue;
+                        }
 
-                    BindControl(root, action, bindingIndex, binding);
+                        BindControl(root, action, bindingIndex, binding);
+                    }
                 }
             }
-            operationListPanel.Build(map);
+            operationListPanel.Build(displayedMaps);
 
             // Keep physical controller buttons visible in the input monitor even
             // when the current action map does not assign an action to them.
@@ -795,30 +859,16 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             var activeModes = new List<string>();
-            AddEnabledMode(activeModes, "Adventure");
-            AddEnabledMode(activeModes, "Combat");
-            AddEnabledMode(activeModes, "UI");
+            foreach (var map in inputActionAsset.actionMaps)
+            {
+                if (map.enabled)
+                {
+                    activeModes.Add(KeyConfigLocalization.Get(map.name).ToUpperInvariant());
+                }
+            }
             inputModeLabel.text = activeModes.Count > 0
                 ? $"MODE: {string.Join(" + ", activeModes)}"
                 : "MODE: NONE";
-        }
-
-        private void AddEnabledMode(List<string> activeModes, string mapName)
-        {
-            var map = inputActionAsset.FindActionMap(mapName, false);
-            if (map == null)
-            {
-                return;
-            }
-
-            foreach (var action in map.actions)
-            {
-                if (action.enabled)
-                {
-                    activeModes.Add(mapName.ToUpperInvariant());
-                    return;
-                }
-            }
         }
 
         private static string Nicify(string value)
@@ -831,6 +881,51 @@ namespace Koiusa.Keyconfig.Runtime
                 result += value[i];
             }
             return result;
+        }
+    }
+
+    internal static class InputGuideMapSelection
+    {
+        public static void Select(InputActionAsset asset, InputGuideMapFilter filter,
+            IReadOnlyList<string> specifiedNames, string legacyName, List<InputActionMap> result)
+        {
+            result.Clear();
+            if (asset == null)
+            {
+                return;
+            }
+
+            if (filter == InputGuideMapFilter.All ||
+                filter == InputGuideMapFilter.Specified &&
+                (specifiedNames == null || specifiedNames.Count == 0) && string.IsNullOrWhiteSpace(legacyName))
+            {
+                foreach (var map in asset.actionMaps) result.Add(map);
+                return;
+            }
+
+            if (filter == InputGuideMapFilter.EnabledOnly)
+            {
+                foreach (var map in asset.actionMaps)
+                {
+                    if (map.enabled) result.Add(map);
+                }
+                return;
+            }
+
+            if (specifiedNames != null && specifiedNames.Count > 0)
+            {
+                for (var i = 0; i < specifiedNames.Count; i++) AddNamedMap(asset, specifiedNames[i], result);
+                return;
+            }
+
+            AddNamedMap(asset, legacyName, result);
+        }
+
+        private static void AddNamedMap(InputActionAsset asset, string name, List<InputActionMap> result)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            var map = asset.FindActionMap(name, false);
+            if (map != null && !result.Contains(map)) result.Add(map);
         }
     }
 }

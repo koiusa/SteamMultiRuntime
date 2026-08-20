@@ -32,7 +32,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.3"
+    "com.koiusa.keyconfig": "0.1.4"
   }
 }
 ```
@@ -103,6 +103,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 4. KeyconfigのUXML、USS、必要に応じて`InputBindingIconResolver`を設定します。
 
 操作ガイドだけを表示する場合は`Runtime/Resources/System/InputGuideOverlay.prefab`を使用できます。
+`InputGuideOverlay`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、複数MapはMap名ごとのセクションとして表示されます。実行時は`SetActionMaps`、`SetMapFilter`、`Refresh`で対象を変更できます。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Mapの有効状態またはBinding変更時には表示と入力ハイライトが再構築されます。従来の`actionMapName`は`Specified`で複数Map名が空の場合のフォールバックとして維持されます。
 
 ## 入力アイコン
 

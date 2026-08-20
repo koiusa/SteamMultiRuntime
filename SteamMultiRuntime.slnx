@@ -34,6 +34,7 @@
   <Project Path="Koiusa.SteamMultiRuntime.Player.UI.URP.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Runtime.csproj" />
+  <Project Path="koiusa.Keyconfig.Runtime.Tests.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Audio.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.UI.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Editor.csproj" />

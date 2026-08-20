@@ -5,7 +5,7 @@ Unity Input System向けのRuntimeキーコンフィグUIです。入力表示�
 ## Installation
 
 Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登録し、Package Managerから
-`com.koiusa.keyconfig`の`0.1.3`をインストールしてください。
+`com.koiusa.keyconfig`の`0.1.4`をインストールしてください。
 
 ## Localization
 
@@ -24,6 +24,21 @@ KeyConfigLocalization.Provider = new MyKeyConfigLocalizer();
 
 Action Map、Action、Composite、スキーム、プロファイルの元名称が翻訳キーとしてProviderへ渡されます。
 言語変更時はProviderの`LocaleChanged`を発火すると、標準UIと動的生成されたタブ・見出しが更新されます。
+
+## Input GuideのAction Map
+
+`InputGuideOverlay`は全Map、有効なMapのみ、指定Map群を操作一覧へ同時表示できます。Map名がセクション見出し、Action名が各行として`KeyConfigLocalization`へ渡されます。
+
+```csharp
+overlay.SetActionMaps(new[] { "Global", "Calibration" });
+overlay.SetMapFilter(InputGuideMapFilter.EnabledOnly);
+overlay.Refresh();
+
+// 全Map
+overlay.SetMapFilter(InputGuideMapFilter.All);
+```
+
+従来の`actionMapName`は、Map Filterが`Specified`かつ`actionMapNames`が空の場合に引き続き使用されます。両方が空の場合は全Mapを表示します。
 
 ## Sample
 

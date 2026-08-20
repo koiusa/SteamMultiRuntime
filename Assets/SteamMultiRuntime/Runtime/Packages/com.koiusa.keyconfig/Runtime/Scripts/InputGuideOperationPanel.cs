@@ -21,17 +21,17 @@ namespace Koiusa.Keyconfig.Runtime
             this.isInBindingGroup = isInBindingGroup ?? throw new ArgumentNullException(nameof(isInBindingGroup));
         }
 
-        public void Build(InputActionMap map)
+        public void Build(IReadOnlyList<InputActionMap> maps)
         {
             keyboardList?.Clear();
             gamepadList?.Clear();
-            if (map == null || keyboardList == null || gamepadList == null)
+            if (maps == null || keyboardList == null || gamepadList == null)
             {
                 return;
             }
 
-            BuildSections(map, keyboardList, false);
-            BuildSections(map, gamepadList, true);
+            BuildSections(maps, keyboardList, false);
+            BuildSections(maps, gamepadList, true);
         }
 
         public void SetGamepadVisible(bool showGamepad)
@@ -47,24 +47,25 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
-        private void BuildSections(InputActionMap map, VisualElement target, bool gamepad)
+        private void BuildSections(IReadOnlyList<InputActionMap> maps, VisualElement target, bool gamepad)
         {
-            for (var sectionIndex = 0; sectionIndex < 4; sectionIndex++)
+            for (var mapIndex = 0; mapIndex < maps.Count; mapIndex++)
             {
+                var map = maps[mapIndex];
+                if (map == null)
+                {
+                    continue;
+                }
+
                 var section = new VisualElement();
                 section.AddToClassList("input-operation-section");
-                var sectionTitle = new Label(GetSectionTitle(sectionIndex));
+                var sectionTitle = new Label(KeyConfigLocalization.Get(map.name));
                 sectionTitle.AddToClassList("input-operation-section-title");
                 section.Add(sectionTitle);
                 var rowCount = 0;
 
                 foreach (var action in map.actions)
                 {
-                    if (GetSection(action.name) != sectionIndex)
-                    {
-                        continue;
-                    }
-
                     var bindings = GetBindings(action, gamepad);
                     if (bindings.Count == 0)
                     {
@@ -107,28 +108,6 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             return result;
-        }
-
-        private static int GetSection(string actionName)
-        {
-            return actionName switch
-            {
-                "Move" or "Jump" or "Sprint" or "Crouch" or "Dash" or "Strafe" => 0,
-                "Attack" or "Guard" or "Heal" or "LockOn" or "Previous" or "Next" => 1,
-                "Grapple" or "GrappleFire" or "Reel" => 2,
-                _ => 3
-            };
-        }
-
-        private static string GetSectionTitle(int sectionIndex)
-        {
-            return sectionIndex switch
-            {
-                0 => KeyConfigLocalization.Get("keyconfig.section_movement"),
-                1 => KeyConfigLocalization.Get("keyconfig.section_combat"),
-                2 => KeyConfigLocalization.Get("keyconfig.section_grapple"),
-                _ => KeyConfigLocalization.Get("keyconfig.section_camera")
-            };
         }
 
         private static void AddRow(VisualElement target, string actionName, List<string> bindings)
