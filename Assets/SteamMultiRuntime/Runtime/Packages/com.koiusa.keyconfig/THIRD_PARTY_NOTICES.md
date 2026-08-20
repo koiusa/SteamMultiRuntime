@@ -12,3 +12,12 @@ Free Super Input Prompt Icon Pack by JulioCacko.
 The source page states that the assets may be used in commercial and
 non-commercial projects and that attribution is not required. This notice is
 included to preserve the asset provenance.
+
+## Noto Sans JP
+
+The Japanese fallback font under `Runtime/Resources/UI/KeyConfig/Fonts` is
+Noto Sans JP from the Google Fonts repository.
+
+- Source: https://github.com/google/fonts/tree/main/ofl/notosansjp
+- License: SIL Open Font License 1.1
+- License text: `Runtime/Resources/UI/KeyConfig/Fonts/OFL.txt`

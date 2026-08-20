@@ -111,3 +111,9 @@ Scrollbarは`com.koiusa.ui.core`の`KoiusaScrollView.uss`を共有します。�
 - 汎用パッケージの基本サンプルは`com.koiusa.keyconfig/Samples/Basic`に置きます。
 - SteamMultiRuntime本番設定は`Assets/SteamMultiRuntime/Runtime/Configs/Input`に置きます。
 - 本番設定を使う機能サンプルSceneは`Assets/SteamMultiRuntime/Samples/Features/Keyconfig`に置きます。
+
+Keyconfigの`PanelSettings`、Runtime Theme、UITK Text Settings、Noto Sans JPの
+動的Font Assetとソースフォントはすべて`com.koiusa.keyconfig`内で所有します。
+Basic SampleはこのRuntime Assetを直接参照するため、SampleのImport以外に利用側の
+PanelSettingsやフォント設定を必要としません。EditorテストはTheme、Text Settings、
+日本語フォールバックが解決できることを検証します。

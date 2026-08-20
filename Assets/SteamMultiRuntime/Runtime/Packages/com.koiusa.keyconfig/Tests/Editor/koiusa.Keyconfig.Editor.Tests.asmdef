@@ -1,0 +1,7 @@
+{
+  "name": "koiusa.Keyconfig.Editor.Tests",
+  "rootNamespace": "Koiusa.KeyConfig.Tests",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
