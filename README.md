@@ -7,8 +7,8 @@
 Current Versions
 ----------------
 
-- SteamMultiRuntime: `0.10.3`
-- `com.koiusa.keyconfig`: `0.1.4`
+- SteamMultiRuntime: `0.10.4`
+- `com.koiusa.keyconfig`: `0.1.5`
 
 Install
 -------
@@ -52,7 +52,7 @@ Localization Setup
 
 [日本語・英語ローカライズの導入手順](Assets/SteamMultiRuntime/Documentation~/Localization.md)
 
-Keyconfig `0.1.4`は、Provider未設定時も標準UIを日本語または英語で表示します。
+Keyconfig `0.1.5`は、Provider未設定時も標準UIを日本語または英語で表示します。
 SteamMultiRuntimeではAction Map、Action、Composite、スキーム、デバイス／プロファイル名も
 アプリ側Localization Tableを通して表示され、実行中の言語変更へ追従します。
 

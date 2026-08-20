@@ -5,7 +5,7 @@ Unity Input System向けのRuntimeキーコンフィグUIです。入力表示�
 ## Installation
 
 Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登録し、Package Managerから
-`com.koiusa.keyconfig`の`0.1.4`をインストールしてください。
+`com.koiusa.keyconfig`の`0.1.5`をインストールしてください。
 
 ## Localization
 
