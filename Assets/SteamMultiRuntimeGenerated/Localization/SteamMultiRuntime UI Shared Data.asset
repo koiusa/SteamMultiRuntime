@@ -511,6 +511,210 @@ MonoBehaviour:
     m_Key: keyconfig.switch_device_tooltip
     m_Metadata:
       m_Items: []
+  - m_Id: 8284038837035008
+    m_Key: keyconfig.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726784
+    m_Key: input.action.strafe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726785
+    m_Key: keyconfig.conflict_message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726786
+    m_Key: keyconfig.conflict_replace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726787
+    m_Key: keyconfig.conflict_keep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726788
+    m_Key: keyconfig.conflict_cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759544291328
+    m_Key: input.map.adventure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759590428672
+    m_Key: input.map.combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622976
+    m_Key: input.map.player
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622977
+    m_Key: input.map.system
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622978
+    m_Key: input.map.ui
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622979
+    m_Key: input.action.aim_cursor_delta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622980
+    m_Key: input.action.aim_cursor_move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622981
+    m_Key: input.action.aim_cursor_position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622982
+    m_Key: input.action.cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622983
+    m_Key: input.action.character_debug_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622984
+    m_Key: input.action.character_menu_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622985
+    m_Key: input.action.character_select_direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622986
+    m_Key: input.action.character_select_modifier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622987
+    m_Key: input.action.click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622988
+    m_Key: input.action.debug_input_guide_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622989
+    m_Key: input.action.debug_session_menu_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622990
+    m_Key: input.action.drag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622991
+    m_Key: input.action.game_quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622992
+    m_Key: input.action.menu_toggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622993
+    m_Key: input.action.middle_click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622994
+    m_Key: input.action.navigate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622995
+    m_Key: input.action.next_section
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622996
+    m_Key: input.action.point
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622997
+    m_Key: input.action.previous_section
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622998
+    m_Key: input.action.right_click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622999
+    m_Key: input.action.scroll_wheel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623000
+    m_Key: input.action.submit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623001
+    m_Key: input.action.tracked_device_orientation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623002
+    m_Key: input.action.tracked_device_position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623003
+    m_Key: input.composite.dpad_horizontal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623004
+    m_Key: input.composite.keyboard_reel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623005
+    m_Key: input.composite.one_modifier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623006
+    m_Key: input.composite.wasd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623007
+    m_Key: input.device.dualshock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623008
+    m_Key: input.device.gamepad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623009
+    m_Key: input.device.joystick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623010
+    m_Key: input.device.keyboard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623011
+    m_Key: input.device.keyboard_mouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623012
+    m_Key: input.device.mouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623013
+    m_Key: input.device.pen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623014
+    m_Key: input.device.pointer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623015
+    m_Key: input.device.touch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623016
+    m_Key: input.device.touchscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623017
+    m_Key: input.device.xr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623018
+    m_Key: input.device.xr_controller
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

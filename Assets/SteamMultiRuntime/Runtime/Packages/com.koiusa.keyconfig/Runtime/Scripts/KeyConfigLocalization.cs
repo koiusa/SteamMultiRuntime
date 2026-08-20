@@ -81,6 +81,10 @@ namespace Koiusa.Keyconfig.Runtime
             ["keyconfig.group_fallback"] = "Binding group: {0} (fallback)", ["keyconfig.group"] = "Binding group: {0}",
             ["keyconfig.conflict_message"] = "{0} conflicts with {1}.", ["keyconfig.conflict_replace"] = "Replace Existing",
             ["keyconfig.conflict_keep"] = "Keep Both", ["keyconfig.conflict_cancel"] = "Cancel",
+            ["keyconfig.section_movement"] = "MOVEMENT", ["keyconfig.section_combat"] = "COMBAT / TARGETING",
+            ["keyconfig.section_grapple"] = "GRAPPLE", ["keyconfig.section_camera"] = "CAMERA / INTERACTION",
+            ["keyconfig.input_asset_missing"] = "INPUT ASSET NOT SET", ["keyconfig.action_map_missing"] = "ACTION MAP NOT FOUND",
+            ["keyconfig.switch_device_tooltip"] = "Click to switch keyboard/gamepad layout",
             ["キーコンフィグ"] = "Key Configuration", ["キーやボタンを押すと、対応する操作がリアルタイムに点灯します。"] = "Press a key or button to highlight its action.",
             ["アクション"] = "Action", ["キー / ボタン"] = "Key / Button", ["読込"] = "Load", ["保存"] = "Save", ["全リセット"] = "Reset All", ["閉じる"] = "Close"
         };
@@ -101,6 +105,10 @@ namespace Koiusa.Keyconfig.Runtime
             ["keyconfig.loaded"] = "読み込みました。", ["keyconfig.group_all"] = "すべてのバインドグループを表示中。", ["keyconfig.group_fallback"] = "バインドグループ: {0}（代替）",
             ["keyconfig.group"] = "バインドグループ: {0}", ["keyconfig.conflict_message"] = "{0} は {1} と競合します。", ["keyconfig.conflict_replace"] = "既存を解除",
             ["keyconfig.conflict_keep"] = "両方に設定", ["keyconfig.conflict_cancel"] = "キャンセル",
+            ["keyconfig.section_movement"] = "移動", ["keyconfig.section_combat"] = "戦闘・ターゲット",
+            ["keyconfig.section_grapple"] = "グラップル", ["keyconfig.section_camera"] = "カメラ・インタラクション",
+            ["keyconfig.input_asset_missing"] = "Input Action Asset 未設定", ["keyconfig.action_map_missing"] = "Action Map が見つかりません",
+            ["keyconfig.switch_device_tooltip"] = "クリックしてキーボード・ゲームパッド表示を切り替え",
             ["キーコンフィグ"] = "キーコンフィグ", ["キーやボタンを押すと、対応する操作がリアルタイムに点灯します。"] = "キーやボタンを押すと、対応する操作がリアルタイムに点灯します。",
             ["アクション"] = "アクション", ["キー / ボタン"] = "キー / ボタン", ["読込"] = "読込", ["保存"] = "保存", ["全リセット"] = "全リセット", ["閉じる"] = "閉じる"
         };

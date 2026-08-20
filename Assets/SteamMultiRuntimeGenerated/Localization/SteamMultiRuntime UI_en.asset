@@ -517,6 +517,210 @@ MonoBehaviour:
     m_Localized: Click to switch keyboard/gamepad layout
     m_Metadata:
       m_Items: []
+  - m_Id: 8284038837035008
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726784
+    m_Localized: Strafe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726785
+    m_Localized: The input assigned to {0} is also used by {1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726786
+    m_Localized: Remove Existing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726787
+    m_Localized: Keep Both
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284038916726788
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759544291328
+    m_Localized: Adventure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759590428672
+    m_Localized: Combat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622976
+    m_Localized: Player
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622977
+    m_Localized: System
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622978
+    m_Localized: UI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622979
+    m_Localized: Aim Cursor Delta
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622980
+    m_Localized: Aim Cursor Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622981
+    m_Localized: Aim Cursor Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622982
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622983
+    m_Localized: Toggle Character Debug
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622984
+    m_Localized: Toggle Character Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622985
+    m_Localized: Character Select Direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622986
+    m_Localized: Character Select Modifier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622987
+    m_Localized: Click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622988
+    m_Localized: Toggle Input Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622989
+    m_Localized: Toggle Session Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622990
+    m_Localized: Drag
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622991
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622992
+    m_Localized: Toggle Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622993
+    m_Localized: Middle Click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622994
+    m_Localized: Navigate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622995
+    m_Localized: Next Section
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622996
+    m_Localized: Point
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622997
+    m_Localized: Previous Section
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622998
+    m_Localized: Right Click
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594622999
+    m_Localized: Scroll Wheel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623000
+    m_Localized: Submit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623001
+    m_Localized: Tracked Device Orientation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623002
+    m_Localized: Tracked Device Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623003
+    m_Localized: D-pad Horizontal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623004
+    m_Localized: Keyboard Reel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623005
+    m_Localized: One Modifier
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623006
+    m_Localized: WASD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623007
+    m_Localized: DualShock Gamepad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623008
+    m_Localized: Gamepad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623009
+    m_Localized: Joystick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623010
+    m_Localized: Keyboard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623011
+    m_Localized: Keyboard & Mouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623012
+    m_Localized: Mouse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623013
+    m_Localized: Pen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623014
+    m_Localized: Pointer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623015
+    m_Localized: Touch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623016
+    m_Localized: Touchscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623017
+    m_Localized: XR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8284759594623018
+    m_Localized: XR Controller
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
