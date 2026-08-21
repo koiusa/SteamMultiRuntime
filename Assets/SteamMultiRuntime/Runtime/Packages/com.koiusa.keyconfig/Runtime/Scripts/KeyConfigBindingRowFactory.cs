@@ -52,11 +52,22 @@ namespace Koiusa.Keyconfig.Runtime
             bindingCell.AddToClassList("keyconfig-cell-binding");
             if (iconResolver != null)
             {
-                var icon = iconResolver.Resolve(entry.BindingPath);
-                var iconElement = new Image { image = icon };
-                iconElement.AddToClassList("keyconfig-binding-icon");
-                iconElement.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
-                bindingCell.Add(iconElement);
+                var visibleIconCount = 0;
+                for (var pathIndex = 0; pathIndex < entry.BindingPaths.Count; pathIndex++)
+                {
+                    var icon = iconResolver.Resolve(entry.BindingPaths[pathIndex]);
+                    if (icon == null) continue;
+                    if (visibleIconCount > 0)
+                    {
+                        var separator = new Label("+");
+                        separator.AddToClassList("keyconfig-binding-icon-separator");
+                        bindingCell.Add(separator);
+                    }
+                    var iconElement = new Image { image = icon };
+                    iconElement.AddToClassList("keyconfig-binding-icon");
+                    bindingCell.Add(iconElement);
+                    visibleIconCount++;
+                }
             }
 
             var bindingLabel = new Label(entry.DisplayName);

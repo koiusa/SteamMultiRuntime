@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.40] - 2026-08-22
+
+### Fixed
+
+- Displays every modifier and button icon for one- and two-modifier composite bindings instead of showing only the representative button icon.
+
 ## [0.1.39] - 2026-08-22
 
 ### Fixed

@@ -24,6 +24,29 @@ namespace Koiusa.Keyconfig.Runtime
                 string groups,
                 string bindingPath,
                 int modifierCount = 0)
+                : this(
+                    actionId, actionName, actionMapName, schemeName, profileName, bindingIndex, bindingId,
+                    displayName, isComposite, isPartOfComposite, isRebindable, groups, bindingPath,
+                    modifierCount, null)
+            {
+            }
+
+            public BindingEntry(
+                Guid actionId,
+                string actionName,
+                string actionMapName,
+                string schemeName,
+                string profileName,
+                int bindingIndex,
+                Guid bindingId,
+                string displayName,
+                bool isComposite,
+                bool isPartOfComposite,
+                bool isRebindable,
+                string groups,
+                string bindingPath,
+                int modifierCount,
+                IReadOnlyList<string> bindingPaths)
             {
                 ActionId = actionId;
                 ActionName = actionName;
@@ -39,6 +62,8 @@ namespace Koiusa.Keyconfig.Runtime
                 Groups = groups;
                 BindingPath = bindingPath;
                 ModifierCount = modifierCount;
+                BindingPaths = bindingPaths ??
+                    (string.IsNullOrWhiteSpace(bindingPath) ? Array.Empty<string>() : new[] { bindingPath });
             }
 
             public Guid ActionId { get; }
@@ -55,6 +80,7 @@ namespace Koiusa.Keyconfig.Runtime
             public string Groups { get; }
             public string BindingPath { get; }
             public int ModifierCount { get; }
+            public IReadOnlyList<string> BindingPaths { get; }
         }
 
         private readonly InputActionAsset inputActionAsset;
@@ -215,11 +241,19 @@ namespace Koiusa.Keyconfig.Runtime
 
                     var displayName = CompositeBindingUtility.GetDisplayString(action, i);
                     var resolvedBindingPath = binding.overridePath != null ? binding.overridePath : binding.path;
+                    IReadOnlyList<string> resolvedBindingPaths = null;
                     if (binding.isComposite)
                     {
                         var parts = CompositeBindingUtility.GetPartIndices(action, i);
                         if (parts.Count > 0)
                         {
+                            var partPaths = new List<string>(parts.Count);
+                            for (var partIndex = 0; partIndex < parts.Count; partIndex++)
+                            {
+                                var part = action.bindings[parts[partIndex]];
+                                partPaths.Add(part.overridePath ?? part.path);
+                            }
+                            resolvedBindingPaths = partPaths;
                             var representative = action.bindings[parts[parts.Count - 1]];
                             resolvedBindingPath = representative.overridePath ?? representative.path;
                         }
@@ -238,7 +272,8 @@ namespace Koiusa.Keyconfig.Runtime
                         IsActionMapRebindable(action.actionMap?.name) && (!binding.isComposite || CompositeBindingUtility.IsSupportedModifierComposite(action, i)),
                         binding.groups,
                         resolvedBindingPath,
-                        CompositeBindingUtility.GetModifierCount(action, i)));
+                        CompositeBindingUtility.GetModifierCount(action, i),
+                        resolvedBindingPaths));
                 }
             }
 

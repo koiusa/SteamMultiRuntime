@@ -32,6 +32,11 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(entries[0].ModifierCount, Is.EqualTo(1));
             Assert.That(entries[0].IsPartOfComposite, Is.False);
             Assert.That(entries[0].DisplayName, Is.EqualTo("Ctrl+R"));
+            Assert.That(entries[0].BindingPaths, Is.EqualTo(new[]
+            {
+                "<Keyboard>/leftCtrl",
+                "<Keyboard>/r"
+            }));
             Assert.That(entries[0].IsRebindable, Is.True);
         }
 
@@ -166,6 +171,12 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(service.AddModifier(action, one.BindingIndex), Is.True);
             var two = service.GetBindingEntries()[0];
             Assert.That(two.DisplayName, Is.EqualTo("Ctrl+Shift+R"));
+            Assert.That(two.BindingPaths, Is.EqualTo(new[]
+            {
+                "<Keyboard>/leftCtrl",
+                "<Keyboard>/leftShift",
+                "<Keyboard>/r"
+            }));
             Assert.That(service.AddModifier(action, two.BindingIndex), Is.False);
 
             Assert.That(service.RemoveModifier(action, two.BindingIndex), Is.True);

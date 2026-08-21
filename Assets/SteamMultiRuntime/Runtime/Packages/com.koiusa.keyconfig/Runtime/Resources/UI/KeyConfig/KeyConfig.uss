@@ -270,6 +270,13 @@
 	flex-shrink: 0;
 }
 
+.keyconfig-binding-icon-separator {
+	margin-right: 6px;
+	color: rgb(160, 175, 205);
+	font-size: 13px;
+	flex-shrink: 0;
+}
+
 .keyconfig-binding-label {
 	color: rgb(200, 215, 240);
 	font-size: 13px;

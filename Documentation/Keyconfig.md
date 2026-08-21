@@ -36,7 +36,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.39"
+    "com.koiusa.keyconfig": "0.1.40"
   }
 }
 ```
@@ -51,7 +51,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 
-公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.39`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
+公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.40`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
 
 ### パッケージ境界の判断
 
@@ -109,6 +109,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - 同じキーを異なるActionやAction Mapで共有する構成を許可します。重複として拒否するのは、同一Action内の別Bindingへ同じ入力を割り当てた場合だけです。
 - 異なる変更可能Actionとの競合時は確認パネルを表示し、「既存を解除」「両方に設定」「キャンセル」から選択します。保護されたUI Mapとの共有は確認対象外です。
 - `ButtonWithOneModifier` Compositeは親を1行として表示し、Modifier、本体Buttonの順に変更します。Escapeまたはタイムアウトは途中までの変更を含めてComposite全体を復元します。
+- 1行表示した1／2修飾Compositeでは、Modifier 1、Modifier 2、本体Buttonの各アイコンを組合せ順に表示します。
 - Compositeの保存・読込はInput System標準のBinding Override JSONを使用し、行Reset／Reset Allでは全子パートを対象にします。競合は子パート単体ではなく、Composite種別と全パートの組合せで比較します。
 - 左右Ctrl／Shift／Altの実際のInput Systemパスは保存データとBinding overrideで維持します。表示と競合比較だけを`Ctrl`／`Shift`／`Alt`へ正規化するため、左右を替えた同じ組合せも競合します。
 - 各行の「修飾キー追加／削除」は、単一Binding、`ButtonWithOneModifier`、`ButtonWithTwoModifiers`を0→1→2個／2→1→0個の順で相互変換します。構造変更はInput System標準Override JSONを内包する互換Envelopeへ保存し、従来のOverride JSONもそのまま読み込めます。行Reset／Reset AllはInput Actionsで定義された元のBinding構造へ戻します。
