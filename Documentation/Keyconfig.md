@@ -39,7 +39,11 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
-公開はGitHub Actionsの`Publish reusable Unity packages to npm`を手動実行します。既定はdry-runで、成果物の内容だけを検証します。実公開時は`publish`を有効にし、`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを依存順で公開します。`NPM_TOKEN` secretが必要です。
+`Publish reusable Unity packages to npm`の手動実行はdry-run専用です。実公開は`Create UPM Release`へ一本化し、`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを依存順で公開します。
+
+既存パッケージはnpm側のTrusted Publisherを使用します。各npmパッケージのTrusted PublisherへGitHub Actionsを登録し、GitHubのOwner／Repositoryに`koiusa/SteamMultiRuntime`、Workflow filenameに`release.yml`を指定して`npm publish`を許可します。WorkflowはOIDCに必要な`id-token: write`とnpm 11.6.2を設定し、`NPM_TOKEN`を使用しません。
+
+まだnpmへ存在しないパッケージにはTrusted Publisherを設定できません。そのパッケージだけはローカルで`npm login`して初回公開し、作成後に同じ`release.yml`をTrusted Publisherとして登録します。
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 

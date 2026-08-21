@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   validate-root-package:
@@ -30,6 +31,9 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Set up npm with trusted publishing support
+        run: npm install --global npm@11.6.2
 
       - name: Read package metadata
         id: package
@@ -51,7 +55,6 @@ jobs:
     uses: ./.github/workflows/publish-reusable-unity-packages.yml
     with:
       publish: ${{ github.event_name == 'push' || inputs.publish }}
-    secrets: inherit
 
   release:
     if: github.event_name == 'push' || inputs.publish
@@ -61,6 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,6 +74,9 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Set up npm with trusted publishing support
+        run: npm install --global npm@11.6.2
 
       - name: Check published npm version
         id: npm
@@ -143,8 +150,6 @@ jobs:
         if: steps.npm.outputs.published == 'false'
         run: npm publish --access public
         working-directory: Assets/SteamMultiRuntime
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release and tag
         if: steps.github_release.outputs.exists == 'false'
