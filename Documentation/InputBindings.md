@@ -34,13 +34,15 @@
 
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
-| ナビゲーション | WASD / 矢印キー | 左スティック / D-pad |
+| ナビゲーション | WASD（独立Binding） / 矢印キー（独立Binding） | 左スティック / D-pad |
 | 決定／キャンセル | Enter / Escape | A / B、× / ○ |
 | ポーズメニュー（キーコンフィグ／キャラクター選択） | Tab | Start / Options |
 | キャラクター選択ショートカット | Backquote / C | — |
 | 前／次のセクション | Q / E | LB / RB |
 
-`UI/Navigate`は`Value`型で入力方向を保持します。これにより、EventSystemは単発のフォーカス移動に加えて、キーボードやゲームパッドの方向入力を押し続けたときのリピート移動を行います。
+`UI/Navigate`のKeyboardは、Playerの移動と同様に`WASD`と`Arrow Keys`を別々の2D Vector Compositeとして保持します。キーコンフィグでは2つの論理Bindingとして個別に表示します。
+
+`UI/Navigate`は`PassThrough`型で入力方向の変化を通知します。`UiNavigationInputSession`が現在方向を保持するため、単発のフォーカス移動に加えて、キーボードやゲームパッドの方向入力を押し続けたときのリピート移動を行います。
 
 UIが共有Actionを一時的に借りる場合、取得前から有効だったActionは解放後も有効状態を維持します。Character Selectを閉じた後も、EventSystemとPause Menuの`Navigate`／`Submit`／`Cancel`は無効化しません。
 
