@@ -11,7 +11,6 @@ namespace Koiusa.Keyconfig.Runtime
     {
         private const string DropdownPopupStyleSheetPath = "UI/KeyConfig/KeyConfigDropdownPopup";
         private const float NavigationScrollStep = 72f;
-        private const float ConflictInputGuardSeconds = 0.2f;
 
         private readonly UIDocument uiDocument;
         private readonly VisualTreeAsset layoutAsset;
@@ -32,10 +31,8 @@ namespace Koiusa.Keyconfig.Runtime
         private Button saveButton;
         private Button resetAllButton;
         private Button closeButton;
-        private VisualElement conflictOverlay;
-        private readonly List<Button> conflictButtons = new List<Button>();
-        private Action onConflictCancel;
-        private float conflictInputUnlockTime;
+        private readonly KeyConfigConflictOverlay conflictOverlay = new KeyConfigConflictOverlay();
+        private readonly KeyConfigBindingNavigation bindingNavigation = new KeyConfigBindingNavigation();
 
         private Action onLoad;
         private Action onSave;
@@ -61,7 +58,6 @@ namespace Koiusa.Keyconfig.Runtime
         private bool isInteractive = true;
         private readonly List<string> mapNames = new List<string>();
         private readonly List<Button> mapTabButtons = new List<Button>();
-        private readonly List<BindingRowNavigation> bindingRows = new List<BindingRowNavigation>();
         private readonly HashSet<Button> unavailableButtons = new HashSet<Button>();
 
         private sealed class InputStateRow
@@ -199,16 +195,6 @@ namespace Koiusa.Keyconfig.Runtime
             ClearRowBindings();
         }
 
-        private sealed class BindingRowNavigation
-        {
-            public int EntryIndex;
-            public VisualElement Row;
-            public Button RebindButton;
-            public Button ModifierButton;
-            public Button RemoveModifierButton;
-            public Button ResetButton;
-        }
-
         private void ApplyDropdownPopupStyle(VisualElement root)
         {
             dropdownPopupStyleSheet ??= Resources.Load<StyleSheet>(DropdownPopupStyleSheetPath);
@@ -260,53 +246,10 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void ShowConflict(string targetAction, string existingAction, Action replaceExisting, Action keepBoth, Action cancel)
         {
-            HideConflict();
-            if (root == null) return;
-
-            conflictOverlay = new VisualElement();
-            conflictOverlay.AddToClassList("keyconfig-conflict-overlay");
-            var panel = new VisualElement();
-            panel.AddToClassList("keyconfig-conflict-panel");
-            var message = new Label(KeyConfigLocalization.Get("keyconfig.conflict_message", targetAction, existingAction));
-            message.AddToClassList("keyconfig-conflict-message");
-            panel.Add(message);
-
-            var buttonRow = new VisualElement();
-            buttonRow.AddToClassList("keyconfig-conflict-buttons");
-            AddConflictButton(buttonRow, "keyconfig.conflict_replace", replaceExisting);
-            AddConflictButton(buttonRow, "keyconfig.conflict_keep", keepBoth);
-            AddConflictButton(buttonRow, "keyconfig.conflict_cancel", cancel);
-            panel.Add(buttonRow);
-            conflictOverlay.Add(panel);
-            root.Add(conflictOverlay);
-            onConflictCancel = cancel;
-            conflictInputUnlockTime = Time.unscaledTime + ConflictInputGuardSeconds;
-            conflictOverlay.schedule.Execute(() => conflictButtons[conflictButtons.Count - 1].Focus());
+            conflictOverlay.Show(root, targetAction, existingAction, replaceExisting, keepBoth, cancel);
         }
 
-        public void HideConflict()
-        {
-            conflictOverlay?.RemoveFromHierarchy();
-            conflictOverlay = null;
-            conflictButtons.Clear();
-            onConflictCancel = null;
-            conflictInputUnlockTime = 0f;
-        }
-
-        private void AddConflictButton(VisualElement parent, string localizationKey, Action action)
-        {
-            var button = new Button(() =>
-            {
-                HideConflict();
-                action?.Invoke();
-            })
-            {
-                text = KeyConfigLocalization.Get(localizationKey)
-            };
-            button.AddToClassList("keyconfig-button");
-            parent.Add(button);
-            conflictButtons.Add(button);
-        }
+        public void HideConflict() => conflictOverlay.Hide();
 
         public void SetStatus(string status)
         {
@@ -445,7 +388,7 @@ namespace Koiusa.Keyconfig.Runtime
             inputStateRows.Clear();
             mapNames.Clear();
             mapTabButtons.Clear();
-            bindingRows.Clear();
+            bindingNavigation.Clear();
             unavailableButtons.Clear();
 
             if (entries == null || entries.Count == 0)
@@ -538,116 +481,24 @@ namespace Koiusa.Keyconfig.Runtime
                     currentActionName = entry.ActionName;
                 }
 
-                // --- 行 ---
-                var row = new VisualElement();
-                row.AddToClassList("keyconfig-row");
-                row.AddToClassList(rowCounter % 2 == 0 ? "even" : "odd");
-                row.focusable = !entry.IsRebindable;
-                row.RegisterCallback<FocusInEvent>(OnBindingRowFocusIn);
-                row.RegisterCallback<FocusOutEvent>(OnBindingRowFocusOut);
-                rowCounter++;
-
-                // アクション名セル（アクション初出のみ表示）
-                var actionText = isNewAction && !entry.IsPartOfComposite
-                    ? entry.ActionName
-                    : (entry.IsPartOfComposite ? entry.DisplayName.Split('/')[0] : string.Empty);
-                var actionCell = new Label(actionText);
-                if (!string.IsNullOrEmpty(actionText))
-                    BindRow(actionCell, actionText);
-                actionCell.AddToClassList("keyconfig-cell-action");
-                if (entry.IsPartOfComposite)
-                {
-                    actionCell.AddToClassList("composite-child");
-                }
-                row.Add(actionCell);
-
-                // バインドセル（アイコン + ラベル）
-                var bindingCell = new VisualElement();
-                bindingCell.AddToClassList("keyconfig-cell-binding");
-
-                if (iconResolver != null)
-                {
-                    var icon = iconResolver.Resolve(entry.BindingPath);
-                    var iconElement = new Image();
-                    iconElement.AddToClassList("keyconfig-binding-icon");
-                    iconElement.image = icon;
-                    iconElement.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
-                    bindingCell.Add(iconElement);
-                }
-
-                var bindingLabel = new Label(entry.DisplayName);
-                bindingLabel.AddToClassList("keyconfig-binding-label");
-                bindingCell.Add(bindingLabel);
-
-                var inputStateLabel = new Label("●");
-                inputStateLabel.AddToClassList("keyconfig-input-state");
-                inputStateLabel.style.display = DisplayStyle.None;
-                bindingCell.Add(inputStateLabel);
-                row.Add(bindingCell);
-
-                // ボタンセル
-                var buttonCell = new VisualElement();
-                buttonCell.AddToClassList("keyconfig-cell-buttons");
-
-                var modifierCount = entry.IsComposite ? entry.DisplayName.Split('+').Length - 1 : 0;
-                var modifierButton = new Button(() => onAddModifier?.Invoke(rowIndex));
-                BindRow(modifierButton, "keyconfig.add_modifier");
-                BindTooltip(modifierButton, "keyconfig.add_modifier_tooltip");
-                modifierButton.AddToClassList("keyconfig-row-button");
-                modifierButton.AddToClassList("keyconfig-modifier-button");
-                var canAddModifier = entry.IsRebindable && modifierCount < 2;
-                if (!canAddModifier) unavailableButtons.Add(modifierButton);
-                modifierButton.SetEnabled(isInteractive && canAddModifier);
-                buttonCell.Add(modifierButton);
-
-                var removeModifierButton = new Button(() => onRemoveModifier?.Invoke(rowIndex));
-                BindRow(removeModifierButton, "keyconfig.remove_modifier");
-                BindTooltip(removeModifierButton, "keyconfig.remove_modifier_tooltip");
-                removeModifierButton.AddToClassList("keyconfig-row-button");
-                removeModifierButton.AddToClassList("keyconfig-modifier-button");
-                var canRemoveModifier = entry.IsRebindable && modifierCount > 0;
-                if (!canRemoveModifier) unavailableButtons.Add(removeModifierButton);
-                removeModifierButton.SetEnabled(isInteractive && canRemoveModifier);
-                buttonCell.Add(removeModifierButton);
-
-                var rebindButton = new Button(() => onRebind?.Invoke(rowIndex));
-                BindRow(rebindButton, "keyconfig.change");
-                rebindButton.AddToClassList("keyconfig-row-button");
-                rebindButton.AddToClassList("keyconfig-rebind-button");
-                var hasConnectedControl = InputControlActivity.IsUsable(InputControlActivity.Resolve(entry.BindingPath));
-                var canRebind = entry.IsRebindable && hasConnectedControl;
-                if (!canRebind) unavailableButtons.Add(rebindButton);
-                rebindButton.SetEnabled(isInteractive && canRebind);
-                buttonCell.Add(rebindButton);
-
-                var resetButton = new Button(() => onReset?.Invoke(rowIndex));
-                BindRow(resetButton, "keyconfig.reset");
-                resetButton.AddToClassList("keyconfig-row-button");
-                resetButton.AddToClassList("keyconfig-reset-button");
-                var canReset = entry.IsRebindable;
-                if (!canReset) unavailableButtons.Add(resetButton);
-                resetButton.SetEnabled(isInteractive && canReset);
-                buttonCell.Add(resetButton);
-
-                bindingRows.Add(new BindingRowNavigation
-                {
-                    EntryIndex = rowIndex,
-                    Row = row,
-                    RebindButton = rebindButton,
-                    ModifierButton = modifierButton,
-                    RemoveModifierButton = removeModifierButton,
-                    ResetButton = resetButton
-                });
-
-                row.Add(buttonCell);
-                bindingListView.Add(row);
+                var bindingRow = KeyConfigBindingRowFactory.Create(
+                    entry, rowIndex, rowCounter++, isNewAction, isInteractive, iconResolver, unavailableButtons,
+                    BindRow, BindTooltip, onRebind, onAddModifier, onRemoveModifier, onReset);
+                bindingNavigation.Add(
+                    rowIndex,
+                    bindingRow.Row,
+                    bindingRow.AddModifierButton,
+                    bindingRow.RemoveModifierButton,
+                    bindingRow.ChangeButton,
+                    bindingRow.ResetButton);
+                bindingListView.Add(bindingRow.Row);
 
                 inputStateRows.Add(new InputStateRow
                 {
                     Entry = entry,
-                    Row = row,
-                    StateLabel = inputStateLabel,
-                    Control = InputControlActivity.Resolve(entry.BindingPath)
+                    Row = bindingRow.Row,
+                    StateLabel = bindingRow.InputStateLabel,
+                    Control = bindingRow.Control
                 });
             }
 
@@ -830,29 +681,14 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationCancel(NavigationCancelEvent evt)
         {
-            if (conflictOverlay != null)
-            {
-                if (Time.unscaledTime < conflictInputUnlockTime)
-                {
-                    root?.focusController?.IgnoreEvent(evt);
-                    evt.StopImmediatePropagation();
-                    return;
-                }
-
-                var cancel = onConflictCancel;
-                HideConflict();
-                root?.focusController?.IgnoreEvent(evt);
-                evt.StopImmediatePropagation();
-                cancel?.Invoke();
-                return;
-            }
+            if (conflictOverlay.HandleCancel(root, evt)) return;
 
             if (!isInteractive || onClose == null)
             {
                 return;
             }
 
-            if (TryGetFocusedBindingRow(out _, out _))
+            if (bindingNavigation.ContainsFocus(root))
             {
                 FocusSelectedMapTab();
                 root?.focusController?.IgnoreEvent(evt);
@@ -866,84 +702,19 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationSubmit(NavigationSubmitEvent evt)
         {
-            if (conflictOverlay == null || Time.unscaledTime >= conflictInputUnlockTime)
-            {
-                return;
-            }
-
-            root?.focusController?.IgnoreEvent(evt);
-            evt.StopImmediatePropagation();
-        }
-
-        private static void OnBindingRowFocusIn(FocusInEvent evt)
-        {
-            if (evt.currentTarget is VisualElement row)
-            {
-                row.AddToClassList("focused");
-            }
-        }
-
-        private static void OnBindingRowFocusOut(FocusOutEvent evt)
-        {
-            if (evt.currentTarget is not VisualElement row)
-            {
-                return;
-            }
-
-            row.schedule.Execute(() =>
-            {
-                var focusedElement = row.panel?.focusController?.focusedElement as VisualElement;
-                row.EnableInClassList("focused", focusedElement != null && row.Contains(focusedElement));
-            });
+            conflictOverlay.HandleSubmit(root, evt);
         }
 
         public void HandleNavigationMove(UiNavigationDirection direction)
         {
-            if (conflictOverlay != null)
-            {
-                if (Time.unscaledTime < conflictInputUnlockTime)
-                {
-                    return;
-                }
-
-                if (direction == UiNavigationDirection.Left || direction == UiNavigationDirection.Right)
-                {
-                    var focused = root?.focusController?.focusedElement as Button;
-                    var index = conflictButtons.IndexOf(focused);
-                    var delta = direction == UiNavigationDirection.Left ? -1 : 1;
-                    index = index < 0 ? conflictButtons.Count - 1 : (index + delta + conflictButtons.Count) % conflictButtons.Count;
-                    conflictButtons[index].Focus();
-                }
-                return;
-            }
+            if (conflictOverlay.HandleMove(root, direction)) return;
 
             if (!isInteractive)
             {
                 return;
             }
 
-            if (TryGetFocusedBindingRow(out var focusedRowIndex, out var column))
-            {
-                if (direction == UiNavigationDirection.Left ||
-                    direction == UiNavigationDirection.Right)
-                {
-                    var delta = direction == UiNavigationDirection.Left ? -1 : 1;
-                    GetAvailableRowButton(bindingRows[focusedRowIndex], column + delta)?.Focus();
-                    return;
-                }
-
-                if (direction == UiNavigationDirection.Up ||
-                    direction == UiNavigationDirection.Down)
-                {
-                    var delta = direction == UiNavigationDirection.Up ? -1 : 1;
-                    var targetIndex = Mathf.Clamp(focusedRowIndex + delta, 0, bindingRows.Count - 1);
-                    var targetRow = bindingRows[targetIndex];
-                    var target = GetAvailableRowButton(targetRow, column);
-                    target?.Focus();
-                    ScrollToBindingRow(targetIndex);
-                    return;
-                }
-            }
+            if (bindingNavigation.TryHandleMove(root, bindingListView, direction)) return;
 
             if (direction == UiNavigationDirection.Left ||
                 direction == UiNavigationDirection.Right)
@@ -988,17 +759,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void EnterBindingList()
         {
-            root?.schedule.Execute(() =>
-            {
-                if (bindingRows.Count == 0)
-                {
-                    return;
-                }
-
-                var firstRow = bindingRows[0];
-                GetAvailableRowButton(firstRow, 2)?.Focus();
-                ScrollToBindingRow(0);
-            });
+            bindingNavigation.FocusFirst(root, bindingListView);
         }
 
         private void OnRootFocusIn(FocusInEvent evt)
@@ -1022,22 +783,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void FocusBindingEntry(int entryIndex)
         {
-            root?.schedule.Execute(() =>
-            {
-                for (var i = 0; i < bindingRows.Count; i++)
-                {
-                    if (bindingRows[i].EntryIndex != entryIndex)
-                    {
-                        continue;
-                    }
-
-                    GetAvailableRowButton(bindingRows[i], 2)?.Focus();
-                    ScrollToBindingRow(i);
-                    return;
-                }
-
-                FocusSelectedMapTab();
-            });
+            if (!bindingNavigation.FocusEntry(root, bindingListView, entryIndex)) FocusSelectedMapTab();
         }
 
         private void FocusSelectedMapTab()
@@ -1048,83 +794,6 @@ namespace Koiusa.Keyconfig.Runtime
                 mapTabButtons[index].Focus();
                 mapTabBar?.ScrollTo(mapTabButtons[index]);
             }
-        }
-
-        private bool TryGetFocusedBindingRow(out int rowIndex, out int column)
-        {
-            var focusedElement = root?.focusController?.focusedElement as VisualElement;
-            for (var i = 0; i < bindingRows.Count; i++)
-            {
-                if (focusedElement == bindingRows[i].RebindButton)
-                {
-                    rowIndex = i;
-                    column = 2;
-                    return true;
-                }
-
-                if (focusedElement == bindingRows[i].ModifierButton)
-                {
-                    rowIndex = i;
-                    column = 0;
-                    return true;
-                }
-
-                if (focusedElement == bindingRows[i].ResetButton)
-                {
-                    rowIndex = i;
-                    column = 3;
-                    return true;
-                }
-
-                if (focusedElement == bindingRows[i].RemoveModifierButton)
-                {
-                    rowIndex = i;
-                    column = 1;
-                    return true;
-                }
-
-                if (focusedElement == bindingRows[i].Row)
-                {
-                    rowIndex = i;
-                    column = 0;
-                    return true;
-                }
-            }
-
-            rowIndex = -1;
-            column = 0;
-            return false;
-        }
-
-        private static VisualElement GetAvailableRowButton(BindingRowNavigation row, int preferredColumn)
-        {
-            var buttons = new[] { row.ModifierButton, row.RemoveModifierButton, row.RebindButton, row.ResetButton };
-            preferredColumn = Mathf.Clamp(preferredColumn, 0, buttons.Length - 1);
-            if (buttons[preferredColumn] != null && buttons[preferredColumn].enabledInHierarchy) return buttons[preferredColumn];
-            for (var distance = 1; distance < buttons.Length; distance++)
-            {
-                var left = preferredColumn - distance;
-                if (left >= 0 && buttons[left] != null && buttons[left].enabledInHierarchy) return buttons[left];
-                var right = preferredColumn + distance;
-                if (right < buttons.Length && buttons[right] != null && buttons[right].enabledInHierarchy) return buttons[right];
-            }
-            return row.Row != null && row.Row.focusable ? row.Row : null;
-        }
-
-        private void ScrollToBindingRow(int rowIndex)
-        {
-            if (bindingListView == null || rowIndex < 0 || rowIndex >= bindingRows.Count)
-            {
-                return;
-            }
-
-            if (rowIndex == 0)
-            {
-                bindingListView.scrollOffset = Vector2.zero;
-                return;
-            }
-
-            bindingListView.ScrollTo(bindingRows[rowIndex].Row);
         }
 
         private void FocusAdjacentFunctionButton(int direction)
