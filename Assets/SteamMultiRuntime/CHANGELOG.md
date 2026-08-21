@@ -2,6 +2,24 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.12.0] - 2026-08-22
+
+### Added
+
+- Added the independently publishable `com.koiusa.input.icons` package for Input System control-path icons.
+- Added the independently publishable `com.koiusa.inputguide` package for operation guides, device visualization, and live input highlighting.
+
+### Changed
+
+- Reorganized `com.koiusa.keyconfig` around the public `KeyConfigPanel` and `KeyConfigController` APIs with stable GUID-based binding identifiers.
+- Moved key-binding persistence into the SteamMultiRuntime integration package instead of fixing storage policy in the reusable package.
+- Updated reusable-package validation and publication order for the new input packages.
+
+### Fixed
+
+- Prevented a single physical trigger event from advancing multiple composite rebind parts by immediately committing the first matching control event and excluding aliases observed in that event.
+- Preserved whole-composite restoration for Escape and timeout cancellation.
+
 ## [0.11.0] - 2026-08-21
 
 ### Added

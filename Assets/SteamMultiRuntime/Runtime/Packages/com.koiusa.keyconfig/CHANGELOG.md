@@ -2,9 +2,10 @@
 
 ## [0.2.0]
 
-- Replaced the implementation-oriented public surface with `KeyConfigPanel`, `KeyConfigController`, stable GUID-based binding DTOs, `KeyConfigSettings`, and `KeyConfigIconSet` under `Koiusa.KeyConfig`.
+- Replaced the implementation-oriented public surface with `KeyConfigPanel`, `KeyConfigController`, stable GUID-based binding DTOs, and `KeyConfigSettings` under `Koiusa.KeyConfig`.
 - Internalized rebinding, persistence, input monitoring, and UI implementation services.
 - Merged the menu toggle responsibility into `KeyConfigPanel` and changed programmatic persistence to JSON import/export.
+- Moved standard input icons to `com.koiusa.input.icons` and the operation guide to `com.koiusa.inputguide`.
 
 All notable changes to this package will be documented in this file.
 
