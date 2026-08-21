@@ -352,7 +352,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             var nextMapIndex = nextSectionIndex - 1;
             selectedMapName = mapNames[nextMapIndex];
-            RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset);
+            RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset, true);
             root?.schedule.Execute(() =>
             {
                 if (nextMapIndex < mapTabButtons.Count && mapTabButtons[nextMapIndex].enabledInHierarchy)
@@ -368,13 +368,16 @@ namespace Koiusa.Keyconfig.Runtime
             Action<int> onRebind,
             Action<int> onAddModifier,
             Action<int> onRemoveModifier,
-            Action<int> onReset)
+            Action<int> onReset,
+            bool resetScroll = false)
         {
             if (bindingListView == null)
             {
                 return;
             }
 
+            var previousMapName = selectedMapName;
+            var previousScrollOffset = bindingListView.scrollOffset;
             cachedEntries = entries;
             cachedOnRebind = onRebind;
             cachedOnAddModifier = onAddModifier;
@@ -383,7 +386,6 @@ namespace Koiusa.Keyconfig.Runtime
 
             ClearRowBindings();
             bindingListView.Clear();
-            bindingListView.scrollOffset = Vector2.zero;
             mapTabBar?.Clear();
             inputStateRows.Clear();
             mapNames.Clear();
@@ -425,7 +427,7 @@ namespace Koiusa.Keyconfig.Runtime
                     var tabButton = new Button(() =>
                     {
                         selectedMapName = mapName;
-                        RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset);
+                        RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset, true);
                         EnterBindingList();
                     });
                     BindRow(tabButton, mapName);
@@ -502,7 +504,11 @@ namespace Koiusa.Keyconfig.Runtime
                 });
             }
 
-            bindingListView.schedule.Execute(() => bindingListView.scrollOffset = Vector2.zero);
+            var targetScrollOffset = resetScroll ||
+                !string.Equals(previousMapName, selectedMapName, StringComparison.Ordinal)
+                ? Vector2.zero
+                : previousScrollOffset;
+            bindingListView.schedule.Execute(() => bindingListView.scrollOffset = targetScrollOffset);
         }
 
         public void UpdateInputStates(InputActionAsset inputActionAsset)

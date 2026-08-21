@@ -2,6 +2,8 @@
 
 Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有のLocalization接続に分離しています。
 
+Binding行の変更・リセット・修飾キー追加／削除で同じAction Mapを再描画する場合は、現在のスクロール位置を維持します。Action Mapを切り替えた場合はBinding Listの先頭へ戻ります。
+
 ## パッケージ構成
 
 | パッケージ | 責務 |

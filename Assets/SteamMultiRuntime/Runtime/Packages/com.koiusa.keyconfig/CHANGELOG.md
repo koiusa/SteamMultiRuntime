@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.10] - 2026-08-21
+
+### Fixed
+
+- Preserved the binding-list scroll position when a row action rebuilds the current Action Map; switching Action Maps still starts at the top.
+
 ## [0.1.9] - 2026-08-21
 
 ### Fixed
