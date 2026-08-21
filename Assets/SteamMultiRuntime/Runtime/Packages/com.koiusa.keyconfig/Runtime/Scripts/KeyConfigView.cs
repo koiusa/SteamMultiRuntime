@@ -22,8 +22,6 @@ namespace Koiusa.Keyconfig.Runtime
         private VisualElement pendingPanelRoot;
 
         private Label statusLabel;
-        private Label inputMonitorDot;
-        private Label inputMonitorStatus;
         private DropdownField bindingGroupDropdown;
         private ScrollView mapTabBar;
         private ScrollView bindingListView;
@@ -46,27 +44,16 @@ namespace Koiusa.Keyconfig.Runtime
         private Action<int> cachedOnRemoveModifier;
         private Action<int> cachedOnReset;
         private string selectedMapName;
-        private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
+        private readonly KeyConfigInputMonitor inputMonitor = new KeyConfigInputMonitor();
+        private readonly KeyConfigRowLocalization rowLocalization = new KeyConfigRowLocalization();
         private LocalizedVisualTree localizedTree;
         private LocalizedTextBinding statusBinding;
-        private LocalizedTextBinding inputMonitorBinding;
-        private readonly List<LocalizedTextBinding> rowBindings = new List<LocalizedTextBinding>();
-        private readonly List<(VisualElement element, string key)> localizedTooltips = new List<(VisualElement, string)>();
-        private int lastActiveInputCount = int.MinValue;
         private IReadOnlyList<string> cachedBindingGroups;
         private string cachedSelectedBindingGroup;
         private bool isInteractive = true;
         private readonly List<string> mapNames = new List<string>();
         private readonly List<Button> mapTabButtons = new List<Button>();
         private readonly HashSet<Button> unavailableButtons = new HashSet<Button>();
-
-        private sealed class InputStateRow
-        {
-            public InputBindingService.BindingEntry Entry;
-            public VisualElement Row;
-            public Label StateLabel;
-            public InputControl Control;
-        }
 
         public KeyConfigView(UIDocument uiDocument, VisualTreeAsset layoutAsset, StyleSheet styleSheet)
         {
@@ -95,10 +82,9 @@ namespace Koiusa.Keyconfig.Runtime
                 statusLabel = root.Q<Label>("status-label");
                 statusBinding?.Dispose();
                 statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
-                inputMonitorDot = root.Q<Label>("input-monitor-dot");
-                inputMonitorStatus = root.Q<Label>("input-monitor-status");
-                inputMonitorBinding?.Dispose();
-                inputMonitorBinding = inputMonitorStatus == null ? null : new LocalizedTextBinding(inputMonitorStatus);
+                var inputMonitorDot = root.Q<Label>("input-monitor-dot");
+                var inputMonitorStatus = root.Q<Label>("input-monitor-status");
+                inputMonitor.Configure(inputMonitorDot, inputMonitorStatus);
                 bindingListView = root.Q<ScrollView>("binding-list-view");
 
                 var tableHeader = root.Q<VisualElement>("table-header");
@@ -106,7 +92,7 @@ namespace Koiusa.Keyconfig.Runtime
 
                 bindingGroupDropdown = new DropdownField("BindingGroup");
                 bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");
-                mapTabBar = CreateMapTabBar();
+                mapTabBar = KeyConfigFallbackUiBuilder.CreateMapTabBar();
                 mapTabBar.AddToClassList("keyconfig-map-tabs");
 
                 if (insertParent != null && tableHeader != null)
@@ -131,13 +117,20 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            BuildFallbackUi(root);
+            var fallback = KeyConfigFallbackUiBuilder.Build(root);
+            statusLabel = fallback.StatusLabel;
+            bindingGroupDropdown = fallback.BindingGroupDropdown;
+            mapTabBar = fallback.MapTabBar;
+            bindingListView = fallback.BindingListView;
+            loadButton = fallback.LoadButton;
+            saveButton = fallback.SaveButton;
+            resetAllButton = fallback.ResetAllButton;
+            closeButton = fallback.CloseButton;
             statusBinding?.Dispose();
             statusBinding = statusLabel == null ? null : new LocalizedTextBinding(statusLabel);
-            inputMonitorBinding?.Dispose();
-            inputMonitorBinding = inputMonitorStatus == null ? null : new LocalizedTextBinding(inputMonitorStatus);
+            inputMonitor.Configure(fallback.InputMonitorDot, fallback.InputMonitorStatus);
             localizedTree?.Dispose();
-            localizedTree = LocalizedVisualTree.Bind(root, statusLabel, inputMonitorStatus);
+            localizedTree = LocalizedVisualTree.Bind(root, statusLabel, fallback.InputMonitorStatus);
         }
 
         public void BindActions(Action onLoadCallback, Action onSaveCallback, Action onResetAllCallback, Action onCloseCallback, Action<string> onBindingGroupChangedCallback)
@@ -190,9 +183,8 @@ namespace Koiusa.Keyconfig.Runtime
             localizedTree = null;
             statusBinding?.Dispose();
             statusBinding = null;
-            inputMonitorBinding?.Dispose();
-            inputMonitorBinding = null;
-            ClearRowBindings();
+            inputMonitor.Dispose();
+            rowLocalization.Dispose();
         }
 
         private void ApplyDropdownPopupStyle(VisualElement root)
@@ -384,10 +376,10 @@ namespace Koiusa.Keyconfig.Runtime
             cachedOnRemoveModifier = onRemoveModifier;
             cachedOnReset = onReset;
 
-            ClearRowBindings();
+            rowLocalization.Clear();
             bindingListView.Clear();
             mapTabBar?.Clear();
-            inputStateRows.Clear();
+            inputMonitor.Clear();
             mapNames.Clear();
             mapTabButtons.Clear();
             bindingNavigation.Clear();
@@ -397,7 +389,7 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 selectedMapName = null;
                 var emptyLabel = new Label();
-                BindRow(emptyLabel, "keyconfig.no_bindings");
+                rowLocalization.Bind(emptyLabel, "keyconfig.no_bindings");
                 emptyLabel.AddToClassList("keyconfig-binding");
                 bindingListView.Add(emptyLabel);
                 return;
@@ -430,7 +422,7 @@ namespace Koiusa.Keyconfig.Runtime
                         RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset, true);
                         EnterBindingList();
                     });
-                    BindRow(tabButton, mapName);
+                    rowLocalization.Bind(tabButton, mapName);
 
                     tabButton.AddToClassList("keyconfig-map-tab-button");
                     tabButton.SetEnabled(isInteractive);
@@ -461,7 +453,7 @@ namespace Koiusa.Keyconfig.Runtime
                     currentActionName = null;
 
                     var schemeHeader = new Label();
-                    BindRow(schemeHeader, currentSchemeName);
+                    rowLocalization.Bind(schemeHeader, currentSchemeName);
                     schemeHeader.AddToClassList("keyconfig-scheme-group-header");
                     bindingListView.Add(schemeHeader);
                 }
@@ -472,7 +464,7 @@ namespace Koiusa.Keyconfig.Runtime
                     currentActionName = null;
 
                     var profileHeader = new Label();
-                    BindRow(profileHeader, currentProfileName);
+                    rowLocalization.Bind(profileHeader, currentProfileName);
                     profileHeader.AddToClassList("keyconfig-profile-group-header");
                     bindingListView.Add(profileHeader);
                 }
@@ -485,7 +477,8 @@ namespace Koiusa.Keyconfig.Runtime
 
                 var bindingRow = KeyConfigBindingRowFactory.Create(
                     entry, rowIndex, rowCounter++, isNewAction, isInteractive, iconResolver, unavailableButtons,
-                    BindRow, BindTooltip, onRebind, onAddModifier, onRemoveModifier, onReset);
+                    rowLocalization.Bind, rowLocalization.BindTooltip,
+                    onRebind, onAddModifier, onRemoveModifier, onReset);
                 bindingNavigation.Add(
                     rowIndex,
                     bindingRow.Row,
@@ -495,13 +488,11 @@ namespace Koiusa.Keyconfig.Runtime
                     bindingRow.ResetButton);
                 bindingListView.Add(bindingRow.Row);
 
-                inputStateRows.Add(new InputStateRow
-                {
-                    Entry = entry,
-                    Row = bindingRow.Row,
-                    StateLabel = bindingRow.InputStateLabel,
-                    Control = bindingRow.Control
-                });
+                inputMonitor.Add(
+                    entry,
+                    bindingRow.Row,
+                    bindingRow.InputStateLabel,
+                    bindingRow.Control);
             }
 
             var targetScrollOffset = resetScroll ||
@@ -511,164 +502,12 @@ namespace Koiusa.Keyconfig.Runtime
             bindingListView.schedule.Execute(() => bindingListView.scrollOffset = targetScrollOffset);
         }
 
-        public void UpdateInputStates(InputActionAsset inputActionAsset)
-        {
-            var activeCount = 0;
-            for (var i = 0; i < inputStateRows.Count; i++)
-            {
-                var item = inputStateRows[i];
-                if (!InputControlActivity.IsUsable(item.Control))
-                {
-                    item.Control = InputControlActivity.Resolve(item.Entry.BindingPath);
-                }
-                var activeControl = InputControlActivity.FindActive(item.Entry.BindingPath, item.Control);
-                if (activeControl != null)
-                {
-                    item.Control = activeControl;
-                }
-                var magnitude = InputControlActivity.EvaluateMagnitude(item.Control);
-                var isActive = activeControl != null;
-
-                // Some controls do not expose a magnitude. Keep action-level input visible
-                // as a fallback for custom controls and processor-driven bindings.
-                if (!isActive && magnitude < 0f && inputActionAsset != null)
-                {
-                    var action = inputActionAsset.FindAction(item.Entry.ActionId.ToString());
-                    isActive = action != null && action.IsPressed();
-                }
-
-                item.Row.EnableInClassList("input-active", isActive);
-                item.StateLabel.style.display = isActive ? DisplayStyle.Flex : DisplayStyle.None;
-                if (isActive)
-                {
-                    activeCount++;
-                }
-            }
-
-            if (inputMonitorStatus != null && activeCount != lastActiveInputCount)
-            {
-                lastActiveInputCount = activeCount;
-                if (activeCount == 0) inputMonitorBinding?.Set("keyconfig.waiting_input");
-                else if (activeCount == 1) inputMonitorBinding?.Set("keyconfig.input_detected");
-                else inputMonitorBinding?.Set("keyconfig.inputs_detected", activeCount);
-            }
-
-            if (inputMonitorDot != null)
-            {
-                inputMonitorDot.EnableInClassList("active", activeCount > 0);
-            }
-        }
-
-        private void BuildFallbackUi(VisualElement root)
-        {
-            var container = new VisualElement();
-            container.style.flexDirection = FlexDirection.Column;
-            container.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
-            container.style.height = new StyleLength(new Length(100f, LengthUnit.Percent));
-            container.style.paddingLeft = 24;
-            container.style.paddingRight = 24;
-            container.style.paddingTop = 24;
-            container.style.paddingBottom = 24;
-            root.Add(container);
-
-            var title = new Label("keyconfig.title");
-            title.style.fontSize = 30;
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.marginBottom = 12;
-            container.Add(title);
-
-            statusLabel = new Label("Ready");
-            statusLabel.style.marginBottom = 12;
-            container.Add(statusLabel);
-
-            var monitor = new VisualElement();
-            monitor.AddToClassList("keyconfig-input-monitor");
-            inputMonitorDot = new Label("●");
-            inputMonitorDot.AddToClassList("keyconfig-input-monitor-dot");
-            inputMonitorStatus = new Label("WAITING FOR INPUT");
-            inputMonitorStatus.AddToClassList("keyconfig-input-monitor-status");
-            monitor.Add(inputMonitorDot);
-            monitor.Add(inputMonitorStatus);
-            container.Add(monitor);
-
-            bindingGroupDropdown = new DropdownField("BindingGroup");
-            bindingGroupDropdown.AddToClassList("keyconfig-binding-group-dropdown");
-            container.Add(bindingGroupDropdown);
-
-            mapTabBar = CreateMapTabBar();
-            mapTabBar.AddToClassList("keyconfig-map-tabs");
-            container.Add(mapTabBar);
-
-            bindingListView = new ScrollView(ScrollViewMode.Vertical);
-            bindingListView.style.flexGrow = 1;
-            bindingListView.style.marginBottom = 12;
-            container.Add(bindingListView);
-
-            var buttonRow = new VisualElement();
-            buttonRow.style.flexDirection = FlexDirection.Row;
-            buttonRow.style.justifyContent = Justify.FlexEnd;
-            container.Add(buttonRow);
-
-            loadButton = new Button { text = "keyconfig.load" };
-            saveButton = new Button { text = "keyconfig.save" };
-            resetAllButton = new Button { text = "keyconfig.reset_all" };
-            closeButton = new Button { text = "keyconfig.close" };
-
-            loadButton.style.width = 110;
-            saveButton.style.width = 110;
-            resetAllButton.style.width = 110;
-            closeButton.style.width = 110;
-
-            loadButton.style.marginLeft = 8;
-            saveButton.style.marginLeft = 8;
-            resetAllButton.style.marginLeft = 8;
-            closeButton.style.marginLeft = 8;
-
-            buttonRow.Add(loadButton);
-            buttonRow.Add(saveButton);
-            buttonRow.Add(resetAllButton);
-            buttonRow.Add(closeButton);
-        }
-
-        private static ScrollView CreateMapTabBar()
-        {
-            var scrollView = new ScrollView(ScrollViewMode.Horizontal);
-            scrollView.horizontalScrollerVisibility = ScrollerVisibility.Auto;
-            scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
-            scrollView.contentContainer.style.flexDirection = FlexDirection.Row;
-            scrollView.contentContainer.style.flexWrap = Wrap.NoWrap;
-            return scrollView;
-        }
-
-        private void BindRow(TextElement element, string key)
-        {
-            var binding = new LocalizedTextBinding(element);
-            binding.Set(key);
-            rowBindings.Add(binding);
-        }
-
-        private void BindTooltip(VisualElement element, string key)
-        {
-            localizedTooltips.Add((element, key));
-            element.tooltip = KeyConfigLocalization.Get(key);
-        }
+        public void UpdateInputStates(InputActionAsset inputActionAsset) => inputMonitor.Update(inputActionAsset);
 
         private void RefreshLocalizedUi()
         {
             RefreshBindingGroupChoices();
-            for (var i = 0; i < localizedTooltips.Count; i++)
-            {
-                var item = localizedTooltips[i];
-                if (item.element != null) item.element.tooltip = KeyConfigLocalization.Get(item.key);
-            }
-        }
-
-        private void ClearRowBindings()
-        {
-            foreach (var binding in rowBindings)
-                binding.Dispose();
-            rowBindings.Clear();
-            localizedTooltips.Clear();
+            rowLocalization.Refresh();
         }
 
         private void OnBindingGroupDropdownValueChanged(ChangeEvent<string> evt)

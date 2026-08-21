@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.11] - 2026-08-21
+
+### Changed
+
+- Split input activity monitoring, dynamic row localization, and fallback UI construction out of `KeyConfigView` without changing its API or behavior.
+
 ## [0.1.10] - 2026-08-21
 
 ### Fixed
