@@ -45,6 +45,8 @@ namespace Koiusa.Keyconfig.Runtime
 
         private IReadOnlyList<InputBindingService.BindingEntry> cachedEntries;
         private Action<int> cachedOnRebind;
+        private Action<int> cachedOnAddModifier;
+        private Action<int> cachedOnRemoveModifier;
         private Action<int> cachedOnReset;
         private string selectedMapName;
         private readonly List<InputStateRow> inputStateRows = new List<InputStateRow>();
@@ -52,6 +54,7 @@ namespace Koiusa.Keyconfig.Runtime
         private LocalizedTextBinding statusBinding;
         private LocalizedTextBinding inputMonitorBinding;
         private readonly List<LocalizedTextBinding> rowBindings = new List<LocalizedTextBinding>();
+        private readonly List<(VisualElement element, string key)> localizedTooltips = new List<(VisualElement, string)>();
         private int lastActiveInputCount = int.MinValue;
         private IReadOnlyList<string> cachedBindingGroups;
         private string cachedSelectedBindingGroup;
@@ -74,7 +77,7 @@ namespace Koiusa.Keyconfig.Runtime
             this.uiDocument = uiDocument;
             this.layoutAsset = layoutAsset;
             this.styleSheet = styleSheet;
-            KeyConfigLocalization.LocaleChanged += RefreshBindingGroupChoices;
+            KeyConfigLocalization.LocaleChanged += RefreshLocalizedUi;
         }
 
         public bool IsRenderable => statusLabel != null && bindingListView != null;
@@ -186,7 +189,7 @@ namespace Koiusa.Keyconfig.Runtime
         public void Dispose()
         {
             DetachDropdownPopupStyle();
-            KeyConfigLocalization.LocaleChanged -= RefreshBindingGroupChoices;
+            KeyConfigLocalization.LocaleChanged -= RefreshLocalizedUi;
             localizedTree?.Dispose();
             localizedTree = null;
             statusBinding?.Dispose();
@@ -201,6 +204,8 @@ namespace Koiusa.Keyconfig.Runtime
             public int EntryIndex;
             public VisualElement Row;
             public Button RebindButton;
+            public Button ModifierButton;
+            public Button RemoveModifierButton;
             public Button ResetButton;
         }
 
@@ -404,7 +409,7 @@ namespace Koiusa.Keyconfig.Runtime
 
             var nextMapIndex = nextSectionIndex - 1;
             selectedMapName = mapNames[nextMapIndex];
-            RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
+            RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset);
             root?.schedule.Execute(() =>
             {
                 if (nextMapIndex < mapTabButtons.Count && mapTabButtons[nextMapIndex].enabledInHierarchy)
@@ -418,6 +423,8 @@ namespace Koiusa.Keyconfig.Runtime
         public void RenderBindingEntries(
             IReadOnlyList<InputBindingService.BindingEntry> entries,
             Action<int> onRebind,
+            Action<int> onAddModifier,
+            Action<int> onRemoveModifier,
             Action<int> onReset)
         {
             if (bindingListView == null)
@@ -427,6 +434,8 @@ namespace Koiusa.Keyconfig.Runtime
 
             cachedEntries = entries;
             cachedOnRebind = onRebind;
+            cachedOnAddModifier = onAddModifier;
+            cachedOnRemoveModifier = onRemoveModifier;
             cachedOnReset = onReset;
 
             ClearRowBindings();
@@ -473,7 +482,7 @@ namespace Koiusa.Keyconfig.Runtime
                     var tabButton = new Button(() =>
                     {
                         selectedMapName = mapName;
-                        RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnReset);
+                        RenderBindingEntries(cachedEntries, cachedOnRebind, cachedOnAddModifier, cachedOnRemoveModifier, cachedOnReset);
                         EnterBindingList();
                     });
                     BindRow(tabButton, mapName);
@@ -533,7 +542,7 @@ namespace Koiusa.Keyconfig.Runtime
                 var row = new VisualElement();
                 row.AddToClassList("keyconfig-row");
                 row.AddToClassList(rowCounter % 2 == 0 ? "even" : "odd");
-                row.focusable = !entry.IsComposite && !entry.IsRebindable;
+                row.focusable = !entry.IsRebindable;
                 row.RegisterCallback<FocusInEvent>(OnBindingRowFocusIn);
                 row.RegisterCallback<FocusOutEvent>(OnBindingRowFocusOut);
                 rowCounter++;
@@ -556,7 +565,7 @@ namespace Koiusa.Keyconfig.Runtime
                 var bindingCell = new VisualElement();
                 bindingCell.AddToClassList("keyconfig-cell-binding");
 
-                if (iconResolver != null && !entry.IsComposite)
+                if (iconResolver != null)
                 {
                     var icon = iconResolver.Resolve(entry.BindingPath);
                     var iconElement = new Image();
@@ -566,7 +575,7 @@ namespace Koiusa.Keyconfig.Runtime
                     bindingCell.Add(iconElement);
                 }
 
-                var bindingLabel = new Label(entry.IsComposite ? string.Empty : entry.DisplayName);
+                var bindingLabel = new Label(entry.DisplayName);
                 bindingLabel.AddToClassList("keyconfig-binding-label");
                 bindingCell.Add(bindingLabel);
 
@@ -580,12 +589,33 @@ namespace Koiusa.Keyconfig.Runtime
                 var buttonCell = new VisualElement();
                 buttonCell.AddToClassList("keyconfig-cell-buttons");
 
+                var modifierCount = entry.IsComposite ? entry.DisplayName.Split('+').Length - 1 : 0;
+                var modifierButton = new Button(() => onAddModifier?.Invoke(rowIndex));
+                BindRow(modifierButton, "keyconfig.add_modifier");
+                BindTooltip(modifierButton, "keyconfig.add_modifier_tooltip");
+                modifierButton.AddToClassList("keyconfig-row-button");
+                modifierButton.AddToClassList("keyconfig-modifier-button");
+                var canAddModifier = entry.IsRebindable && modifierCount < 2;
+                if (!canAddModifier) unavailableButtons.Add(modifierButton);
+                modifierButton.SetEnabled(isInteractive && canAddModifier);
+                buttonCell.Add(modifierButton);
+
+                var removeModifierButton = new Button(() => onRemoveModifier?.Invoke(rowIndex));
+                BindRow(removeModifierButton, "keyconfig.remove_modifier");
+                BindTooltip(removeModifierButton, "keyconfig.remove_modifier_tooltip");
+                removeModifierButton.AddToClassList("keyconfig-row-button");
+                removeModifierButton.AddToClassList("keyconfig-modifier-button");
+                var canRemoveModifier = entry.IsRebindable && modifierCount > 0;
+                if (!canRemoveModifier) unavailableButtons.Add(removeModifierButton);
+                removeModifierButton.SetEnabled(isInteractive && canRemoveModifier);
+                buttonCell.Add(removeModifierButton);
+
                 var rebindButton = new Button(() => onRebind?.Invoke(rowIndex));
                 BindRow(rebindButton, "keyconfig.change");
                 rebindButton.AddToClassList("keyconfig-row-button");
                 rebindButton.AddToClassList("keyconfig-rebind-button");
                 var hasConnectedControl = InputControlActivity.IsUsable(InputControlActivity.Resolve(entry.BindingPath));
-                var canRebind = !entry.IsComposite && entry.IsRebindable && hasConnectedControl;
+                var canRebind = entry.IsRebindable && hasConnectedControl;
                 if (!canRebind) unavailableButtons.Add(rebindButton);
                 rebindButton.SetEnabled(isInteractive && canRebind);
                 buttonCell.Add(rebindButton);
@@ -594,35 +624,31 @@ namespace Koiusa.Keyconfig.Runtime
                 BindRow(resetButton, "keyconfig.reset");
                 resetButton.AddToClassList("keyconfig-row-button");
                 resetButton.AddToClassList("keyconfig-reset-button");
-                var canReset = !entry.IsComposite && entry.IsRebindable;
+                var canReset = entry.IsRebindable;
                 if (!canReset) unavailableButtons.Add(resetButton);
                 resetButton.SetEnabled(isInteractive && canReset);
                 buttonCell.Add(resetButton);
 
-                if (!entry.IsComposite)
+                bindingRows.Add(new BindingRowNavigation
                 {
-                    bindingRows.Add(new BindingRowNavigation
-                    {
-                        EntryIndex = rowIndex,
-                        Row = row,
-                        RebindButton = rebindButton,
-                        ResetButton = resetButton
-                    });
-                }
+                    EntryIndex = rowIndex,
+                    Row = row,
+                    RebindButton = rebindButton,
+                    ModifierButton = modifierButton,
+                    RemoveModifierButton = removeModifierButton,
+                    ResetButton = resetButton
+                });
 
                 row.Add(buttonCell);
                 bindingListView.Add(row);
 
-                if (!entry.IsComposite)
+                inputStateRows.Add(new InputStateRow
                 {
-                    inputStateRows.Add(new InputStateRow
-                    {
-                        Entry = entry,
-                        Row = row,
-                        StateLabel = inputStateLabel,
-                        Control = InputControlActivity.Resolve(entry.BindingPath)
-                    });
-                }
+                    Entry = entry,
+                    Row = row,
+                    StateLabel = inputStateLabel,
+                    Control = InputControlActivity.Resolve(entry.BindingPath)
+                });
             }
 
             bindingListView.schedule.Execute(() => bindingListView.scrollOffset = Vector2.zero);
@@ -764,11 +790,28 @@ namespace Koiusa.Keyconfig.Runtime
             rowBindings.Add(binding);
         }
 
+        private void BindTooltip(VisualElement element, string key)
+        {
+            localizedTooltips.Add((element, key));
+            element.tooltip = KeyConfigLocalization.Get(key);
+        }
+
+        private void RefreshLocalizedUi()
+        {
+            RefreshBindingGroupChoices();
+            for (var i = 0; i < localizedTooltips.Count; i++)
+            {
+                var item = localizedTooltips[i];
+                if (item.element != null) item.element.tooltip = KeyConfigLocalization.Get(item.key);
+            }
+        }
+
         private void ClearRowBindings()
         {
             foreach (var binding in rowBindings)
                 binding.Dispose();
             rowBindings.Clear();
+            localizedTooltips.Clear();
         }
 
         private void OnBindingGroupDropdownValueChanged(ChangeEvent<string> evt)
@@ -879,15 +922,13 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            if (TryGetFocusedBindingRow(out var focusedRowIndex, out var resetColumn))
+            if (TryGetFocusedBindingRow(out var focusedRowIndex, out var column))
             {
                 if (direction == UiNavigationDirection.Left ||
                     direction == UiNavigationDirection.Right)
                 {
-                    var target = direction == UiNavigationDirection.Left
-                        ? bindingRows[focusedRowIndex].RebindButton
-                        : bindingRows[focusedRowIndex].ResetButton;
-                    if (target.enabledInHierarchy) target.Focus();
+                    var delta = direction == UiNavigationDirection.Left ? -1 : 1;
+                    GetAvailableRowButton(bindingRows[focusedRowIndex], column + delta)?.Focus();
                     return;
                 }
 
@@ -897,7 +938,7 @@ namespace Koiusa.Keyconfig.Runtime
                     var delta = direction == UiNavigationDirection.Up ? -1 : 1;
                     var targetIndex = Mathf.Clamp(focusedRowIndex + delta, 0, bindingRows.Count - 1);
                     var targetRow = bindingRows[targetIndex];
-                    var target = GetAvailableRowButton(targetRow, resetColumn);
+                    var target = GetAvailableRowButton(targetRow, column);
                     target?.Focus();
                     ScrollToBindingRow(targetIndex);
                     return;
@@ -955,7 +996,7 @@ namespace Koiusa.Keyconfig.Runtime
                 }
 
                 var firstRow = bindingRows[0];
-                GetAvailableRowButton(firstRow, preferReset: false)?.Focus();
+                GetAvailableRowButton(firstRow, 2)?.Focus();
                 ScrollToBindingRow(0);
             });
         }
@@ -990,7 +1031,7 @@ namespace Koiusa.Keyconfig.Runtime
                         continue;
                     }
 
-                    GetAvailableRowButton(bindingRows[i], preferReset: false)?.Focus();
+                    GetAvailableRowButton(bindingRows[i], 2)?.Focus();
                     ScrollToBindingRow(i);
                     return;
                 }
@@ -1009,7 +1050,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
-        private bool TryGetFocusedBindingRow(out int rowIndex, out bool resetColumn)
+        private bool TryGetFocusedBindingRow(out int rowIndex, out int column)
         {
             var focusedElement = root?.focusController?.focusedElement as VisualElement;
             for (var i = 0; i < bindingRows.Count; i++)
@@ -1017,36 +1058,56 @@ namespace Koiusa.Keyconfig.Runtime
                 if (focusedElement == bindingRows[i].RebindButton)
                 {
                     rowIndex = i;
-                    resetColumn = false;
+                    column = 2;
+                    return true;
+                }
+
+                if (focusedElement == bindingRows[i].ModifierButton)
+                {
+                    rowIndex = i;
+                    column = 0;
                     return true;
                 }
 
                 if (focusedElement == bindingRows[i].ResetButton)
                 {
                     rowIndex = i;
-                    resetColumn = true;
+                    column = 3;
+                    return true;
+                }
+
+                if (focusedElement == bindingRows[i].RemoveModifierButton)
+                {
+                    rowIndex = i;
+                    column = 1;
                     return true;
                 }
 
                 if (focusedElement == bindingRows[i].Row)
                 {
                     rowIndex = i;
-                    resetColumn = false;
+                    column = 0;
                     return true;
                 }
             }
 
             rowIndex = -1;
-            resetColumn = false;
+            column = 0;
             return false;
         }
 
-        private static VisualElement GetAvailableRowButton(BindingRowNavigation row, bool preferReset)
+        private static VisualElement GetAvailableRowButton(BindingRowNavigation row, int preferredColumn)
         {
-            var preferred = preferReset ? row.ResetButton : row.RebindButton;
-            if (preferred != null && preferred.enabledInHierarchy) return preferred;
-            var fallback = preferReset ? row.RebindButton : row.ResetButton;
-            if (fallback != null && fallback.enabledInHierarchy) return fallback;
+            var buttons = new[] { row.ModifierButton, row.RemoveModifierButton, row.RebindButton, row.ResetButton };
+            preferredColumn = Mathf.Clamp(preferredColumn, 0, buttons.Length - 1);
+            if (buttons[preferredColumn] != null && buttons[preferredColumn].enabledInHierarchy) return buttons[preferredColumn];
+            for (var distance = 1; distance < buttons.Length; distance++)
+            {
+                var left = preferredColumn - distance;
+                if (left >= 0 && buttons[left] != null && buttons[left].enabledInHierarchy) return buttons[left];
+                var right = preferredColumn + distance;
+                if (right < buttons.Length && buttons[right] != null && buttons[right].enabledInHierarchy) return buttons[right];
+            }
             return row.Row != null && row.Row.focusable ? row.Row : null;
         }
 

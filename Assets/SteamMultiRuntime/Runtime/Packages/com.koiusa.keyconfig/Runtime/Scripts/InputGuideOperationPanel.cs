@@ -89,18 +89,21 @@ namespace Koiusa.Keyconfig.Runtime
             for (var i = 0; i < action.bindings.Count; i++)
             {
                 var binding = action.bindings[i];
-                if (binding.isComposite || !isInBindingGroup(binding.groups))
+                if (binding.isPartOfComposite || !isInBindingGroup(binding.groups))
                 {
                     continue;
                 }
 
                 var path = binding.overridePath ?? binding.path;
-                if (gamepad ? !IsGamepadBinding(path) : !IsKeyboardMouseBinding(path))
+                var matchesDevice = binding.isComposite
+                    ? CompositeMatchesDevice(action, i, gamepad)
+                    : gamepad ? IsGamepadBinding(path) : IsKeyboardMouseBinding(path);
+                if (!matchesDevice)
                 {
                     continue;
                 }
 
-                var displayName = action.GetBindingDisplayString(i);
+                var displayName = CompositeBindingUtility.GetDisplayString(action, i);
                 if (!string.IsNullOrWhiteSpace(displayName) && !result.Contains(displayName))
                 {
                     result.Add(displayName);
@@ -108,6 +111,19 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             return result;
+        }
+
+        private static bool CompositeMatchesDevice(InputAction action, int rootIndex, bool gamepad)
+        {
+            var parts = CompositeBindingUtility.GetPartIndices(action, rootIndex);
+            if (parts.Count == 0) return false;
+            for (var i = 0; i < parts.Count; i++)
+            {
+                var binding = action.bindings[parts[i]];
+                var path = binding.overridePath ?? binding.path;
+                if (gamepad ? !IsGamepadBinding(path) : !IsKeyboardMouseBinding(path)) return false;
+            }
+            return true;
         }
 
         private static void AddRow(VisualElement target, string actionName, List<string> bindings)

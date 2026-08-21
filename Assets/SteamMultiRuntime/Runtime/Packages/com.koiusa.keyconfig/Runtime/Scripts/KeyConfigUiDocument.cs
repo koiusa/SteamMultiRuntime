@@ -89,7 +89,7 @@ namespace Koiusa.Keyconfig.Runtime
                 view.SetInteractive(false, allowCloseWhenDisabled: true);
                 view.SetLocalizedStatus("keyconfig.config_missing");
                 view.SetBindingGroupChoices(null, bindingGroup);
-                view.RenderBindingEntries(currentEntries, null, null);
+                view.RenderBindingEntries(currentEntries, null, null, null, null);
                 return;
             }
 
@@ -169,7 +169,7 @@ namespace Koiusa.Keyconfig.Runtime
             {
                 currentEntries.Clear();
                 usingBindingGroupFallback = false;
-                view.RenderBindingEntries(currentEntries, null, null);
+                view.RenderBindingEntries(currentEntries, null, null, null, null);
                 return;
             }
 
@@ -182,7 +182,7 @@ namespace Koiusa.Keyconfig.Runtime
                 usingBindingGroupFallback = currentEntries.Count > 0;
             }
 
-            view.RenderBindingEntries(currentEntries, OnRebindRequested, OnResetRequested);
+            view.RenderBindingEntries(currentEntries, OnRebindRequested, OnAddModifierRequested, OnRemoveModifierRequested, OnResetRequested);
         }
 
         private void OnLoadClicked()
@@ -263,7 +263,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             var entry = currentEntries[index];
-            if (entry.IsComposite || !entry.IsRebindable)
+            if (!entry.IsRebindable)
             {
                 return;
             }
@@ -343,6 +343,24 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetLocalizedStatus("keyconfig.binding_reset");
             view.FocusBindingEntry(index);
+        }
+
+        private void OnAddModifierRequested(int index) => ChangeModifierCount(index, true);
+
+        private void OnRemoveModifierRequested(int index) => ChangeModifierCount(index, false);
+
+        private void ChangeModifierCount(int index, bool add)
+        {
+            if (bindingService == null || index < 0 || index >= currentEntries.Count) return;
+            var entry = currentEntries[index];
+            if (!bindingService.TryFindAction(entry.ActionId, out var action) || !entry.IsRebindable) return;
+            var changed = add
+                ? bindingService.AddModifier(action, entry.BindingIndex)
+                : bindingService.RemoveModifier(action, entry.BindingIndex);
+            if (!changed) return;
+            RebuildBindingList();
+            view.SetLocalizedStatus(add ? "keyconfig.modifier_added" : "keyconfig.modifier_removed");
+            view.FocusBindingEntry(Mathf.Min(index, currentEntries.Count - 1));
         }
 
         private void OnRebindStarted()

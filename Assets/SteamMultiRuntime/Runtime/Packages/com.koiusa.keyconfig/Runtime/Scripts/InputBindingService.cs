@@ -44,12 +44,14 @@ namespace Koiusa.Keyconfig.Runtime
         private readonly InputActionAsset inputActionAsset;
         private readonly InputBindingOverridesRepository repository;
         private readonly HashSet<string> nonRebindableActionMaps;
+        private readonly InputBindingStructureState structureState;
 
         public InputBindingService(InputActionAsset inputActionAsset, InputBindingOverridesRepository repository = null, IEnumerable<string> nonRebindableActionMaps = null)
         {
             this.inputActionAsset = inputActionAsset;
             this.repository = repository ?? new InputBindingOverridesRepository();
             this.nonRebindableActionMaps = new HashSet<string>(nonRebindableActionMaps ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            structureState = new InputBindingStructureState(inputActionAsset);
             RemoveProtectedOverrides();
         }
 
@@ -79,7 +81,8 @@ namespace Koiusa.Keyconfig.Runtime
                 return false;
             }
 
-            inputActionAsset.LoadBindingOverridesFromJson(json);
+            var overridesJson = structureState.Restore(json);
+            if (!string.IsNullOrWhiteSpace(overridesJson)) inputActionAsset.LoadBindingOverridesFromJson(overridesJson);
             RemoveProtectedOverrides();
             return true;
         }
@@ -91,14 +94,14 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            var json = inputActionAsset.SaveBindingOverridesAsJson();
+            var json = CaptureOverrides();
             repository.Save(userId, json);
         }
 
         public string CaptureOverrides()
         {
             return inputActionAsset != null
-                ? inputActionAsset.SaveBindingOverridesAsJson()
+                ? structureState.Capture(inputActionAsset.SaveBindingOverridesAsJson())
                 : string.Empty;
         }
 
@@ -109,13 +112,14 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(overridesJson))
+            var bindingOverridesJson = structureState.Restore(overridesJson);
+            if (string.IsNullOrWhiteSpace(bindingOverridesJson))
             {
                 inputActionAsset.RemoveAllBindingOverrides();
             }
             else
             {
-                inputActionAsset.LoadBindingOverridesFromJson(overridesJson);
+                inputActionAsset.LoadBindingOverridesFromJson(bindingOverridesJson);
             }
             RemoveProtectedOverrides();
         }
@@ -124,6 +128,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             if (inputActionAsset != null)
             {
+                structureState.RestoreAllOriginal();
                 inputActionAsset.RemoveAllBindingOverrides();
             }
 
@@ -145,7 +150,19 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            action.RemoveBindingOverride(bindingIndex);
+            if (!structureState.RestoreOriginal(action, bindingIndex)) CompositeBindingUtility.Reset(action, bindingIndex);
+        }
+
+        public bool AddModifier(InputAction action, int bindingIndex)
+        {
+            if (!IsActionRebindable(action)) return false;
+            return structureState.ChangeModifierCount(action, bindingIndex, 1);
+        }
+
+        public bool RemoveModifier(InputAction action, int bindingIndex)
+        {
+            if (!IsActionRebindable(action)) return false;
+            return structureState.ChangeModifierCount(action, bindingIndex, -1);
         }
 
         public string GetBindingDisplayString(InputAction action, int bindingIndex)
@@ -155,7 +172,7 @@ namespace Koiusa.Keyconfig.Runtime
                 return string.Empty;
             }
 
-            return action.GetBindingDisplayString(bindingIndex);
+            return CompositeBindingUtility.GetDisplayString(action, bindingIndex);
         }
 
         public List<BindingEntry> GetBindingEntries(string bindingGroup = null)
@@ -171,13 +188,26 @@ namespace Koiusa.Keyconfig.Runtime
                 for (var i = 0; i < action.bindings.Count; i++)
                 {
                     var binding = action.bindings[i];
-                    if (!IsBindingInGroup(binding, bindingGroup))
+                    if (binding.isPartOfComposite)
+                    {
+                        continue;
+                    }
+                    if (!IsLogicalBindingInGroup(action, i, bindingGroup))
                     {
                         continue;
                     }
 
-                    var displayName = action.GetBindingDisplayString(i);
+                    var displayName = CompositeBindingUtility.GetDisplayString(action, i);
                     var resolvedBindingPath = binding.overridePath != null ? binding.overridePath : binding.path;
+                    if (binding.isComposite)
+                    {
+                        var parts = CompositeBindingUtility.GetPartIndices(action, i);
+                        if (parts.Count > 0)
+                        {
+                            var representative = action.bindings[parts[parts.Count - 1]];
+                            resolvedBindingPath = representative.overridePath ?? representative.path;
+                        }
+                    }
                     entries.Add(new BindingEntry(
                         action.id,
                         action.name,
@@ -189,7 +219,7 @@ namespace Koiusa.Keyconfig.Runtime
                         displayName,
                         binding.isComposite,
                         binding.isPartOfComposite,
-                        IsActionMapRebindable(action.actionMap?.name),
+                        IsActionMapRebindable(action.actionMap?.name) && (!binding.isComposite || CompositeBindingUtility.IsSupportedModifierComposite(action, i)),
                         binding.groups,
                         resolvedBindingPath));
                 }
@@ -273,9 +303,9 @@ namespace Koiusa.Keyconfig.Runtime
                 return false;
             }
 
-            var targetBinding = targetAction.bindings[targetBindingIndex];
-            var targetPath = targetBinding.effectivePath;
-            if (string.IsNullOrEmpty(targetPath))
+            var targetRoot = CompositeBindingUtility.GetRootIndex(targetAction, targetBindingIndex);
+            var targetIdentity = CompositeBindingUtility.GetIdentity(targetAction, targetRoot);
+            if (string.IsNullOrEmpty(targetIdentity))
             {
                 return false;
             }
@@ -294,23 +324,21 @@ namespace Koiusa.Keyconfig.Runtime
 
                 for (var i = 0; i < action.bindings.Count; i++)
                 {
-                    if (action == targetAction && i == targetBindingIndex)
+                    if (i != CompositeBindingUtility.GetRootIndex(action, i))
+                    {
+                        continue;
+                    }
+                    if (action == targetAction && i == targetRoot)
                     {
                         continue;
                     }
 
-                    var candidate = action.bindings[i];
-                    if (candidate.isComposite)
+                    if (!IsLogicalBindingInGroup(action, i, bindingGroup))
                     {
                         continue;
                     }
 
-                    if (!IsBindingInGroup(candidate, bindingGroup))
-                    {
-                        continue;
-                    }
-
-                    if (!string.Equals(candidate.effectivePath, targetPath, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(CompositeBindingUtility.GetIdentity(action, i), targetIdentity, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -333,8 +361,9 @@ namespace Koiusa.Keyconfig.Runtime
                 return false;
             }
 
-            var targetPath = targetAction.bindings[targetBindingIndex].effectivePath;
-            if (string.IsNullOrEmpty(targetPath) || inputActionAsset == null)
+            var targetRoot = CompositeBindingUtility.GetRootIndex(targetAction, targetBindingIndex);
+            var targetIdentity = CompositeBindingUtility.GetIdentity(targetAction, targetRoot);
+            if (string.IsNullOrEmpty(targetIdentity) || inputActionAsset == null)
             {
                 return false;
             }
@@ -348,13 +377,12 @@ namespace Koiusa.Keyconfig.Runtime
 
                 for (var i = 0; i < action.bindings.Count; i++)
                 {
-                    var candidate = action.bindings[i];
-                    if (candidate.isComposite || !IsBindingInGroup(candidate, bindingGroup))
+                    if (i != CompositeBindingUtility.GetRootIndex(action, i) || !IsLogicalBindingInGroup(action, i, bindingGroup))
                     {
                         continue;
                     }
 
-                    if (string.Equals(candidate.effectivePath, targetPath, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(CompositeBindingUtility.GetIdentity(action, i), targetIdentity, StringComparison.OrdinalIgnoreCase))
                     {
                         conflictAction = action;
                         conflictBindingIndex = i;
@@ -373,7 +401,7 @@ namespace Koiusa.Keyconfig.Runtime
                 return;
             }
 
-            action.ApplyBindingOverride(bindingIndex, string.Empty);
+            CompositeBindingUtility.Disable(action, bindingIndex);
         }
 
         public bool TryFindAction(Guid actionId, out InputAction action)
@@ -436,6 +464,18 @@ namespace Koiusa.Keyconfig.Runtime
                 }
             }
 
+            return false;
+        }
+
+        private static bool IsLogicalBindingInGroup(InputAction action, int bindingIndex, string bindingGroup)
+        {
+            if (IsBindingInGroup(action.bindings[bindingIndex], bindingGroup)) return true;
+            if (!action.bindings[bindingIndex].isComposite) return false;
+            var parts = CompositeBindingUtility.GetPartIndices(action, bindingIndex);
+            for (var i = 0; i < parts.Count; i++)
+            {
+                if (IsBindingInGroup(action.bindings[parts[i]], bindingGroup)) return true;
+            }
             return false;
         }
 

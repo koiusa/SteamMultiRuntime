@@ -26,5 +26,26 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(titles[1].text, Is.EqualTo(KeyConfigLocalization.Get("Calibration")));
             Assert.That(keyboardList.Query<Label>(className: "input-operation-action").ToList(), Has.Count.EqualTo(2));
         }
+
+        [Test]
+        public void Build_ShowsModifierCompositeAsOneOperation()
+        {
+            var keyboardList = new VisualElement();
+            var gamepadList = new VisualElement();
+            var map = new InputActionMap("Gameplay");
+            var action = map.AddAction("Reload", InputActionType.Button);
+            action.AddCompositeBinding("ButtonWithOneModifier")
+                .With("Modifier", "<Keyboard>/leftCtrl")
+                .With("Button", "<Keyboard>/r");
+            var panel = new InputGuideOperationPanel(keyboardList, gamepadList, _ => true);
+
+            panel.Build(new[] { map });
+
+            var actions = keyboardList.Query<Label>(className: "input-operation-action").ToList();
+            var bindings = keyboardList.Query<Label>(className: "input-operation-binding").ToList();
+            Assert.That(actions, Has.Count.EqualTo(1));
+            Assert.That(bindings, Has.Count.EqualTo(1));
+            Assert.That(bindings[0].text, Is.EqualTo("Ctrl+R"));
+        }
     }
 }

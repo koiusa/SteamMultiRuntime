@@ -1,14 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
 namespace Koiusa.Keyconfig.Runtime
 {
-    public enum RebindConflictResolution
-    {
-        ReplaceExisting,
-        KeepBoth,
-        Cancel
-    }
+    public enum RebindConflictResolution { ReplaceExisting, KeepBoth, Cancel }
 
     public sealed class InputRebindController : IDisposable
     {
@@ -19,22 +15,20 @@ namespace Koiusa.Keyconfig.Runtime
         private int activeBindingIndex = -1;
         private string activeBindingGroup;
         private bool activeActionWasEnabled;
+        private List<int> rebindIndices;
+        private int rebindPart;
+        private Dictionary<int, string> previousOverrides;
         private InputAction pendingTargetAction;
         private int pendingTargetBindingIndex = -1;
-        private string pendingTargetPreviousOverride;
+        private Dictionary<int, string> pendingTargetPreviousOverrides;
         private InputAction pendingConflictAction;
         private int pendingConflictBindingIndex = -1;
         private string pendingDisplayString;
 
-        public InputRebindController(InputBindingService bindingService)
-        {
-            this.bindingService = bindingService;
-        }
-
+        public InputRebindController(InputBindingService bindingService) => this.bindingService = bindingService;
         public bool IsRebinding => operation != null;
         public bool HasPendingConflict => pendingTargetAction != null;
         public bool IsBusy => IsRebinding || HasPendingConflict;
-
         public event Action RebindStarted;
         public event Action<string> RebindCompleted;
         public event Action<string, string> RebindConflict;
@@ -43,173 +37,135 @@ namespace Koiusa.Keyconfig.Runtime
 
         public bool StartRebind(Guid actionId, int bindingIndex, string bindingGroup = null)
         {
-            if (IsRebinding)
-            {
-                return false;
-            }
-
-            if (bindingService == null || !bindingService.TryFindAction(actionId, out var action))
-            {
-                RebindFailed?.Invoke("Action not found.");
-                return false;
-            }
-
-            if (bindingIndex < 0 || bindingIndex >= action.bindings.Count)
-            {
-                RebindFailed?.Invoke("Binding index out of range.");
-                return false;
-            }
-
-            var binding = action.bindings[bindingIndex];
-            if (binding.isComposite)
-            {
-                RebindFailed?.Invoke("Composite binding cannot be rebound directly.");
-                return false;
-            }
+            if (IsBusy) return false;
+            if (bindingService == null || !bindingService.TryFindAction(actionId, out var action)) return Fail("Action not found.");
+            var rootIndex = CompositeBindingUtility.GetRootIndex(action, bindingIndex);
+            if (rootIndex < 0) return Fail("Binding index out of range.");
+            var binding = action.bindings[rootIndex];
+            if (binding.isComposite && !CompositeBindingUtility.IsSupportedModifierComposite(action, rootIndex)) return Fail("This composite binding is not rebindable.");
 
             activeAction = action;
-            activeBindingIndex = bindingIndex;
+            activeBindingIndex = rootIndex;
             activeBindingGroup = bindingGroup;
             activeActionWasEnabled = action.enabled;
-
-            var previousOverride = binding.overridePath;
-
+            rebindIndices = binding.isComposite ? CompositeBindingUtility.GetPartIndices(action, rootIndex) : new List<int> { rootIndex };
+            if (rebindIndices.Count == 0) return FailAndCleanup("Composite binding has no parts.");
+            previousOverrides = CaptureOverrides(action, rebindIndices);
+            rebindPart = 0;
             action.Disable();
-            operation = action.PerformInteractiveRebinding(bindingIndex)
-                .WithCancelingThrough("<Keyboard>/escape")
-                .WithTimeout(RebindTimeoutSeconds)
-                .OnComplete(op =>
-                {
-                    var displayString = string.Empty;
-                    var errorMessage = string.Empty;
-                    var hasConflict = false;
-                    try
-                    {
-                        if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
-                        {
-                            RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
-                            errorMessage = "Duplicate binding detected.";
-                        }
-                        else
-                        {
-                            displayString = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
-                            if (bindingService.TryFindConflictingBinding(activeAction, activeBindingIndex, activeBindingGroup, out var conflictAction, out var conflictBindingIndex))
-                            {
-                                pendingTargetAction = activeAction;
-                                pendingTargetBindingIndex = activeBindingIndex;
-                                pendingTargetPreviousOverride = previousOverride;
-                                pendingConflictAction = conflictAction;
-                                pendingConflictBindingIndex = conflictBindingIndex;
-                                pendingDisplayString = displayString;
-                                hasConflict = true;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        CleanupAfterRebind();
-                    }
-
-                    if (hasConflict) RebindConflict?.Invoke(pendingTargetAction.name, pendingConflictAction.name);
-                    else if (string.IsNullOrEmpty(errorMessage)) RebindCompleted?.Invoke(displayString);
-                    else RebindFailed?.Invoke(errorMessage);
-                })
-                .OnCancel(op =>
-                {
-                    try
-                    {
-                        RestoreBindingOverride(activeAction, activeBindingIndex, previousOverride);
-                    }
-                    finally
-                    {
-                        CleanupAfterRebind();
-                    }
-
-                    RebindCanceled?.Invoke();
-                });
-
             RebindStarted?.Invoke();
-            operation.Start();
+            StartCurrentPart();
             return true;
         }
 
-        public void CancelRebind()
+        private void StartCurrentPart()
         {
-            if (operation != null) operation.Cancel();
-            else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel);
+            operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart])
+                .WithCancelingThrough("<Keyboard>/escape")
+                .WithTimeout(RebindTimeoutSeconds)
+                .OnComplete(_ => OnPartComplete())
+                .OnCancel(_ => OnCanceled());
+            operation.Start();
         }
+
+        private void OnPartComplete()
+        {
+            DisposeOperation();
+            rebindPart++;
+            if (rebindPart < rebindIndices.Count) { StartCurrentPart(); return; }
+            var display = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
+            if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
+            {
+                RestoreOverrides(activeAction, previousOverrides);
+                CleanupAfterRebind();
+                RebindFailed?.Invoke("Duplicate binding detected.");
+                return;
+            }
+            if (bindingService.TryFindConflictingBinding(activeAction, activeBindingIndex, activeBindingGroup, out var conflictAction, out var conflictIndex))
+            {
+                pendingTargetAction = activeAction;
+                pendingTargetBindingIndex = activeBindingIndex;
+                pendingTargetPreviousOverrides = previousOverrides;
+                pendingConflictAction = conflictAction;
+                pendingConflictBindingIndex = conflictIndex;
+                pendingDisplayString = display;
+                CleanupAfterRebind();
+                RebindConflict?.Invoke(pendingTargetAction.name, pendingConflictAction.name);
+                return;
+            }
+            CleanupAfterRebind();
+            RebindCompleted?.Invoke(display);
+        }
+
+        private void OnCanceled()
+        {
+            RestoreOverrides(activeAction, previousOverrides);
+            CleanupAfterRebind();
+            RebindCanceled?.Invoke();
+        }
+
+        public void CancelRebind() { if (operation != null) operation.Cancel(); else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel); }
 
         public void ResolveConflict(RebindConflictResolution resolution)
         {
-            if (!HasPendingConflict)
-            {
-                return;
-            }
-
-            var displayString = pendingDisplayString;
+            if (!HasPendingConflict) return;
+            var display = pendingDisplayString;
             if (resolution == RebindConflictResolution.Cancel)
             {
-                RestoreBindingOverride(pendingTargetAction, pendingTargetBindingIndex, pendingTargetPreviousOverride);
+                RestoreOverrides(pendingTargetAction, pendingTargetPreviousOverrides);
                 ClearPendingConflict();
                 RebindCanceled?.Invoke();
                 return;
             }
-
-            if (resolution == RebindConflictResolution.ReplaceExisting)
-            {
-                InputBindingService.DisableBinding(pendingConflictAction, pendingConflictBindingIndex);
-            }
-
+            if (resolution == RebindConflictResolution.ReplaceExisting) InputBindingService.DisableBinding(pendingConflictAction, pendingConflictBindingIndex);
             ClearPendingConflict();
-            RebindCompleted?.Invoke(displayString);
+            RebindCompleted?.Invoke(display);
         }
 
         public void Dispose()
         {
-            if (HasPendingConflict)
-            {
-                RestoreBindingOverride(pendingTargetAction, pendingTargetBindingIndex, pendingTargetPreviousOverride);
-                ClearPendingConflict();
-            }
+            if (HasPendingConflict) RestoreOverrides(pendingTargetAction, pendingTargetPreviousOverrides);
+            ClearPendingConflict();
+            if (activeAction != null) RestoreOverrides(activeAction, previousOverrides);
             CleanupAfterRebind();
             GC.SuppressFinalize(this);
         }
 
-        private static void RestoreBindingOverride(InputAction action, int bindingIndex, string previousOverride)
+        private bool Fail(string message) { RebindFailed?.Invoke(message); return false; }
+        private bool FailAndCleanup(string message) { CleanupAfterRebind(); return Fail(message); }
+        private static Dictionary<int, string> CaptureOverrides(InputAction action, IReadOnlyList<int> indices)
         {
-            if (string.IsNullOrEmpty(previousOverride))
-            {
-                action.RemoveBindingOverride(bindingIndex);
-                return;
-            }
-
-            action.ApplyBindingOverride(bindingIndex, previousOverride);
+            var result = new Dictionary<int, string>();
+            for (var i = 0; i < indices.Count; i++) result[indices[i]] = action.bindings[indices[i]].overridePath;
+            return result;
         }
-
+        private static void RestoreOverrides(InputAction action, IReadOnlyDictionary<int, string> values)
+        {
+            if (action == null || values == null) return;
+            foreach (var pair in values)
+            {
+                if (string.IsNullOrEmpty(pair.Value)) action.RemoveBindingOverride(pair.Key);
+                else action.ApplyBindingOverride(pair.Key, pair.Value);
+            }
+        }
+        private void DisposeOperation() { operation?.Dispose(); operation = null; }
         private void CleanupAfterRebind()
         {
-            if (operation != null)
-            {
-                operation.Dispose();
-                operation = null;
-            }
-
-            if (activeAction != null && activeActionWasEnabled)
-            {
-                activeAction.Enable();
-            }
-
+            DisposeOperation();
+            if (activeAction != null && activeActionWasEnabled) activeAction.Enable();
             activeAction = null;
             activeBindingIndex = -1;
             activeBindingGroup = null;
             activeActionWasEnabled = false;
+            rebindIndices = null;
+            rebindPart = 0;
+            previousOverrides = null;
         }
-
         private void ClearPendingConflict()
         {
             pendingTargetAction = null;
             pendingTargetBindingIndex = -1;
-            pendingTargetPreviousOverride = null;
+            pendingTargetPreviousOverrides = null;
             pendingConflictAction = null;
             pendingConflictBindingIndex = -1;
             pendingDisplayString = null;

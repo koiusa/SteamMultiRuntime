@@ -45,6 +45,12 @@ namespace Koiusa.SteamMultiRuntime.Localization.Editor
                 "Addressables entries were updated without replacing the consuming project's settings.");
         }
 
+        public static void InstallBatch()
+        {
+            Install();
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
         [MenuItem("Tools/SteamMultiRuntime/Validation/Localization/Validate Installation")]
         public static void ValidateInstallation()
         {

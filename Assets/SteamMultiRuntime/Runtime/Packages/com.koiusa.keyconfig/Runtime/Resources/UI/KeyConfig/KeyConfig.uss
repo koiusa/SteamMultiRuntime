@@ -172,7 +172,7 @@
 }
 
 .keyconfig-th-buttons {
-	width: 196px;
+	width: 276px;
 	flex-shrink: 0;
 }
 
@@ -286,7 +286,7 @@
 .keyconfig-cell-buttons {
 	flex-direction: row;
 	align-items: center;
-	width: 196px;
+	width: 276px;
 	flex-shrink: 0;
 	justify-content: flex-end;
 }
@@ -341,6 +341,20 @@
 	border-right-color: rgb(175, 92, 108);
 	border-top-color: rgb(175, 92, 108);
 	border-bottom-color: rgb(175, 92, 108);
+}
+
+.keyconfig-modifier-button {
+	width: 40px;
+	padding-left: 4px;
+	padding-right: 4px;
+	margin-right: 6px;
+	font-size: 12px;
+	color: rgb(225, 235, 245);
+	background-color: rgb(62, 72, 105);
+	border-left-color: rgb(112, 132, 185);
+	border-right-color: rgb(112, 132, 185);
+	border-top-color: rgb(112, 132, 185);
+	border-bottom-color: rgb(112, 132, 185);
 }
 
 .keyconfig-reset-button:hover {
