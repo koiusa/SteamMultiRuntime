@@ -72,6 +72,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             InputSystem.onDeviceChange += OnInputDeviceChange;
             view.Build();
+            view.SetNavigationSubmitBlocked(false);
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
             var asset = bindingService?.InputActionAsset;
             navigationSession = new UiNavigationInputSession(
@@ -106,6 +107,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnDisable()
         {
             InputSystem.onDeviceChange -= OnInputDeviceChange;
+            view.SetNavigationSubmitBlocked(false);
             CancelPendingRebindRelease();
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
@@ -122,10 +124,18 @@ namespace Koiusa.Keyconfig.Runtime
         private void Update()
         {
             TryStartPendingRebindAfterSubmitRelease();
+            TryReleaseNavigationSubmitBlock();
             if (bindingService != null && !rebindController.IsBusy)
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
             }
+        }
+
+        private void TryReleaseNavigationSubmitBlock()
+        {
+            if (pendingRebindReleaseAction != null) return;
+            var submitAction = bindingService?.InputActionAsset.FindAction(inputActionsConfig?.SubmitActionPath);
+            if (submitAction == null || !submitAction.IsPressed()) view.SetNavigationSubmitBlocked(false);
         }
 
         private void TryStartPendingRebindAfterSubmitRelease()
@@ -377,17 +387,21 @@ namespace Koiusa.Keyconfig.Runtime
             if (!changed) return;
             RebuildBindingList();
             view.SetLocalizedStatus(add ? "keyconfig.modifier_added" : "keyconfig.modifier_removed");
-            view.FocusBindingEntry(Mathf.Min(index, currentEntries.Count - 1));
+            view.FocusBindingEntry(
+                Mathf.Min(index, currentEntries.Count - 1),
+                add ? KeyConfigBindingNavigation.AddModifierColumn : KeyConfigBindingNavigation.RemoveModifierColumn);
         }
 
         private void OnRebindStarted()
         {
+            view.SetNavigationSubmitBlocked(true);
             view.SetInteractive(false);
             view.SetLocalizedStatus("keyconfig.enter_new_key");
         }
 
         private void OnRebindCompleted(string displayName)
         {
+            view.SetNavigationSubmitBlocked(true);
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
@@ -397,6 +411,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindConflict(string targetAction, string existingAction)
         {
+            view.SetNavigationSubmitBlocked(true);
             view.ShowConflict(
                 targetAction,
                 existingAction,
@@ -407,6 +422,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindCanceled()
         {
+            view.SetNavigationSubmitBlocked(true);
             RebuildBindingList();
             view.SetInteractive(true);
             view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
@@ -416,6 +432,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindFailed(string message)
         {
+            view.SetNavigationSubmitBlocked(true);
             RebuildBindingList();
             view.SetInteractive(true);
             if (string.IsNullOrWhiteSpace(message))

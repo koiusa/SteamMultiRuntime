@@ -51,6 +51,7 @@ namespace Koiusa.Keyconfig.Runtime
         private IReadOnlyList<string> cachedBindingGroups;
         private string cachedSelectedBindingGroup;
         private bool isInteractive = true;
+        private bool navigationSubmitBlocked;
         private readonly List<string> mapNames = new List<string>();
         private readonly List<Button> mapTabButtons = new List<Button>();
         private readonly HashSet<Button> unavailableButtons = new HashSet<Button>();
@@ -502,6 +503,8 @@ namespace Koiusa.Keyconfig.Runtime
             bindingListView.schedule.Execute(() => bindingListView.scrollOffset = targetScrollOffset);
         }
 
+        public void SetNavigationSubmitBlocked(bool blocked) => navigationSubmitBlocked = blocked;
+
         public void UpdateInputStates(InputActionAsset inputActionAsset) => inputMonitor.Update(inputActionAsset);
 
         private void RefreshLocalizedUi()
@@ -547,6 +550,12 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNavigationSubmit(NavigationSubmitEvent evt)
         {
+            if (navigationSubmitBlocked)
+            {
+                root?.focusController?.IgnoreEvent(evt);
+                evt.StopImmediatePropagation();
+                return;
+            }
             conflictOverlay.HandleSubmit(root, evt);
         }
 
@@ -626,9 +635,9 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
-        public void FocusBindingEntry(int entryIndex)
+        public void FocusBindingEntry(int entryIndex, int preferredColumn = KeyConfigBindingNavigation.ChangeColumn)
         {
-            if (!bindingNavigation.FocusEntry(root, bindingListView, entryIndex)) FocusSelectedMapTab();
+            if (!bindingNavigation.FocusEntry(root, bindingListView, entryIndex, preferredColumn)) FocusSelectedMapTab();
         }
 
         private void FocusSelectedMapTab()

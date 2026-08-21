@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -17,6 +18,10 @@ namespace Koiusa.Keyconfig.Runtime
         private bool activeActionWasEnabled;
         private List<int> rebindIndices;
         private int rebindPart;
+        private HashSet<string> excludedActuatedControlPaths;
+        private List<InputControl> controlsAwaitingRelease;
+        private bool waitingForRelease;
+        private float releaseWaitDeadline;
         private Dictionary<int, string> previousOverrides;
         private InputAction pendingTargetAction;
         private int pendingTargetBindingIndex = -1;
@@ -26,7 +31,7 @@ namespace Koiusa.Keyconfig.Runtime
         private string pendingDisplayString;
 
         public InputRebindController(InputBindingService bindingService) => this.bindingService = bindingService;
-        public bool IsRebinding => operation != null;
+        public bool IsRebinding => operation != null || waitingForRelease;
         public bool HasPendingConflict => pendingTargetAction != null;
         public bool IsBusy => IsRebinding || HasPendingConflict;
         public event Action RebindStarted;
@@ -51,6 +56,7 @@ namespace Koiusa.Keyconfig.Runtime
             rebindIndices = binding.isComposite ? CompositeBindingUtility.GetPartIndices(action, rootIndex) : new List<int> { rootIndex };
             if (rebindIndices.Count == 0) return FailAndCleanup("Composite binding has no parts.");
             previousOverrides = CaptureOverrides(action, rebindIndices);
+            excludedActuatedControlPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             rebindPart = 0;
             action.Disable();
             RebindStarted?.Invoke();
@@ -62,6 +68,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart]);
             ExcludePreviouslyReboundControls(operation, activeAction, rebindIndices, rebindPart);
+            foreach (var path in excludedActuatedControlPaths) operation.WithControlsExcluding(path);
             operation.WithCancelingThrough("<Keyboard>/escape")
                 .WithTimeout(RebindTimeoutSeconds)
                 .OnComplete(_ => OnPartComplete())
@@ -100,9 +107,15 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnPartComplete()
         {
+            controlsAwaitingRelease = CaptureCurrentlyActuatedControls(excludedActuatedControlPaths);
             DisposeOperation();
             rebindPart++;
-            if (rebindPart < rebindIndices.Count) { StartCurrentPart(); return; }
+            if (rebindPart < rebindIndices.Count)
+            {
+                if (controlsAwaitingRelease.Count > 0) BeginReleaseWait();
+                else StartCurrentPart();
+                return;
+            }
             var display = bindingService.GetBindingDisplayString(activeAction, activeBindingIndex);
             if (bindingService.HasDuplicateBinding(activeAction, activeBindingIndex, activeBindingGroup, out _, out _))
             {
@@ -127,6 +140,60 @@ namespace Koiusa.Keyconfig.Runtime
             RebindCompleted?.Invoke(display);
         }
 
+        internal static List<InputControl> CaptureCurrentlyActuatedControls(ISet<string> paths)
+        {
+            var result = new List<InputControl>();
+            var devices = InputSystem.devices;
+            for (var deviceIndex = 0; deviceIndex < devices.Count; deviceIndex++)
+            {
+                var device = devices[deviceIndex];
+                if (device == null || !device.added) continue;
+                var controls = device.allControls;
+                for (var controlIndex = 0; controlIndex < controls.Count; controlIndex++)
+                {
+                    var control = controls[controlIndex];
+                    if (!InputControlActivity.IsActive(control)) continue;
+                    result.Add(control);
+                    if (paths != null && !string.IsNullOrWhiteSpace(control.path)) paths.Add(control.path);
+                }
+            }
+            return result;
+        }
+
+        private void BeginReleaseWait()
+        {
+            waitingForRelease = true;
+            releaseWaitDeadline = Time.realtimeSinceStartup + RebindTimeoutSeconds;
+            InputSystem.onAfterUpdate -= OnAfterInputUpdate;
+            InputSystem.onAfterUpdate += OnAfterInputUpdate;
+        }
+
+        private void OnAfterInputUpdate()
+        {
+            if (!waitingForRelease) return;
+            if (Keyboard.current?.escapeKey.wasPressedThisFrame == true || Time.realtimeSinceStartup >= releaseWaitDeadline)
+            {
+                OnCanceled();
+                return;
+            }
+
+            for (var i = 0; i < controlsAwaitingRelease.Count; i++)
+            {
+                if (InputControlActivity.IsActive(controlsAwaitingRelease[i])) return;
+            }
+
+            StopReleaseWait();
+            StartCurrentPart();
+        }
+
+        private void StopReleaseWait()
+        {
+            InputSystem.onAfterUpdate -= OnAfterInputUpdate;
+            waitingForRelease = false;
+            releaseWaitDeadline = 0f;
+            controlsAwaitingRelease = null;
+        }
+
         private void OnCanceled()
         {
             RestoreOverrides(activeAction, previousOverrides);
@@ -134,7 +201,12 @@ namespace Koiusa.Keyconfig.Runtime
             RebindCanceled?.Invoke();
         }
 
-        public void CancelRebind() { if (operation != null) operation.Cancel(); else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel); }
+        public void CancelRebind()
+        {
+            if (operation != null) operation.Cancel();
+            else if (waitingForRelease) OnCanceled();
+            else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel);
+        }
 
         public void ResolveConflict(RebindConflictResolution resolution)
         {
@@ -181,6 +253,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void DisposeOperation() { operation?.Dispose(); operation = null; }
         private void CleanupAfterRebind()
         {
+            StopReleaseWait();
             DisposeOperation();
             if (activeAction != null && activeActionWasEnabled) activeAction.Enable();
             activeAction = null;
@@ -189,6 +262,7 @@ namespace Koiusa.Keyconfig.Runtime
             activeActionWasEnabled = false;
             rebindIndices = null;
             rebindPart = 0;
+            excludedActuatedControlPaths = null;
             previousOverrides = null;
         }
         private void ClearPendingConflict()

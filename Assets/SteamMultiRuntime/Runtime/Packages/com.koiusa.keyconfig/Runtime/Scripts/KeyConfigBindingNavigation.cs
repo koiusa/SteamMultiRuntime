@@ -7,7 +7,10 @@ namespace Koiusa.Keyconfig.Runtime
 {
     internal sealed class KeyConfigBindingNavigation
     {
-        private const int ChangeColumn = 2;
+        internal const int AddModifierColumn = 0;
+        internal const int RemoveModifierColumn = 1;
+        internal const int ChangeColumn = 2;
+        internal const int ResetColumn = 3;
 
         private readonly List<Row> rows = new List<Row>();
 
@@ -51,7 +54,7 @@ namespace Koiusa.Keyconfig.Runtime
             });
         }
 
-        public bool FocusEntry(VisualElement root, ScrollView scrollView, int entryIndex)
+        public bool FocusEntry(VisualElement root, ScrollView scrollView, int entryIndex, int preferredColumn = ChangeColumn)
         {
             for (var i = 0; i < rows.Count; i++)
             {
@@ -59,7 +62,7 @@ namespace Koiusa.Keyconfig.Runtime
                 var rowIndex = i;
                 root?.schedule.Execute(() =>
                 {
-                    GetAvailableButton(rows[rowIndex], ChangeColumn)?.Focus();
+                    GetAvailableButton(rows[rowIndex], preferredColumn)?.Focus();
                     ScrollTo(scrollView, rowIndex);
                 });
                 return true;

@@ -2,6 +2,26 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.20] - 2026-08-21
+
+### Fixed
+
+- Waits for every control actuated by the previous physical press to be released before starting the next composite-rebind part, preventing HID aliases such as `rightTriggerButton` from following R2 into the next part.
+- Escape and timeout cancellation remain active while waiting for release between parts.
+
+## [0.1.19] - 2026-08-21
+
+### Fixed
+
+- Excluded every control actuated by the previous physical press from later composite-rebind parts, preventing one L2/R2 press exposed as both Gamepad trigger and Joystick Trigger from filling two parts.
+
+## [0.1.18] - 2026-08-21
+
+### Fixed
+
+- Preserved the modifier-button column after adding or removing a modifier instead of forcing focus to Change.
+- Blocked UI Submit until the physical Submit input is released after rebinding, preventing Enter or gamepad A from moving focus out of the binding list when chosen as the new binding.
+
 ## [0.1.17] - 2026-08-21
 
 ### Fixed
