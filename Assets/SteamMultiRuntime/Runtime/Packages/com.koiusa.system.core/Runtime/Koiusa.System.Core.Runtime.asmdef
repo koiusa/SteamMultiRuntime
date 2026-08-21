@@ -1,10 +1,7 @@
 {
     "name": "Koiusa.System.Core.Runtime",
-    "rootNamespace": "",
-    "references": [
-        "Koiusa.Input.Core.Runtime",
-        "Unity.InputSystem"
-    ],
+    "rootNamespace": "Koiusa.System.Core",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

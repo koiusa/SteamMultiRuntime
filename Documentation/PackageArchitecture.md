@@ -27,6 +27,7 @@ Samples / Prototype / Integration
 | パッケージ | 責務 |
 |---|---|
 | `com.koiusa.system.core` | 終了処理などUnityプロジェクト全般で使えるシステム機能 |
+| `com.koiusa.system.input` | System CoreをInput Systemへ接続する任意アダプター |
 | `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
 | `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
@@ -108,6 +109,7 @@ steammultiruntime.keyconfig ───────> keyconfig + localization
 steammultiruntime.targetingsystem ─> targetingsystem
 
 feature packages ───────────> input.core / core / localization as required
+system.input ───────────────> system.core + input.core
 ```
 
 ## ドメイン間の接続方法とリフレクション方針

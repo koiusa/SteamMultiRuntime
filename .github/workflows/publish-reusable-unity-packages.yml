@@ -31,6 +31,8 @@ jobs:
           set -euo pipefail
           packages=(
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
+            Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.system.core
+            Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.system.input
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
           )
@@ -49,6 +51,8 @@ jobs:
           set -euo pipefail
           packages=(
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
+            Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.system.core
+            Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.system.input
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
             Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
           )

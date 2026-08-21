@@ -1,11 +1,9 @@
 using UnityEditor;
-using UnityEditor.Callbacks;
 
-namespace Koiusa.Common.System
+namespace Koiusa.System.Core.Editor
 {
-
     [InitializeOnLoad]
-    public static class GameQuitterEditorBridge
+    internal static class GameQuitterEditorBridge
     {
         static GameQuitterEditorBridge()
         {

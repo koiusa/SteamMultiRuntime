@@ -139,6 +139,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3673524978782938107}
   - component: {fileID: 427363977603238572}
+  - component: {fileID: 910000000000000011}
   - component: {fileID: 910000000000000001}
   - component: {fileID: 910000000000000006}
   m_Layer: 0
@@ -176,9 +177,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd792b3904e31b949bb9b0b0188293e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Koiusa.SteamMultiRuntime.Runtime::GameQuitter
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.System.Core.Runtime::Koiusa.System.Core.GameQuitter
+--- !u!114 &910000000000000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7062256032978338714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16008b0565e4552a4dff5987d4312d0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.System.Input.Runtime::Koiusa.System.Input.GameQuitInputTrigger
+  gameQuitter: {fileID: 427363977603238572}
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
+  quitActionPath: System/GameQuit
 --- !u!114 &910000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -41,6 +41,8 @@
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.EditorTests.csproj" />
+  <Project Path="Koiusa.System.Input.Editor.csproj" />
+  <Project Path="Koiusa.System.Input.Runtime.csproj" />
   <Project Path="Koiusa.System.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Localization.Runtime.csproj" />
