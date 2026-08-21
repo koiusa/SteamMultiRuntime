@@ -22,6 +22,20 @@
 
   "license": "MIT",
 
+  "files": [
+    "CHANGELOG.md",
+    "CHANGELOG.md.meta",
+    "Documentation~",
+    "Editor",
+    "Editor.meta",
+    "Runtime",
+    "Runtime.meta",
+    "Samples",
+    "Samples.meta",
+    "Tests",
+    "Tests.meta"
+  ],
+
   "dependencies": {
     "com.unity.localization": "1.5.9",
     "com.unity.inputsystem": "1.18.0",

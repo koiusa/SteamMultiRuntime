@@ -1,6 +1,15 @@
 name: Publish reusable Unity packages to npm
 
 on:
+  workflow_call:
+    inputs:
+      publish:
+        description: Publish packages after validating their npm tarballs
+        required: true
+        type: boolean
+    secrets:
+      NPM_TOKEN:
+        required: false
   workflow_dispatch:
     inputs:
       publish:
@@ -42,7 +51,7 @@ jobs:
           done
 
       - name: Publish unpublished versions
-        if: ${{ inputs.publish }}
+        if: inputs.publish
         shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
