@@ -11,6 +11,10 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class PlayerGameplayInputReader : IActorInputSource
     {
         private readonly InputAction moveAction;
+        private readonly InputAction moveUpAction;
+        private readonly InputAction moveDownAction;
+        private readonly InputAction moveLeftAction;
+        private readonly InputAction moveRightAction;
         private readonly InputAction jumpAction;
         private readonly InputAction strafeAction;
         private readonly InputAction grappleAction;
@@ -25,6 +29,10 @@ namespace Koiusa.SteamMultiRuntime
         private bool isStrafeMode;
         private bool isEnabled;
         private InputActionLease moveLease;
+        private InputActionLease moveUpLease;
+        private InputActionLease moveDownLease;
+        private InputActionLease moveLeftLease;
+        private InputActionLease moveRightLease;
         private InputActionLease jumpLease;
         private InputActionLease strafeLease;
         private InputActionLease grappleLease;
@@ -50,6 +58,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveAction = profile.FindAction("Player/Move");
+            moveUpAction = profile.FindAction("Player/MoveUp");
+            moveDownAction = profile.FindAction("Player/MoveDown");
+            moveLeftAction = profile.FindAction("Player/MoveLeft");
+            moveRightAction = profile.FindAction("Player/MoveRight");
             jumpAction = profile.FindAction("Player/Jump");
             strafeAction = profile.FindAction("Player/Strafe");
             grappleAction = profile.FindAction("Player/Grapple");
@@ -70,6 +82,10 @@ namespace Koiusa.SteamMultiRuntime
 
             isEnabled = true;
             moveLease = InputActionLease.Acquire(moveAction);
+            moveUpLease = InputActionLease.Acquire(moveUpAction);
+            moveDownLease = InputActionLease.Acquire(moveDownAction);
+            moveLeftLease = InputActionLease.Acquire(moveLeftAction);
+            moveRightLease = InputActionLease.Acquire(moveRightAction);
             grappleLease = InputActionLease.Acquire(grappleAction);
             reelLease = InputActionLease.Acquire(reelAction);
             aimCursorDeltaLease = InputActionLease.Acquire(aimCursorDeltaAction);
@@ -118,6 +134,10 @@ namespace Koiusa.SteamMultiRuntime
             }
 
             moveLease?.Dispose();
+            moveUpLease?.Dispose();
+            moveDownLease?.Dispose();
+            moveLeftLease?.Dispose();
+            moveRightLease?.Dispose();
             grappleLease?.Dispose();
             reelLease?.Dispose();
             aimCursorDeltaLease?.Dispose();
@@ -125,6 +145,10 @@ namespace Koiusa.SteamMultiRuntime
             aimCursorMoveLease?.Dispose();
             grappleFireLease?.Dispose();
             moveLease = null;
+            moveUpLease = null;
+            moveDownLease = null;
+            moveLeftLease = null;
+            moveRightLease = null;
             grappleLease = null;
             reelLease = null;
             aimCursorDeltaLease = null;
@@ -167,7 +191,7 @@ namespace Koiusa.SteamMultiRuntime
                 lastPointerMoveTime = float.NegativeInfinity;
             }
             wasGrappleHeld = grappleHeld;
-            var move = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+            var move = ReadMove();
             var jumpPressed = jumpToken > 0;
             jumpToken = 0;
             var grappleFirePressed = grappleHeld && grappleFireAction != null && grappleFireAction.WasPressedThisFrame();
@@ -256,6 +280,10 @@ namespace Koiusa.SteamMultiRuntime
         private bool HasGamepadActivity()
         {
             return IsActiveGamepadControl(moveAction)
+                || IsActiveGamepadControl(moveUpAction)
+                || IsActiveGamepadControl(moveDownAction)
+                || IsActiveGamepadControl(moveLeftAction)
+                || IsActiveGamepadControl(moveRightAction)
                 || IsActiveGamepadControl(jumpAction)
                 || IsActiveGamepadControl(strafeAction)
                 || IsActiveGamepadControl(grappleAction)
@@ -263,6 +291,18 @@ namespace Koiusa.SteamMultiRuntime
                 || IsActiveGamepadControl(reelAction)
                 || IsActiveGamepadControl(aimCursorMoveAction);
         }
+
+        private Vector2 ReadMove()
+        {
+            var analog = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+            var digital = new Vector2(
+                ReadPressed(moveRightAction) - ReadPressed(moveLeftAction),
+                ReadPressed(moveUpAction) - ReadPressed(moveDownAction));
+            if (digital.sqrMagnitude > 1f) digital.Normalize();
+            return Vector2.ClampMagnitude(analog + digital, 1f);
+        }
+
+        private static float ReadPressed(InputAction action) => action != null && action.IsPressed() ? 1f : 0f;
 
         private void SyncSystemPointerPosition()
         {

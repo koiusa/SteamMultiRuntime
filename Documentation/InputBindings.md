@@ -8,7 +8,7 @@
 
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
-| 移動 | WASD（独立Binding） / 矢印キー（独立Binding） | 左スティック |
+| 移動 | W／S／A／D（方向ごとの独立Binding） | 左スティック |
 | カメラ | マウス移動 | 右スティック |
 | 攻撃（Combat） | 左クリック | X / □ |
 | ダッシュ | Left Alt | B / ○ |
@@ -29,6 +29,8 @@
 グラップル入力を保持して照準している間はCamera操作を停止します。Wire接続後はグラップル入力を保持したままCameraを操作でき、入力を解放するとWireを切断します。
 
 `Drag`、`CameraZoom`、`AimCursorDelta`、`AimCursorPosition`、`AimCursorMove` は物理デバイスの特性に応じた入力です。全デバイスへ同じBindingを設ける対象にはしません。
+
+Keyboard移動は`Player/MoveUp`、`MoveDown`、`MoveLeft`、`MoveRight`のButton Actionへ分離し、キーコンフィグで方向ごとに変更します。`Player/Move`はGamepad、Joystick、XRのVector2入力だけを保持し、`PlayerGameplayInputReader`がデジタル方向入力と合成します。矢印キーの初期Bindingは廃止しています。
 
 ## UI
 
