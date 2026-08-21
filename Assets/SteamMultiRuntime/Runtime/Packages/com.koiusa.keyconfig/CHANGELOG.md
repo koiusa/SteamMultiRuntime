@@ -2,6 +2,110 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.36] - 2026-08-21
+
+### Fixed
+
+- Removed control-release waiting between composite parts. Alias paths are collected from the state event that completes the part, observation ends immediately, and the next part starts without depending on Gamepad or Joystick release values.
+
+## [0.1.35] - 2026-08-21
+
+### Changed
+
+- Restored the five-second interactive rebind timeout for periods where no input is received. Alias matching and composite-part transitions remain event-driven and have no timer.
+
+## [0.1.34] - 2026-08-21
+
+### Fixed
+
+- Ignores non-state Input System events such as `TEXT` before enumerating changed controls, preventing `ArgumentException` during text input.
+
+## [0.1.33] - 2026-08-21
+
+### Changed
+
+- Removed the timed alias-collection window. Alias collection now follows Input System events from the selected press until that selected control's release event, then immediately starts the next composite part.
+- Removed the interactive rebind timeout; rebinding now ends only through completion, Escape, or explicit cancellation.
+
+## [0.1.32] - 2026-08-21
+
+### Changed
+
+- Simplified alias suppression to consume Input System changed-control events directly. Removed device scans, baseline snapshots, default-value comparisons, analog-release checks, and their related branches.
+
+## [0.1.31] - 2026-08-21
+
+### Fixed
+
+- Replaced the inter-part release gate with a bounded alias-collection window. It records changed button and trigger paths for 150 ms, excludes them from later parts, and then always starts the next part without waiting for analog controls to report a released state.
+
+## [0.1.30] - 2026-08-21
+
+### Fixed
+
+- During a composite-part press, records every button or trigger control that changed from its pre-part baseline and excludes only those paths from later parts.
+- Waits only for the control selected by the completed part to be released. Other controls and device families no longer block registration, while aliases such as L2 and `leftTriggerButton` from the same physical press cannot fill separate parts.
+
+## [0.1.29] - 2026-08-21
+
+### Changed
+
+- Consolidated duplicate Submit-release checks in `KeyConfigUiDocument` into one state transition.
+- Consolidated the repeated rebind completion, cancellation, and failure UI cleanup path.
+
+## [0.1.28] - 2026-08-21
+
+### Changed
+
+- The inter-part gate now snapshots button and trigger values immediately before each part starts, then waits for those controls to return to their captured baseline. This handles non-zero Joystick defaults without device names or hard-coded aliases and does not let unrelated persistent HID state block rebinding.
+
+## [0.1.27] - 2026-08-21
+
+### Changed
+
+- Replaced device-family locks, hard-coded trigger aliases, and forced release-timeout continuation with one neutral-state gate between composite parts.
+- The gate waits until all button and trigger controls are neutral for a stable interval, using each axis control's configured default value. This handles duplicate logical controls, delayed HID reports, Joystick `-1` defaults, and analog noise through one rule.
+- Release-wait timeout and Escape both cancel and restore the original composite binding.
+
+## [0.1.26] - 2026-08-21
+
+### Fixed
+
+- Uses a tolerance around an axis control's configured default value when waiting for release, supporting DualShock trigger noise instead of requiring an exact state match.
+- Limits inter-part release waiting to one second and continues to the next part on release-wait timeout rather than canceling the entire composite rebind. Escape still cancels normally.
+
+## [0.1.25] - 2026-08-21
+
+### Fixed
+
+- Removed whole-device-family locking during composite rebinding. Some controllers expose different physical buttons through different `Gamepad` and `Joystick` logical devices, so later parts now exclude only the previously selected control and its same-side trigger aliases.
+
+## [0.1.24] - 2026-08-21
+
+### Fixed
+
+- Waits only for the control actually selected by the completed rebind part to return to its Input System default state. This avoids treating idle Joystick trigger axes whose default value is `-1` as permanently held.
+- Explicitly excludes the selected control's left/right trigger aliases from later composite parts.
+
+## [0.1.23] - 2026-08-21
+
+### Fixed
+
+- Locks sequential gamepad composite rebinding to the Input System device family selected by its first part. A `Gamepad` selection excludes duplicate `Joystick` controls from later parts and vice versa, preventing delayed L2/R2 aliases from being registered as separate keys.
+
+## [0.1.22] - 2026-08-21
+
+### Fixed
+
+- Defers alias-control capture until Input System has processed every event in the completion frame, preventing a second logical `Joystick` trigger notification from filling the next composite part after a `Gamepad` L2/R2 notification.
+
+## [0.1.21] - 2026-08-21
+
+### Changed
+
+- Extracted physical-control alias collection and inter-part release waiting from `InputRebindController` into `RebindControlReleaseGate` without changing rebinding behavior.
+- Limited inter-part release tracking to buttons and trigger axes, so resting stick drift cannot block the next gamepad rebind part.
+
 ## [0.1.20] - 2026-08-21
 
 ### Fixed

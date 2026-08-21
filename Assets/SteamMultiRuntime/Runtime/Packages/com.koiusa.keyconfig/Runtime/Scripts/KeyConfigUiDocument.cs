@@ -123,29 +123,30 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void Update()
         {
-            TryStartPendingRebindAfterSubmitRelease();
-            TryReleaseNavigationSubmitBlock();
-            if (bindingService != null && !rebindController.IsBusy)
+            UpdateSubmitReleaseState();
+            if (bindingService != null && (rebindController == null || !rebindController.IsBusy))
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
             }
         }
 
-        private void TryReleaseNavigationSubmitBlock()
+        private void UpdateSubmitReleaseState()
         {
-            if (pendingRebindReleaseAction != null) return;
-            var submitAction = bindingService?.InputActionAsset.FindAction(inputActionsConfig?.SubmitActionPath);
-            if (submitAction == null || !submitAction.IsPressed()) view.SetNavigationSubmitBlocked(false);
-        }
+            var submitAction = pendingRebindReleaseAction
+                ?? bindingService?.InputActionAsset.FindAction(inputActionsConfig?.SubmitActionPath);
+            if (submitAction != null && submitAction.IsPressed()) return;
 
-        private void TryStartPendingRebindAfterSubmitRelease()
-        {
-            if (pendingRebindReleaseAction == null || pendingRebindReleaseAction.IsPressed()) return;
-            var actionId = pendingRebindActionId;
-            var bindingIndex = pendingRebindBindingIndex;
-            var bindingGroup = pendingRebindBindingGroup;
-            CancelPendingRebindRelease();
-            if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, bindingGroup);
+            if (pendingRebindReleaseAction != null)
+            {
+                var actionId = pendingRebindActionId;
+                var bindingIndex = pendingRebindBindingIndex;
+                var pendingBindingGroup = pendingRebindBindingGroup;
+                CancelPendingRebindRelease();
+                if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, pendingBindingGroup);
+                return;
+            }
+
+            view.SetNavigationSubmitBlocked(false);
         }
 
         public void SetBindingGroup(string group)
@@ -401,12 +402,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindCompleted(string displayName)
         {
-            view.SetNavigationSubmitBlocked(true);
-            RebuildBindingList();
-            view.SetInteractive(true);
-            view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
-            view.FocusBindingEntry(activeRebindEntryIndex);
-            activeRebindEntryIndex = -1;
+            FinishRebindUi(usingBindingGroupFallback ? "keyconfig.changed_fallback" : "keyconfig.changed", displayName);
         }
 
         private void OnRebindConflict(string targetAction, string existingAction)
@@ -422,23 +418,26 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindCanceled()
         {
-            view.SetNavigationSubmitBlocked(true);
-            RebuildBindingList();
-            view.SetInteractive(true);
-            view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
-            view.FocusBindingEntry(activeRebindEntryIndex);
-            activeRebindEntryIndex = -1;
+            FinishRebindUi(usingBindingGroupFallback ? "keyconfig.rebind_canceled_fallback" : "keyconfig.rebind_canceled");
         }
 
         private void OnRebindFailed(string message)
         {
+            FinishRebindUi(
+                string.IsNullOrWhiteSpace(message)
+                    ? usingBindingGroupFallback ? "keyconfig.rebind_failed_fallback" : "keyconfig.rebind_failed"
+                    : null,
+                message);
+        }
+
+        private void FinishRebindUi(string statusKey, string statusArgument = null)
+        {
             view.SetNavigationSubmitBlocked(true);
             RebuildBindingList();
             view.SetInteractive(true);
-            if (string.IsNullOrWhiteSpace(message))
-                view.SetLocalizedStatus(usingBindingGroupFallback ? "keyconfig.rebind_failed_fallback" : "keyconfig.rebind_failed");
-            else
-                view.SetStatus(message);
+            if (statusKey == null) view.SetStatus(statusArgument);
+            else if (statusArgument == null) view.SetLocalizedStatus(statusKey);
+            else view.SetLocalizedStatus(statusKey, statusArgument);
             view.FocusBindingEntry(activeRebindEntryIndex);
             activeRebindEntryIndex = -1;
         }

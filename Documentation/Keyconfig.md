@@ -95,6 +95,8 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - Action Mapを切り替えたときは一覧を先頭へ戻し、Binding Groupとデバイス名の見出しを表示します。
 - 最初のフォーカス行より前に編集不可行や見出しがある場合も、上端への移動ではScrollViewを完全に先頭へ戻します。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
+- 複合Bindingの逐次リバインドでは、`RebindAliasSuppression`がパートを確定したStateイベント内で発火したButton／Triggerパスを同じ物理入力の別名として後続パートから除外します。
+- `Gamepad`と`Joystick`はInput System上の別レイアウトとして識別しますが、複合Bindingの登録可否や進行をデバイス名・Control名では分岐しません。パート確定後はControlの解放を待たず、直ちに次パートを開始します。各パートで5秒間入力がなければタイムアウトし、Escapeまたは明示キャンセルと同様に複合Binding全体を元へ戻します。
 - UI Action Mapは入力状態を確認できるようタブと一覧へ表示し、Submitで行の中へ入って上下移動できます。Keyconfig自身の操作を失わないようChange／Resetは無効のままです。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
 - LB／RB（`UI/PreviousSection`／`UI/NextSection`）でBinding GroupとAction Mapタブを循環切り替えします。左右はLoad／Save／Reset All／Closeだけを循環し、Binding Groupへは移動しません。通常のD-padまたは左スティック上下はフォーカスを移動せずリストをスクロールし、Binding Groupにフォーカス中だけDropdownの選択操作へ渡します。
 - Action MapタブでSubmitすると、そのMap内の最初に変更可能な行へ入ります。リスト内では上下で行、左右でChange／Resetを選び、CancelでAction Mapタブへ戻ります。

@@ -211,6 +211,41 @@ namespace Koiusa.KeyConfig.Tests
             }
         }
 
+        [Test]
+        public void AliasSuppression_AcceptsButtonsAndTriggersButIgnoresStickAxes()
+        {
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            try
+            {
+                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.buttonSouth), Is.True);
+                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.leftTrigger), Is.True);
+                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.leftStick.x), Is.False);
+            }
+            finally
+            {
+                InputSystem.RemoveDevice(gamepad);
+            }
+        }
+
+        [Test]
+        public void AliasSuppression_SuppressesOnlyControlsChangedDuringPhysicalPress()
+        {
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            var suppression = new RebindAliasSuppression();
+            try
+            {
+                suppression.RecordChangedControl(gamepad.leftTrigger);
+
+                Assert.That(suppression.IsSuppressed(gamepad.leftTrigger.path), Is.True);
+                Assert.That(suppression.IsSuppressed(gamepad.rightTrigger.path), Is.False);
+            }
+            finally
+            {
+                suppression.Dispose();
+                InputSystem.RemoveDevice(gamepad);
+            }
+        }
+
         private InputAction AddModifiedAction(string name, string modifier, string button)
         {
             var action = map.AddAction(name, InputActionType.Button);
