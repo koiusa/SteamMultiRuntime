@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.17] - 2026-08-21
+
+### Fixed
+
+- Horizontal gamepad navigation now skips disabled modifier buttons in the requested direction and wraps across the row instead of returning focus to the current button.
+
 ## [0.1.16] - 2026-08-21
 
 ### Fixed

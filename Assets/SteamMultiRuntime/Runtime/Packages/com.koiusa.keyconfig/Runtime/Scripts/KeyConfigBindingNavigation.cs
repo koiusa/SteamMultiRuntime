@@ -27,7 +27,7 @@ namespace Koiusa.Keyconfig.Runtime
             if (direction == UiNavigationDirection.Left || direction == UiNavigationDirection.Right)
             {
                 var delta = direction == UiNavigationDirection.Left ? -1 : 1;
-                GetAvailableButton(rows[rowIndex], column + delta)?.Focus();
+                GetAdjacentButton(rows[rowIndex], column, delta)?.Focus();
                 return true;
             }
 
@@ -99,6 +99,30 @@ namespace Koiusa.Keyconfig.Runtime
                 if (right < buttons.Length && buttons[right] != null && buttons[right].enabledInHierarchy) return buttons[right];
             }
             return row.Element != null && row.Element.focusable ? row.Element : null;
+        }
+
+        private static VisualElement GetAdjacentButton(Row row, int currentColumn, int direction)
+        {
+            var buttons = new[] { row.AddModifier, row.RemoveModifier, row.Change, row.Reset };
+            var availability = new bool[buttons.Length];
+            for (var i = 0; i < buttons.Length; i++)
+                availability[i] = buttons[i] != null && buttons[i].enabledInHierarchy;
+            var targetColumn = FindAdjacentColumn(availability, currentColumn, direction);
+            return targetColumn >= 0 ? buttons[targetColumn] : null;
+        }
+
+        internal static int FindAdjacentColumn(IReadOnlyList<bool> availability, int currentColumn, int direction)
+        {
+            if (availability == null || availability.Count == 0 || direction == 0) return -1;
+            var step = direction < 0 ? -1 : 1;
+            for (var offset = 1; offset < availability.Count; offset++)
+            {
+                var index = (currentColumn + step * offset + availability.Count) % availability.Count;
+                if (availability[index]) return index;
+            }
+            return currentColumn >= 0 && currentColumn < availability.Count && availability[currentColumn]
+                ? currentColumn
+                : -1;
         }
 
         private void ScrollTo(ScrollView scrollView, int rowIndex)
