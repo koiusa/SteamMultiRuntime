@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UIElements;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -35,7 +36,7 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction nextSectionAction;
         private InputActionBinding previousSectionBinding;
         private InputActionBinding nextSectionBinding;
-        private InputAction pendingRebindReleaseAction;
+        private bool hasPendingRebindStart;
         private Guid pendingRebindActionId;
         private int pendingRebindBindingIndex;
         private string pendingRebindBindingGroup;
@@ -44,6 +45,8 @@ namespace Koiusa.Keyconfig.Runtime
         private readonly List<InputAction> suspendedActions = new List<InputAction>();
         private string sessionOverridesJson;
         private bool hasActiveEditSession;
+        private bool inputStateUpdateScheduled;
+        private int inputStateUpdateGeneration;
 
         public string BindingGroup => bindingGroup;
         public event Action Closed;
@@ -75,6 +78,9 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnEnable()
         {
             InputSystem.onDeviceChange += OnInputDeviceChange;
+            InputSystem.onEvent += OnInputEvent;
+            inputStateUpdateGeneration++;
+            inputStateUpdateScheduled = false;
             view.Build();
             view.SetNavigationSubmitBlocked(false);
             sectionNavigationBlocked = false;
@@ -112,6 +118,9 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnDisable()
         {
             InputSystem.onDeviceChange -= OnInputDeviceChange;
+            InputSystem.onEvent -= OnInputEvent;
+            inputStateUpdateGeneration++;
+            inputStateUpdateScheduled = false;
             view.SetNavigationSubmitBlocked(false);
             sectionNavigationBlocked = false;
             CancelPendingRebindRelease();
@@ -127,32 +136,27 @@ namespace Koiusa.Keyconfig.Runtime
             RestoreSuspendedActions();
         }
 
-        private void Update()
+        private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
         {
-            UpdateRebindInputReleaseState();
-            if (bindingService != null && (rebindController == null || !rebindController.IsBusy))
-            {
-                view.UpdateInputStates(bindingService.InputActionAsset);
-            }
+            if (!eventPtr.IsA<StateEvent>() && !eventPtr.IsA<DeltaStateEvent>()) return;
+            ScheduleInputStateUpdate();
         }
 
-        private void UpdateRebindInputReleaseState()
+        private void ScheduleInputStateUpdate()
         {
-            if (pendingRebindReleaseAction != null && !pendingRebindReleaseAction.IsPressed())
+            if (inputStateUpdateScheduled || bindingService == null || rebindController?.IsBusy == true) return;
+            var root = uiDocument?.rootVisualElement;
+            if (root == null) return;
+
+            inputStateUpdateScheduled = true;
+            var generation = inputStateUpdateGeneration;
+            root.schedule.Execute(() =>
             {
-                var actionId = pendingRebindActionId;
-                var bindingIndex = pendingRebindBindingIndex;
-                var pendingBindingGroup = pendingRebindBindingGroup;
-                CancelPendingRebindRelease();
-                if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, pendingBindingGroup);
-            }
-
-            var mustBlockSubmit = pendingRebindReleaseAction != null || submitAction?.IsPressed() == true;
-            view.SetNavigationSubmitBlocked(mustBlockSubmit);
-
-            if (sectionNavigationBlocked && rebindController?.IsBusy != true &&
-                previousSectionAction?.IsPressed() != true && nextSectionAction?.IsPressed() != true)
-                sectionNavigationBlocked = false;
+                if (generation != inputStateUpdateGeneration) return;
+                inputStateUpdateScheduled = false;
+                if (isActiveAndEnabled && rebindController?.IsBusy != true)
+                    view.UpdateInputStates(bindingService.InputActionAsset);
+            });
         }
 
         public void SetBindingGroup(string group)
@@ -213,6 +217,7 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             view.RenderBindingEntries(currentEntries, OnRebindRequested, OnAddModifierRequested, OnRemoveModifierRequested, OnResetRequested);
+            if (rebindController?.IsBusy != true) view.UpdateInputStates(bindingService.InputActionAsset);
         }
 
         private void OnLoadClicked()
@@ -282,7 +287,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindRequested(int index)
         {
-            if (rebindController == null || pendingRebindReleaseAction != null)
+            if (rebindController == null || hasPendingRebindStart)
             {
                 return;
             }
@@ -307,7 +312,7 @@ namespace Koiusa.Keyconfig.Runtime
                 pendingRebindActionId = entry.ActionId;
                 pendingRebindBindingIndex = entry.BindingIndex;
                 pendingRebindBindingGroup = effectiveBindingGroup;
-                pendingRebindReleaseAction = submitAction;
+                hasPendingRebindStart = true;
                 return;
             }
 
@@ -316,7 +321,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void CancelPendingRebindRelease()
         {
-            pendingRebindReleaseAction = null;
+            hasPendingRebindStart = false;
             pendingRebindActionId = default;
             pendingRebindBindingIndex = -1;
             pendingRebindBindingGroup = null;
@@ -402,7 +407,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void OnRebindStarted()
         {
             sectionNavigationBlocked = true;
-            view.SetNavigationSubmitBlocked(true);
+            view.SetNavigationSubmitBlocked(submitAction?.IsPressed() == true);
             view.SetInteractive(false);
             view.SetLocalizedStatus("keyconfig.enter_new_key");
         }
@@ -414,7 +419,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindConflict(string targetAction, string existingAction)
         {
-            view.SetNavigationSubmitBlocked(true);
+            RefreshReleasedInputBlocks();
             view.ShowConflict(
                 targetAction,
                 existingAction,
@@ -439,7 +444,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void FinishRebindUi(string statusKey, string statusArgument = null)
         {
-            view.SetNavigationSubmitBlocked(true);
+            RefreshReleasedInputBlocks();
             RebuildBindingList();
             view.SetInteractive(true);
             if (statusKey == null) view.SetStatus(statusArgument);
@@ -465,10 +470,14 @@ namespace Koiusa.Keyconfig.Runtime
 
             previousSectionBinding = InputActionBinding.Bind(
                 previousSectionAction = asset.FindAction(inputActionsConfig.PreviousSectionActionPath),
-                OnPreviousSectionPerformed);
+                OnPreviousSectionPerformed,
+                OnSectionNavigationCanceled);
             nextSectionBinding = InputActionBinding.Bind(
                 nextSectionAction = asset.FindAction(inputActionsConfig.NextSectionActionPath),
-                OnNextSectionPerformed);
+                OnNextSectionPerformed,
+                OnSectionNavigationCanceled);
+            submitAction = asset.FindAction(inputActionsConfig.SubmitActionPath);
+            if (submitAction != null) submitAction.canceled += OnSubmitCanceled;
         }
 
         private void UnbindSectionNavigation()
@@ -477,14 +486,42 @@ namespace Koiusa.Keyconfig.Runtime
             previousSectionBinding = null;
             nextSectionBinding?.Dispose();
             nextSectionBinding = null;
+            if (submitAction != null) submitAction.canceled -= OnSubmitCanceled;
+            submitAction = null;
             previousSectionAction = null;
             nextSectionAction = null;
         }
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
-            if (!sectionNavigationBlocked && pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
+            if (!sectionNavigationBlocked && !hasPendingRebindStart && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(-1);
+        }
+
+        private void OnSubmitCanceled(InputAction.CallbackContext context)
+        {
+            if (submitAction?.IsPressed() == true) return;
+            view.SetNavigationSubmitBlocked(false);
+            if (!hasPendingRebindStart) return;
+
+            var actionId = pendingRebindActionId;
+            var bindingIndex = pendingRebindBindingIndex;
+            var pendingBindingGroup = pendingRebindBindingGroup;
+            CancelPendingRebindRelease();
+            if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, pendingBindingGroup);
+        }
+
+        private void OnSectionNavigationCanceled(InputAction.CallbackContext context)
+        {
+            if (rebindController?.IsBusy == true) return;
+            if (previousSectionAction?.IsPressed() == true || nextSectionAction?.IsPressed() == true) return;
+            sectionNavigationBlocked = false;
+        }
+
+        private void RefreshReleasedInputBlocks()
+        {
+            view.SetNavigationSubmitBlocked(submitAction?.IsPressed() == true);
+            sectionNavigationBlocked = previousSectionAction?.IsPressed() == true || nextSectionAction?.IsPressed() == true;
         }
 
         private void SuspendNonUiActions()
@@ -518,7 +555,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
-            if (!sectionNavigationBlocked && pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
+            if (!sectionNavigationBlocked && !hasPendingRebindStart && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(1);
         }
 

@@ -7,7 +7,7 @@ All notable changes to this package will be documented in this file.
 ### Changed
 
 - Alias suppression now records every control changed by the observed state event without relying on Gamepad, Joystick, button, axis, or `trigger` control-name heuristics.
-- Consolidated Submit and section-navigation release handling into one rebind input-release state transition while retaining the L1/R1 completion-press guard.
+- Replaced `KeyConfigUiDocument.Update` polling with Input Action release callbacks and coalesced State／DeltaState event-driven input-monitor refreshes while retaining the L1/R1 completion-press guard.
 
 ### Tests
 
