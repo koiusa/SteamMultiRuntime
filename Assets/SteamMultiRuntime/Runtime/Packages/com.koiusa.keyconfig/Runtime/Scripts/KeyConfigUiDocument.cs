@@ -70,6 +70,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnEnable()
         {
+            InputSystem.onDeviceChange += OnInputDeviceChange;
             view.Build();
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
             var asset = bindingService?.InputActionAsset;
@@ -104,6 +105,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnDisable()
         {
+            InputSystem.onDeviceChange -= OnInputDeviceChange;
             CancelPendingRebindRelease();
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
@@ -119,10 +121,21 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void Update()
         {
+            TryStartPendingRebindAfterSubmitRelease();
             if (bindingService != null && !rebindController.IsBusy)
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
             }
+        }
+
+        private void TryStartPendingRebindAfterSubmitRelease()
+        {
+            if (pendingRebindReleaseAction == null || pendingRebindReleaseAction.IsPressed()) return;
+            var actionId = pendingRebindActionId;
+            var bindingIndex = pendingRebindBindingIndex;
+            var bindingGroup = pendingRebindBindingGroup;
+            CancelPendingRebindRelease();
+            if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, bindingGroup);
         }
 
         public void SetBindingGroup(string group)
@@ -278,26 +291,14 @@ namespace Koiusa.Keyconfig.Runtime
                 pendingRebindBindingIndex = entry.BindingIndex;
                 pendingRebindBindingGroup = effectiveBindingGroup;
                 pendingRebindReleaseAction = submitAction;
-                pendingRebindReleaseAction.canceled += OnPendingRebindSubmitReleased;
                 return;
             }
 
             StartRebind(entry.ActionId, entry.BindingIndex, effectiveBindingGroup);
         }
 
-        private void OnPendingRebindSubmitReleased(InputAction.CallbackContext context)
-        {
-            var actionId = pendingRebindActionId;
-            var bindingIndex = pendingRebindBindingIndex;
-            var bindingGroup = pendingRebindBindingGroup;
-            CancelPendingRebindRelease();
-            if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, bindingGroup);
-        }
-
         private void CancelPendingRebindRelease()
         {
-            if (pendingRebindReleaseAction != null)
-                pendingRebindReleaseAction.canceled -= OnPendingRebindSubmitReleased;
             pendingRebindReleaseAction = null;
             pendingRebindActionId = default;
             pendingRebindBindingIndex = -1;
@@ -343,6 +344,22 @@ namespace Koiusa.Keyconfig.Runtime
             RebuildBindingList();
             view.SetLocalizedStatus("keyconfig.binding_reset");
             view.FocusBindingEntry(index);
+        }
+
+        private void OnInputDeviceChange(InputDevice device, InputDeviceChange change)
+        {
+            if (bindingService == null || rebindController.IsBusy) return;
+            switch (change)
+            {
+                case InputDeviceChange.Added:
+                case InputDeviceChange.Removed:
+                case InputDeviceChange.Reconnected:
+                case InputDeviceChange.Disconnected:
+                case InputDeviceChange.Enabled:
+                case InputDeviceChange.Disabled:
+                    RebuildBindingList();
+                    break;
+            }
         }
 
         private void OnAddModifierRequested(int index) => ChangeModifierCount(index, true);

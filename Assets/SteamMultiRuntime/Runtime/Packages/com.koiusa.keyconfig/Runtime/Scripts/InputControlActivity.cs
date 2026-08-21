@@ -78,6 +78,23 @@ namespace Koiusa.Keyconfig.Runtime
             return control != null && control.device != null && control.device.added;
         }
 
+        public static bool HasConnectedDevice(string bindingPath)
+        {
+            if (string.IsNullOrWhiteSpace(bindingPath)) return false;
+            var requiredLayout = InputControlPath.TryGetDeviceLayout(bindingPath);
+            if (string.IsNullOrWhiteSpace(requiredLayout)) return IsUsable(Resolve(bindingPath));
+
+            var devices = InputSystem.devices;
+            for (var i = 0; i < devices.Count; i++)
+            {
+                var device = devices[i];
+                if (device == null || !device.added) continue;
+                if (requiredLayout == "*" || InputSystem.IsFirstLayoutBasedOnSecond(device.layout, requiredLayout))
+                    return true;
+            }
+            return false;
+        }
+
         private static bool IsAbsolutePointerPosition(InputControl control)
         {
             return control?.device is Pointer

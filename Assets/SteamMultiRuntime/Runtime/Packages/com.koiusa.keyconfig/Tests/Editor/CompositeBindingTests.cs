@@ -186,6 +186,31 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(excluded, Is.EqualTo(new[] { "<Keyboard>/leftShift" }));
         }
 
+        [Test]
+        public void ModifierButtons_AreUnavailableWhenBindingDeviceIsDisconnected()
+        {
+            var action = AddModifiedAction("Reload", "<Gamepad>/leftShoulder", "<Gamepad>/buttonWest");
+            var entry = new InputBindingService(asset).GetBindingEntries()[0];
+
+            Assert.That(KeyConfigBindingRowFactory.CanChangeModifier(entry, true, false), Is.False);
+            Assert.That(KeyConfigBindingRowFactory.CanChangeModifier(entry, false, false), Is.False);
+            Assert.That(KeyConfigBindingRowFactory.CanChangeModifier(entry, false, true), Is.True);
+        }
+
+        [Test]
+        public void DeviceAvailability_UsesConnectedLayoutInsteadOfExactControlResolution()
+        {
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            try
+            {
+                Assert.That(InputControlActivity.HasConnectedDevice("<Gamepad>/nonStandardButton"), Is.True);
+            }
+            finally
+            {
+                InputSystem.RemoveDevice(gamepad);
+            }
+        }
+
         private InputAction AddModifiedAction(string name, string modifier, string button)
         {
             var action = map.AddAction(name, InputActionType.Button);

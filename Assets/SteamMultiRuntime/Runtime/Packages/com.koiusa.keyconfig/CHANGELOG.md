@@ -2,6 +2,26 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.16] - 2026-08-21
+
+### Fixed
+
+- Kept Change available for every rebindable row even when its current device is disconnected, allowing migration to another device.
+- Made deferred rebinding reliably start after UI Submit is released instead of depending solely on a potentially missed `canceled` callback.
+
+## [0.1.15] - 2026-08-21
+
+### Fixed
+
+- Based Change and modifier-button availability on the connected device layout rather than requiring an exact control-path match, including derived gamepad layouts and non-standard controls.
+- Refreshes row availability when Input System devices are connected, disconnected, enabled, or disabled while Key Config is open.
+
+## [0.1.14] - 2026-08-21
+
+### Fixed
+
+- Disabled modifier add/remove controls together with Change when the binding's required device is not connected.
+
 ## [0.1.13] - 2026-08-21
 
 ### Changed

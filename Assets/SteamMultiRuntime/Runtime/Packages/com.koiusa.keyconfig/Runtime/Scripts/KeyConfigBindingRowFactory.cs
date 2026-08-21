@@ -70,18 +70,20 @@ namespace Koiusa.Keyconfig.Runtime
 
             var buttonCell = new VisualElement();
             buttonCell.AddToClassList("keyconfig-cell-buttons");
+            var hasConnectedDevice = InputControlActivity.HasConnectedDevice(entry.BindingPath);
             var addModifierButton = CreateButton(
                 "keyconfig.add_modifier", "keyconfig.add_modifier_tooltip", "keyconfig-modifier-button",
-                entry.IsRebindable && entry.ModifierCount < 2, isInteractive, unavailableButtons, bindText, bindTooltip,
+                CanChangeModifier(entry, true, hasConnectedDevice),
+                isInteractive, unavailableButtons, bindText, bindTooltip,
                 () => onAddModifier?.Invoke(entryIndex));
             var removeModifierButton = CreateButton(
                 "keyconfig.remove_modifier", "keyconfig.remove_modifier_tooltip", "keyconfig-modifier-button",
-                entry.IsRebindable && entry.ModifierCount > 0, isInteractive, unavailableButtons, bindText, bindTooltip,
+                CanChangeModifier(entry, false, hasConnectedDevice),
+                isInteractive, unavailableButtons, bindText, bindTooltip,
                 () => onRemoveModifier?.Invoke(entryIndex));
-            var hasConnectedControl = InputControlActivity.IsUsable(InputControlActivity.Resolve(entry.BindingPath));
             var changeButton = CreateButton(
                 "keyconfig.change", null, "keyconfig-rebind-button",
-                entry.IsRebindable && hasConnectedControl, isInteractive, unavailableButtons, bindText, bindTooltip,
+                entry.IsRebindable, isInteractive, unavailableButtons, bindText, bindTooltip,
                 () => onRebind?.Invoke(entryIndex));
             var resetButton = CreateButton(
                 "keyconfig.reset", null, "keyconfig-reset-button",
@@ -103,6 +105,15 @@ namespace Koiusa.Keyconfig.Runtime
                 InputStateLabel = inputStateLabel,
                 Control = InputControlActivity.Resolve(entry.BindingPath)
             };
+        }
+
+        internal static bool CanChangeModifier(
+            InputBindingService.BindingEntry entry,
+            bool add,
+            bool hasConnectedDevice)
+        {
+            if (!entry.IsRebindable || !hasConnectedDevice) return false;
+            return add ? entry.ModifierCount < 2 : entry.ModifierCount > 0;
         }
 
         private static Button CreateButton(
