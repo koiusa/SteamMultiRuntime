@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.LowLevel;
 
 namespace Koiusa.Keyconfig.Runtime
@@ -33,19 +32,11 @@ namespace Koiusa.Keyconfig.Runtime
             suppressedPaths.Clear();
         }
 
-        internal void RecordChangedControl(InputControl control)
+        private void RecordChangedControl(InputControl control)
         {
-            if (IsAliasCandidate(control) && !string.IsNullOrWhiteSpace(control.path))
+            if (control != null && !string.IsNullOrWhiteSpace(control.path))
                 suppressedPaths.Add(control.path);
         }
-
-        internal bool IsSuppressed(string path) =>
-            !string.IsNullOrWhiteSpace(path) && suppressedPaths.Contains(path);
-
-        internal static bool IsAliasCandidate(InputControl control) =>
-            control is ButtonControl
-            || control is AxisControl axis
-            && axis.name.IndexOf("trigger", StringComparison.OrdinalIgnoreCase) >= 0;
 
         private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
         {

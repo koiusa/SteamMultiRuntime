@@ -36,7 +36,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.8"
+    "com.koiusa.keyconfig": "0.1.38"
   }
 }
 ```
@@ -51,7 +51,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 
-公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.8`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
+公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.38`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
 
 ### パッケージ境界の判断
 
@@ -96,7 +96,7 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 - 最初のフォーカス行より前に編集不可行や見出しがある場合も、上端への移動ではScrollViewを完全に先頭へ戻します。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
 - L1／R1などPreviousSection／NextSectionと共有する入力を登録した場合、登録に使用した押下が解放されるまではタブ移動へ再利用しません。
-- 複合Bindingの逐次リバインドでは、`RebindAliasSuppression`がパートを確定したStateイベント内で発火したButton／Triggerパスを同じ物理入力の別名として後続パートから除外します。
+- 複合Bindingの逐次リバインドでは、`RebindAliasSuppression`がパートを確定したStateイベント内で変化したControlパスを、Control型・名前・デバイス系統に依存せず後続パートから除外します。
 - `Gamepad`と`Joystick`はInput System上の別レイアウトとして識別しますが、複合Bindingの登録可否や進行をデバイス名・Control名では分岐しません。パート確定後はControlの解放を待たず、直ちに次パートを開始します。各パートで5秒間入力がなければタイムアウトし、Escapeまたは明示キャンセルと同様に複合Binding全体を元へ戻します。
 - UI Action Mapは入力状態を確認できるようタブと一覧へ表示し、Submitで行の中へ入って上下移動できます。Keyconfig自身の操作を失わないようChange／Resetは無効のままです。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
 - LB／RB（`UI/PreviousSection`／`UI/NextSection`）でBinding GroupとAction Mapタブを循環切り替えします。左右はLoad／Save／Reset All／Closeだけを循環し、Binding Groupへは移動しません。通常のD-padまたは左スティック上下はフォーカスを移動せずリストをスクロールし、Binding Groupにフォーカス中だけDropdownの選択操作へ渡します。

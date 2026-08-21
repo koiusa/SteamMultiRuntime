@@ -1,6 +1,7 @@
 using Koiusa.Keyconfig.Runtime;
 using NUnit.Framework;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace Koiusa.KeyConfig.Tests
 {
@@ -212,37 +213,175 @@ namespace Koiusa.KeyConfig.Tests
         }
 
         [Test]
-        public void AliasSuppression_AcceptsButtonsAndTriggersButIgnoresStickAxes()
+        public void AliasSuppression_ExcludesEveryControlChangedInObservedStateEvent()
         {
             var gamepad = InputSystem.AddDevice<Gamepad>();
+            var suppression = new RebindAliasSuppression();
+            var buttonProbe = map.AddAction("ButtonProbe", InputActionType.Button);
+            buttonProbe.AddBinding("<Gamepad>/buttonSouth");
+            var triggerProbe = map.AddAction("TriggerProbe", InputActionType.Button);
+            triggerProbe.AddBinding("<Gamepad>/leftTrigger");
+            var buttonCompleted = false;
+            var triggerCompleted = false;
+            InputActionRebindingExtensions.RebindingOperation buttonOperation = null;
+            InputActionRebindingExtensions.RebindingOperation triggerOperation = null;
             try
             {
-                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.buttonSouth), Is.True);
-                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.leftTrigger), Is.True);
-                Assert.That(RebindAliasSuppression.IsAliasCandidate(gamepad.leftStick.x), Is.False);
+                suppression.BeginPartObservation();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState
+                {
+                    leftTrigger = 1f,
+                    leftStick = new UnityEngine.Vector2(0.8f, 0f)
+                }.WithButton(GamepadButton.South));
+                InputSystem.Update();
+                suppression.EndPartObservation();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState());
+                InputSystem.Update();
+
+                buttonOperation = buttonProbe.PerformInteractiveRebinding(0)
+                    .OnComplete(_ => buttonCompleted = true);
+                suppression.ApplyExclusions(buttonOperation);
+                buttonOperation.Start();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.South));
+                InputSystem.Update();
+                buttonOperation.Dispose();
+                buttonOperation = null;
+
+                InputSystem.QueueStateEvent(gamepad, new GamepadState());
+                InputSystem.Update();
+                triggerOperation = triggerProbe.PerformInteractiveRebinding(0)
+                    .OnComplete(_ => triggerCompleted = true);
+                suppression.ApplyExclusions(triggerOperation);
+                triggerOperation.Start();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState { leftTrigger = 1f });
+                InputSystem.Update();
+
+                Assert.That(buttonCompleted, Is.False);
+                Assert.That(triggerCompleted, Is.False);
             }
             finally
             {
+                buttonOperation?.Dispose();
+                triggerOperation?.Dispose();
+                suppression.Dispose();
                 InputSystem.RemoveDevice(gamepad);
             }
         }
 
         [Test]
-        public void AliasSuppression_SuppressesOnlyControlsChangedDuringPhysicalPress()
+        public void AliasSuppression_IgnoresTextEventsBeforeChangedControlEnumeration()
         {
-            var gamepad = InputSystem.AddDevice<Gamepad>();
+            var keyboard = InputSystem.AddDevice<Keyboard>();
             var suppression = new RebindAliasSuppression();
             try
             {
-                suppression.RecordChangedControl(gamepad.leftTrigger);
-
-                Assert.That(suppression.IsSuppressed(gamepad.leftTrigger.path), Is.True);
-                Assert.That(suppression.IsSuppressed(gamepad.rightTrigger.path), Is.False);
+                suppression.BeginPartObservation();
+                Assert.DoesNotThrow(() =>
+                {
+                    InputSystem.QueueTextEvent(keyboard, 'a');
+                    InputSystem.Update();
+                });
             }
             finally
             {
                 suppression.Dispose();
+                InputSystem.RemoveDevice(keyboard);
+            }
+        }
+
+        [Test]
+        public void AliasSuppression_CollectsChangedControlFromDeltaStateEvent()
+        {
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            var suppression = new RebindAliasSuppression();
+            var probe = map.AddAction("DeltaProbe", InputActionType.Button);
+            probe.AddBinding("<Gamepad>/leftTrigger");
+            var completed = false;
+            InputActionRebindingExtensions.RebindingOperation operation = null;
+            try
+            {
+                suppression.BeginPartObservation();
+                InputSystem.QueueDeltaStateEvent(gamepad.leftTrigger, 1f);
+                InputSystem.Update();
+                suppression.EndPartObservation();
+                InputSystem.QueueDeltaStateEvent(gamepad.leftTrigger, 0f);
+                InputSystem.Update();
+
+                operation = probe.PerformInteractiveRebinding(0).OnComplete(_ => completed = true);
+                suppression.ApplyExclusions(operation);
+                operation.Start();
+                InputSystem.QueueDeltaStateEvent(gamepad.leftTrigger, 1f);
+                InputSystem.Update();
+
+                Assert.That(completed, Is.False);
+            }
+            finally
+            {
+                operation?.Dispose();
+                suppression.Dispose();
                 InputSystem.RemoveDevice(gamepad);
+            }
+        }
+
+        [Test]
+        public void SequentialRebind_GamepadCompositeCompletesEveryPart()
+        {
+            var action = AddModifiedAction("Reload", "<Gamepad>/leftShoulder", "<Gamepad>/buttonWest");
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            var controller = new InputRebindController(new InputBindingService(asset));
+            var completed = false;
+            controller.RebindCompleted += _ => completed = true;
+            try
+            {
+                Assert.That(controller.StartRebind(action.id, 0), Is.True);
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.RightShoulder));
+                InputSystem.Update();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState());
+                InputSystem.Update();
+                InputSystem.QueueStateEvent(gamepad, new GamepadState().WithButton(GamepadButton.East));
+                InputSystem.Update();
+
+                Assert.That(completed, Is.True);
+                Assert.That(controller.IsBusy, Is.False);
+                Assert.That(action.bindings[1].effectivePath, Is.EqualTo("<Gamepad>/rightShoulder"));
+                Assert.That(action.bindings[2].effectivePath, Is.EqualTo("<Gamepad>/buttonEast"));
+            }
+            finally
+            {
+                controller.Dispose();
+                InputSystem.RemoveDevice(gamepad);
+            }
+        }
+
+        [Test]
+        public void SequentialRebind_EscapeRestoresWholeComposite()
+        {
+            var action = AddModifiedAction("Reload", "<Keyboard>/leftCtrl", "<Keyboard>/r");
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+            var controller = new InputRebindController(new InputBindingService(asset));
+            var canceled = false;
+            controller.RebindCanceled += () => canceled = true;
+            try
+            {
+                Assert.That(controller.StartRebind(action.id, 0), Is.True);
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.LeftShift));
+                InputSystem.Update();
+                Assert.That(action.bindings[1].effectivePath, Is.EqualTo("<Keyboard>/leftShift"));
+
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Escape));
+                InputSystem.Update();
+
+                Assert.That(canceled, Is.True);
+                Assert.That(controller.IsBusy, Is.False);
+                Assert.That(action.bindings[1].overridePath, Is.Null);
+                Assert.That(action.bindings[2].overridePath, Is.Null);
+                Assert.That(action.bindings[1].effectivePath, Is.EqualTo("<Keyboard>/leftCtrl"));
+                Assert.That(action.bindings[2].effectivePath, Is.EqualTo("<Keyboard>/r"));
+            }
+            finally
+            {
+                controller.Dispose();
+                InputSystem.RemoveDevice(keyboard);
             }
         }
 

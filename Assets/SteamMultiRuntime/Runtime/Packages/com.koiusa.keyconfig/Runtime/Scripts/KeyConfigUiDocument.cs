@@ -30,6 +30,9 @@ namespace Koiusa.Keyconfig.Runtime
         private List<InputBindingService.BindingEntry> currentEntries = new List<InputBindingService.BindingEntry>();
         private bool usingBindingGroupFallback;
         private UiNavigationInputSession navigationSession;
+        private InputAction submitAction;
+        private InputAction previousSectionAction;
+        private InputAction nextSectionAction;
         private InputActionBinding previousSectionBinding;
         private InputActionBinding nextSectionBinding;
         private InputAction pendingRebindReleaseAction;
@@ -126,41 +129,30 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void Update()
         {
-            UpdateSubmitReleaseState();
-            UpdateSectionNavigationBlock();
+            UpdateRebindInputReleaseState();
             if (bindingService != null && (rebindController == null || !rebindController.IsBusy))
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
             }
         }
 
-        private void UpdateSubmitReleaseState()
+        private void UpdateRebindInputReleaseState()
         {
-            var submitAction = pendingRebindReleaseAction
-                ?? bindingService?.InputActionAsset.FindAction(inputActionsConfig?.SubmitActionPath);
-            if (submitAction != null && submitAction.IsPressed()) return;
-
-            if (pendingRebindReleaseAction != null)
+            if (pendingRebindReleaseAction != null && !pendingRebindReleaseAction.IsPressed())
             {
                 var actionId = pendingRebindActionId;
                 var bindingIndex = pendingRebindBindingIndex;
                 var pendingBindingGroup = pendingRebindBindingGroup;
                 CancelPendingRebindRelease();
                 if (isActiveAndEnabled) StartRebind(actionId, bindingIndex, pendingBindingGroup);
-                return;
             }
 
-            view.SetNavigationSubmitBlocked(false);
-        }
+            var mustBlockSubmit = pendingRebindReleaseAction != null || submitAction?.IsPressed() == true;
+            view.SetNavigationSubmitBlocked(mustBlockSubmit);
 
-        private void UpdateSectionNavigationBlock()
-        {
-            if (!sectionNavigationBlocked || rebindController?.IsBusy == true) return;
-            var asset = bindingService?.InputActionAsset;
-            var previous = asset?.FindAction(inputActionsConfig?.PreviousSectionActionPath);
-            var next = asset?.FindAction(inputActionsConfig?.NextSectionActionPath);
-            if (previous?.IsPressed() == true || next?.IsPressed() == true) return;
-            sectionNavigationBlocked = false;
+            if (sectionNavigationBlocked && rebindController?.IsBusy != true &&
+                previousSectionAction?.IsPressed() != true && nextSectionAction?.IsPressed() != true)
+                sectionNavigationBlocked = false;
         }
 
         public void SetBindingGroup(string group)
@@ -309,7 +301,7 @@ namespace Koiusa.Keyconfig.Runtime
             var effectiveBindingGroup = usingBindingGroupFallback ? null : bindingGroup;
             activeRebindEntryIndex = index;
             view.SetInteractive(false);
-            var submitAction = bindingService.InputActionAsset.FindAction(inputActionsConfig.SubmitActionPath);
+            submitAction ??= bindingService.InputActionAsset.FindAction(inputActionsConfig.SubmitActionPath);
             if (submitAction != null && submitAction.IsPressed())
             {
                 pendingRebindActionId = entry.ActionId;
@@ -472,10 +464,10 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             previousSectionBinding = InputActionBinding.Bind(
-                asset.FindAction(inputActionsConfig.PreviousSectionActionPath),
+                previousSectionAction = asset.FindAction(inputActionsConfig.PreviousSectionActionPath),
                 OnPreviousSectionPerformed);
             nextSectionBinding = InputActionBinding.Bind(
-                asset.FindAction(inputActionsConfig.NextSectionActionPath),
+                nextSectionAction = asset.FindAction(inputActionsConfig.NextSectionActionPath),
                 OnNextSectionPerformed);
         }
 
@@ -485,6 +477,8 @@ namespace Koiusa.Keyconfig.Runtime
             previousSectionBinding = null;
             nextSectionBinding?.Dispose();
             nextSectionBinding = null;
+            previousSectionAction = null;
+            nextSectionAction = null;
         }
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)

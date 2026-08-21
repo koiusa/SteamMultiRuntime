@@ -2,6 +2,17 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.38] - 2026-08-22
+
+### Changed
+
+- Alias suppression now records every control changed by the observed state event without relying on Gamepad, Joystick, button, axis, or `trigger` control-name heuristics.
+- Consolidated Submit and section-navigation release handling into one rebind input-release state transition while retaining the L1/R1 completion-press guard.
+
+### Tests
+
+- Exercises alias collection through queued Input System state events and verifies that `TEXT` events are ignored safely.
+
 ## [0.1.37] - 2026-08-21
 
 ### Fixed
