@@ -60,12 +60,42 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void StartCurrentPart()
         {
-            operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart])
-                .WithCancelingThrough("<Keyboard>/escape")
+            operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart]);
+            ExcludePreviouslyReboundControls(operation, activeAction, rebindIndices, rebindPart);
+            operation.WithCancelingThrough("<Keyboard>/escape")
                 .WithTimeout(RebindTimeoutSeconds)
                 .OnComplete(_ => OnPartComplete())
                 .OnCancel(_ => OnCanceled());
             operation.Start();
+        }
+
+        internal static void ExcludePreviouslyReboundControls(
+            InputActionRebindingExtensions.RebindingOperation rebindOperation,
+            InputAction action,
+            IReadOnlyList<int> bindingIndices,
+            int currentPart)
+        {
+            if (rebindOperation == null || action == null || bindingIndices == null) return;
+            var paths = GetPreviouslyReboundControlPaths(action, bindingIndices, currentPart);
+            for (var i = 0; i < paths.Count; i++) rebindOperation.WithControlsExcluding(paths[i]);
+        }
+
+        internal static List<string> GetPreviouslyReboundControlPaths(
+            InputAction action,
+            IReadOnlyList<int> bindingIndices,
+            int currentPart)
+        {
+            var result = new List<string>();
+            if (action == null || bindingIndices == null) return result;
+            var count = Math.Min(currentPart, bindingIndices.Count);
+            for (var i = 0; i < count; i++)
+            {
+                var bindingIndex = bindingIndices[i];
+                if (bindingIndex < 0 || bindingIndex >= action.bindings.Count) continue;
+                var path = action.bindings[bindingIndex].effectivePath;
+                if (!string.IsNullOrWhiteSpace(path)) result.Add(path);
+            }
+            return result;
         }
 
         private void OnPartComplete()

@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.9] - 2026-08-21
+
+### Fixed
+
+- Prevented a control chosen for an earlier modifier-composite part from being captured again by the next sequential rebind step while it is still held.
+
 ## [0.1.8] - 2026-08-21
 
 ### Added

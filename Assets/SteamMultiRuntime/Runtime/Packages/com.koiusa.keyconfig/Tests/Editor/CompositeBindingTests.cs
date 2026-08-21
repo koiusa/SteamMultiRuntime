@@ -143,6 +143,20 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(backToOne.DisplayName, Is.EqualTo("Ctrl+R"));
         }
 
+        [Test]
+        public void SequentialRebind_ExcludesControlsAlreadyChosenForEarlierParts()
+        {
+            var action = AddModifiedAction("Reload", "<Keyboard>/leftCtrl", "<Keyboard>/r");
+            action.ApplyBindingOverride(1, "<Keyboard>/leftShift");
+
+            var excluded = InputRebindController.GetPreviouslyReboundControlPaths(
+                action,
+                new[] { 1, 2 },
+                1);
+
+            Assert.That(excluded, Is.EqualTo(new[] { "<Keyboard>/leftShift" }));
+        }
+
         private InputAction AddModifiedAction(string name, string modifier, string button)
         {
             var action = map.AddAction(name, InputActionType.Button);
