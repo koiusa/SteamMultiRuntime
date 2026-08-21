@@ -36,7 +36,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.38"
+    "com.koiusa.keyconfig": "0.1.39"
   }
 }
 ```
@@ -51,7 +51,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 
-公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.38`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
+公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.39`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
 
 ### パッケージ境界の判断
 

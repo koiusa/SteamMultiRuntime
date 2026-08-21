@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.39] - 2026-08-22
+
+### Fixed
+
+- Keeps section navigation blocked through the remainder of the Input System update that completes an L1/R1 rebind, then evaluates release state from the UI scheduler so the completing press cannot move tabs.
+
 ## [0.1.38] - 2026-08-22
 
 ### Changed

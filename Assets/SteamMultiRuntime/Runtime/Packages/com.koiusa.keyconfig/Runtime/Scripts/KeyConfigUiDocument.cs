@@ -46,6 +46,7 @@ namespace Koiusa.Keyconfig.Runtime
         private string sessionOverridesJson;
         private bool hasActiveEditSession;
         private bool inputStateUpdateScheduled;
+        private bool releaseBlockRefreshScheduled;
         private int inputStateUpdateGeneration;
 
         public string BindingGroup => bindingGroup;
@@ -81,6 +82,7 @@ namespace Koiusa.Keyconfig.Runtime
             InputSystem.onEvent += OnInputEvent;
             inputStateUpdateGeneration++;
             inputStateUpdateScheduled = false;
+            releaseBlockRefreshScheduled = false;
             view.Build();
             view.SetNavigationSubmitBlocked(false);
             sectionNavigationBlocked = false;
@@ -121,6 +123,7 @@ namespace Koiusa.Keyconfig.Runtime
             InputSystem.onEvent -= OnInputEvent;
             inputStateUpdateGeneration++;
             inputStateUpdateScheduled = false;
+            releaseBlockRefreshScheduled = false;
             view.SetNavigationSubmitBlocked(false);
             sectionNavigationBlocked = false;
             CancelPendingRebindRelease();
@@ -419,7 +422,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindConflict(string targetAction, string existingAction)
         {
-            RefreshReleasedInputBlocks();
+            ScheduleReleasedInputBlockRefresh();
             view.ShowConflict(
                 targetAction,
                 existingAction,
@@ -444,7 +447,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void FinishRebindUi(string statusKey, string statusArgument = null)
         {
-            RefreshReleasedInputBlocks();
+            ScheduleReleasedInputBlockRefresh();
             RebuildBindingList();
             view.SetInteractive(true);
             if (statusKey == null) view.SetStatus(statusArgument);
@@ -516,6 +519,22 @@ namespace Koiusa.Keyconfig.Runtime
             if (rebindController?.IsBusy == true) return;
             if (previousSectionAction?.IsPressed() == true || nextSectionAction?.IsPressed() == true) return;
             sectionNavigationBlocked = false;
+        }
+
+        private void ScheduleReleasedInputBlockRefresh()
+        {
+            if (releaseBlockRefreshScheduled) return;
+            var root = uiDocument?.rootVisualElement;
+            if (root == null) return;
+
+            releaseBlockRefreshScheduled = true;
+            var generation = inputStateUpdateGeneration;
+            root.schedule.Execute(() =>
+            {
+                if (generation != inputStateUpdateGeneration) return;
+                releaseBlockRefreshScheduled = false;
+                if (isActiveAndEnabled) RefreshReleasedInputBlocks();
+            });
         }
 
         private void RefreshReleasedInputBlocks()
