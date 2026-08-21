@@ -22,6 +22,8 @@ Samples / Prototype / Integration
 
 ## パッケージ一覧
 
+Steam Multi Runtime `0.11.0`では、公開汎用パッケージとして`com.koiusa.application` 0.2.0と`com.koiusa.input.core` 0.2.0を同梱します。
+
 ### プロジェクト汎用
 
 | パッケージ | 責務 |

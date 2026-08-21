@@ -9,7 +9,7 @@
     "name": "koiusa"
   },
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.5",
+    "com.koiusa.keyconfig": "0.1.6",
     "com.koiusa.steammultiruntime.localization": "0.1.0"
   },
   "keywords": [

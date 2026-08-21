@@ -32,7 +32,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.5"
+    "com.koiusa.keyconfig": "0.1.6"
   }
 }
 ```
@@ -40,6 +40,8 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
 公開はGitHub Actionsの`Publish reusable Unity packages to npm`を手動実行します。既定はdry-runで、成果物の内容だけを検証します。実公開時は`publish`を有効にし、`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを公開します。`NPM_TOKEN` secretが必要です。
+
+公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.6`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
 
 ### パッケージ境界の判断
 

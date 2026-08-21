@@ -2,7 +2,7 @@
 
 PlayerのSkill／Combatを含む論理階層と依存規則は[PlayerGameplayArchitecture.md](PlayerGameplayArchitecture.md)を参照してください。パッケージ境界、ドメイン間の型付き接続、リフレクション方針は[PackageArchitecture.md](PackageArchitecture.md)を正本とします。
 
-この文書は、現在のSteamMultiRuntime固有Runtime実装について、クラスの配置、責務、所有関係、処理の流れをまとめたものです。
+この文書は、現在のSteamMultiRuntime Runtime実装と、それを支える汎用パッケージ境界について、クラスの配置、責務、所有関係、処理の流れをまとめたものです。
 
 詳細仕様は領域別の文書へ分離しています。
 
@@ -27,6 +27,7 @@ Unity、Netcode for GameObjects、Input Systemなどの外部実装、Editor専�
 | NPC | `prototype` | `prototype` | Debug表示も`prototype` |
 | Localization | `localization` | なし | 各UIから共通APIを利用 |
 | Audio | `audio` | Network状態を所有しない | `IFootstepReceiver`で接続 |
+| Application | `com.koiusa.application` | なし | `input.core`の汎用Triggerから任意接続 |
 
 複数ドメインを組み立てる`LocalManager`、`LocalRuntimeUserProfile`、Spawn Coordinatorなどは`integration`が所有します。共通契約の配置規則は[PackageArchitecture.md](PackageArchitecture.md)を参照してください。
 
@@ -47,6 +48,10 @@ TargetingCommandInput
   → TargetingStateChange
       ├─ TargetingCameraPresenter
       └─ TargetIndicatorController
+
+InputActionPerformedTrigger（input.core）
+  → serialized UnityEvent（System.prefab）
+  → GameQuitter.RequestQuit（application）
 ```
 
 ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。例外条件とレビュー方法は[Package Architectureのリフレクション方針](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
@@ -57,8 +62,14 @@ Local専用UIは`ILocalPlayerOwnership`を通じて所有状態を参照しま�
 
 ```text
 SteamMultiRuntime
+├─ Application
+│  ├─ GameQuitter
+│  └─ ApplicationLifecycle
+│
 ├─ Input
 │  ├─ InputActionsConfig
+│  ├─ InputActionLease
+│  ├─ InputActionPerformedTrigger
 │  ├─ PlayerGameplayInputReader
 │  ├─ ActorInputState
 │  └─ IActorInputSource
@@ -238,3 +249,26 @@ Camera Mixer、Focus Marker、入力割り当て、障害物回避の詳細は[C
 4. AnimatorとUIは確定済み状態を表示し、ゲーム状態を決定しない
 
 Controller、Coordinator、Feature、Action間の詳細な依存規則はTraversal設計側で管理します。
+
+## Applicationと汎用入力Trigger
+
+```text
+com.koiusa.input.core 0.2.0
+└─ InputActionPerformedTrigger
+   ├─ InputActionsConfig
+   ├─ InputActionLease
+   └─ UnityEvent Performed
+      └─ System.prefabでGameQuitter.RequestQuitへ接続
+
+com.koiusa.application 0.2.0
+├─ GameQuitter
+│  ├─ RequestQuit()
+│  ├─ IsQuitRequested
+│  └─ QuitRequested
+└─ ApplicationLifecycle
+   ├─ FocusChanged / IsFocused
+   ├─ PauseChanged / IsPaused
+   └─ Quitting / IsQuitting
+```
+
+両パッケージは相互参照しません。`input.core`は入力発生をシリアライズ済み`UnityEvent`として公開し、`System.prefab`が`application`の終了要求へ接続します。これにより`application`はInput Systemなしでも単独利用できます。
