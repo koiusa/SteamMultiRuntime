@@ -227,8 +227,16 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var wasEnabled = action.enabled;
             if (wasEnabled) action.Disable();
-            action.ChangeBinding(rootIndex).Erase();
-            for (var i = 0; i < definitions.Count; i++) action.AddBinding(definitions[i].ToBinding());
+
+            var logicalEnd = rootIndex + 1;
+            while (logicalEnd < action.bindings.Count && action.bindings[logicalEnd].isPartOfComposite) logicalEnd++;
+            var rebuiltBindings = new List<InputBinding>(action.bindings.Count - (logicalEnd - rootIndex) + definitions.Count);
+            for (var i = 0; i < rootIndex; i++) rebuiltBindings.Add(action.bindings[i]);
+            for (var i = 0; i < definitions.Count; i++) rebuiltBindings.Add(definitions[i].ToBinding());
+            for (var i = logicalEnd; i < action.bindings.Count; i++) rebuiltBindings.Add(action.bindings[i]);
+
+            while (action.bindings.Count > 0) action.ChangeBinding(0).Erase();
+            for (var i = 0; i < rebuiltBindings.Count; i++) action.AddBinding(rebuiltBindings[i]);
             if (wasEnabled) action.Enable();
         }
 

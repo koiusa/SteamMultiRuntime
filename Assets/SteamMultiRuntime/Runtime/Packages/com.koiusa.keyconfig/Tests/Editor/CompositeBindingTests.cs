@@ -93,6 +93,34 @@ namespace Koiusa.KeyConfig.Tests
         }
 
         [Test]
+        public void AddModifier_WithMultipleBindings_ChangesSelectedBindingWithoutReorderingRows()
+        {
+            var action = map.AddAction("Reload", InputActionType.Button);
+            action.AddBinding("<Keyboard>/r");
+            action.AddBinding("<Keyboard>/f");
+            var selectedBindingId = action.bindings[0].id;
+            var untouchedBindingId = action.bindings[1].id;
+            var service = new InputBindingService(asset);
+            action.ApplyBindingOverride(1, "<Keyboard>/g");
+
+            Assert.That(service.AddModifier(action, 0), Is.True);
+
+            var entries = service.GetBindingEntries();
+            Assert.That(entries, Has.Count.EqualTo(2));
+            Assert.That(entries[0].BindingId, Is.EqualTo(selectedBindingId));
+            Assert.That(entries[0].DisplayName, Is.EqualTo("Ctrl+R"));
+            Assert.That(entries[1].BindingId, Is.EqualTo(untouchedBindingId));
+            Assert.That(entries[1].DisplayName, Is.EqualTo("G"));
+
+            Assert.That(service.RemoveModifier(action, entries[0].BindingIndex), Is.True);
+            entries = service.GetBindingEntries();
+            Assert.That(entries[0].BindingId, Is.EqualTo(selectedBindingId));
+            Assert.That(entries[0].DisplayName, Is.EqualTo("R"));
+            Assert.That(entries[1].BindingId, Is.EqualTo(untouchedBindingId));
+            Assert.That(entries[1].DisplayName, Is.EqualTo("G"));
+        }
+
+        [Test]
         public void RemoveModifier_RemovesModifierAndPreservesButton()
         {
             var action = AddModifiedAction("Reload", "<Keyboard>/leftCtrl", "<Keyboard>/r");

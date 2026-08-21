@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.12] - 2026-08-21
+
+### Fixed
+
+- Preserved binding order and IDs when adding or removing modifiers from one of several bindings on the same action, so the clicked row remains the changed row.
+
 ## [0.1.11] - 2026-08-21
 
 ### Changed
