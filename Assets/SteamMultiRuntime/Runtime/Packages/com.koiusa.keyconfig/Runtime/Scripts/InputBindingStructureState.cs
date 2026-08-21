@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     [Serializable]
     internal sealed class InputBindingStateEnvelope

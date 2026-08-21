@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input.Icons;
 using Koiusa.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     /// <summary>Facade for the Key Config visual components.</summary>
     internal sealed class KeyConfigView
@@ -20,7 +21,7 @@ namespace Koiusa.Keyconfig.Runtime
         private Button saveButton;
         private Button resetAllButton;
         private Button closeButton;
-        private InputBindingIconResolver iconResolver;
+        private KeyConfigIconSet iconResolver;
         private KeyConfigBindingGroupView bindingGroupView;
         private KeyConfigBindingCatalogView catalogView;
         private KeyConfigViewNavigation navigation;
@@ -200,7 +201,7 @@ namespace Koiusa.Keyconfig.Runtime
         public void SetBindingGroupChoices(IReadOnlyList<string> groups, string selectedGroup) =>
             bindingGroupView?.SetChoices(groups, selectedGroup);
 
-        public void SetIconResolver(InputBindingIconResolver resolver)
+        public void SetIconResolver(KeyConfigIconSet resolver)
         {
             iconResolver = resolver;
             catalogView?.SetIconResolver(resolver);
@@ -208,7 +209,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void SelectAdjacentSection(int direction) => navigation?.SelectAdjacentSection(direction, isInteractive);
 
-        public void RenderBindingEntries(IReadOnlyList<InputBindingService.BindingEntry> entries, Action<int> rebind,
+        public void RenderBindingEntries(IReadOnlyList<KeyConfigBinding> entries, Action<int> rebind,
             Action<int> addModifier, Action<int> removeModifier, Action<int> reset, bool resetScroll = false) =>
             catalogView?.Render(entries, rebind, addModifier, removeModifier, reset, resetScroll);
 

@@ -4,7 +4,7 @@ using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal sealed class KeyConfigConflictOverlay
     {

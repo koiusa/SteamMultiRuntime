@@ -1,12 +1,18 @@
 # Changelog
 
+## [0.2.0]
+
+- Replaced the implementation-oriented public surface with `KeyConfigPanel`, `KeyConfigController`, stable GUID-based binding DTOs, `KeyConfigSettings`, and `KeyConfigIconSet` under `Koiusa.KeyConfig`.
+- Internalized rebinding, persistence, input monitoring, and UI implementation services.
+- Merged the menu toggle responsibility into `KeyConfigPanel` and changed programmatic persistence to JSON import/export.
+
 All notable changes to this package will be documented in this file.
 
 ## [Unreleased]
 
 ### Changed
 
-- Reduced `KeyConfigView` to the UI facade and moved binding-group state, binding catalog rendering, cross-section navigation, and dropdown popup stylesheet lifetime into focused internal components without changing the existing `KeyConfigUiDocument` API.
+- Reduced `KeyConfigView` to the UI facade and moved binding-group state, binding catalog rendering, cross-section navigation, and dropdown popup stylesheet lifetime into focused internal components without changing the existing `KeyConfigPanel` API.
 
 ## [0.1.40] - 2026-08-22
 
@@ -26,7 +32,7 @@ All notable changes to this package will be documented in this file.
 ### Changed
 
 - Alias suppression now records every control changed by the observed state event without relying on Gamepad, Joystick, button, axis, or `trigger` control-name heuristics.
-- Replaced `KeyConfigUiDocument.Update` polling with Input Action release callbacks and coalesced State／DeltaState event-driven input-monitor refreshes while retaining the L1/R1 completion-press guard.
+- Replaced `KeyConfigPanel.Update` polling with Input Action release callbacks and coalesced State／DeltaState event-driven input-monitor refreshes while retaining the L1/R1 completion-press guard.
 
 ### Tests
 
@@ -86,7 +92,7 @@ All notable changes to this package will be documented in this file.
 
 ### Changed
 
-- Consolidated duplicate Submit-release checks in `KeyConfigUiDocument` into one state transition.
+- Consolidated duplicate Submit-release checks in `KeyConfigPanel` into one state transition.
 - Consolidated the repeated rebind completion, cancellation, and failure UI cleanup path.
 
 ## [0.1.28] - 2026-08-21

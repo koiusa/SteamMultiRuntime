@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal sealed class KeyConfigRowLocalization : System.IDisposable
     {

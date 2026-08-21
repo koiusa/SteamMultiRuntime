@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input.Icons;
 using Koiusa.Input;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal sealed class KeyConfigBindingCatalogView : IDisposable
     {
@@ -19,8 +20,8 @@ namespace Koiusa.Keyconfig.Runtime
         private readonly List<Button> mapTabButtons = new List<Button>();
         private readonly HashSet<Button> unavailableButtons = new HashSet<Button>();
 
-        private InputBindingIconResolver iconResolver;
-        private IReadOnlyList<InputBindingService.BindingEntry> entries;
+        private KeyConfigIconSet iconResolver;
+        private IReadOnlyList<KeyConfigBinding> entries;
         private Action<int> onRebind;
         private Action<int> onAddModifier;
         private Action<int> onRemoveModifier;
@@ -45,11 +46,11 @@ namespace Koiusa.Keyconfig.Runtime
         public int SelectedMapIndex => Mathf.Max(0, mapNames.IndexOf(selectedMapName));
         public bool IsUnavailable(Button button) => button != null && unavailableButtons.Contains(button);
 
-        public void SetIconResolver(InputBindingIconResolver resolver) => iconResolver = resolver;
+        public void SetIconResolver(KeyConfigIconSet resolver) => iconResolver = resolver;
         public void SetInteractive(bool enabled) => isInteractive = enabled;
 
         public void Render(
-            IReadOnlyList<InputBindingService.BindingEntry> bindingEntries,
+            IReadOnlyList<KeyConfigBinding> bindingEntries,
             Action<int> rebind,
             Action<int> addModifier,
             Action<int> removeModifier,

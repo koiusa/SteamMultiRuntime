@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal static class CompositeBindingUtility
     {

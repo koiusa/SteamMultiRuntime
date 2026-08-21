@@ -22,7 +22,9 @@ runs:
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.application
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.icons
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.inputguide
         )
 
         for package_dir in "${packages[@]}"; do
@@ -44,7 +46,9 @@ runs:
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.application
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.icons
           Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.inputguide
         )
 
         for package_dir in "${packages[@]}"; do

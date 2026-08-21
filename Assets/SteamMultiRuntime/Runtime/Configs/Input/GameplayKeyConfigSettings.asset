@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e3cf082f1b0a14abeda9ce7529920f, type: 3}
+  m_Name: GameplayKeyConfigSettings
+  m_EditorClassIdentifier: Koiusa.KeyConfig.Runtime::Koiusa.KeyConfig.KeyConfigSettings
+  inputActionAsset: {fileID: -944628639613478452, guid: c536f8683cf789846ba4ac11337b7da1, type: 3}
+  nonRebindableActionMaps:
+  - UI
+  submitActionPath: UI/Submit
+  previousSectionActionPath: UI/PreviousSection
+  nextSectionActionPath: UI/NextSection

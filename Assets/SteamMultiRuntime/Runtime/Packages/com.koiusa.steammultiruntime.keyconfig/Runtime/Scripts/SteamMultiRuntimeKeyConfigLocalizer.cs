@@ -1,5 +1,5 @@
 using System;
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
 using Koiusa.SteamMultiRuntime.Localization;
 using UnityEngine;
 
@@ -24,7 +24,7 @@ namespace Koiusa.SteamMultiRuntime.Keyconfig
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
-            KeyConfigLocalization.Provider = new SteamMultiRuntimeKeyConfigLocalizer();
+            KeyConfigLocalization.SetLocalizer(new SteamMultiRuntimeKeyConfigLocalizer());
         }
     }
 }

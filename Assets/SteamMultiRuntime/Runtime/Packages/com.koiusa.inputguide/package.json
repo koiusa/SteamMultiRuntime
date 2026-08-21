@@ -1,0 +1,14 @@
+{
+  "name": "com.koiusa.inputguide",
+  "displayName": "Koiusa Input Guide",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Runtime input guide, device visualization, and live input highlighting.",
+  "license": "MIT",
+  "dependencies": {
+    "com.unity.inputsystem": "1.18.0",
+    "com.koiusa.input.core": "0.2.0",
+    "com.koiusa.input.icons": "0.1.0",
+    "com.koiusa.keyconfig": "0.2.0"
+  }
+}

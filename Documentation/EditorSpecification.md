@@ -89,8 +89,8 @@ Attached NPC Features
 |---|---|
 | `InputActionsConfig` | Input Action設定用Inspector |
 | `TargetingInputActionsConfig` | Targeting用Action設定Inspector |
-| `KeyConfigInputActionsConfig` | KeyConfig用Action設定Inspector |
-| `InputBindingIconResolver` | BindingとIconの対応設定Inspector |
+| `KeyConfigSettings` | KeyConfig用Action設定Inspector |
+| `KeyConfigIconSet` | BindingとIconの対応設定Inspector |
 
 KeyConfig関連メニュー:
 

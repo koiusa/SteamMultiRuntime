@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
-    public enum RebindConflictResolution { ReplaceExisting, KeepBoth, Cancel }
+    internal enum RebindConflictResolution { ReplaceExisting, KeepBoth, Cancel }
 
-    public sealed class InputRebindController : IDisposable
+    internal sealed class InputRebindController : IDisposable
     {
         private const float RebindTimeoutSeconds = 5f;
         private readonly InputBindingService bindingService;
@@ -25,15 +26,20 @@ namespace Koiusa.Keyconfig.Runtime
         private InputAction pendingConflictAction;
         private int pendingConflictBindingIndex = -1;
         private string pendingDisplayString;
+        private double partStartedAt;
+        private bool cancellationRequested;
 
         public InputRebindController(InputBindingService bindingService) => this.bindingService = bindingService;
         public bool IsRebinding => operation != null;
         public bool HasPendingConflict => pendingTargetAction != null;
         public bool IsBusy => IsRebinding || HasPendingConflict;
+        internal InputAction PendingConflictAction => pendingConflictAction;
+        internal int PendingConflictBindingIndex => pendingConflictBindingIndex;
         public event Action RebindStarted;
         public event Action<string> RebindCompleted;
         public event Action<string, string> RebindConflict;
         public event Action RebindCanceled;
+        public event Action RebindTimedOut;
         public event Action<string> RebindFailed;
 
         public bool StartRebind(Guid actionId, int bindingIndex, string bindingGroup = null)
@@ -62,11 +68,14 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void StartCurrentPart()
         {
+            cancellationRequested = false;
+            partStartedAt = InputState.currentTime;
             aliasSuppression.BeginPartObservation();
             operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart]);
             ExcludePreviouslyReboundControls(operation, activeAction, rebindIndices, rebindPart);
             aliasSuppression.ApplyExclusions(operation);
             operation.WithCancelingThrough("<Keyboard>/escape")
+                .OnMatchWaitForAnother(0)
                 .WithTimeout(RebindTimeoutSeconds)
                 .OnComplete(_ => OnPartComplete())
                 .OnCancel(_ => OnCanceled());
@@ -138,14 +147,16 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnCanceled()
         {
+            var timedOut = !cancellationRequested && InputState.currentTime - partStartedAt >= RebindTimeoutSeconds;
             RestoreOverrides(activeAction, previousOverrides);
             CleanupAfterRebind();
-            RebindCanceled?.Invoke();
+            if (timedOut) RebindTimedOut?.Invoke();
+            else RebindCanceled?.Invoke();
         }
 
         public void CancelRebind()
         {
-            if (operation != null) operation.Cancel();
+            if (operation != null) { cancellationRequested = true; operation.Cancel(); }
             else if (HasPendingConflict) ResolveConflict(RebindConflictResolution.Cancel);
         }
 
@@ -204,6 +215,8 @@ namespace Koiusa.Keyconfig.Runtime
             rebindIndices = null;
             rebindPart = 0;
             previousOverrides = null;
+            cancellationRequested = false;
+            partStartedAt = 0;
         }
         private void ClearPendingConflict()
         {

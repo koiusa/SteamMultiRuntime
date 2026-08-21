@@ -1,0 +1,9 @@
+{
+  "name": "com.koiusa.input.icons",
+  "displayName": "Koiusa Input Icons",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Reusable Input System control-path icon resolution and standard input icons.",
+  "license": "MIT",
+  "dependencies": { "com.unity.inputsystem": "1.18.0" }
+}

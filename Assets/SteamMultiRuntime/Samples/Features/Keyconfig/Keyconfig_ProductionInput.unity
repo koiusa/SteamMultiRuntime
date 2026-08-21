@@ -223,7 +223,7 @@ GameObject:
   - component: {fileID: 1443678954}
   - component: {fileID: 1443678953}
   m_Layer: 0
-  m_Name: KeyConfigUiDocument
+  m_Name: KeyConfigPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -240,7 +240,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 04e623d370189c140981d2c796f6bd64, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: koiusa.Keyconfig::Koiusa.SteamMultiRuntime.KeyConfigUiDocument
+  m_EditorClassIdentifier: Koiusa.KeyConfig.Runtime::Koiusa.KeyConfig.KeyConfigPanel
   inputActionAsset: {fileID: -944628639613478452, guid: a3597a87f1c9e7f468cf50a295baae1d, type: 3}
   inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
   userId: LocalUser

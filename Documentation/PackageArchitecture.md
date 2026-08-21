@@ -32,7 +32,9 @@ Steam Multi Runtime `0.11.0`では、公開汎用パッケージとして`com.ko
 | `com.koiusa.editor-tools` | Animation Event調査やProfiler記録などUnity全般で使えるEditor診断ツール。SteamMultiRuntime本体へ同梱し、単独npm公開はしない |
 | `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、汎用performed Trigger、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
-| `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
+| `com.koiusa.keyconfig` | `KeyConfigPanel`／`KeyConfigController`を公開入口とするInput Systemのリバインドと入力表示 |
+| `com.koiusa.input.icons` | Input SystemのControl pathと標準入力アイコンの解決 |
+| `com.koiusa.inputguide` | 操作一覧、接続デバイス表示、入力ハイライト |
 | `com.koiusa.targetingsystem` | ターゲット検出、ロックオン、Camera連携 |
 
 ### Steam Multi Runtime共通基盤

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     public interface IKeyConfigLocalizer
     {
@@ -19,9 +19,9 @@ namespace Koiusa.Keyconfig.Runtime
 
         static KeyConfigLocalization() => Fallback.LocaleChanged += OnProviderLocaleChanged;
 
-        public static event Action LocaleChanged;
+        internal static event Action LocaleChanged;
 
-        public static IKeyConfigLocalizer Provider
+        internal static IKeyConfigLocalizer Provider
         {
             get => provider;
             set
@@ -35,27 +35,29 @@ namespace Koiusa.Keyconfig.Runtime
             }
         }
 
-        public static KeyConfigLocale BuiltInLocale
+        internal static KeyConfigLanguage BuiltInLocale
         {
             get => Fallback.Locale;
             set => Fallback.Locale = value;
         }
 
-        public static string Get(string key, params object[] arguments) => provider.Get(key, arguments);
+        internal static string Get(string key, params object[] arguments) => provider.Get(key, arguments);
 
-        public static bool TryResolveKey(string keyOrSource, out string key) =>
+        internal static bool TryResolveKey(string keyOrSource, out string key) =>
             provider.TryResolveKey(keyOrSource, out key);
 
-        public static void Set(TextElement element, string key, params object[] arguments)
+        internal static void Set(TextElement element, string key, params object[] arguments)
         {
             if (element != null) element.text = Get(key, arguments);
         }
 
         private static void OnProviderLocaleChanged() => LocaleChanged?.Invoke();
 
+        public static void SetLocalizer(IKeyConfigLocalizer localizer) => Provider = localizer;
+
     }
 
-    public enum KeyConfigLocale
+    public enum KeyConfigLanguage
     {
         English,
         Japanese
@@ -75,6 +77,7 @@ namespace Koiusa.Keyconfig.Runtime
             ["keyconfig.no_bindings"] = "No bindings", ["keyconfig.waiting_input"] = "Waiting for input", ["keyconfig.input_detected"] = "Input detected",
             ["keyconfig.inputs_detected"] = "{0} inputs detected", ["keyconfig.config_missing"] = "Input Actions configuration is missing.",
             ["keyconfig.no_saved_settings"] = "No saved settings.", ["keyconfig.saved"] = "Settings saved.", ["keyconfig.reset_all_done"] = "All bindings reset.",
+            ["keyconfig.persistence_missing"] = "No binding storage is configured.",
             ["keyconfig.rebind_start_failed"] = "Could not start rebinding.", ["keyconfig.action_missing"] = "Action was not found.",
             ["keyconfig.binding_reset"] = "Binding reset.", ["keyconfig.enter_new_key"] = "Press a new key or button.", ["keyconfig.changed"] = "Changed to {0}.",
             ["keyconfig.changed_fallback"] = "Changed to {0} using the fallback binding group.", ["keyconfig.rebind_canceled"] = "Change canceled.",
@@ -104,6 +107,7 @@ namespace Koiusa.Keyconfig.Runtime
             ["keyconfig.no_bindings"] = "バインドがありません", ["keyconfig.waiting_input"] = "入力待ち", ["keyconfig.input_detected"] = "入力を検出しました",
             ["keyconfig.inputs_detected"] = "{0} 件の入力を検出", ["keyconfig.config_missing"] = "Input Actions設定がありません。", ["keyconfig.no_saved_settings"] = "保存済み設定がありません。",
             ["keyconfig.saved"] = "保存しました。", ["keyconfig.reset_all_done"] = "すべてリセットしました。", ["keyconfig.rebind_start_failed"] = "変更を開始できませんでした。",
+            ["keyconfig.persistence_missing"] = "キー設定の保存先が設定されていません。",
             ["keyconfig.action_missing"] = "アクションが見つかりません。", ["keyconfig.binding_reset"] = "リセットしました。", ["keyconfig.enter_new_key"] = "新しいキーまたはボタンを押してください。",
             ["keyconfig.changed"] = "{0} に変更しました。", ["keyconfig.changed_fallback"] = "{0} に変更しました（代替グループ）。", ["keyconfig.rebind_canceled"] = "変更をキャンセルしました。",
             ["keyconfig.rebind_canceled_fallback"] = "変更をキャンセルしました（代替グループ）。", ["keyconfig.rebind_failed"] = "変更に失敗しました。",
@@ -119,13 +123,13 @@ namespace Koiusa.Keyconfig.Runtime
             ["アクション"] = "アクション", ["キー / ボタン"] = "キー / ボタン", ["読込"] = "読込", ["保存"] = "保存", ["全リセット"] = "全リセット", ["閉じる"] = "閉じる"
         };
 
-        private KeyConfigLocale locale;
+        private KeyConfigLanguage locale;
         public event Action LocaleChanged;
 
-        public BuiltInKeyConfigLocalizer() : this(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ja" ? KeyConfigLocale.Japanese : KeyConfigLocale.English) { }
-        public BuiltInKeyConfigLocalizer(KeyConfigLocale initialLocale) => locale = initialLocale;
+        public BuiltInKeyConfigLocalizer() : this(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ja" ? KeyConfigLanguage.Japanese : KeyConfigLanguage.English) { }
+        public BuiltInKeyConfigLocalizer(KeyConfigLanguage initialLocale) => locale = initialLocale;
 
-        public KeyConfigLocale Locale
+        public KeyConfigLanguage Locale
         {
             get => locale;
             set { if (locale == value) return; locale = value; LocaleChanged?.Invoke(); }
@@ -134,7 +138,7 @@ namespace Koiusa.Keyconfig.Runtime
         public string Get(string key, params object[] arguments)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
-            var table = locale == KeyConfigLocale.Japanese ? Japanese : English;
+            var table = locale == KeyConfigLanguage.Japanese ? Japanese : English;
             var text = table.TryGetValue(key, out var localized) ? localized : HumanizeUnknownKey(key);
             if (arguments == null || arguments.Length == 0) return text;
             try { return string.Format(text, arguments); }

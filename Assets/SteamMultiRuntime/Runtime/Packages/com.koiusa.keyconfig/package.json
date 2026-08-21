@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.keyconfig",
   "displayName": "Koiusa Keyconfig",
-  "version": "0.1.40",
+  "version": "0.2.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Runtime key configuration UI and input rebinding utilities for Unity Input System.",
@@ -21,6 +21,7 @@
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
     "com.koiusa.input.core": "0.2.0",
+    "com.koiusa.input.icons": "0.1.0",
     "com.koiusa.ui.core": "0.1.0"
   },
 

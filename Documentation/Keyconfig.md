@@ -4,25 +4,31 @@ Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有
 
 Binding行の変更・リセット・修飾キー追加／削除で同じAction Mapを再描画する場合は、現在のスクロール位置を維持します。Action Mapを切り替えた場合はBinding Listの先頭へ戻ります。
 
-`KeyConfigView`は`KeyConfigUiDocument`向けのFacadeと画面全体のライフサイクルだけを担当します。Binding Groupは`KeyConfigBindingGroupView`、Action MapタブとBinding行は`KeyConfigBindingCatalogView`、画面横断のフォーカス移動は`KeyConfigViewNavigation`、Dropdown popupのStyleSheet寿命は`KeyConfigDropdownPopupStyleScope`が所有します。行ナビゲーション、競合オーバーレイ、入力状態表示、動的ローカライズ、フォールバックUI構築も既存の内部コンポーネントへ分離され、公開APIは`KeyConfigView`と`KeyConfigUiDocument`を通じて従来どおり利用できます。
+`KeyConfigPanel`はUnity UIと`IUiMenu`の公開入口だけを担当します。Binding Group、Action Mapタブ、Binding行、フォーカス移動、競合表示、入力監視は内部コンポーネントへ分離され、利用側から参照しません。
+
+UIを使わない場合は`KeyConfigController`を使用します。Bindingはaction GUIDとbinding GUIDからなる`KeyConfigBindingId`で指定し、並び替えで変化するbinding indexを公開契約へ持ち込みません。保存先はパッケージで固定せず、`ExportOverrides`／`ImportOverrides`のJSONをゲーム側のセーブデータ、ファイル、Steam Cloudなどへ保存します。
+
+公開設定型は`KeyConfigSettings`です。アイコン定義`KeyConfigIconSet`は`com.koiusa.input.icons`が所有します。低レベルの`InputBindingService`、`InputRebindController`、View群はすべて内部実装です。
 
 ## パッケージ構成
 
 | パッケージ | 責務 |
 |---|---|
-| `com.koiusa.keyconfig` | Input Systemの一覧表示、入力監視、リバインド、保存、アイコン解決 |
+| `com.koiusa.keyconfig` | Input Systemの一覧表示、リバインド、Composite編集 |
+| `com.koiusa.input.icons` | Control pathと標準入力アイコンの解決 |
+| `com.koiusa.inputguide` | 操作ガイド、デバイス表示、入力ハイライト |
 | `com.koiusa.steammultiruntime.keyconfig` | Keyconfigを`GameLocalization`へ接続 |
 
 汎用KeyconfigはSteamMultiRuntimeを参照しません。SteamMultiRuntime側が`IKeyConfigLocalizer`を実装して接続します。
 
 `Provider`を設定しない場合は、OSのUI言語を初期値とする日本語・英語の内蔵ローカライザーを使用します。実行中の切替は
-`KeyConfigLocalization.BuiltInLocale = KeyConfigLocale.Japanese`（または`English`）で行えます。独自の翻訳を使う場合は
-`KeyConfigLocalization.Provider`へ`IKeyConfigLocalizer`実装を設定し、言語変更時にその`LocaleChanged`を発火してください。
+`KeyConfigLocalization.BuiltInLocale = KeyConfigLanguage.Japanese`（または`English`）で行えます。独自の翻訳を使う場合は
+`KeyConfigLocalization.SetLocalizer(localizer)`で`IKeyConfigLocalizer`実装を設定し、言語変更時にその`LocaleChanged`を発火してください。
 Action Map、Action、Composite、スキーム、プロファイルの各名前は元の名前をキーとしてProviderへ渡されます。
 
 ## npm / Unity Package Managerからの導入
 
-`com.koiusa.input.core`、`com.koiusa.application`、`com.koiusa.ui.core`、`com.koiusa.keyconfig`はnpmレジストリへ公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。`com.koiusa.editor-tools`はSteamMultiRuntime本体へ同梱しますが、単独の公開対象には含めません。
+`com.koiusa.input.core`、`com.koiusa.application`、`com.koiusa.ui.core`、`com.koiusa.input.icons`、`com.koiusa.keyconfig`、`com.koiusa.inputguide`はnpmレジストリへ公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。`com.koiusa.editor-tools`はSteamMultiRuntime本体へ同梱しますが、単独の公開対象には含めません。
 
 Unityから利用するプロジェクトでは、`Packages/manifest.json`の`scopedRegistries`へnpmを登録します。
 
@@ -36,14 +42,14 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.1.40"
+    "com.koiusa.keyconfig": "0.2.0"
   }
 }
 ```
 
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
-`Validate reusable Unity packages`の手動実行はdry-run専用です。検証・公開ロジックはローカルComposite Actionへ分離し、dry-run Workflowと`release.yml`から共有します。実公開のWorkflowは`Create UPM Release`へ一本化されるため、Trusted Publisherが照合するWorkflow filenameは`release.yml`のままです。実公開時は`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを依存順で公開します。
+`Validate reusable Unity packages`の手動実行はdry-run専用です。検証・公開ロジックはローカルComposite Actionへ分離し、dry-run Workflowと`release.yml`から共有します。実公開のWorkflowは`Create UPM Release`へ一本化されるため、Trusted Publisherが照合するWorkflow filenameは`release.yml`のままです。実公開時は`input.core`、`application`、`ui.core`、`input.icons`、`keyconfig`、`inputguide`の未公開バージョンだけを依存順で公開します。
 
 既存パッケージはnpm側のTrusted Publisherを使用します。各npmパッケージのTrusted PublisherへGitHub Actionsを登録し、GitHubのOwner／Repositoryに`koiusa/SteamMultiRuntime`、Workflow filenameに`release.yml`を指定して`npm publish`を許可します。WorkflowはOIDCに必要な`id-token: write`とnpm 11.6.2を設定し、`NPM_TOKEN`を使用しません。
 
@@ -51,20 +57,20 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 
-公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.1.40`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
+公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.keyconfig`が`0.2.0`です。Keyconfigは`input.core` 0.2.0を推移依存として導入します。
 
 ### パッケージ境界の判断
 
 `input.core`と`ui.core`はKeyconfig以外の画面やGameplay入力からも利用される共有基盤なので、Keyconfigへ統合しません。3パッケージを個別に公開し、利用者は`keyconfig`だけを直接指定して残りを推移依存として解決する構成を維持します。
 
-一方、入力ガイドと内蔵アイコンはKeyconfigのリバインド機能そのものには必須ではなく、配布容量の大部分を占めます。初回公開後に互換性を壊して分離することを避けるため、正式な`1.0.0`公開前に次を判断します。
+入力ガイドと内蔵アイコンはKeyconfigのリバインド機能そのものには必須ではなく、配布容量の大部分を占めるため分離済みです。
 
-- リバインドUIと文字列フォールバックを`com.koiusa.keyconfig`へ残す。
-- `InputGuideOverlay`、デバイスレイアウト、標準アイコンを任意の`com.koiusa.keyconfig.icons`へ分離する。
+- リバインドUIと文字列フォールバックは`com.koiusa.keyconfig`が所有します。
+- 標準アイコンは`com.koiusa.input.icons`、操作ガイドは`com.koiusa.inputguide`が所有します。
 - SVG原稿はRuntime配布物へ含めず、生成元またはDocumentation用Assetとして管理する。
 - アイコンの出典、改変条件、npmでの再配布可否を確定し、ライセンス文書を同梱する。
 
-現状のnpm tarballは、`input.core`が約5 KB、`ui.core`が約4 KB、`keyconfig`が約1.9 MBです。Keyconfigの展開後約4.3 MBのうち、SVG原稿が約2.0 MB、PNGが約1.7 MBを占めます。このため、パッケージ数を減らすよりアイコンを任意依存へ分離する方が効果的です。
+アイコン画像と原稿は`com.koiusa.input.icons`へ移動し、Keyconfig本体の配布物から除外しました。
 
 ## レイアウト
 
@@ -79,7 +85,7 @@ Action Mapタブは固定高の横ScrollViewへ表示します。Map数が増え
 Assets/SteamMultiRuntime/Runtime/Configs/Input/SteamMultiRuntime_InputActions.inputactions
 ```
 
-Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを複製せず、同じ本番アセットを参照します。
+Keyconfig用の`GameplayKeyConfigSettings.asset`はInputActionAssetを複製せず、同じ本番アセットを参照します。
 
 ## テスト
 
@@ -120,12 +126,12 @@ Keyconfig用の`GameplayKeyConfigInputActionsConfig.asset`はInputActionAssetを
 
 ## シーンへの配置
 
-1. `UIDocument`を持つGameObjectへ`KeyConfigUiDocument`を追加します。
-2. `Input Actions Config`へ`GameplayKeyConfigInputActionsConfig.asset`を割り当てます。
+1. `UIDocument`を持つGameObjectへ`KeyConfigPanel`を追加します。
+2. `Input Actions Config`へ`GameplayKeyConfigSettings.asset`を割り当てます。
 3. UI操作など固定するAction Mapを`Non Rebindable Action Maps`へ設定します。
-4. KeyconfigのUXML、USS、必要に応じて`InputBindingIconResolver`を設定します。
+4. KeyconfigのUXML、USSを設定します。アイコン表示を使う場合は`com.koiusa.input.icons`の`KeyConfigIconSet`を設定します。
 
-操作ガイドだけを表示する場合は`Runtime/Resources/System/InputGuideOverlay.prefab`を使用できます。
+操作ガイドは`com.koiusa.inputguide/Runtime/Resources/System/InputGuideOverlay.prefab`を使用します。
 `InputGuideOverlay`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、複数MapはMap名ごとのセクションとして表示されます。実行時は`SetActionMaps`、`SetMapFilter`、`Refresh`で対象を変更できます。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Mapの有効状態またはBinding変更時には表示と入力ハイライトが再構築されます。従来の`actionMapName`は`Specified`で複数Map名が空の場合のフォールバックとして維持されます。
 操作一覧は画面上部の全幅を使い、各Mapを1列としてスクロールなしで横一列に表示します。
 

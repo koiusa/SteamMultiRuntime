@@ -2,10 +2,10 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     /// <summary>Shared input activity evaluation for UI visualizers.</summary>
-    public static class InputControlActivity
+    internal static class InputControlActivity
     {
         public const float DefaultActuationThreshold = 0.15f;
 

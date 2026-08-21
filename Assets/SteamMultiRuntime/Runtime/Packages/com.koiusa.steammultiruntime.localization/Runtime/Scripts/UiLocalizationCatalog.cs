@@ -171,7 +171,8 @@ namespace Koiusa.SteamMultiRuntime.Localization
             E("keyconfig.rebind_canceled_fallback", "リバインドをキャンセルしました。（全表示中）", "Rebinding canceled. (showing all)"),
             E("keyconfig.rebind_failed", "リバインドに失敗しました。", "Rebinding failed."),
             E("keyconfig.rebind_failed_fallback", "リバインドに失敗しました。（全表示中）", "Rebinding failed. (showing all)"),
-            E("keyconfig.config_missing", "KeyConfigInputActionsConfig が未設定、またはInputActionAssetが未設定です。", "KeyConfigInputActionsConfig or InputActionAsset is not assigned."),
+            E("keyconfig.config_missing", "KeyConfigSettings が未設定、またはInputActionAssetが未設定です。", "KeyConfigSettings or InputActionAsset is not assigned."),
+            E("keyconfig.persistence_missing", "キー設定の保存先が設定されていません。", "No binding storage is configured."),
 
             E("lobby.title", "Steam ロビー", "Steam Lobby", "Steam Lobby"),
             E("lobby.group_create", "シーン選択・ロビー管理  [LB: 一覧 / RB: 検索]", "Scene and lobby management  [LB: List / RB: Search]"),

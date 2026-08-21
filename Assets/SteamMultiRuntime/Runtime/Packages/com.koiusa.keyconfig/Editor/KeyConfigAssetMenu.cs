@@ -1,22 +1,23 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
+using Koiusa.Input.Icons;
 
-namespace Koiusa.Keyconfig.Editor
+namespace Koiusa.KeyConfig.Editor
 {
     public static class KeyConfigAssetMenu
     {
         [MenuItem("Tools/KeyConfig/Create Input Action Asset Resolver")]
         private static void CreateInputActionsConfig()
         {
-            CreateAssetInSelectedFolder<KeyConfigInputActionsConfig>("KeyConfigInputActionsConfig.asset");
+            CreateAssetInSelectedFolder<KeyConfigSettings>("KeyConfigSettings.asset");
         }
 
         [MenuItem("Tools/KeyConfig/Create Input Binding Icon Resolver")]
-        private static void CreateInputBindingIconResolver()
+        private static void CreateKeyConfigIconSet()
         {
-            CreateAssetInSelectedFolder<InputBindingIconResolver>("InputBindingIconResolver.asset");
+            CreateAssetInSelectedFolder<KeyConfigIconSet>("KeyConfigIconSet.asset");
         }
 
         private static void CreateAssetInSelectedFolder<T>(string fileName) where T : ScriptableObject

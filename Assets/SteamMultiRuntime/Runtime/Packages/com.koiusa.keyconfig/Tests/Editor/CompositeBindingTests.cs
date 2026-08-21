@@ -1,4 +1,4 @@
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
 using NUnit.Framework;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
@@ -231,7 +231,7 @@ namespace Koiusa.KeyConfig.Tests
         public void ModifierButtons_AreUnavailableWhenBindingDeviceIsDisconnected()
         {
             var action = AddModifiedAction("Reload", "<Gamepad>/leftShoulder", "<Gamepad>/buttonWest");
-            var entry = new InputBindingService(asset).GetBindingEntries()[0];
+            var entry = new KeyConfigBinding(new InputBindingService(asset).GetBindingEntries()[0]);
 
             Assert.That(KeyConfigBindingRowFactory.CanChangeModifier(entry, true, false), Is.False);
             Assert.That(KeyConfigBindingRowFactory.CanChangeModifier(entry, false, false), Is.False);

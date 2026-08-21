@@ -1,0 +1,6 @@
+{
+  "name": "Koiusa.InputGuide.Tests",
+  "references": ["Koiusa.InputGuide.Runtime", "Koiusa.KeyConfig.Runtime", "GUID:75469ad4d38634e559750d17036d5f7c"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Koiusa.Input.Icons;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal static class KeyConfigBindingRowFactory
     {
@@ -19,12 +20,12 @@ namespace Koiusa.Keyconfig.Runtime
         }
 
         public static Result Create(
-            InputBindingService.BindingEntry entry,
+            KeyConfigBinding entry,
             int entryIndex,
             int visibleRowIndex,
             bool showActionName,
             bool isInteractive,
-            InputBindingIconResolver iconResolver,
+            KeyConfigIconSet iconResolver,
             HashSet<Button> unavailableButtons,
             Action<TextElement, string> bindText,
             Action<VisualElement, string> bindTooltip,
@@ -119,7 +120,7 @@ namespace Koiusa.Keyconfig.Runtime
         }
 
         internal static bool CanChangeModifier(
-            InputBindingService.BindingEntry entry,
+            KeyConfigBinding entry,
             bool add,
             bool hasConnectedDevice)
         {

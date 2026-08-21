@@ -1,4 +1,4 @@
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
 using NUnit.Framework;
 
 namespace Koiusa.KeyConfig.Tests

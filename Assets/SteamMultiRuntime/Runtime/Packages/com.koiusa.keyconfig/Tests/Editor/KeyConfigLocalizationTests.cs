@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 
@@ -9,7 +9,7 @@ namespace Koiusa.KeyConfig.Tests
     public sealed class KeyConfigLocalizationTests
     {
         private IKeyConfigLocalizer originalProvider;
-        private KeyConfigLocale originalBuiltInLocale;
+        private KeyConfigLanguage originalBuiltInLocale;
 
         [SetUp]
         public void SetUp()
@@ -28,11 +28,11 @@ namespace Koiusa.KeyConfig.Tests
         [Test]
         public void BuiltInLocalizer_SwitchesStandardUiBetweenEnglishAndJapanese()
         {
-            var localizer = new BuiltInKeyConfigLocalizer(KeyConfigLocale.English);
+            var localizer = new BuiltInKeyConfigLocalizer(KeyConfigLanguage.English);
             Assert.That(localizer.Get("keyconfig.change"), Is.EqualTo("Change"));
             Assert.That(localizer.Get("keyconfig.load"), Is.EqualTo("Load"));
 
-            localizer.Locale = KeyConfigLocale.Japanese;
+            localizer.Locale = KeyConfigLanguage.Japanese;
 
             Assert.That(localizer.Get("keyconfig.change"), Is.EqualTo("変更"));
             Assert.That(localizer.Get("keyconfig.load"), Is.EqualTo("読込"));
@@ -42,7 +42,7 @@ namespace Koiusa.KeyConfig.Tests
         public void ProviderNotConfigured_DoesNotExposeLocalizationKeys()
         {
             KeyConfigLocalization.Provider = null;
-            KeyConfigLocalization.BuiltInLocale = KeyConfigLocale.English;
+            KeyConfigLocalization.BuiltInLocale = KeyConfigLanguage.English;
 
             Assert.That(KeyConfigLocalization.Get("keyconfig.change"), Is.EqualTo("Change"));
             Assert.That(KeyConfigLocalization.Get("keyconfig.future_label"), Is.EqualTo("Future Label"));

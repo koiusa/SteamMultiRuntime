@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
-    public sealed class InputBindingService
+    internal sealed class InputBindingService
     {
         public readonly struct BindingEntry
         {
@@ -84,14 +84,12 @@ namespace Koiusa.Keyconfig.Runtime
         }
 
         private readonly InputActionAsset inputActionAsset;
-        private readonly InputBindingOverridesRepository repository;
         private readonly HashSet<string> nonRebindableActionMaps;
         private readonly InputBindingStructureState structureState;
 
-        public InputBindingService(InputActionAsset inputActionAsset, InputBindingOverridesRepository repository = null, IEnumerable<string> nonRebindableActionMaps = null)
+        public InputBindingService(InputActionAsset inputActionAsset, IEnumerable<string> nonRebindableActionMaps = null)
         {
             this.inputActionAsset = inputActionAsset;
-            this.repository = repository ?? new InputBindingOverridesRepository();
             this.nonRebindableActionMaps = new HashSet<string>(nonRebindableActionMaps ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             structureState = new InputBindingStructureState(inputActionAsset);
             RemoveProtectedOverrides();
@@ -109,35 +107,6 @@ namespace Koiusa.Keyconfig.Runtime
 
             service = new InputBindingService(asset);
             return true;
-        }
-
-        public bool TryLoadOverrides(string userId)
-        {
-            if (inputActionAsset == null)
-            {
-                return false;
-            }
-
-            if (!repository.TryLoad(userId, out var json))
-            {
-                return false;
-            }
-
-            var overridesJson = structureState.Restore(json);
-            if (!string.IsNullOrWhiteSpace(overridesJson)) inputActionAsset.LoadBindingOverridesFromJson(overridesJson);
-            RemoveProtectedOverrides();
-            return true;
-        }
-
-        public void SaveOverrides(string userId)
-        {
-            if (inputActionAsset == null)
-            {
-                return;
-            }
-
-            var json = CaptureOverrides();
-            repository.Save(userId, json);
         }
 
         public string CaptureOverrides()
@@ -166,7 +135,7 @@ namespace Koiusa.Keyconfig.Runtime
             RemoveProtectedOverrides();
         }
 
-        public void ResetAllOverrides(string userId = null)
+        public void ResetAllOverrides()
         {
             if (inputActionAsset != null)
             {
@@ -174,10 +143,6 @@ namespace Koiusa.Keyconfig.Runtime
                 inputActionAsset.RemoveAllBindingOverrides();
             }
 
-            if (!string.IsNullOrWhiteSpace(userId))
-            {
-                repository.Delete(userId);
-            }
         }
 
         public void ResetBinding(InputAction action, int bindingIndex)

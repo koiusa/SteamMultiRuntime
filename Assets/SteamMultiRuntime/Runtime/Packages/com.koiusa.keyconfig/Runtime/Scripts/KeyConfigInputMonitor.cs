@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     internal sealed class KeyConfigInputMonitor : System.IDisposable
     {
@@ -21,7 +21,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         public void Clear() => rows.Clear();
 
-        public void Add(InputBindingService.BindingEntry entry, VisualElement element, Label stateLabel, InputControl control)
+        public void Add(KeyConfigBinding entry, VisualElement element, Label stateLabel, InputControl control)
         {
             rows.Add(new Row(entry, element, stateLabel, control));
         }
@@ -68,7 +68,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private sealed class Row
         {
-            public Row(InputBindingService.BindingEntry entry, VisualElement element, Label stateLabel, InputControl control)
+            public Row(KeyConfigBinding entry, VisualElement element, Label stateLabel, InputControl control)
             {
                 Entry = entry;
                 Element = element;
@@ -76,7 +76,7 @@ namespace Koiusa.Keyconfig.Runtime
                 Control = control;
             }
 
-            public InputBindingService.BindingEntry Entry { get; }
+            public KeyConfigBinding Entry { get; }
             public VisualElement Element { get; }
             public Label StateLabel { get; }
             public InputControl Control { get; set; }

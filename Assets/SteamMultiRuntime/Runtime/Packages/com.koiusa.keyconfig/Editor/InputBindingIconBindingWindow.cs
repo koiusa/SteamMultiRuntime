@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
+using Koiusa.Input.Icons;
 
-namespace Koiusa.Keyconfig.Editor
+namespace Koiusa.KeyConfig.Editor
 {
     public sealed class InputBindingIconBindingWindow : EditorWindow
     {
@@ -20,9 +21,11 @@ namespace Koiusa.Keyconfig.Editor
             public string key;
         }
 
-        private const string LastResolverPathEditorPrefsKey = "Koiusa.Keyconfig.InputBindingIconBindingWindow.LastResolverPath";
+        private const string LastResolverPathEditorPrefsKey = "Koiusa.KeyConfig.KeyConfigIconBindingWindow.LastIconSetPath";
+        private const string LastSettingsPathEditorPrefsKey = "Koiusa.KeyConfig.KeyConfigIconBindingWindow.LastSettingsPath";
 
-        private InputBindingIconResolver iconResolver;
+        private KeyConfigIconSet iconResolver;
+        private KeyConfigSettings settings;
         private Vector2 scrollPosition;
         private int selectedMapTabIndex;
 
@@ -36,12 +39,12 @@ namespace Koiusa.Keyconfig.Editor
         private void OnEnable()
         {
             var lastResolverPath = EditorPrefs.GetString(LastResolverPathEditorPrefsKey, string.Empty);
-            if (string.IsNullOrWhiteSpace(lastResolverPath))
-            {
-                return;
-            }
+            if (!string.IsNullOrWhiteSpace(lastResolverPath))
+                iconResolver = AssetDatabase.LoadAssetAtPath<KeyConfigIconSet>(lastResolverPath);
 
-            iconResolver = AssetDatabase.LoadAssetAtPath<InputBindingIconResolver>(lastResolverPath);
+            var lastSettingsPath = EditorPrefs.GetString(LastSettingsPathEditorPrefsKey, string.Empty);
+            if (!string.IsNullOrWhiteSpace(lastSettingsPath))
+                settings = AssetDatabase.LoadAssetAtPath<KeyConfigSettings>(lastSettingsPath);
         }
 
         private void OnGUI()
@@ -50,26 +53,34 @@ namespace Koiusa.Keyconfig.Editor
             EditorGUILayout.Space();
 
             EditorGUI.BeginChangeCheck();
-            iconResolver = (InputBindingIconResolver)EditorGUILayout.ObjectField(
+            iconResolver = (KeyConfigIconSet)EditorGUILayout.ObjectField(
                 "Icon Resolver",
                 iconResolver,
-                typeof(InputBindingIconResolver),
+                typeof(KeyConfigIconSet),
                 false);
             if (EditorGUI.EndChangeCheck())
             {
                 SaveLastResolver();
             }
 
+            EditorGUI.BeginChangeCheck();
+            settings = (KeyConfigSettings)EditorGUILayout.ObjectField(
+                "Key Config Settings",
+                settings,
+                typeof(KeyConfigSettings),
+                false);
+            if (EditorGUI.EndChangeCheck()) SaveLastSettings();
+
             if (iconResolver == null)
             {
-                EditorGUILayout.HelpBox("InputBindingIconResolver を設定してください。", MessageType.Info);
+                EditorGUILayout.HelpBox("KeyConfigIconSet を設定してください。", MessageType.Info);
                 return;
             }
 
-            var inputActionAsset = iconResolver.ResolveInputActionAsset();
+            var inputActionAsset = settings != null ? settings.Resolve() : null;
             if (inputActionAsset == null)
             {
-                EditorGUILayout.HelpBox("KeyConfigInputActionsConfigとInputActionAssetを設定してください。", MessageType.Warning);
+                EditorGUILayout.HelpBox("Key Config SettingsにInputActionAsset設定済みのKeyConfigSettingsを指定してください。", MessageType.Warning);
                 return;
             }
 
@@ -148,7 +159,7 @@ namespace Koiusa.Keyconfig.Editor
             }
         }
 
-        private static List<BindingRow> BuildRows(InputActionAsset asset, InputBindingIconResolver resolver)
+        private static List<BindingRow> BuildRows(InputActionAsset asset, KeyConfigIconSet resolver)
         {
             var rows = new List<BindingRow>();
             var keySet = new HashSet<string>(StringComparer.Ordinal);
@@ -259,6 +270,18 @@ namespace Koiusa.Keyconfig.Editor
             }
 
             EditorPrefs.SetString(LastResolverPathEditorPrefsKey, path);
+        }
+
+        private void SaveLastSettings()
+        {
+            if (settings == null)
+            {
+                EditorPrefs.DeleteKey(LastSettingsPathEditorPrefsKey);
+                return;
+            }
+
+            var path = AssetDatabase.GetAssetPath(settings);
+            if (!string.IsNullOrWhiteSpace(path)) EditorPrefs.SetString(LastSettingsPathEditorPrefsKey, path);
         }
 
     }

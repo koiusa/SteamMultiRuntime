@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Koiusa.Keyconfig.Editor
+namespace Koiusa.KeyConfig.Editor
 {
     internal static class InputBindingIconEditorUi
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
-namespace Koiusa.Keyconfig.Runtime
+namespace Koiusa.KeyConfig
 {
     /// <summary>Suppresses logical aliases emitted by the state event that completes a composite part.</summary>
     internal sealed class RebindAliasSuppression : IDisposable

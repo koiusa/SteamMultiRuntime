@@ -1,5 +1,5 @@
 using Koiusa.Input;
-using Koiusa.Keyconfig.Runtime;
+using Koiusa.KeyConfig;
 using Koiusa.SteamMultiRuntime.Character.UI;
 using Koiusa.UI.Core;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField] private GameObject pauseMenuRoot;
         [SerializeField] private UIDocument pauseMenuDocument;
-        [SerializeField] private KeyConfigMenuToggle keyConfigMenu;
+        [SerializeField] private KeyConfigPanel keyConfigPanel;
         [SerializeField] private InputActionsConfig inputActionsConfig;
 
         private InputActionBinding toggleBinding;
@@ -197,7 +197,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private void OpenKeyConfig()
         {
-            if (keyConfigMenu != null) UiMenuNavigator.Push(keyConfigMenu);
+            if (keyConfigPanel != null) UiMenuNavigator.Push(keyConfigPanel);
         }
 
         private void OpenCharacterSelect()

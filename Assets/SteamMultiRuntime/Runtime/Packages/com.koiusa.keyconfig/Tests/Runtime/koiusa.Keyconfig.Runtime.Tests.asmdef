@@ -1,8 +1,8 @@
 {
-  "name": "koiusa.Keyconfig.Runtime.Tests",
+  "name": "Koiusa.KeyConfig.Runtime.Tests",
   "rootNamespace": "Koiusa.KeyConfig.Tests",
   "references": [
-    "koiusa.Keyconfig.Runtime",
+    "Koiusa.KeyConfig.Runtime",
     "GUID:75469ad4d38634e559750d17036d5f7c"
   ],
   "optionalUnityReferences": ["TestAssemblies"]

@@ -2,7 +2,7 @@
   "name": "Koiusa.SteamMultiRuntime.Keyconfig.Runtime",
   "rootNamespace": "Koiusa.SteamMultiRuntime.Keyconfig",
   "references": [
-    "koiusa.Keyconfig.Runtime",
+    "Koiusa.KeyConfig.Runtime",
     "Koiusa.SteamMultiRuntime.Localization.Runtime"
   ],
   "autoReferenced": true,

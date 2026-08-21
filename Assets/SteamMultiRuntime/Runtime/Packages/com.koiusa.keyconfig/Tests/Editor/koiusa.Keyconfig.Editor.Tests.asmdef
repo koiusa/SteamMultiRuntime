@@ -1,8 +1,8 @@
 {
-  "name": "koiusa.Keyconfig.Editor.Tests",
+  "name": "Koiusa.KeyConfig.Editor.Tests",
   "rootNamespace": "Koiusa.KeyConfig.Tests",
   "references": [
-    "koiusa.Keyconfig.Runtime",
+    "Koiusa.KeyConfig.Runtime",
     "GUID:75469ad4d38634e559750d17036d5f7c"
   ],
   "includePlatforms": ["Editor"],

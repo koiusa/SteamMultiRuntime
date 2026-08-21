@@ -1,8 +1,9 @@
 {
-    "name": "koiusa.Keyconfig.Editor",
+    "name": "Koiusa.KeyConfig.Editor",
     "rootNamespace": "",
     "references": [
         "GUID:6b34352181405ab4fb3bb7eb02e80c9a",
+        "Koiusa.Input.Icons.Runtime",
         "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [

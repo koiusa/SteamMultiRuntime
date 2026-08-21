@@ -1,0 +1,6 @@
+{
+  "name": "Koiusa.Input.Icons.Editor",
+  "references": ["Koiusa.Input.Icons.Runtime"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}
