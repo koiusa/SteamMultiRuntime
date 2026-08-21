@@ -37,6 +37,7 @@ namespace Koiusa.Keyconfig.Runtime
         private int pendingRebindBindingIndex;
         private string pendingRebindBindingGroup;
         private int activeRebindEntryIndex = -1;
+        private bool sectionNavigationBlocked;
         private readonly List<InputAction> suspendedActions = new List<InputAction>();
         private string sessionOverridesJson;
         private bool hasActiveEditSession;
@@ -73,6 +74,7 @@ namespace Koiusa.Keyconfig.Runtime
             InputSystem.onDeviceChange += OnInputDeviceChange;
             view.Build();
             view.SetNavigationSubmitBlocked(false);
+            sectionNavigationBlocked = false;
             view.BindActions(OnLoadClicked, OnSaveClicked, OnResetAllClicked, OnCloseClicked, OnBindingGroupChangedFromUi);
             var asset = bindingService?.InputActionAsset;
             navigationSession = new UiNavigationInputSession(
@@ -108,6 +110,7 @@ namespace Koiusa.Keyconfig.Runtime
         {
             InputSystem.onDeviceChange -= OnInputDeviceChange;
             view.SetNavigationSubmitBlocked(false);
+            sectionNavigationBlocked = false;
             CancelPendingRebindRelease();
             activeRebindEntryIndex = -1;
             rebindController?.CancelRebind();
@@ -124,6 +127,7 @@ namespace Koiusa.Keyconfig.Runtime
         private void Update()
         {
             UpdateSubmitReleaseState();
+            UpdateSectionNavigationBlock();
             if (bindingService != null && (rebindController == null || !rebindController.IsBusy))
             {
                 view.UpdateInputStates(bindingService.InputActionAsset);
@@ -147,6 +151,16 @@ namespace Koiusa.Keyconfig.Runtime
             }
 
             view.SetNavigationSubmitBlocked(false);
+        }
+
+        private void UpdateSectionNavigationBlock()
+        {
+            if (!sectionNavigationBlocked || rebindController?.IsBusy == true) return;
+            var asset = bindingService?.InputActionAsset;
+            var previous = asset?.FindAction(inputActionsConfig?.PreviousSectionActionPath);
+            var next = asset?.FindAction(inputActionsConfig?.NextSectionActionPath);
+            if (previous?.IsPressed() == true || next?.IsPressed() == true) return;
+            sectionNavigationBlocked = false;
         }
 
         public void SetBindingGroup(string group)
@@ -395,6 +409,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnRebindStarted()
         {
+            sectionNavigationBlocked = true;
             view.SetNavigationSubmitBlocked(true);
             view.SetInteractive(false);
             view.SetLocalizedStatus("keyconfig.enter_new_key");
@@ -474,7 +489,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnPreviousSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
+            if (!sectionNavigationBlocked && pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(-1);
         }
 
@@ -509,7 +524,7 @@ namespace Koiusa.Keyconfig.Runtime
 
         private void OnNextSectionPerformed(InputAction.CallbackContext context)
         {
-            if (pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
+            if (!sectionNavigationBlocked && pendingRebindReleaseAction == null && (rebindController == null || !rebindController.IsBusy))
                 view.SelectAdjacentSection(1);
         }
 

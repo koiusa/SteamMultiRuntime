@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.37] - 2026-08-21
+
+### Fixed
+
+- Blocks PreviousSection and NextSection callbacks from reusing the L1/R1 press that completed rebinding, then restores tab navigation after those actions are released.
+
 ## [0.1.36] - 2026-08-21
 
 ### Fixed
