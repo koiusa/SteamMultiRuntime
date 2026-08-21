@@ -7,6 +7,7 @@ All notable changes to this package will be documented in this file.
 ### Fixed
 
 - Keeps section navigation blocked through the remainder of the Input System update that completes an L1/R1 rebind, then evaluates release state from the UI scheduler so the completing press cannot move tabs.
+- Replaced parallel pending-rebind fields, edit-session flags, and scheduler flags with nullable state objects and owned UI schedule items.
 
 ## [0.1.38] - 2026-08-22
 
