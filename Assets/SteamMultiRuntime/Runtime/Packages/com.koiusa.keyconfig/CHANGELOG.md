@@ -2,6 +2,13 @@
 
 All notable changes to this package will be documented in this file.
 
+## [0.1.13] - 2026-08-21
+
+### Changed
+
+- Exposed the logical modifier count on binding entries so row controls no longer infer structure by parsing localized display text.
+- Isolated ordered logical-binding replacement construction from the mutation step.
+
 ## [0.1.12] - 2026-08-21
 
 ### Fixed

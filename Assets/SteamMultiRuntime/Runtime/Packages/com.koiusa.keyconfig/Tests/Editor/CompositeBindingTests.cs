@@ -28,6 +28,7 @@ namespace Koiusa.KeyConfig.Tests
 
             Assert.That(entries, Has.Count.EqualTo(1));
             Assert.That(entries[0].IsComposite, Is.True);
+            Assert.That(entries[0].ModifierCount, Is.EqualTo(1));
             Assert.That(entries[0].IsPartOfComposite, Is.False);
             Assert.That(entries[0].DisplayName, Is.EqualTo("Ctrl+R"));
             Assert.That(entries[0].IsRebindable, Is.True);
@@ -93,7 +94,7 @@ namespace Koiusa.KeyConfig.Tests
         }
 
         [Test]
-        public void AddModifier_WithMultipleBindings_ChangesSelectedBindingWithoutReorderingRows()
+        public void ModifierChange_WithMultipleBindings_ChangesSelectedBindingWithoutReorderingRows()
         {
             var action = map.AddAction("Reload", InputActionType.Button);
             action.AddBinding("<Keyboard>/r");

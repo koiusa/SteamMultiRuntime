@@ -70,14 +70,13 @@ namespace Koiusa.Keyconfig.Runtime
 
             var buttonCell = new VisualElement();
             buttonCell.AddToClassList("keyconfig-cell-buttons");
-            var modifierCount = entry.IsComposite ? entry.DisplayName.Split('+').Length - 1 : 0;
             var addModifierButton = CreateButton(
                 "keyconfig.add_modifier", "keyconfig.add_modifier_tooltip", "keyconfig-modifier-button",
-                entry.IsRebindable && modifierCount < 2, isInteractive, unavailableButtons, bindText, bindTooltip,
+                entry.IsRebindable && entry.ModifierCount < 2, isInteractive, unavailableButtons, bindText, bindTooltip,
                 () => onAddModifier?.Invoke(entryIndex));
             var removeModifierButton = CreateButton(
                 "keyconfig.remove_modifier", "keyconfig.remove_modifier_tooltip", "keyconfig-modifier-button",
-                entry.IsRebindable && modifierCount > 0, isInteractive, unavailableButtons, bindText, bindTooltip,
+                entry.IsRebindable && entry.ModifierCount > 0, isInteractive, unavailableButtons, bindText, bindTooltip,
                 () => onRemoveModifier?.Invoke(entryIndex));
             var hasConnectedControl = InputControlActivity.IsUsable(InputControlActivity.Resolve(entry.BindingPath));
             var changeButton = CreateButton(

@@ -9,7 +9,21 @@ namespace Koiusa.Keyconfig.Runtime
     {
         public readonly struct BindingEntry
         {
-            public BindingEntry(Guid actionId, string actionName, string actionMapName, string schemeName, string profileName, int bindingIndex, Guid bindingId, string displayName, bool isComposite, bool isPartOfComposite, bool isRebindable, string groups, string bindingPath)
+            public BindingEntry(
+                Guid actionId,
+                string actionName,
+                string actionMapName,
+                string schemeName,
+                string profileName,
+                int bindingIndex,
+                Guid bindingId,
+                string displayName,
+                bool isComposite,
+                bool isPartOfComposite,
+                bool isRebindable,
+                string groups,
+                string bindingPath,
+                int modifierCount = 0)
             {
                 ActionId = actionId;
                 ActionName = actionName;
@@ -24,6 +38,7 @@ namespace Koiusa.Keyconfig.Runtime
                 IsRebindable = isRebindable;
                 Groups = groups;
                 BindingPath = bindingPath;
+                ModifierCount = modifierCount;
             }
 
             public Guid ActionId { get; }
@@ -39,6 +54,7 @@ namespace Koiusa.Keyconfig.Runtime
             public bool IsRebindable { get; }
             public string Groups { get; }
             public string BindingPath { get; }
+            public int ModifierCount { get; }
         }
 
         private readonly InputActionAsset inputActionAsset;
@@ -221,7 +237,8 @@ namespace Koiusa.Keyconfig.Runtime
                         binding.isPartOfComposite,
                         IsActionMapRebindable(action.actionMap?.name) && (!binding.isComposite || CompositeBindingUtility.IsSupportedModifierComposite(action, i)),
                         binding.groups,
-                        resolvedBindingPath));
+                        resolvedBindingPath,
+                        CompositeBindingUtility.GetModifierCount(action, i)));
                 }
             }
 

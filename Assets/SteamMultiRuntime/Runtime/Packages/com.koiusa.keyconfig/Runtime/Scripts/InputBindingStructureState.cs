@@ -227,17 +227,25 @@ namespace Koiusa.Keyconfig.Runtime
         {
             var wasEnabled = action.enabled;
             if (wasEnabled) action.Disable();
-
-            var logicalEnd = rootIndex + 1;
-            while (logicalEnd < action.bindings.Count && action.bindings[logicalEnd].isPartOfComposite) logicalEnd++;
-            var rebuiltBindings = new List<InputBinding>(action.bindings.Count - (logicalEnd - rootIndex) + definitions.Count);
-            for (var i = 0; i < rootIndex; i++) rebuiltBindings.Add(action.bindings[i]);
-            for (var i = 0; i < definitions.Count; i++) rebuiltBindings.Add(definitions[i].ToBinding());
-            for (var i = logicalEnd; i < action.bindings.Count; i++) rebuiltBindings.Add(action.bindings[i]);
-
+            var rebuiltBindings = BuildReplacement(action, rootIndex, definitions);
             while (action.bindings.Count > 0) action.ChangeBinding(0).Erase();
             for (var i = 0; i < rebuiltBindings.Count; i++) action.AddBinding(rebuiltBindings[i]);
             if (wasEnabled) action.Enable();
+        }
+
+        private static List<InputBinding> BuildReplacement(
+            InputAction action,
+            int rootIndex,
+            IReadOnlyList<InputBindingDefinition> replacement)
+        {
+            var logicalEnd = rootIndex + 1;
+            while (logicalEnd < action.bindings.Count && action.bindings[logicalEnd].isPartOfComposite) logicalEnd++;
+
+            var result = new List<InputBinding>(action.bindings.Count - (logicalEnd - rootIndex) + replacement.Count);
+            for (var i = 0; i < rootIndex; i++) result.Add(action.bindings[i]);
+            for (var i = 0; i < replacement.Count; i++) result.Add(replacement[i].ToBinding());
+            for (var i = logicalEnd; i < action.bindings.Count; i++) result.Add(action.bindings[i]);
+            return result;
         }
 
         private bool TryFindRoot(Guid rootId, out InputAction action, out int rootIndex)
