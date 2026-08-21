@@ -52,9 +52,21 @@ jobs:
 
   reusable-packages:
     needs: validate-root-package
-    uses: ./.github/workflows/publish-reusable-unity-packages.yml
-    with:
-      publish: ${{ github.event_name == 'push' || inputs.publish }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Validate and publish reusable packages
+        uses: ./.github/actions/publish-reusable-packages
+        with:
+          publish: ${{ github.event_name == 'push' || inputs.publish }}
 
   release:
     if: github.event_name == 'push' || inputs.publish
@@ -77,6 +89,10 @@ jobs:
 
       - name: Set up npm with trusted publishing support
         run: npm install --global npm@11.6.2
+
+      - name: Verify OIDC availability
+        shell: bash
+        run: test -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}"
 
       - name: Check published npm version
         id: npm

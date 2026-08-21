@@ -1,0 +1,60 @@
+name: Validate or publish reusable Unity packages
+description: Validates reusable package tarballs and optionally publishes unpublished versions through npm OIDC.
+
+inputs:
+  publish:
+    description: Publish unpublished versions after validation.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up npm with trusted publishing support
+      shell: bash
+      run: npm install --global npm@11.6.2
+
+    - name: Validate package manifests and tarballs
+      shell: bash
+      run: |
+        set -euo pipefail
+        packages=(
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.application
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
+        )
+
+        for package_dir in "${packages[@]}"; do
+          npm pkg get name version --prefix "$package_dir"
+          npm pack "$package_dir" --dry-run
+        done
+
+    - name: Verify OIDC availability
+      if: inputs.publish == 'true'
+      shell: bash
+      run: test -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}"
+
+    - name: Publish unpublished versions
+      if: inputs.publish == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        packages=(
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.application
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.ui.core
+          Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig
+        )
+
+        for package_dir in "${packages[@]}"; do
+          name="$(node -p "require('./${package_dir}/package.json').name")"
+          version="$(node -p "require('./${package_dir}/package.json').version")"
+
+          if npm view "${name}@${version}" version >/dev/null 2>&1; then
+            echo "Skipping ${name}@${version}: already published"
+            continue
+          fi
+
+          npm publish "$package_dir" --access public
+        done

@@ -39,7 +39,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
-`Publish reusable Unity packages to npm`の手動実行はdry-run専用です。実公開は`Create UPM Release`へ一本化し、`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを依存順で公開します。
+`Validate reusable Unity packages`の手動実行はdry-run専用です。検証・公開ロジックはローカルComposite Actionへ分離し、dry-run Workflowと`release.yml`から共有します。実公開のWorkflowは`Create UPM Release`へ一本化されるため、Trusted Publisherが照合するWorkflow filenameは`release.yml`のままです。実公開時は`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを依存順で公開します。
 
 既存パッケージはnpm側のTrusted Publisherを使用します。各npmパッケージのTrusted PublisherへGitHub Actionsを登録し、GitHubのOwner／Repositoryに`koiusa/SteamMultiRuntime`、Workflow filenameに`release.yml`を指定して`npm publish`を許可します。WorkflowはOIDCに必要な`id-token: write`とnpm 11.6.2を設定し、`NPM_TOKEN`を使用しません。
 

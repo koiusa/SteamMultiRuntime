@@ -17,3 +17,4 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 - Made `main` pushes publish in dependency order, while retaining manual dry-run and release options; releases are idempotent and use Node.js 22.
 - Restricted npm and UPM archives to distributable package content so local IDE state is excluded.
 - Switched automated npm publication entirely to OIDC Trusted Publishing and removed `NPM_TOKEN` usage.
+- Moved reusable-package publishing into a local composite action shared by `release.yml` and the dry-run workflow, while keeping `release.yml` as the trusted publishing identity.
