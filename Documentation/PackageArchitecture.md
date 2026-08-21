@@ -26,7 +26,7 @@ Samples / Prototype / Integration
 
 | パッケージ | 責務 |
 |---|---|
-| `com.koiusa.system.core` | 終了処理などUnityプロジェクト全般で使えるシステム機能 |
+| `com.koiusa.system.core` | 終了要求とアプリのフォーカス・一時停止・終了ライフサイクル |
 | `com.koiusa.system.input` | System CoreをInput Systemへ接続する任意アダプター |
 | `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |

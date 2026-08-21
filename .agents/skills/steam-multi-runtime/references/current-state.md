@@ -13,6 +13,7 @@
 - `Player/Next`: Keyboard 2, D-pad right, or R3. R3 prioritizes a Primary Target in the held right-stick screen direction and falls back to the next target when neutral or no directional candidate exists.
 
 The pause controller is on the root `System` GameObject in `Assets/SteamMultiRuntime/Runtime/Resources/System/System.prefab`. Its runtime children include `PauseMenu` and `KeyConfigUiDocument`. `KeyConfigMenuToggle` is controlled by `PauseMenuController`, not directly by `UI/MenuToggle`.
+The same root owns `ApplicationLifecycle` for push-based focus, application pause, and quitting notifications. `GameQuitter` owns the input-independent, duplicate-safe quit request; `GameQuitInputTrigger` in `com.koiusa.system.input` connects `System/GameQuit` without adding Input dependencies to System Core.
 
 ## UI layout
 

@@ -5,10 +5,19 @@ namespace Koiusa.System.Core
 {
     public sealed class GameQuitter : MonoBehaviour
     {
+        private bool quitRequested;
+
         public static event Action QuitRequested;
+        public bool IsQuitRequested => quitRequested;
 
         public void RequestQuit()
         {
+            if (quitRequested)
+            {
+                return;
+            }
+
+            quitRequested = true;
             QuitRequested?.Invoke();
             Application.Quit();
         }

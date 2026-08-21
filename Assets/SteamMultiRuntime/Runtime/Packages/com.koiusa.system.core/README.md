@@ -8,7 +8,7 @@ Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登�
 
 ## GameQuitter
 
-`GameQuitter`をGameObjectへ追加し、ボタン、メニュー、入力アダプターなどから`RequestQuit()`を呼びます。Runtimeでは`Application.Quit()`を呼び、Unity Editorでは同梱のEditor bridgeがPlay Modeを終了します。
+`GameQuitter`をGameObjectへ追加し、ボタン、メニュー、入力アダプターなどから`RequestQuit()`を呼びます。Runtimeでは`Application.Quit()`を呼び、Unity Editorでは同梱のEditor bridgeがPlay Modeを終了します。同じインスタンスへの終了要求は一度だけ処理され、`IsQuitRequested`で確認できます。
 
 ## Key configuration
 
@@ -26,3 +26,15 @@ GameQuitter.QuitRequested += SaveBeforeQuit;
 ```
 
 購読側は自身のライフタイム終了時に必ず解除してください。
+
+## ApplicationLifecycle
+
+`ApplicationLifecycle`はUnityのフォーカス、一時停止、終了通知をインスタンス単位の型付きイベントとして公開します。状態は`IsFocused`、`IsPaused`、`IsQuitting`から随時確認できます。
+
+```csharp
+applicationLifecycle.FocusChanged += OnFocusChanged;
+applicationLifecycle.PauseChanged += OnPauseChanged;
+applicationLifecycle.Quitting += OnQuitting;
+```
+
+イベントは状態が実際に変化した場合だけ発火します。購読側は自身のライフタイム終了時に解除してください。

@@ -8,3 +8,5 @@ All notable changes to this package will be documented in this file.
 
 - Added input-independent `GameQuitter.RequestQuit()` and `QuitRequested` APIs.
 - Added an Editor bridge that exits Play Mode for quit requests.
+- Added duplicate quit-request suppression and `GameQuitter.IsQuitRequested`.
+- Added `ApplicationLifecycle` focus, pause, and quitting state notifications.
