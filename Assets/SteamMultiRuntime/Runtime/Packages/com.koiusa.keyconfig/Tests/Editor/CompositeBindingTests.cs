@@ -41,6 +41,35 @@ namespace Koiusa.KeyConfig.Tests
         }
 
         [Test]
+        public void Entries_KeepWasdAndArrowMovementCompositesOnSeparateRows()
+        {
+            var move = map.AddAction("Move", InputActionType.Value);
+            move.AddCompositeBinding("Dpad")
+                .With("Up", "<Keyboard>/w")
+                .With("Down", "<Keyboard>/s")
+                .With("Left", "<Keyboard>/a")
+                .With("Right", "<Keyboard>/d");
+            move.AddCompositeBinding("Dpad")
+                .With("Up", "<Keyboard>/upArrow")
+                .With("Down", "<Keyboard>/downArrow")
+                .With("Left", "<Keyboard>/leftArrow")
+                .With("Right", "<Keyboard>/rightArrow");
+
+            var entries = new InputBindingService(asset).GetBindingEntries();
+
+            Assert.That(entries, Has.Count.EqualTo(2));
+            Assert.That(entries[0].BindingPaths, Is.EqualTo(new[]
+            {
+                "<Keyboard>/w", "<Keyboard>/s", "<Keyboard>/a", "<Keyboard>/d"
+            }));
+            Assert.That(entries[1].BindingPaths, Is.EqualTo(new[]
+            {
+                "<Keyboard>/upArrow", "<Keyboard>/downArrow",
+                "<Keyboard>/leftArrow", "<Keyboard>/rightArrow"
+            }));
+        }
+
+        [Test]
         public void Conflict_UsesWholeCombinationAndNormalizesModifierSide()
         {
             var reload = AddModifiedAction("Reload", "<Keyboard>/leftCtrl", "<Keyboard>/r");

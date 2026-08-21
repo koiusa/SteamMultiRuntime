@@ -8,7 +8,7 @@
 
 | 操作 | Keyboard / Mouse | Gamepad |
 |---|---|---|
-| 移動 | WASD / 矢印キー | 左スティック |
+| 移動 | WASD（独立Binding） / 矢印キー（独立Binding） | 左スティック |
 | カメラ | マウス移動 | 右スティック |
 | 攻撃（Combat） | 左クリック | X / □ |
 | ダッシュ | Left Alt | B / ○ |
