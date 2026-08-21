@@ -7,7 +7,7 @@ using UnityEditor.Profiling;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace Koiusa.SteamMultiRuntime.Editor
+namespace Koiusa.EditorTools
 {
     /// <summary>
     /// Reads the Editor Profiler hierarchy so MonoBehaviour callbacks hidden below
@@ -21,11 +21,11 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private const int MaximumFramesPerReport = 90;
         private const int MaximumEntries = 20;
         private const string SessionProfilerWasEnabled =
-            "Koiusa.SteamMultiRuntime.BehaviourProfiler.WasEnabled";
+            "Koiusa.EditorTools.BehaviourProfiler.WasEnabled";
         private const string EnabledPreference =
-            "Koiusa.SteamMultiRuntime.BehaviourProfiler.Enabled";
+            "Koiusa.EditorTools.BehaviourProfiler.Enabled";
         private const string MenuPath =
-            "Tools/SteamMultiRuntime/Diagnostics/Performance/Automatic Behaviour Profiler";
+            "Tools/Koiusa/Diagnostics/Performance/Automatic Behaviour Profiler";
 
         private sealed class Timing
         {

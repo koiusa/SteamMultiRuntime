@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Koiusa.SteamMultiRuntime.Editor
+namespace Koiusa.EditorTools
 {
     public sealed class AnimationEventFinderWindow : EditorWindow
     {
@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime.Editor
         private Vector2 scrollPosition = Vector2.zero;
         private List<AnimationEventResult> results = new List<AnimationEventResult>();
 
-        [MenuItem("Tools/SteamMultiRuntime/Diagnostics/Animation Events/Event Finder")]
+        [MenuItem("Tools/Koiusa/Diagnostics/Animation Events/Event Finder")]
         private static void Open()
         {
             var window = GetWindow<AnimationEventFinderWindow>("Animation Event Finder");

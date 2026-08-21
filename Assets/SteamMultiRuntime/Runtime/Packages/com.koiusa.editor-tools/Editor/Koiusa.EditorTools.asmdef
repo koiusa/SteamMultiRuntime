@@ -1,0 +1,7 @@
+{
+  "name": "Koiusa.EditorTools",
+  "rootNamespace": "Koiusa.EditorTools",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

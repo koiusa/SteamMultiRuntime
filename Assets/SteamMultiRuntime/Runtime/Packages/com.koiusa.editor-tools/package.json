@@ -1,0 +1,11 @@
+{
+  "name": "com.koiusa.editor-tools",
+  "displayName": "Koiusa Editor Tools",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "unityRelease": "9f1",
+  "description": "Reusable diagnostics and asset inspection tools for the Unity Editor.",
+  "license": "MIT",
+  "author": { "name": "koiusa" },
+  "keywords": ["editor", "diagnostics", "animation", "profiler", "unity"]
+}

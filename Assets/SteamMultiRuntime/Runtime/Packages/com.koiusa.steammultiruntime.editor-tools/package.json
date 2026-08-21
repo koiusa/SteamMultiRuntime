@@ -3,7 +3,7 @@
   "displayName": "Steam Multi Runtime Editor Tools",
   "version": "0.1.0",
   "unity": "6000.3",
-  "description": "Shared editor tooling and editor integration contracts for Steam Multi Runtime.",
+  "description": "SteamMultiRuntime-specific editor validation and property drawers.",
   "author": { "name": "koiusa" },
   "dependencies": {
     "com.koiusa.steammultiruntime.core": "0.1.0"

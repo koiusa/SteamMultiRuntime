@@ -28,6 +28,7 @@ Samples / Prototype / Integration
 |---|---|
 | `com.koiusa.system.core` | 終了要求とアプリのフォーカス・一時停止・終了ライフサイクル |
 | `com.koiusa.system.input` | System CoreをInput Systemへ接続する任意アダプター |
+| `com.koiusa.editor-tools` | Animation Event調査やProfiler記録などUnity全般で使えるEditor診断ツール。SteamMultiRuntime本体へ同梱し、単独npm公開はしない |
 | `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
 | `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
@@ -41,7 +42,7 @@ Samples / Prototype / Integration
 | `com.koiusa.steammultiruntime.localization` | 日本語・英語カタログ、Unity Localization連携、導入ツール | `GameLocalization`, `UiLocalizationCatalog` |
 | `com.koiusa.steammultiruntime.keyconfig` | 汎用KeyconfigをSteamMultiRuntimeのLocalizationへ接続 | `SteamMultiRuntimeKeyConfigLocalizer` |
 | `com.koiusa.steammultiruntime.targetingsystem` | 汎用TargetingSystemを共有Input Actions設定へ接続 | `SteamMultiRuntimeTargetingInputActions` |
-| `com.koiusa.steammultiruntime.editor-tools` | Steam Multi Runtime共通のEditor支援 | Animation Event可視化など |
+| `com.koiusa.steammultiruntime.editor-tools` | Steam Multi Runtime固有のEditor支援 | UI表示順Validator、共通属性Drawer |
 
 CoreとLocalizationは異なる関心事です。CoreからLocalizationを参照せず、Localizationから機能ドメインも参照しません。
 KeyconfigとTargetingSystemの汎用実装はプロジェクト汎用パッケージに残し、SteamMultiRuntime固有の接続だけを同名の`com.koiusa.steammultiruntime.*`パッケージへ配置します。
