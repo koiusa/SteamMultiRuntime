@@ -179,7 +179,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd792b3904e31b949bb9b0b0188293e3, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.System.Core.Runtime::Koiusa.System.Core.GameQuitter
+  m_EditorClassIdentifier: Koiusa.Application.Runtime::Koiusa.App.GameQuitter
 --- !u!114 &910000000000000012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,7 +191,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e97066e4e8aa4aa8bd6a888c19e400ce, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.System.Core.Runtime::Koiusa.System.Core.ApplicationLifecycle
+  m_EditorClassIdentifier: Koiusa.Application.Runtime::Koiusa.App.ApplicationLifecycle
 --- !u!114 &910000000000000011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,10 +203,24 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c16008b0565e4552a4dff5987d4312d0, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Koiusa.System.Input.Runtime::Koiusa.System.Input.GameQuitInputTrigger
-  gameQuitter: {fileID: 427363977603238572}
+  m_EditorClassIdentifier: Koiusa.Input.Core.Runtime::Koiusa.Input.InputActionPerformedTrigger
   inputActionsConfig: {fileID: 11400000, guid: d0c08e4223c64f5b9d3987d5dfcbfbea, type: 2}
-  quitActionPath: System/GameQuit
+  actionPath: System/GameQuit
+  performed:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 427363977603238572}
+        m_TargetAssemblyTypeName: Koiusa.App.GameQuitter, Koiusa.Application.Runtime
+        m_MethodName: RequestQuit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument:
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &910000000000000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,10 +1,10 @@
 {
-  "name": "com.koiusa.system.core",
-  "displayName": "Koiusa System Core",
+  "name": "com.koiusa.application",
+  "displayName": "Koiusa Application",
   "version": "0.1.0",
   "unity": "6000.3",
   "unityRelease": "9f1",
-  "description": "Reusable runtime and editor system utilities for Unity projects.",
+  "description": "Reusable application lifecycle and quit handling for Unity projects.",
   "license": "MIT",
   "author": {
     "name": "koiusa"
@@ -12,14 +12,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/koiusa/SteamMultiRuntime.git",
-    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.system.core"
+    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.application"
   },
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
-    "core",
-    "system",
+    "application",
+    "lifecycle",
     "runtime",
     "unity"
   ]

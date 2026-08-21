@@ -18,7 +18,7 @@ Action Map、Action、Composite、スキーム、プロファイルの各名前�
 
 ## npm / Unity Package Managerからの導入
 
-`com.koiusa.input.core`、`com.koiusa.system.core`、`com.koiusa.system.input`、`com.koiusa.ui.core`、`com.koiusa.keyconfig`はnpmレジストリへ公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。`system.input`は`system.core`と`input.core`へ依存する任意アダプターです。`com.koiusa.editor-tools`はSteamMultiRuntime本体へ同梱しますが、単独の公開対象には含めません。
+`com.koiusa.input.core`、`com.koiusa.application`、`com.koiusa.ui.core`、`com.koiusa.keyconfig`はnpmレジストリへ公開します。ソースの正本はこのリポジトリ内の各パッケージディレクトリだけとし、公開用リポジトリへ複製しません。`com.koiusa.editor-tools`はSteamMultiRuntime本体へ同梱しますが、単独の公開対象には含めません。
 
 Unityから利用するプロジェクトでは、`Packages/manifest.json`の`scopedRegistries`へnpmを登録します。
 
@@ -39,7 +39,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
-公開はGitHub Actionsの`Publish reusable Unity packages to npm`を手動実行します。既定はdry-runで、成果物の内容だけを検証します。実公開時は`publish`を有効にし、`input.core`、`system.core`、`system.input`、`ui.core`、`keyconfig`の未公開バージョンだけを公開します。`NPM_TOKEN` secretが必要です。
+公開はGitHub Actionsの`Publish reusable Unity packages to npm`を手動実行します。既定はdry-runで、成果物の内容だけを検証します。実公開時は`publish`を有効にし、`input.core`、`application`、`ui.core`、`keyconfig`の未公開バージョンだけを公開します。`NPM_TOKEN` secretが必要です。
 
 ### パッケージ境界の判断
 

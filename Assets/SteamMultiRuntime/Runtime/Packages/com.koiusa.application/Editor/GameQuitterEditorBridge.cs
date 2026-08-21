@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Koiusa.System.Core.Editor
+namespace Koiusa.App.Editor
 {
     [InitializeOnLoad]
     internal static class GameQuitterEditorBridge

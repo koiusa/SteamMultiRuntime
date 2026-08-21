@@ -1,6 +1,6 @@
 {
-    "name": "Koiusa.System.Core.Editor",
-    "rootNamespace": "Koiusa.System.Core.Editor",
+    "name": "Koiusa.Application.Editor",
+    "rootNamespace": "Koiusa.App.Editor",
     "references": [
         "GUID:9137959953403464f926e849d8e90a3b"
     ],

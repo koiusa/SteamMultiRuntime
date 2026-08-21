@@ -4,38 +4,33 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Koiusa.System.Input.Editor
+namespace Koiusa.Input.Editor
 {
-    [CustomEditor(typeof(GameQuitInputTrigger))]
-    internal sealed class GameQuitInputTriggerEditor : UnityEditor.Editor
+    [CustomEditor(typeof(InputActionPerformedTrigger))]
+    internal sealed class InputActionPerformedTriggerEditor : UnityEditor.Editor
     {
-        private SerializedProperty gameQuitterProperty;
         private SerializedProperty inputActionsConfigProperty;
-        private SerializedProperty quitActionPathProperty;
+        private SerializedProperty actionPathProperty;
+        private SerializedProperty performedProperty;
 
         private void OnEnable()
         {
-            gameQuitterProperty = serializedObject.FindProperty("gameQuitter");
             inputActionsConfigProperty = serializedObject.FindProperty("inputActionsConfig");
-            quitActionPathProperty = serializedObject.FindProperty("quitActionPath");
+            actionPathProperty = serializedObject.FindProperty("actionPath");
+            performedProperty = serializedObject.FindProperty("performed");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(gameQuitterProperty);
             EditorGUILayout.PropertyField(inputActionsConfigProperty);
-
-            if (gameQuitterProperty.objectReferenceValue == null)
-            {
-                EditorGUILayout.HelpBox("GameQuitterを設定してください。", MessageType.Error);
-            }
 
             var config = inputActionsConfigProperty.objectReferenceValue as InputActionsConfig;
             var inputActionAsset = GetInputActionAsset(config);
             if (inputActionAsset == null)
             {
-                EditorGUILayout.PropertyField(quitActionPathProperty);
+                EditorGUILayout.PropertyField(actionPathProperty);
+                EditorGUILayout.PropertyField(performedProperty);
                 EditorGUILayout.HelpBox(
                     config == null
                         ? "Input Actions Configを設定してください。"
@@ -46,6 +41,7 @@ namespace Koiusa.System.Input.Editor
             }
 
             DrawActionPopup(inputActionAsset);
+            EditorGUILayout.PropertyField(performedProperty);
             if (GUILayout.Button("Open Input Action Asset"))
             {
                 AssetDatabase.OpenAsset(inputActionAsset);
@@ -65,7 +61,7 @@ namespace Koiusa.System.Input.Editor
                 }
             }
 
-            var currentPath = quitActionPathProperty.stringValue;
+            var currentPath = actionPathProperty.stringValue;
             var selectedIndex = actionPaths.IndexOf(currentPath);
             if (selectedIndex < 0)
             {
@@ -73,13 +69,13 @@ namespace Koiusa.System.Input.Editor
                 selectedIndex = 0;
             }
 
-            var nextIndex = EditorGUILayout.Popup("Quit Action", selectedIndex, actionPaths.ToArray());
+            var nextIndex = EditorGUILayout.Popup("Action", selectedIndex, actionPaths.ToArray());
             var selectedPath = actionPaths[nextIndex];
-            quitActionPathProperty.stringValue = selectedPath;
+            actionPathProperty.stringValue = selectedPath;
 
             if (string.IsNullOrWhiteSpace(selectedPath) || inputActionAsset.FindAction(selectedPath, false) == null)
             {
-                EditorGUILayout.HelpBox("選択したQuit ActionがInput Action Assetに存在しません。", MessageType.Error);
+                EditorGUILayout.HelpBox("選択したActionがInput Action Assetに存在しません。", MessageType.Error);
             }
         }
 

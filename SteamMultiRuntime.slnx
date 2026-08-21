@@ -28,7 +28,6 @@
   <Project Path="Koiusa.Input.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Locomoter.Netcode.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.TargetingSystem.Editor.csproj" />
-  <Project Path="Koiusa.System.Core.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Steam.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.UI.PlayModeTests.csproj" />
@@ -42,19 +41,18 @@
   <Project Path="UnityChan.Editor.csproj" />
   <Project Path="TNRD.SerializableInterface.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Character.EditorTests.csproj" />
-  <Project Path="Koiusa.System.Input.Editor.csproj" />
+  <Project Path="Koiusa.Application.Editor.csproj" />
   <Project Path="Koiusa.EditorTools.csproj" />
-  <Project Path="Koiusa.System.Input.Runtime.csproj" />
+  <Project Path="Koiusa.Input.Core.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.AnimationDriver.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Localization.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Player.Netcode.Editor.csproj" />
+  <Project Path="Koiusa.Application.Runtime.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.TargetingSetup.Editor.csproj" />
   <Project Path="Facepunch Transport for Netcode for GameObjects.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.PlayModeTests.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.ResourceLoader.Editor.csproj" />
   <Project Path="Koiusa.TargetingSystem.Editor.csproj" />
-  <Project Path="Koiusa.Input.Core.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Localization.Editor.csproj" />
-  <Project Path="Koiusa.System.Core.Editor.csproj" />
   <Project Path="Koiusa.SteamMultiRuntime.Lobby.Netcode.Runtime.csproj" />
 </Solution>

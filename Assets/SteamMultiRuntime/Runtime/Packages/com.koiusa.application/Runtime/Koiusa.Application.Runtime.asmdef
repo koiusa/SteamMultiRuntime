@@ -1,6 +1,6 @@
 {
-    "name": "Koiusa.System.Core.Runtime",
-    "rootNamespace": "Koiusa.System.Core",
+    "name": "Koiusa.Application.Runtime",
+    "rootNamespace": "Koiusa.App",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

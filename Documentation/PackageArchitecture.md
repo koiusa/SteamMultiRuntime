@@ -10,7 +10,7 @@ Samples / Prototype / Integration
   ├─ Steam / Netcode adapters
   └─ Domain implementations
        ├─ SteamMultiRuntime Core / Localization
-       ├─ Input Core / System Core / UI Common
+       ├─ Input Core / Application / UI Common
        └─ Unity packages
 ```
 
@@ -26,10 +26,9 @@ Samples / Prototype / Integration
 
 | パッケージ | 責務 |
 |---|---|
-| `com.koiusa.system.core` | 終了要求とアプリのフォーカス・一時停止・終了ライフサイクル |
-| `com.koiusa.system.input` | System CoreをInput Systemへ接続する任意アダプター |
+| `com.koiusa.application` | 終了要求とアプリのフォーカス・一時停止・終了ライフサイクル |
 | `com.koiusa.editor-tools` | Animation Event調査やProfiler記録などUnity全般で使えるEditor診断ツール。SteamMultiRuntime本体へ同梱し、単独npm公開はしない |
-| `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、UIナビゲーションの共通リピート制御 |
+| `com.koiusa.input.core` | Input System設定、入力Actionの共有とライフタイム管理、汎用performed Trigger、UIナビゲーションの共通リピート制御 |
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
 | `com.koiusa.keyconfig` | Input Systemのリバインドと入力表示 |
 | `com.koiusa.targetingsystem` | ターゲット検出、ロックオン、Camera連携 |
@@ -110,7 +109,7 @@ steammultiruntime.keyconfig ───────> keyconfig + localization
 steammultiruntime.targetingsystem ─> targetingsystem
 
 feature packages ───────────> input.core / core / localization as required
-system.input ───────────────> system.core + input.core
+InputActionPerformedTrigger ─> serialized UnityEvent consumer
 ```
 
 ## ドメイン間の接続方法とリフレクション方針

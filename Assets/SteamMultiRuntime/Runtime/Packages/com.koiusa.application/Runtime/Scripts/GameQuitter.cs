@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Koiusa.System.Core
+namespace Koiusa.App
 {
     public sealed class GameQuitter : MonoBehaviour
     {

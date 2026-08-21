@@ -1,10 +1,10 @@
-# Koiusa System Core
+# Koiusa Application
 
 Unityプロジェクト全般で再利用できるシステム機能を提供します。
 
 ## Installation
 
-Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登録し、Package Managerから`com.koiusa.system.core`をインストールしてください。
+Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登録し、Package Managerから`com.koiusa.application`をインストールしてください。
 
 ## GameQuitter
 
@@ -12,14 +12,14 @@ Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登�
 
 ## Key configuration
 
-Input Systemから終了要求を接続する場合は、任意パッケージ`com.koiusa.system.input`を追加してください。
+Input Systemから終了要求を接続する場合は、`com.koiusa.input.core`の`InputActionPerformedTrigger`を使用します。Triggerのperformedイベントを`GameQuitter.RequestQuit()`へ接続してください。
 
-`system.core`はInput System、`input.core`、`keyconfig`のいずれにも依存しません。
+`application`自体はInput System、`input.core`、`keyconfig`のいずれにも依存しません。
 
 終了要求を記録したり、終了直前の処理を接続したりする場合は静的イベントを購読できます。
 
 ```csharp
-using Koiusa.System.Core;
+using Koiusa.App;
 
 gameQuitter.RequestQuit();
 GameQuitter.QuitRequested += SaveBeforeQuit;
