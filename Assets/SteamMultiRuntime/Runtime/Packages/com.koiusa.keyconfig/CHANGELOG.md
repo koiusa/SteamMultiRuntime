@@ -2,6 +2,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Reduced `KeyConfigView` to the UI facade and moved binding-group state, binding catalog rendering, cross-section navigation, and dropdown popup stylesheet lifetime into focused internal components without changing the existing `KeyConfigUiDocument` API.
+
 ## [0.1.40] - 2026-08-22
 
 ### Fixed

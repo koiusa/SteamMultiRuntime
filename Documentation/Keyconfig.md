@@ -4,7 +4,7 @@ Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有
 
 Binding行の変更・リセット・修飾キー追加／削除で同じAction Mapを再描画する場合は、現在のスクロール位置を維持します。Action Mapを切り替えた場合はBinding Listの先頭へ戻ります。
 
-`KeyConfigView`は画面全体の調停を担当し、Binding行生成、行ナビゲーション、競合オーバーレイ、入力状態表示、動的ローカライズ、フォールバックUI構築はそれぞれ内部コンポーネントへ分離しています。公開APIは`KeyConfigView`と`KeyConfigUiDocument`を通じて従来どおり利用できます。
+`KeyConfigView`は`KeyConfigUiDocument`向けのFacadeと画面全体のライフサイクルだけを担当します。Binding Groupは`KeyConfigBindingGroupView`、Action MapタブとBinding行は`KeyConfigBindingCatalogView`、画面横断のフォーカス移動は`KeyConfigViewNavigation`、Dropdown popupのStyleSheet寿命は`KeyConfigDropdownPopupStyleScope`が所有します。行ナビゲーション、競合オーバーレイ、入力状態表示、動的ローカライズ、フォールバックUI構築も既存の内部コンポーネントへ分離され、公開APIは`KeyConfigView`と`KeyConfigUiDocument`を通じて従来どおり利用できます。
 
 ## パッケージ構成
 
