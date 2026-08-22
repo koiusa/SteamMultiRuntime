@@ -158,7 +158,9 @@ Scrollbarは`com.koiusa.ui.core`の`KoiusaScrollView.uss`を共有します。�
 
 Keyconfigの`PanelSettings`、Runtime Theme、UITK Text Settings、Noto Sans JPの
 動的Font Assetとソースフォントはすべて`com.koiusa.keyconfig`内で所有します。
-表示時はPanel、Text、動的Fallback Font Assetをランタイム複製し、生成された日本語Glyph／Atlasキャッシュで配布元Assetを変更しません。
+UI Toolkitの遅延Text JobがPlay Mode終了後もMaterialを参照できるよう、Text Settingsは
+Material／Atlasをサブアセットに持つKeyconfig専用の永続Dynamic Font Assetを参照します。
+配布元`Noto Sans JP SDF.asset`は実行時表示に直接使用しません。
 Basic SampleはこのRuntime Assetを直接参照するため、SampleのImport以外に利用側の
 PanelSettingsやフォント設定を必要としません。EditorテストはTheme、Text Settings、
 日本語フォールバックが解決できることを検証します。

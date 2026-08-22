@@ -14,6 +14,7 @@ All notable changes to this package will be documented in this file.
 ### Fixed
 
 - Reserved binding-row indicator space so modifier changes and focus restoration no longer shift binding icons horizontally.
+- Replaced runtime-created Panel/Text/Font assets with a Keyconfig-owned persistent dynamic FontAsset whose Material survives deferred UI Toolkit text jobs during Play Mode teardown.
 
 ## [0.2.1] - 2026-08-22
 

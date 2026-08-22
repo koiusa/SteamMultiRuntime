@@ -36,11 +36,11 @@ classDiagram
     class KeyConfigView {
         <<internal UI facade>>
     }
-    class RuntimeFontAssets {
-        <<runtime clones>>
-        PanelSettings
-        PanelTextSettings
-        Dynamic FontAsset
+    class KeyConfigDynamicFontAsset {
+        <<persistent UI asset>>
+        FontAsset
+        Material
+        Atlas Texture
     }
     class InputActionAsset {
         <<Unity Input System>>
@@ -48,7 +48,7 @@ classDiagram
 
     KeyConfigPanel *-- KeyConfigController
     KeyConfigPanel *-- KeyConfigView
-    KeyConfigPanel *-- RuntimeFontAssets
+    KeyConfigView --> KeyConfigDynamicFontAsset
     KeyConfigController *-- InputBindingService
     KeyConfigController *-- InputRebindController
     InputRebindController *-- RebindAliasSuppression

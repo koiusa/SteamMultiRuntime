@@ -21,6 +21,7 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 - Added compact scrollbar styling and shortcut scrolling.
 - Preserved caller-owned `UIDocument.sortingOrder` and applied Overlay Inspector changes during Play Mode.
 - Stopped Input Guide binding refresh callbacks at UI Toolkit Panel detachment so Play Mode teardown can release navigation actions without an Overlay exception.
+- Kept Keyconfig text Materials persistent across Play Mode teardown so deferred UI Toolkit text jobs cannot observe a destroyed runtime Material.
 
 ## [0.12.2] - 2026-08-22
 

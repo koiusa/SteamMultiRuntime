@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.SceneManagement;
-using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
 
 namespace Koiusa.KeyConfig
@@ -47,9 +46,6 @@ namespace Koiusa.KeyConfig
         private string sessionOverridesJson;
         private IVisualElementScheduledItem inputStateUpdate;
         private IVisualElementScheduledItem releaseBlockRefresh;
-        private PanelSettings runtimePanelSettings;
-        private PanelTextSettings runtimeTextSettings;
-        private readonly List<FontAsset> runtimeFontAssets = new List<FontAsset>();
 
         public string BindingGroup => bindingGroup;
         public bool IsVisible => gameObject.activeSelf;
@@ -79,7 +75,6 @@ namespace Koiusa.KeyConfig
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
-            IsolateDynamicFontAssets();
 
             view = new KeyConfigView(uiDocument, layoutAsset, styleSheet);
             view.SetIconResolver(iconResolver);
@@ -211,54 +206,6 @@ namespace Koiusa.KeyConfig
                 controller = null;
             }
 
-            for (var i = 0; i < runtimeFontAssets.Count; i++)
-                if (runtimeFontAssets[i] != null) Destroy(runtimeFontAssets[i]);
-            runtimeFontAssets.Clear();
-            if (runtimeTextSettings != null) Destroy(runtimeTextSettings);
-            if (runtimePanelSettings != null) Destroy(runtimePanelSettings);
-            runtimeTextSettings = null;
-            runtimePanelSettings = null;
-        }
-
-        private void IsolateDynamicFontAssets()
-        {
-            var sourcePanelSettings = uiDocument?.panelSettings;
-            var sourceTextSettings = sourcePanelSettings?.textSettings;
-            if (sourcePanelSettings == null || sourceTextSettings == null) return;
-
-            runtimePanelSettings = Instantiate(sourcePanelSettings);
-            runtimePanelSettings.name = $"{sourcePanelSettings.name} (Runtime)";
-            runtimeTextSettings = Instantiate(sourceTextSettings);
-            runtimeTextSettings.name = $"{sourceTextSettings.name} (Runtime)";
-
-            var sourceFallbacks = sourceTextSettings.fallbackFontAssets;
-            var runtimeFallbacks = new List<FontAsset>(sourceFallbacks?.Count ?? 0);
-            if (sourceFallbacks != null)
-            {
-                for (var i = 0; i < sourceFallbacks.Count; i++)
-                {
-                    var sourceFont = sourceFallbacks[i];
-                    if (sourceFont == null || sourceFont.atlasPopulationMode == AtlasPopulationMode.Static)
-                    {
-                        runtimeFallbacks.Add(sourceFont);
-                        continue;
-                    }
-
-                    var runtimeFont = FontAsset.CreateFontAsset(sourceFont.sourceFontFile);
-                    if (runtimeFont == null)
-                    {
-                        Debug.LogError($"Could not create runtime font asset from {sourceFont.name}.", this);
-                        continue;
-                    }
-                    runtimeFont.name = $"{sourceFont.name} (Runtime)";
-                    runtimeFontAssets.Add(runtimeFont);
-                    runtimeFallbacks.Add(runtimeFont);
-                }
-            }
-
-            runtimeTextSettings.fallbackFontAssets = runtimeFallbacks;
-            runtimePanelSettings.textSettings = runtimeTextSettings;
-            uiDocument.panelSettings = runtimePanelSettings;
         }
 
         private void RebuildBindingList()

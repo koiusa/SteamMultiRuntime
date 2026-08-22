@@ -28,9 +28,15 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(textSettings, Is.Not.Null, "UITK Text Settings must be assigned.");
             Assert.That(textSettings.fallbackFontAssets, Is.Not.Null.And.Not.Empty,
                 "UITK Text Settings must provide a Japanese-capable fallback font.");
-            Assert.That(textSettings.fallbackFontAssets[0], Is.Not.Null);
+            var fallbackFont = textSettings.fallbackFontAssets[0];
+            Assert.That(fallbackFont, Is.Not.Null);
+            Assert.That(AssetDatabase.Contains(fallbackFont), Is.True,
+                "The fallback FontAsset and its Material must remain persistent through Play Mode teardown.");
+            Assert.That(AssetDatabase.GetAssetPath(fallbackFont), Does.EndWith("KeyConfig Dynamic SDF.asset"));
+            Assert.That(AssetDatabase.Contains(fallbackFont.material), Is.True,
+                "UI Toolkit deferred text jobs must not reference a runtime-created Material.");
             var runtimeFont = UnityEngine.TextCore.Text.FontAsset.CreateFontAsset(
-                textSettings.fallbackFontAssets[0].sourceFontFile);
+                fallbackFont.sourceFontFile);
             Assert.That(runtimeFont, Is.Not.Null);
             try
             {
