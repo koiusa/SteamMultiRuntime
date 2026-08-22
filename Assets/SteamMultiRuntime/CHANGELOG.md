@@ -2,6 +2,25 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.12.3] - 2026-08-22
+
+### Added
+
+- Updated `com.koiusa.inputguide` to 0.2.0 with the official compact operations panel, Action Map tabs, selection controls, and input navigation.
+- Added `InputGuideSelectionController` and `InputGuideNavigationController` to the official Input Guide Prefab.
+
+### Changed
+
+- Updated the application version to 0.10.5 and Android version code to 4.
+- Updated `com.koiusa.steammultiruntime.keyconfig` to 0.1.5 and aligned its Keyconfig dependency to 0.2.1.
+- Reused `UI/PreviousSection`, `UI/NextSection`, and `UI/Navigate` for compact Input Guide navigation.
+
+### Fixed
+
+- Fixed compact operation-row overlap and `All` displaying only the Player map.
+- Added compact scrollbar styling and shortcut scrolling.
+- Preserved caller-owned `UIDocument.sortingOrder` and applied Overlay Inspector changes during Play Mode.
+
 ## [0.12.2] - 2026-08-22
 
 ### Changed

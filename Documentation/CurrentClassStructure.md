@@ -52,6 +52,12 @@ TargetingCommandInput
 InputActionPerformedTrigger（input.core）
   → serialized UnityEvent（System.prefab）
   → GameQuitter.RequestQuit（application）
+
+InputGuideSelectionController
+  → InputGuideOverlay（Map／Binding Group）
+
+InputGuideNavigationController
+  → InputGuideOverlay（Map tabs／scroll）
 ```
 
 ドメイン間の接続に型名文字列、Reflection、`SendMessage`を使いません。インターフェースの所有先は、その契約を定義するドメインまたはSteam Multi Runtime共通の`core`です。例外条件とレビュー方法は[Package Architectureのリフレクション方針](PackageArchitecture.md#ドメイン間の接続方法とリフレクション方針)に従います。
@@ -73,6 +79,12 @@ SteamMultiRuntime
 │  ├─ PlayerGameplayInputReader
 │  ├─ ActorInputState
 │  └─ IActorInputSource
+│
+├─ Input Guide
+│  ├─ InputGuideOverlay
+│  ├─ InputGuideSelectionController
+│  ├─ InputGuideNavigationController
+│  └─ InputGuideOperationPanel
 │
 ├─ Player Locomotion
 │  ├─ Controller
@@ -269,6 +281,12 @@ com.koiusa.application 0.2.0
    ├─ FocusChanged / IsFocused
    ├─ PauseChanged / IsPaused
    └─ Quitting / IsQuitting
+
+com.koiusa.inputguide 0.2.0
+├─ InputGuideOverlay
+├─ InputGuideSelectionController
+├─ InputGuideNavigationController
+└─ InputGuideOperationPanel
 ```
 
 両パッケージは相互参照しません。`input.core`は入力発生をシリアライズ済み`UnityEvent`として公開し、`System.prefab`が`application`の終了要求へ接続します。これにより`application`はInput Systemなしでも単独利用できます。

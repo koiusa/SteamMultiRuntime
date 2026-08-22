@@ -31,7 +31,7 @@ SteamMultiRuntimeの設計・運用資料の索引です。
 | 文書 | 内容 |
 |---|---|
 | [Input Bindings](InputBindings.md) | 本番Input Actionの操作一覧 |
-| [Keyconfig](Keyconfig.md) | リバインド、保存、入力アイコン、配置方法 |
+| [Keyconfig](Keyconfig.md) | リバインド、保存、入力アイコン、Input Guideの配置と操作 |
 | [Targeting System](TargetingSystem.md) | Lock-On実装、入力接続、シーン設定 |
 
 ## セットアップと運用

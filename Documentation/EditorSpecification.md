@@ -11,6 +11,13 @@
 - 実行時状態は原則として読み取り専用で表示する
 - メニューは操作種別ごとに`Configuration`、`Maintenance`、`Diagnostics`、`Validation`へ分類し、その下を機能別に分ける
 
+## Input Guide Inspector
+
+- `InputGuideOverlayEditor`はPlay Mode中の表示設定を即時再構築し、Runtime Display Modeを切り替える。
+- `InputGuideSelectionControllerEditor`は参照先OverlayのInput Actions ConfigからAction MapとBinding Groupを列挙する。`Specified`ではMapをマスク選択し、Map名として保存する。
+- `InputGuideNavigationControllerEditor`は同じConfigから前後Map ActionとVector2 Scroll Actionを選択する。
+- Input Actions Configと`UIDocument.sortingOrder`は各Controllerへ複製せず、Overlayまたは利用側を正本とする。
+
 ## Player／Traversal Inspector
 
 `Feature`で終わるTraversalコンポーネントには青い歯車アイコン、
