@@ -30,6 +30,8 @@ The same root owns `ApplicationLifecycle` for push-based focus, application paus
 - Target Indicatorは表示専用で、Document Rootから動的Markerまで`PickingMode.Ignore`を使用し、前面MenuへのPointer入力を遮断しません。
 - Those menus implement `IUiMenu`; `UiMenuNavigator` owns root opening, child Push, Back restoration, and CloseAll. Pause pushes Key Config and Character Select so closing either child restores Pause automatically.
 - When a prior binding override path is null or empty, rebind reset must call `RemoveBindingOverride`; only non-empty paths may be passed to `ApplyBindingOverride`.
+- Key ConfigのInteractive RebindはDualShock／DualSense固有の`leftTriggerButton`／`rightTriggerButton`を候補から除外し、L2／R2を対応する`leftTrigger`／`rightTrigger`として登録します。
+- Key ConfigはPanelSettings、PanelTextSettings、Dynamic Font Assetを実行時に複製し、日本語Glyph／Atlas生成で配布元`Noto Sans JP SDF.asset`を変更しません。Font生成テストも一時Font Assetだけを変更します。
 
 ## Player, ownership, and guard
 

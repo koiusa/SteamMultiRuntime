@@ -23,9 +23,8 @@ UIを使わない場合は`KeyConfigController`を使用します。Bindingはac
 
 汎用KeyconfigはSteamMultiRuntimeを参照しません。SteamMultiRuntime側が`IKeyConfigLocalizer`を実装して接続します。
 
-`Provider`を設定しない場合は、OSのUI言語を初期値とする日本語・英語の内蔵ローカライザーを使用します。実行中の切替は
-`KeyConfigLocalization.BuiltInLocale = KeyConfigLanguage.Japanese`（または`English`）で行えます。独自の翻訳を使う場合は
-`KeyConfigLocalization.SetLocalizer(localizer)`で`IKeyConfigLocalizer`実装を設定し、言語変更時にその`LocaleChanged`を発火してください。
+`Provider`を設定しない場合は、OSのUI言語を初期値とする日本語・英語の内蔵ローカライザーを使用します。実行中に切り替える場合は、
+`BuiltInKeyConfigLocalizer`を生成して`KeyConfigLocalization.SetLocalizer(localizer)`へ設定し、その公開`Locale`を`KeyConfigLanguage.Japanese`または`English`へ変更します。独自の翻訳を使う場合も、同じメソッドへ`IKeyConfigLocalizer`実装を設定し、言語変更時にその`LocaleChanged`を発火してください。
 Action Map、Action、Composite、スキーム、プロファイルの各名前は元の名前をキーとしてProviderへ渡されます。
 
 ## npm / Unity Package Managerからの導入

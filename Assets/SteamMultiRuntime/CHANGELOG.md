@@ -2,6 +2,18 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.12.2] - 2026-08-22
+
+### Changed
+
+- Updated `com.koiusa.keyconfig` to 0.2.1.
+- Made `Documentation/KeyConfigArchitecture.md` the single source of truth for Keyconfig class and public-interface diagrams, with package versions sourced from their manifests.
+
+### Fixed
+
+- Excluded DualShock/DualSense `leftTriggerButton` and `rightTriggerButton` HID aliases from interactive rebinding so L2/R2 resolve to the corresponding analog trigger.
+- Isolated UI Toolkit dynamic Japanese font generation in runtime-created assets so opening or testing Keyconfig no longer dirties the packaged `Noto Sans JP SDF.asset`.
+
 ## [0.12.1] - 2026-08-22
 
 ### Fixed

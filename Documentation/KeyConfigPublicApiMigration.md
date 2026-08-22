@@ -37,7 +37,7 @@ Panelは永続化先を所有しない。Load／SaveボタンはJSONの要求イ
 | Controllerの修飾キー・競合・変更通知 | 完了 | UIに必要な操作をControllerが提供 |
 | PanelをControllerへ一本化 | 完了 | Panelから低レベルService参照なし |
 | 永続化責務をゲーム側へ移動 | 完了 | keyconfig RuntimeからファイルRepository削除 |
-| タイムアウト結果の識別 | 実装済・テスト待ち | Escapeとtimeoutのテストが別結果 |
+| タイムアウト結果の識別 | 完了 | Escapeとtimeoutのテストが別結果 |
 | `com.koiusa.input.icons`分離 | 完了 | keyconfigとinputguideが共通Packageを参照 |
 | `com.koiusa.inputguide`分離 | 完了 | keyconfigにInputGuide型・Assetなし |
 | Prefab／Scene／Editor移行 | 実装完了・Unity検証待ち | Missing Scriptなし、旧型参照なし |
@@ -50,5 +50,7 @@ Panelは永続化先を所有しない。Load／SaveボタンはJSONの要求イ
 - 分離後はUPM IPC接続失敗、`-noUpm`ではライセンス再接続待ちとなり、UnityコンパイルとTest Runnerを完了できていない。実行済みとして扱わない。
 - Unity再ログイン後、通常ユーザー環境で`Koiusa.KeyConfig.Editor.Tests`を実行。29件中27件成功、2件失敗。結果は`TestResults/KeyConfig/editmode-results.xml`。
 - 候補確定待機を無効化した修正後、同じEditModeテストを再実行して29件すべて成功。結果は`TestResults/KeyConfig/editmode-results-after-fix.xml`。
+- Unity 6000.3.9f1でTriggerButtonエイリアス除外のEditModeテストに成功。
+- Unity 6000.3.9f1で日本語Fallback FontのEditModeテストに成功し、終了後も配布元`Noto Sans JP SDF.asset`に差分がないことを確認。
 - `com.koiusa.input.icons`と`com.koiusa.inputguide`は`npm pack --dry-run`に成功。
 - パッケージ公開とGit commitは行わない。
