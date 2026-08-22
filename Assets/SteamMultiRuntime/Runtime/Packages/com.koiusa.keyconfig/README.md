@@ -5,7 +5,7 @@ Unity Input System向けのRuntimeキーコンフィグUIです。入力表示�
 ## Installation
 
 Scoped Registryへ`https://registry.npmjs.com`とスコープ`com.koiusa`を登録し、Package Managerから
-`com.koiusa.keyconfig`の`0.2.0`をインストールしてください。
+`com.koiusa.keyconfig`をインストールしてください。ソース上の現在バージョンは[package.json](package.json)を正本とします。
 
 `ButtonWithOneModifier` Compositeは`Ctrl+R`のように1操作として表示され、ModifierとButtonを順にリバインドできます。
 各行の「修飾キー追加／削除」から、単一Binding、`ButtonWithOneModifier`、`ButtonWithTwoModifiers`を相互変換できます。

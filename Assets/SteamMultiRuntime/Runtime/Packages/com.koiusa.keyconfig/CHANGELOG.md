@@ -9,7 +9,7 @@
 
 All notable changes to this package will be documented in this file.
 
-## [Unreleased]
+## [0.2.1] - 2026-08-22
 
 ### Changed
 
@@ -18,6 +18,7 @@ All notable changes to this package will be documented in this file.
 ### Fixed
 
 - Excludes DualShock/DualSense `leftTriggerButton` and `rightTriggerButton` HID aliases from interactive rebinding so one L2/R2 press is registered only as the corresponding analog trigger.
+- Uses runtime copies of UI Toolkit panel, text, and dynamic fallback-font assets so generated glyph and atlas caches do not dirty the packaged `Noto Sans JP SDF.asset`; the font validation test now mutates a temporary copy as well.
 
 ## [0.1.40] - 2026-08-22
 

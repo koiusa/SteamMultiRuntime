@@ -29,8 +29,18 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(textSettings.fallbackFontAssets, Is.Not.Null.And.Not.Empty,
                 "UITK Text Settings must provide a Japanese-capable fallback font.");
             Assert.That(textSettings.fallbackFontAssets[0], Is.Not.Null);
-            Assert.That(textSettings.fallbackFontAssets[0].TryAddCharacters("日本", out var missing), Is.True,
-                $"The packaged fallback font must generate Japanese glyphs. Missing: {missing}");
+            var runtimeFont = UnityEngine.TextCore.Text.FontAsset.CreateFontAsset(
+                textSettings.fallbackFontAssets[0].sourceFontFile);
+            Assert.That(runtimeFont, Is.Not.Null);
+            try
+            {
+                Assert.That(runtimeFont.TryAddCharacters("日本", out var missing), Is.True,
+                    $"The packaged fallback font must generate Japanese glyphs. Missing: {missing}");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(runtimeFont);
+            }
         }
     }
 }

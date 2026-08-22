@@ -10,6 +10,8 @@ UIを使わない場合は`KeyConfigController`を使用します。Bindingはac
 
 公開設定型は`KeyConfigSettings`です。アイコン定義`KeyConfigIconSet`は`com.koiusa.input.icons`が所有します。低レベルの`InputBindingService`、`InputRebindController`、View群はすべて内部実装です。
 
+クラス構成図と公開インターフェース構成図の正本は[KeyConfigArchitecture.md](KeyConfigArchitecture.md)です。構成変更時はリンク先だけを更新します。
+
 ## パッケージ構成
 
 | パッケージ | 責務 |
@@ -42,10 +44,12 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
     }
   ],
   "dependencies": {
-    "com.koiusa.keyconfig": "0.2.0"
+    "com.koiusa.keyconfig": "<version>"
   }
 }
 ```
+
+`<version>`には[`com.koiusa.keyconfig/package.json`](../Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig/package.json)の`version`を指定します。
 
 通常のnpmクライアントでは`npm install com.koiusa.keyconfig`で取得できます。ただし内容はUnity Package Manager向けのC#とAssetであり、JavaScriptライブラリとしてのAPIは提供しません。
 
@@ -57,7 +61,7 @@ Unityから利用するプロジェクトでは、`Packages/manifest.json`の`sc
 
 `main`へpushすると`Create UPM Release`が自動実行されます。手動実行では`publish=false`でdry-run、`publish=true`で実公開を選択できます。このWorkflowは先に同じ再利用パッケージ検証・公開Workflowを呼び出し、成功後に本体のnpmパッケージ、署名済みUPMアーカイブ、GitHub Releaseを処理します。既に存在するnpmバージョンやGitHub Releaseは個別にスキップするため、途中で失敗しても再実行できます。タグはGitHub Release作成時に生成されます。
 
-公開対象の現在バージョンは、`com.koiusa.input.core`が`0.2.0`、`com.koiusa.application`が`0.2.0`、`com.koiusa.ui.core`が`0.1.0`、`com.koiusa.input.icons`が`0.1.1`、`com.koiusa.keyconfig`が`0.2.0`、`com.koiusa.inputguide`が`0.1.0`です。Keyconfigは`input.core` 0.2.0、`ui.core` 0.1.0、`input.icons` 0.1.1を推移依存として導入します。
+公開対象と依存バージョンの正本は各パッケージの`package.json`です。Keyconfig自身の現在バージョンと推移依存は[`com.koiusa.keyconfig/package.json`](../Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.keyconfig/package.json)を参照してください。
 
 ### パッケージ境界の判断
 
@@ -152,6 +156,7 @@ Scrollbarは`com.koiusa.ui.core`の`KoiusaScrollView.uss`を共有します。�
 
 Keyconfigの`PanelSettings`、Runtime Theme、UITK Text Settings、Noto Sans JPの
 動的Font Assetとソースフォントはすべて`com.koiusa.keyconfig`内で所有します。
+表示時はPanel、Text、動的Fallback Font Assetをランタイム複製し、生成された日本語Glyph／Atlasキャッシュで配布元Assetを変更しません。
 Basic SampleはこのRuntime Assetを直接参照するため、SampleのImport以外に利用側の
 PanelSettingsやフォント設定を必要としません。EditorテストはTheme、Text Settings、
 日本語フォールバックが解決できることを検証します。

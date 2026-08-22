@@ -6,34 +6,11 @@
 
 ## 完成時のパッケージ境界
 
-```text
-com.koiusa.input.core
-        ▲
-        ├────────────── com.koiusa.input.icons
-        │                         ▲
-        │                         │
-        └── com.koiusa.keyconfig ─┼── com.koiusa.inputguide
-                    ▲             │
-                    └─────────────┘
-```
-
-- `com.koiusa.keyconfig`: Binding一覧、リバインド、Composite編集、キー設定Panel。
-- `com.koiusa.input.icons`: Control pathから入力アイコンを解決するAssetと標準アイコン。
-- `com.koiusa.inputguide`: 実デバイス表示、操作一覧、入力ハイライト。
-- `com.koiusa.steammultiruntime.keyconfig`: ゲーム固有Localizationとの接続。
+現在のパッケージ境界と依存方向は[PackageArchitecture.md](PackageArchitecture.md)を正本とします。
 
 ## KeyConfig公開API
 
-- `KeyConfigPanel`: Unity UIと`IUiMenu`の入口。
-- `KeyConfigController`: UI非依存の操作Facade。低レベルServiceを所有する。
-- `KeyConfigSettings`: Input Actionsと編集禁止Action Map、UI操作Action path。
-- `KeyConfigBindingId`: action GUIDとbinding GUIDによる安定識別子。
-- `KeyConfigBinding`: 読み取り専用Binding情報。
-- `KeyConfigRebindResult`: 完了、キャンセル、タイムアウト、失敗と確定Control path。
-- `KeyConfigConflict`: 対象と競合先の`KeyConfigBinding`。
-- `IKeyConfigLocalizer`: Localization差し替え契約。
-
-`InputBindingService`、`InputRebindController`、構造編集、View、入力監視は`internal`とする。
+現在の公開API、内部クラスとの境界、クラス構成図は[KeyConfigArchitecture.md](KeyConfigArchitecture.md)を正本とします。
 
 ## Panelの責務
 

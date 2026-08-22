@@ -22,7 +22,7 @@ Samples / Prototype / Integration
 
 ## パッケージ一覧
 
-Steam Multi Runtime `0.12.1`では、公開汎用パッケージとして`com.koiusa.application` 0.2.0、`com.koiusa.input.core` 0.2.0、`com.koiusa.input.icons` 0.1.1、`com.koiusa.keyconfig` 0.2.0、`com.koiusa.inputguide` 0.1.0を同梱します。
+Steam Multi Runtimeは、公開汎用パッケージとして`com.koiusa.application`、`com.koiusa.input.core`、`com.koiusa.input.icons`、`com.koiusa.keyconfig`、`com.koiusa.inputguide`を同梱します。現在バージョンと依存条件の正本は各パッケージの`package.json`です。
 
 ### プロジェクト汎用
 
