@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5053223787746908800}
   - component: {fileID: 4261100788040738229}
+  - component: {fileID: 3015366725873491201}
+  - component: {fileID: 3015366725873491208}
   - component: {fileID: 7273299857406907624}
   m_Layer: 0
   m_Name: InputGuideOverlay
@@ -66,16 +68,47 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0da7059df1494e55ac007b56d344f21a, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideOverlay
   inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
-  actionMapName: Player
-  mapFilter: 1
-  actionMapNames: []
-  bindingGroup: 
   layoutAsset: {fileID: 9197481963319205126, guid: c073356281ac46df8bac1a314ae739e3, type: 3}
   iconResolver: {fileID: 11400000, guid: 6415dd300497c674ba7731d62b0fb24a, type: 2}
   startVisible: 0
+  layoutPreset: 0
+  toggleHintVisibility: 0
   autoSwitchDeviceLayout: 1
   stickVisualTravel: 8
   stickVisualDeadzone: 0.08
+--- !u!114 &3015366725873491201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da25e8efb31943c1a4907b01ac547a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideSelectionController
+  overlay: {fileID: 7273299857406907624}
+  mapFilter: 1
+  actionMapNames: []
+  bindingGroup: 
+--- !u!114 &3015366725873491208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4a23ea5252443719ce9f8994191bf2b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideNavigationController
+  overlay: {fileID: 7273299857406907624}
+  previousMapAction: UI/PreviousSection
+  nextMapAction: UI/NextSection
+  scrollAction: UI/Navigate
+  scrollStep: 90

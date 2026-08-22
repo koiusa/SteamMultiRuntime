@@ -1,0 +1,6 @@
+{
+  "name": "Koiusa.InputGuide.Editor",
+  "references": ["Koiusa.InputGuide.Runtime"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

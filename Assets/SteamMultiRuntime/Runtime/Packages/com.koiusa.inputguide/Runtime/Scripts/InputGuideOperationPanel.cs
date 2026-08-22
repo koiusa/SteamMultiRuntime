@@ -10,15 +10,27 @@ namespace Koiusa.InputGuide
     {
         private readonly VisualElement keyboardList;
         private readonly VisualElement gamepadList;
+        private readonly VisualElement mapTabs;
         private readonly Func<string, bool> isInBindingGroup;
+        private readonly List<MapView> mapViews = new List<MapView>();
+        private int selectedMapIndex;
+
+        private sealed class MapView
+        {
+            public Button Tab;
+            public VisualElement KeyboardSection;
+            public VisualElement GamepadSection;
+        }
 
         public InputGuideOperationPanel(
             VisualElement keyboardList,
             VisualElement gamepadList,
+            VisualElement mapTabs,
             Func<string, bool> isInBindingGroup)
         {
             this.keyboardList = keyboardList;
             this.gamepadList = gamepadList;
+            this.mapTabs = mapTabs;
             this.isInBindingGroup = isInBindingGroup ?? throw new ArgumentNullException(nameof(isInBindingGroup));
         }
 
@@ -26,13 +38,48 @@ namespace Koiusa.InputGuide
         {
             keyboardList?.Clear();
             gamepadList?.Clear();
+            mapTabs?.Clear();
+            mapViews.Clear();
+            selectedMapIndex = 0;
             if (maps == null || keyboardList == null || gamepadList == null)
             {
                 return;
             }
 
-            BuildSections(maps, keyboardList, false);
-            BuildSections(maps, gamepadList, true);
+            for (var mapIndex = 0; mapIndex < maps.Count; mapIndex++)
+            {
+                var map = maps[mapIndex];
+                if (map == null)
+                {
+                    continue;
+                }
+
+                var keyboardSection = BuildSection(map, false);
+                var gamepadSection = BuildSection(map, true);
+                if (keyboardSection == null && gamepadSection == null)
+                {
+                    continue;
+                }
+
+                if (keyboardSection != null) keyboardList.Add(keyboardSection);
+                if (gamepadSection != null) gamepadList.Add(gamepadSection);
+
+                var tabIndex = mapViews.Count;
+                var tab = new Button(() => SelectMap(tabIndex))
+                {
+                    text = KeyConfigLocalization.Get(map.name)
+                };
+                tab.AddToClassList("input-operation-map-tab");
+                mapTabs?.Add(tab);
+                mapViews.Add(new MapView
+                {
+                    Tab = tab,
+                    KeyboardSection = keyboardSection,
+                    GamepadSection = gamepadSection
+                });
+            }
+
+            SelectMap(0);
         }
 
         public void SetGamepadVisible(bool showGamepad)
@@ -48,40 +95,51 @@ namespace Koiusa.InputGuide
             }
         }
 
-        private void BuildSections(IReadOnlyList<InputActionMap> maps, VisualElement target, bool gamepad)
+        internal void SelectMap(int selectedIndex)
         {
-            for (var mapIndex = 0; mapIndex < maps.Count; mapIndex++)
+            if (mapViews.Count == 0)
             {
-                var map = maps[mapIndex];
-                if (map == null)
+                selectedMapIndex = 0;
+                return;
+            }
+
+            selectedMapIndex = (selectedIndex % mapViews.Count + mapViews.Count) % mapViews.Count;
+            for (var i = 0; i < mapViews.Count; i++)
+            {
+                var selected = i == selectedMapIndex;
+                var view = mapViews[i];
+                view.Tab.EnableInClassList("input-operation-map-tab--selected", selected);
+                view.KeyboardSection?.EnableInClassList("input-operation-section--selected", selected);
+                view.GamepadSection?.EnableInClassList("input-operation-section--selected", selected);
+            }
+        }
+
+        public void SelectPreviousMap() => SelectMap(selectedMapIndex - 1);
+
+        public void SelectNextMap() => SelectMap(selectedMapIndex + 1);
+
+        private VisualElement BuildSection(InputActionMap map, bool gamepad)
+        {
+            var section = new VisualElement();
+            section.AddToClassList("input-operation-section");
+            var sectionTitle = new Label(KeyConfigLocalization.Get(map.name));
+            sectionTitle.AddToClassList("input-operation-section-title");
+            section.Add(sectionTitle);
+            var rowCount = 0;
+
+            foreach (var action in map.actions)
+            {
+                var bindings = GetBindings(action, gamepad);
+                if (bindings.Count == 0)
                 {
                     continue;
                 }
 
-                var section = new VisualElement();
-                section.AddToClassList("input-operation-section");
-                var sectionTitle = new Label(KeyConfigLocalization.Get(map.name));
-                sectionTitle.AddToClassList("input-operation-section-title");
-                section.Add(sectionTitle);
-                var rowCount = 0;
-
-                foreach (var action in map.actions)
-                {
-                    var bindings = GetBindings(action, gamepad);
-                    if (bindings.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    AddRow(section, action.name, bindings);
-                    rowCount++;
-                }
-
-                if (rowCount > 0)
-                {
-                    target.Add(section);
-                }
+                AddRow(section, action.name, bindings);
+                rowCount++;
             }
+
+            return rowCount > 0 ? section : null;
         }
 
         private List<string> GetBindings(InputAction action, bool gamepad)

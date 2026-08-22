@@ -26,7 +26,7 @@ namespace Koiusa.InputGuide.Tests
         [Test]
         public void All_SelectsEveryMapInAssetOrder()
         {
-            InputGuideMapSelection.Select(asset, InputGuideMapFilter.All, null, null, result);
+            InputGuideMapSelection.Select(asset, InputGuideMapFilter.All, null, result);
 
             Assert.That(result, Has.Count.EqualTo(2));
             Assert.That(result[0].name, Is.EqualTo("Global"));
@@ -38,31 +38,27 @@ namespace Koiusa.InputGuide.Tests
         {
             asset.FindActionMap("Calibration").Enable();
 
-            InputGuideMapSelection.Select(asset, InputGuideMapFilter.EnabledOnly, null, null, result);
+            InputGuideMapSelection.Select(asset, InputGuideMapFilter.EnabledOnly, null, result);
 
             Assert.That(result, Has.Count.EqualTo(1));
             Assert.That(result[0].name, Is.EqualTo("Calibration"));
         }
 
         [Test]
-        public void Specified_UsesNamesAndFallsBackToLegacyName()
+        public void Specified_UsesOnlyExplicitNames()
         {
             InputGuideMapSelection.Select(asset, InputGuideMapFilter.Specified,
-                new[] { "Calibration", "Global" }, "Ignored", result);
+                new[] { "Calibration", "Global" }, result);
             Assert.That(result.ConvertAll(map => map.name), Is.EqualTo(new[] { "Calibration", "Global" }));
-
-            InputGuideMapSelection.Select(asset, InputGuideMapFilter.Specified,
-                new string[0], "Global", result);
-            Assert.That(result.ConvertAll(map => map.name), Is.EqualTo(new[] { "Global" }));
         }
 
         [Test]
-        public void EmptyLegacySelection_SelectsAllForCompatibilityMigration()
+        public void EmptySpecifiedSelection_SelectsNoMaps()
         {
             InputGuideMapSelection.Select(asset, InputGuideMapFilter.Specified,
-                new string[0], string.Empty, result);
+                new string[0], result);
 
-            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result, Is.Empty);
         }
     }
 }

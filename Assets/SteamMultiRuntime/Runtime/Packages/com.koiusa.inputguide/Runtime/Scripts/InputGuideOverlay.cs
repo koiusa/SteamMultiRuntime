@@ -10,26 +10,11 @@ using UnityEngine.UIElements;
 
 namespace Koiusa.InputGuide
 {
-    public enum InputGuideMapFilter
-    {
-        Specified,
-        All,
-        EnabledOnly
-    }
-
     /// <summary>Gameplay HUD that visualizes the current bindings and their live input state.</summary>
     [RequireComponent(typeof(UIDocument))]
     [DisallowMultipleComponent]
-    public sealed class InputGuideOverlay : MonoBehaviour
+    public sealed class InputGuideOverlay : MonoBehaviour, IInputGuideOverlay
     {
-        public enum OverlayDisplayMode
-        {
-            Both,
-            DeviceOnly,
-            OperationsOnly,
-            Hidden
-        }
-
         private const string DefaultLayoutPath = "UI/InputGuide/InputGuideOverlay";
         private const string KeyboardLayoutPath = "UI/InputGuide/InputGuideKeyboard";
         private const string MouseLayoutPath = "UI/InputGuide/InputGuideMouse";
@@ -37,17 +22,13 @@ namespace Koiusa.InputGuide
 
         [Header("Input")]
         [SerializeField] private KeyConfigSettings inputActionsConfig;
-        [Tooltip("Legacy single-map setting. Used when Map Filter is Specified and Action Map Names is empty.")]
-        [SerializeField] private string actionMapName = string.Empty;
-        [SerializeField] private InputGuideMapFilter mapFilter = InputGuideMapFilter.Specified;
-        [SerializeField] private List<string> actionMapNames = new List<string>();
-        [Tooltip("Empty displays bindings from every control scheme.")]
-        [SerializeField] private string bindingGroup = string.Empty;
 
         [Header("UI Toolkit")]
         [SerializeField] private VisualTreeAsset layoutAsset;
         [SerializeField] private KeyConfigIconSet iconResolver;
         [SerializeField] private bool startVisible;
+        [SerializeField] private InputGuideLayoutPreset layoutPreset = InputGuideLayoutPreset.Standard;
+        [SerializeField] private InputGuideToggleHintVisibility toggleHintVisibility = InputGuideToggleHintVisibility.PresetDefault;
         [SerializeField] private bool autoSwitchDeviceLayout = true;
         [SerializeField, Range(0f, 16f)] private float stickVisualTravel = 8f;
         [SerializeField, Range(0f, 0.5f)] private float stickVisualDeadzone = 0.08f;
@@ -60,6 +41,7 @@ namespace Koiusa.InputGuide
         private VisualElement overlay;
         private VisualElement devicePanel;
         private VisualElement operationPanel;
+        private ScrollView operationScrollView;
         private VisualElement mouseLayoutHost;
         private Label deviceLabel;
         private Label inputModeLabel;
@@ -82,9 +64,11 @@ namespace Koiusa.InputGuide
         private float lastGamepadActivityTime;
         private float lastPrimaryDeviceSwitchTime = float.NegativeInfinity;
         private bool primaryDeviceIsGamepad;
-        private OverlayDisplayMode displayMode = OverlayDisplayMode.Hidden;
+        private InputGuideDisplayMode displayMode = InputGuideDisplayMode.Hidden;
         private LocalizedVisualTree localizedTree;
         private bool bindingRefreshScheduled;
+        private bool configurationApplied;
+        private InputGuideSelection selection = InputGuideSelection.All();
         private readonly List<InputActionMap> displayedMaps = new List<InputActionMap>();
 
         private sealed class GuideRow
@@ -97,14 +81,88 @@ namespace Koiusa.InputGuide
             public float ActiveUntil;
         }
 
-        public bool IsVisible => displayMode != OverlayDisplayMode.Hidden;
-        public OverlayDisplayMode DisplayMode => displayMode;
-        public InputGuideMapFilter MapFilter => mapFilter;
+        public bool IsVisible => displayMode != InputGuideDisplayMode.Hidden;
+        public InputGuideDisplayMode DisplayMode => displayMode;
+        public InputGuideSelection Selection => selection;
+        public InputGuideLayoutPreset LayoutPreset => layoutPreset;
+        public InputGuideToggleHintVisibility ToggleHintVisibility => toggleHintVisibility;
+        public event Action ConfiguredInputActionsChanged;
+
+        /// <summary>Returns the Action Maps supplied by this overlay's Input Actions Config.</summary>
+        public string[] GetAvailableActionMapNames()
+        {
+            var asset = ResolveConfiguredInputActions();
+            if (asset == null) return Array.Empty<string>();
+
+            var result = new string[asset.actionMaps.Count];
+            for (var i = 0; i < result.Length; i++) result[i] = asset.actionMaps[i].name;
+            return result;
+        }
+
+        /// <summary>Returns the binding groups supplied by this overlay's Input Actions Config.</summary>
+        public string[] GetAvailableBindingGroups()
+        {
+            var asset = ResolveConfiguredInputActions();
+            if (asset == null) return Array.Empty<string>();
+
+            var result = new string[asset.controlSchemes.Count];
+            for (var i = 0; i < result.Length; i++) result[i] = asset.controlSchemes[i].bindingGroup;
+            return result;
+        }
+
+        /// <summary>Returns every Action as a stable Map/Action path.</summary>
+        public string[] GetAvailableActionPaths()
+        {
+            var asset = ResolveConfiguredInputActions();
+            if (asset == null) return Array.Empty<string>();
+
+            var result = new List<string>();
+            foreach (var map in asset.actionMaps)
+            {
+                foreach (var action in map.actions) result.Add($"{map.name}/{action.name}");
+            }
+
+            return result.ToArray();
+        }
+
+        public string[] GetAvailableVector2ActionPaths()
+        {
+            var asset = ResolveConfiguredInputActions();
+            if (asset == null) return Array.Empty<string>();
+
+            var result = new List<string>();
+            foreach (var map in asset.actionMaps)
+            {
+                foreach (var action in map.actions)
+                {
+                    if (string.Equals(action.expectedControlType, "Vector2", StringComparison.Ordinal))
+                    {
+                        result.Add($"{map.name}/{action.name}");
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        internal InputAction FindConfiguredAction(string actionPath)
+        {
+            return string.IsNullOrWhiteSpace(actionPath)
+                ? null
+                : ResolveConfiguredInputActions()?.FindAction(actionPath, false);
+        }
+
+        private InputActionAsset ResolveConfiguredInputActions()
+        {
+            return inputActionAsset != null
+                ? inputActionAsset
+                : inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
+        }
 
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
-            inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
+            inputActionAsset = ResolveConfiguredInputActions();
         }
 
         private void OnEnable()
@@ -113,7 +171,9 @@ namespace Koiusa.InputGuide
             InputSystem.onActionChange += OnInputActionChange;
             AcquireDebugToggleInput();
             Build();
-            SetDisplayMode(startVisible ? OverlayDisplayMode.Both : OverlayDisplayMode.Hidden);
+            SetDisplayMode(configurationApplied
+                ? displayMode
+                : startVisible ? InputGuideDisplayMode.Both : InputGuideDisplayMode.Hidden);
         }
 
         private void OnDisable()
@@ -197,29 +257,24 @@ namespace Koiusa.InputGuide
             UpdateDeviceVisibility();
         }
 
-        public void SetVisible(bool visible)
-        {
-            SetDisplayMode(visible ? OverlayDisplayMode.Both : OverlayDisplayMode.Hidden);
-        }
-
-        public void ToggleVisible()
+        private void ToggleVisible()
         {
             CycleDisplayMode();
         }
 
-        public void CycleDisplayMode()
+        private void CycleDisplayMode()
         {
             var next = displayMode switch
             {
-                OverlayDisplayMode.Both => OverlayDisplayMode.DeviceOnly,
-                OverlayDisplayMode.DeviceOnly => OverlayDisplayMode.OperationsOnly,
-                OverlayDisplayMode.OperationsOnly => OverlayDisplayMode.Hidden,
-                _ => OverlayDisplayMode.Both
+                InputGuideDisplayMode.Both => InputGuideDisplayMode.DeviceOnly,
+                InputGuideDisplayMode.DeviceOnly => InputGuideDisplayMode.OperationsOnly,
+                InputGuideDisplayMode.OperationsOnly => InputGuideDisplayMode.Hidden,
+                _ => InputGuideDisplayMode.Both
             };
             SetDisplayMode(next);
         }
 
-        public void SetDisplayMode(OverlayDisplayMode mode)
+        private void SetDisplayMode(InputGuideDisplayMode mode)
         {
             displayMode = mode;
             if (overlay == null)
@@ -227,9 +282,9 @@ namespace Koiusa.InputGuide
                 return;
             }
 
-            var showDevices = mode is OverlayDisplayMode.Both or OverlayDisplayMode.DeviceOnly;
-            var showOperations = mode is OverlayDisplayMode.Both or OverlayDisplayMode.OperationsOnly;
-            overlay.style.display = mode == OverlayDisplayMode.Hidden ? DisplayStyle.None : DisplayStyle.Flex;
+            var showDevices = mode is InputGuideDisplayMode.Both or InputGuideDisplayMode.DeviceOnly;
+            var showOperations = mode is InputGuideDisplayMode.Both or InputGuideDisplayMode.OperationsOnly;
+            overlay.style.display = mode == InputGuideDisplayMode.Hidden ? DisplayStyle.None : DisplayStyle.Flex;
             if (devicePanel != null)
             {
                 devicePanel.style.display = showDevices ? DisplayStyle.Flex : DisplayStyle.None;
@@ -244,19 +299,7 @@ namespace Koiusa.InputGuide
             }
         }
 
-        public void ShowKeyboardLayout()
-        {
-            autoSwitchDeviceLayout = false;
-            SetGamepadLayout(false);
-        }
-
-        public void ShowGamepadLayout()
-        {
-            autoSwitchDeviceLayout = false;
-            SetGamepadLayout(true);
-        }
-
-        public void ToggleDeviceLayout()
+        private void ToggleDeviceLayout()
         {
             // A manual selection must not immediately be undone by the mouse event
             // generated by this click.
@@ -264,42 +307,61 @@ namespace Koiusa.InputGuide
             SetGamepadLayout(!isGamepadLayoutVisible);
         }
 
-        public void Refresh()
+        /// <summary>Captures the caller-controlled view state for later restoration.</summary>
+        public InputGuideConfiguration CaptureConfiguration()
         {
-            var previousMode = displayMode;
-            ReleaseDebugToggleInput();
-            inputActionAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
-            AcquireDebugToggleInput();
-            Build();
-            SetDisplayMode(previousMode);
+            return new InputGuideConfiguration(
+                displayMode, layoutPreset, toggleHintVisibility);
         }
 
-        public void SetActionMaps(IEnumerable<string> mapNames)
+        /// <summary>Applies map selection and presentation as one rebuild.</summary>
+        public void ApplyConfiguration(InputGuideConfiguration configuration)
         {
-            actionMapNames.Clear();
-            if (mapNames != null)
+            if (configuration == null)
             {
-                foreach (var mapName in mapNames)
-                {
-                    if (!string.IsNullOrWhiteSpace(mapName) && !actionMapNames.Contains(mapName))
-                    {
-                        actionMapNames.Add(mapName);
-                    }
-                }
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            mapFilter = InputGuideMapFilter.Specified;
-            RebuildIfActive();
+            layoutPreset = configuration.LayoutPreset;
+            toggleHintVisibility = configuration.ToggleHintVisibility;
+            displayMode = configuration.DisplayMode;
+            configurationApplied = true;
+
+            if (isActiveAndEnabled && uiDocument != null)
+            {
+                Build();
+                SetDisplayMode(displayMode);
+            }
         }
 
-        public void SetMapFilter(InputGuideMapFilter filter)
+        public void ApplySelection(InputGuideSelection value)
         {
-            if (mapFilter == filter)
+            if (value == null)
             {
                 return;
             }
 
-            mapFilter = filter;
+            selection = value;
+            RebuildIfActive();
+        }
+
+        /// <summary>Reapplies serialized Inspector settings while the overlay is running.</summary>
+        public void RefreshFromInspector()
+        {
+            if (!Application.isPlaying || !isActiveAndEnabled || uiDocument == null)
+            {
+                return;
+            }
+
+            var resolvedAsset = inputActionsConfig != null ? inputActionsConfig.Resolve() : null;
+            if (!ReferenceEquals(inputActionAsset, resolvedAsset))
+            {
+                ReleaseDebugToggleInput();
+                inputActionAsset = resolvedAsset;
+                AcquireDebugToggleInput();
+                ConfiguredInputActionsChanged?.Invoke();
+            }
+
             RebuildIfActive();
         }
 
@@ -368,6 +430,43 @@ namespace Koiusa.InputGuide
             ToggleVisible();
         }
 
+        public void SelectPreviousMapTab()
+        {
+            if (!AreOperationTabsVisible()) return;
+            operationListPanel?.SelectPreviousMap();
+            ResetOperationScroll();
+        }
+
+        public void SelectNextMapTab()
+        {
+            if (!AreOperationTabsVisible()) return;
+            operationListPanel?.SelectNextMap();
+            ResetOperationScroll();
+        }
+
+        public void ScrollOperationList(float direction, float distance = 90f)
+        {
+            if (!AreOperationTabsVisible() || operationScrollView == null || Mathf.Abs(direction) < 0.1f)
+            {
+                return;
+            }
+
+            var y = operationScrollView.scrollOffset.y - Mathf.Sign(direction) * Mathf.Max(1f, distance);
+            var max = Mathf.Max(0f, operationScrollView.verticalScroller.highValue);
+            operationScrollView.scrollOffset = new Vector2(0f, Mathf.Clamp(y, 0f, max));
+        }
+
+        private void ResetOperationScroll()
+        {
+            if (operationScrollView != null) operationScrollView.scrollOffset = Vector2.zero;
+        }
+
+        private bool AreOperationTabsVisible()
+        {
+            return layoutPreset == InputGuideLayoutPreset.CompactOperations &&
+                   displayMode is InputGuideDisplayMode.Both or InputGuideDisplayMode.OperationsOnly;
+        }
+
         private void Build()
         {
             var root = uiDocument.rootVisualElement;
@@ -391,6 +490,8 @@ namespace Koiusa.InputGuide
             overlay = root.Q<VisualElement>("input-guide-overlay");
             devicePanel = root.Q<VisualElement>(className: "input-guide-panel");
             operationPanel = root.Q<VisualElement>(className: "input-operation-panel");
+            operationScrollView = root.Q<ScrollView>("input-operation-scroll-view");
+            ApplyPresentationPreset();
             mouseLayoutHost = root.Q<VisualElement>("mouse-layout-host");
             deviceLabel = root.Q<Label>("device-label");
             inputModeLabel = root.Q<Label>("input-mode-label");
@@ -417,6 +518,7 @@ namespace Koiusa.InputGuide
             operationListPanel = new InputGuideOperationPanel(
                 root.Q<VisualElement>("keyboard-operation-list"),
                 root.Q<VisualElement>("gamepad-operation-list"),
+                root.Q<VisualElement>("input-operation-map-tabs"),
                 IsInBindingGroup);
             gamepadFaceWestLabel = root.Q<Label>("gamepad-face-west-label");
             gamepadFaceNorthLabel = root.Q<Label>("gamepad-face-north-label");
@@ -436,7 +538,8 @@ namespace Koiusa.InputGuide
                 return;
             }
 
-            InputGuideMapSelection.Select(inputActionAsset, mapFilter, actionMapNames, actionMapName, displayedMaps);
+            InputGuideMapSelection.Select(
+                inputActionAsset, selection.MapFilter, selection.ActionMapNames, displayedMaps);
             if (displayedMaps.Count == 0)
             {
                 KeyConfigLocalization.Set(mapLabel, "keyconfig.action_map_missing");
@@ -504,6 +607,11 @@ namespace Koiusa.InputGuide
             BindDebugControl(root, "control-m", "<Keyboard>/m");
             BindDebugControl(root, "control-tab", "<Keyboard>/tab");
             BindDebugControl(root, "control-capslock", "<Keyboard>/capsLock");
+        }
+
+        private void ApplyPresentationPreset()
+        {
+            InputGuidePresentationStyles.Apply(overlay, operationPanel, layoutPreset, toggleHintVisibility);
         }
 
         private void CloneDeviceLayout(VisualElement root, string hostName, string resourcePath)
@@ -824,7 +932,7 @@ namespace Koiusa.InputGuide
 
         private bool IsInBindingGroup(string groups)
         {
-            if (string.IsNullOrWhiteSpace(bindingGroup))
+            if (string.IsNullOrWhiteSpace(selection.BindingGroup))
             {
                 return true;
             }
@@ -832,7 +940,7 @@ namespace Koiusa.InputGuide
             var values = groups?.Split(';') ?? Array.Empty<string>();
             for (var i = 0; i < values.Length; i++)
             {
-                if (string.Equals(values[i], bindingGroup, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(values[i], selection.BindingGroup, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -886,10 +994,40 @@ namespace Koiusa.InputGuide
         }
     }
 
+    internal static class InputGuidePresentationStyles
+    {
+        internal const string CompactClass = "input-guide-screen--compact-operations";
+
+        public static void Apply(
+            VisualElement overlay,
+            VisualElement operationPanel,
+            InputGuideLayoutPreset preset,
+            InputGuideToggleHintVisibility hintVisibility)
+        {
+            if (overlay == null)
+            {
+                return;
+            }
+
+            var compact = preset == InputGuideLayoutPreset.CompactOperations;
+            overlay.EnableInClassList(CompactClass, compact);
+
+            var hint = operationPanel?.Q<VisualElement>(className: "input-operation-toggle-hint");
+            if (hint == null)
+            {
+                return;
+            }
+
+            var showHint = hintVisibility == InputGuideToggleHintVisibility.Visible ||
+                           (hintVisibility == InputGuideToggleHintVisibility.PresetDefault && !compact);
+            hint.style.display = showHint ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+    }
+
     internal static class InputGuideMapSelection
     {
         public static void Select(InputActionAsset asset, InputGuideMapFilter filter,
-            IReadOnlyList<string> specifiedNames, string legacyName, List<InputActionMap> result)
+            IReadOnlyList<string> specifiedNames, List<InputActionMap> result)
         {
             result.Clear();
             if (asset == null)
@@ -897,9 +1035,7 @@ namespace Koiusa.InputGuide
                 return;
             }
 
-            if (filter == InputGuideMapFilter.All ||
-                filter == InputGuideMapFilter.Specified &&
-                (specifiedNames == null || specifiedNames.Count == 0) && string.IsNullOrWhiteSpace(legacyName))
+            if (filter == InputGuideMapFilter.All)
             {
                 foreach (var map in asset.actionMaps) result.Add(map);
                 return;
@@ -914,13 +1050,10 @@ namespace Koiusa.InputGuide
                 return;
             }
 
-            if (specifiedNames != null && specifiedNames.Count > 0)
+            if (specifiedNames != null)
             {
                 for (var i = 0; i < specifiedNames.Count; i++) AddNamedMap(asset, specifiedNames[i], result);
-                return;
             }
-
-            AddNamedMap(asset, legacyName, result);
         }
 
         private static void AddNamedMap(InputActionAsset asset, string name, List<InputActionMap> result)

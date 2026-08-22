@@ -136,7 +136,9 @@ Keyconfig用の`GameplayKeyConfigSettings.asset`はInputActionAssetを複製せ�
 4. KeyconfigのUXML、USSを設定します。アイコン表示を使う場合は`com.koiusa.input.icons`の`KeyConfigIconSet`を設定します。
 
 操作ガイドは`com.koiusa.inputguide/Runtime/Resources/System/InputGuideOverlay.prefab`を使用します。
-`InputGuideOverlay`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、複数MapはMap名ごとのセクションとして表示されます。実行時は`SetActionMaps`、`SetMapFilter`、`Refresh`で対象を変更できます。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Mapの有効状態またはBinding変更時には表示と入力ハイライトが再構築されます。従来の`actionMapName`は`Specified`で複数Map名が空の場合のフォールバックとして維持されます。
+`InputGuideSelectionController`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、Action Map群とBinding Groupを1つのスナップショットとして参照先`InputGuideOverlay`へpushします。ControllerはInput Actionsを別途保持せず、Overlayの`Input Actions Config`からMapとControl Schemeを列挙します。専用EditorはMapをマスク形式で複数選択しつつMap名リストとして保存します。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Controller、Mapの有効状態、またはBinding変更時には表示と入力ハイライトが再構築されます。`Specified`でMap名が空の場合は何も表示しません。
+
+コンパクト表示のMapタブ切替と一覧スクロールは`InputGuideNavigationController`が担当します。公式PrefabはOverlayのInput Actions Configにある`UI/PreviousSection`と`UI/NextSection`を使ってQ／EまたはL1／R1で前後へ循環し、`UI/Navigate`の上下方向で一覧をスクロールします。
 操作一覧は画面上部の全幅を使い、各Mapを1列としてスクロールなしで横一列に表示します。
 
 ## 入力アイコン
