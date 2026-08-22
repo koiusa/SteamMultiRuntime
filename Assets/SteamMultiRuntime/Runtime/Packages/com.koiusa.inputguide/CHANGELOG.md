@@ -2,6 +2,17 @@
 
 All notable changes to this package are documented in this file.
 
+## [0.2.1] - 2026-08-22
+
+### Changed
+
+- Updated the `com.koiusa.keyconfig` dependency to 0.2.2.
+- Bound Input Action change observation and deferred binding refreshes to the UI Toolkit Panel attach/detach lifecycle.
+
+### Fixed
+
+- Fixed Play Mode exit exceptions when navigation bindings were released after the Input Guide Panel had detached.
+
 ## [0.2.0] - 2026-08-22
 
 ### Added
@@ -18,16 +29,11 @@ All notable changes to this package are documented in this file.
 ### Changed
 
 - Updated the `com.koiusa.keyconfig` dependency to 0.2.1.
-- Bound Input Action change observation and deferred binding refreshes to the UI Toolkit Panel attach/detach lifecycle, preventing teardown notifications from targeting a detached `UIDocument`.
 - Split presentation, selection, and navigation responsibilities between `InputGuideOverlay`, `InputGuideSelectionController`, and `InputGuideNavigationController`.
 - `All` now enumerates every Action Map; compact mode presents multiple maps one at a time as tabs.
 - The compact preset hides the fixed `F1 / TOUCH PAD` hint by default.
 - The library no longer assigns `UIDocument.sortingOrder`.
 - Replaced the previous Input Guide public configuration surface with `IInputGuideOverlay`, `InputGuideConfiguration`, and top-level enums.
-
-### Fixed
-
-- Fixed Play Mode exit exceptions when navigation bindings were released after the Input Guide Panel had detached.
 
 ### Removed
 

@@ -6,13 +6,13 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 
 ### Added
 
-- Updated `com.koiusa.inputguide` to 0.2.0 with the official compact operations panel, Action Map tabs, selection controls, and input navigation.
+- Updated `com.koiusa.inputguide` to 0.2.1 with the official compact operations panel, Action Map tabs, selection controls, input navigation, and safe Panel-detachment teardown.
 - Added `InputGuideSelectionController` and `InputGuideNavigationController` to the official Input Guide Prefab.
 
 ### Changed
 
-- Updated the application version to 0.10.5 and Android version code to 4.
-- Updated `com.koiusa.steammultiruntime.keyconfig` to 0.1.5 and aligned its Keyconfig dependency to 0.2.1.
+- Updated the application version to 0.10.6 and Android version code to 5.
+- Updated `com.koiusa.keyconfig` to 0.2.2 and `com.koiusa.steammultiruntime.keyconfig` to 0.1.6.
 - Reused `UI/PreviousSection`, `UI/NextSection`, and `UI/Navigate` for compact Input Guide navigation.
 
 ### Fixed
