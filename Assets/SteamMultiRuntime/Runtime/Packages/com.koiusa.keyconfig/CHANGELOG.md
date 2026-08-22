@@ -15,6 +15,10 @@ All notable changes to this package will be documented in this file.
 
 - Reduced `KeyConfigView` to the UI facade and moved binding-group state, binding catalog rendering, cross-section navigation, and dropdown popup stylesheet lifetime into focused internal components without changing the existing `KeyConfigPanel` API.
 
+### Fixed
+
+- Excludes DualShock/DualSense `leftTriggerButton` and `rightTriggerButton` HID aliases from interactive rebinding so one L2/R2 press is registered only as the corresponding analog trigger.
+
 ## [0.1.40] - 2026-08-22
 
 ### Fixed

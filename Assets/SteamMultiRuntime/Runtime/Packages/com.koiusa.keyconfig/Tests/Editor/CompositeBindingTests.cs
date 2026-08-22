@@ -228,6 +228,49 @@ namespace Koiusa.KeyConfig.Tests
         }
 
         [Test]
+        public void InteractiveRebind_ExcludesTriggerButtonPhysicalAliases()
+        {
+            const string layoutName = "KeyConfigTriggerAliasTestDevice";
+            InputSystem.RegisterLayout(@"{
+                ""name"": ""KeyConfigTriggerAliasTestDevice"",
+                ""extend"": ""Gamepad"",
+                ""controls"": [
+                    { ""name"": ""leftTriggerButton"", ""layout"": ""Button"" }
+                ]
+            }");
+            var device = InputSystem.AddDevice(layoutName);
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+            var action = map.AddAction("Probe", InputActionType.Button);
+            action.AddBinding("<Keyboard>/a");
+            var completed = false;
+            InputActionRebindingExtensions.RebindingOperation operation = null;
+            try
+            {
+                operation = action.PerformInteractiveRebinding(0)
+                    .OnMatchWaitForAnother(0)
+                    .OnComplete(_ => completed = true);
+                InputRebindController.ExcludePhysicalControlAliases(operation);
+                operation.Start();
+
+                InputSystem.QueueDeltaStateEvent(
+                    (UnityEngine.InputSystem.Controls.ButtonControl)device["leftTriggerButton"], (byte)1);
+                InputSystem.Update();
+                Assert.That(completed, Is.False);
+
+                InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.Space));
+                InputSystem.Update();
+                Assert.That(completed, Is.True);
+            }
+            finally
+            {
+                operation?.Dispose();
+                InputSystem.RemoveDevice(keyboard);
+                InputSystem.RemoveDevice(device);
+                InputSystem.RemoveLayout(layoutName);
+            }
+        }
+
+        [Test]
         public void ModifierButtons_AreUnavailableWhenBindingDeviceIsDisconnected()
         {
             var action = AddModifiedAction("Reload", "<Gamepad>/leftShoulder", "<Gamepad>/buttonWest");

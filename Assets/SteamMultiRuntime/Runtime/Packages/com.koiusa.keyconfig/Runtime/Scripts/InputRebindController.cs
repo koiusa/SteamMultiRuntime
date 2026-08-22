@@ -10,6 +10,11 @@ namespace Koiusa.KeyConfig
     internal sealed class InputRebindController : IDisposable
     {
         private const float RebindTimeoutSeconds = 5f;
+        private static readonly string[] ExcludedPhysicalControlAliases =
+        {
+            "*/leftTriggerButton",
+            "*/rightTriggerButton"
+        };
         private readonly InputBindingService bindingService;
         private readonly RebindAliasSuppression aliasSuppression = new();
         private InputActionRebindingExtensions.RebindingOperation operation;
@@ -72,6 +77,7 @@ namespace Koiusa.KeyConfig
             partStartedAt = InputState.currentTime;
             aliasSuppression.BeginPartObservation();
             operation = activeAction.PerformInteractiveRebinding(rebindIndices[rebindPart]);
+            ExcludePhysicalControlAliases(operation);
             ExcludePreviouslyReboundControls(operation, activeAction, rebindIndices, rebindPart);
             aliasSuppression.ApplyExclusions(operation);
             operation.WithCancelingThrough("<Keyboard>/escape")
@@ -80,6 +86,14 @@ namespace Koiusa.KeyConfig
                 .OnComplete(_ => OnPartComplete())
                 .OnCancel(_ => OnCanceled());
             operation.Start();
+        }
+
+        internal static void ExcludePhysicalControlAliases(
+            InputActionRebindingExtensions.RebindingOperation rebindOperation)
+        {
+            if (rebindOperation == null) return;
+            for (var i = 0; i < ExcludedPhysicalControlAliases.Length; i++)
+                rebindOperation.WithControlsExcluding(ExcludedPhysicalControlAliases[i]);
         }
 
         internal static void ExcludePreviouslyReboundControls(

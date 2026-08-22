@@ -102,6 +102,7 @@ Keyconfig用の`GameplayKeyConfigSettings.asset`はInputActionAssetを複製せ�
 - 最初のフォーカス行より前に編集不可行や見出しがある場合も、上端への移動ではScrollViewを完全に先頭へ戻します。
 - キーボードまたはゲームパッドのUI Navigateでフォーカスを移動し、Submitで操作します。Cancelは通常時に画面を閉じます。リバインド中はEscapeでキー変更をキャンセルします。
 - L1／R1などPreviousSection／NextSectionと共有する入力を登録した場合、登録に使用した押下が解放されるまではタブ移動へ再利用しません。
+- DualShock／DualSenseのL2／R2は、同じ物理押下で通知される`leftTriggerButton`／`rightTriggerButton`をリバインド候補から除外し、対応する`leftTrigger`／`rightTrigger`としてのみ登録します。
 - 複合Bindingの逐次リバインドでは、`RebindAliasSuppression`がパートを確定したStateイベント内で変化したControlパスを、Control型・名前・デバイス系統に依存せず後続パートから除外します。
 - `Gamepad`と`Joystick`はInput System上の別レイアウトとして識別しますが、複合Bindingの登録可否や進行をデバイス名・Control名では分岐しません。パート確定後はControlの解放を待たず、直ちに次パートを開始します。各パートで5秒間入力がなければタイムアウトし、Escapeまたは明示キャンセルと同様に複合Binding全体を元へ戻します。
 - UI Action Mapは入力状態を確認できるようタブと一覧へ表示し、Submitで行の中へ入って上下移動できます。Keyconfig自身の操作を失わないようChange／Resetは無効のままです。保存データに古いUI Overrideが含まれていてもLoad時に除去します。
