@@ -2,17 +2,29 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
-## [0.12.3] - 2026-08-22
-
-### Added
-
-- Updated `com.koiusa.inputguide` to 0.2.1 with the official compact operations panel, Action Map tabs, selection controls, input navigation, and safe Panel-detachment teardown.
-- Added `InputGuideSelectionController` and `InputGuideNavigationController` to the official Input Guide Prefab.
+## [0.12.4] - 2026-08-23
 
 ### Changed
 
 - Updated the application version to 0.10.6 and Android version code to 5.
-- Updated `com.koiusa.keyconfig` to 0.2.2 and `com.koiusa.steammultiruntime.keyconfig` to 0.1.6.
+- Updated `com.koiusa.keyconfig` to 0.2.2, `com.koiusa.inputguide` to 0.2.1, and `com.koiusa.steammultiruntime.keyconfig` to 0.1.6.
+
+### Fixed
+
+- Stopped Input Guide binding refresh callbacks at UI Toolkit Panel detachment so Play Mode teardown can release navigation actions without an Overlay exception.
+- Kept Keyconfig text Materials persistent across Play Mode teardown so deferred UI Toolkit text jobs cannot observe a destroyed runtime Material.
+
+## [0.12.3] - 2026-08-22
+
+### Added
+
+- Updated `com.koiusa.inputguide` to 0.2.0 with the official compact operations panel, Action Map tabs, selection controls, and input navigation.
+- Added `InputGuideSelectionController` and `InputGuideNavigationController` to the official Input Guide Prefab.
+
+### Changed
+
+- Updated the application version to 0.10.5 and Android version code to 4.
+- Updated `com.koiusa.steammultiruntime.keyconfig` to 0.1.5 and aligned its Keyconfig dependency to 0.2.1.
 - Reused `UI/PreviousSection`, `UI/NextSection`, and `UI/Navigate` for compact Input Guide navigation.
 
 ### Fixed
@@ -20,8 +32,6 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 - Fixed compact operation-row overlap and `All` displaying only the Player map.
 - Added compact scrollbar styling and shortcut scrolling.
 - Preserved caller-owned `UIDocument.sortingOrder` and applied Overlay Inspector changes during Play Mode.
-- Stopped Input Guide binding refresh callbacks at UI Toolkit Panel detachment so Play Mode teardown can release navigation actions without an Overlay exception.
-- Kept Keyconfig text Materials persistent across Play Mode teardown so deferred UI Toolkit text jobs cannot observe a destroyed runtime Material.
 
 ## [0.12.2] - 2026-08-22
 
