@@ -4,7 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/koiusa/SteamMultiRuntime)](https://github.com/koiusa/SteamMultiRuntime/issues)
 [![GitHub license](https://img.shields.io/github/license/koiusa/SteamMultiRuntime)](https://github.com/koiusa/SteamMultiRuntime/blob/main/LICENSE.md)
 
-Current release: package `0.12.3` / application `0.10.5`.
+Current release: package `0.12.3` / application `0.10.6`.
 
 Install
 -------
