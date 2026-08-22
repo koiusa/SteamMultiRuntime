@@ -67,6 +67,9 @@ namespace Koiusa.InputGuide
         private InputGuideDisplayMode displayMode = InputGuideDisplayMode.Hidden;
         private LocalizedVisualTree localizedTree;
         private bool bindingRefreshScheduled;
+        private IVisualElementScheduledItem bindingRefresh;
+        private VisualElement panelLifecycleRoot;
+        private bool actionChangeSubscribed;
         private bool configurationApplied;
         private InputGuideSelection selection = InputGuideSelection.All();
         private readonly List<InputActionMap> displayedMaps = new List<InputActionMap>();
@@ -168,9 +171,9 @@ namespace Koiusa.InputGuide
         private void OnEnable()
         {
             KeyConfigLocalization.LocaleChanged += RefreshLocalizedUi;
-            InputSystem.onActionChange += OnInputActionChange;
             AcquireDebugToggleInput();
             Build();
+            BeginPanelLifecycle();
             SetDisplayMode(configurationApplied
                 ? displayMode
                 : startVisible ? InputGuideDisplayMode.Both : InputGuideDisplayMode.Hidden);
@@ -179,11 +182,62 @@ namespace Koiusa.InputGuide
         private void OnDisable()
         {
             KeyConfigLocalization.LocaleChanged -= RefreshLocalizedUi;
-            InputSystem.onActionChange -= OnInputActionChange;
-            bindingRefreshScheduled = false;
+            EndPanelLifecycle();
             ReleaseDebugToggleInput();
             localizedTree?.Dispose();
             localizedTree = null;
+        }
+
+        private void BeginPanelLifecycle()
+        {
+            EndPanelLifecycle();
+            panelLifecycleRoot = uiDocument?.rootVisualElement;
+            if (panelLifecycleRoot == null) return;
+
+            panelLifecycleRoot.RegisterCallback<AttachToPanelEvent>(OnAttachedToPanel);
+            panelLifecycleRoot.RegisterCallback<DetachFromPanelEvent>(OnDetachedFromPanel);
+            if (panelLifecycleRoot.panel != null) SubscribeToActionChanges();
+        }
+
+        private void EndPanelLifecycle()
+        {
+            bindingRefresh?.Pause();
+            bindingRefresh = null;
+            bindingRefreshScheduled = false;
+            UnsubscribeFromActionChanges();
+
+            if (panelLifecycleRoot == null) return;
+            panelLifecycleRoot.UnregisterCallback<AttachToPanelEvent>(OnAttachedToPanel);
+            panelLifecycleRoot.UnregisterCallback<DetachFromPanelEvent>(OnDetachedFromPanel);
+            panelLifecycleRoot = null;
+        }
+
+        private void OnAttachedToPanel(AttachToPanelEvent evt)
+        {
+            if (evt.target == panelLifecycleRoot) SubscribeToActionChanges();
+        }
+
+        private void OnDetachedFromPanel(DetachFromPanelEvent evt)
+        {
+            if (evt.target != panelLifecycleRoot) return;
+            bindingRefresh?.Pause();
+            bindingRefresh = null;
+            bindingRefreshScheduled = false;
+            UnsubscribeFromActionChanges();
+        }
+
+        private void SubscribeToActionChanges()
+        {
+            if (actionChangeSubscribed) return;
+            InputSystem.onActionChange += OnInputActionChange;
+            actionChangeSubscribed = true;
+        }
+
+        private void UnsubscribeFromActionChanges()
+        {
+            if (!actionChangeSubscribed) return;
+            InputSystem.onActionChange -= OnInputActionChange;
+            actionChangeSubscribed = false;
         }
 
         private void Update()
@@ -390,11 +444,19 @@ namespace Koiusa.InputGuide
                 return;
             }
 
-            bindingRefreshScheduled = true;
-            uiDocument?.rootVisualElement.schedule.Execute(() =>
+            var root = panelLifecycleRoot;
+            if (root == null || root.panel == null)
             {
+                UnsubscribeFromActionChanges();
+                return;
+            }
+
+            bindingRefreshScheduled = true;
+            bindingRefresh = root.schedule.Execute(() =>
+            {
+                bindingRefresh = null;
                 bindingRefreshScheduled = false;
-                if (isActiveAndEnabled)
+                if (isActiveAndEnabled && root.panel != null)
                 {
                     RebuildIfActive();
                 }

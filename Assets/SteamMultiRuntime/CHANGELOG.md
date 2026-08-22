@@ -20,6 +20,7 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 - Fixed compact operation-row overlap and `All` displaying only the Player map.
 - Added compact scrollbar styling and shortcut scrolling.
 - Preserved caller-owned `UIDocument.sortingOrder` and applied Overlay Inspector changes during Play Mode.
+- Stopped Input Guide binding refresh callbacks at UI Toolkit Panel detachment so Play Mode teardown can release navigation actions without an Overlay exception.
 
 ## [0.12.2] - 2026-08-22
 
