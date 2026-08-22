@@ -3,6 +3,7 @@
 Keyconfigは、再利用可能な汎用パッケージとSteamMultiRuntime固有のLocalization接続に分離しています。
 
 Binding行の変更・リセット・修飾キー追加／削除で同じAction Mapを再描画する場合は、現在のスクロール位置を維持します。Action Mapを切り替えた場合はBinding Listの先頭へ戻ります。
+Binding行の左インジケーター領域は通常時から確保し、入力検出やフォーカス復帰でBindingアイコンとラベルの横位置を変えません。
 
 `KeyConfigPanel`はUnity UIと`IUiMenu`の公開入口だけを担当します。Binding Group、Action Mapタブ、Binding行、フォーカス移動、競合表示、入力監視は内部コンポーネントへ分離され、利用側から参照しません。
 

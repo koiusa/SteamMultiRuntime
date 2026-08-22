@@ -9,6 +9,12 @@
 
 All notable changes to this package will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Reserved binding-row indicator space so modifier changes and focus restoration no longer shift binding icons horizontally.
+
 ## [0.2.1] - 2026-08-22
 
 ### Changed
