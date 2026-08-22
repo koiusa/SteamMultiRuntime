@@ -2,6 +2,12 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.12.1] - 2026-08-22
+
+### Fixed
+
+- Updated `com.koiusa.input.icons` to 0.1.1 and removed invalid `L-nan -nan` segments from the bundled Steam Gamepad SVG so Unity Vector Graphics imports it successfully.
+
 ## [0.12.0] - 2026-08-22
 
 ### Added
