@@ -118,6 +118,7 @@ namespace Koiusa.Input
             pointLease = InputActionLease.Acquire(actionAsset?.FindAction("UI/Point", false));
             clickLease = InputActionLease.Acquire(actionAsset?.FindAction("UI/Click", false));
             this.navigateAction.performed += OnNavigatePerformed;
+            this.navigateAction.canceled += OnNavigateCanceled;
             submitBinding = submit == null
                 ? null
                 : InputActionBinding.Bind(submitAction, _ =>
@@ -182,6 +183,12 @@ namespace Koiusa.Input
             StartRepeatUpdates();
         }
 
+        private void OnNavigateCanceled(InputAction.CallbackContext _)
+        {
+            StopRepeatUpdates();
+            heldDirection = UiNavigationDirection.None;
+        }
+
         private void OnAfterInputUpdate()
         {
             if (!IsActiveSession || heldDirection == UiNavigationDirection.None)
@@ -226,6 +233,7 @@ namespace Koiusa.Input
             if (navigateAction != null)
             {
                 navigateAction.performed -= OnNavigatePerformed;
+                navigateAction.canceled -= OnNavigateCanceled;
             }
             if (activeSessionNode != null)
             {

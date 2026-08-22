@@ -30,7 +30,7 @@ Pause MenuからCharacter SelectをPushするときは`CharacterSelectMenuRegist
 | `InputActionBinding` | performed CallbackとLeaseの寿命を1つにまとめる |
 | `UiNavigationInputSession` | 最前面入力の排他、Navigate方向判定、長押しリピート、Submit、Cancel、カーソル表示を管理 |
 
-`UiNavigationInputSession`の標準値は、方向しきい値0.5、リピート開始0.4秒、リピート間隔0.1秒です。画面は`UiNavigationDirection`のMove、Submit、CancelのCallbackだけを渡します。方向変化はInput ActionのCallbackで受信し、方向が保持されている間だけInput System更新後にリピート時刻を評価します。各画面に入力用`Update`は置きません。複数Sessionが一時的に存在しても、最後に作られたSessionだけがMove／Submit／Cancelを処理します。Sessionの参照数でカーソル表示も保持するため、背面UIの終了処理が前面UIのカーソルを隠すことはありません。Up／Down／Left／Rightを保持するため、縦リスト、横タブ、2次元グリッドで同じSessionを使えます。独自入力を使う場合は対象`VisualElement`を渡し、EventSystemの重複`NavigationMoveEvent`／`NavigationSubmitEvent`／`NavigationCancelEvent`をSession内で消費します。
+`UiNavigationInputSession`の標準値は、方向しきい値0.5、リピート開始0.4秒、リピート間隔0.1秒です。画面は`UiNavigationDirection`のMove、Submit、CancelのCallbackだけを渡します。方向変化はInput Actionの`performed` Callbackで受信し、方向が保持されている間だけInput System更新後にリピート時刻を評価します。キー解放のニュートラル値に加え、Action無効化、Binding再解決、Device Resetによる`canceled`でも保持方向とリピート購読を解除します。各画面に入力用`Update`は置きません。複数Sessionが一時的に存在しても、最後に作られたSessionだけがMove／Submit／Cancelを処理します。Sessionの参照数でカーソル表示も保持するため、背面UIの終了処理が前面UIのカーソルを隠すことはありません。Up／Down／Left／Rightを保持するため、縦リスト、横タブ、2次元グリッドで同じSessionを使えます。独自入力を使う場合は対象`VisualElement`を渡し、EventSystemの重複`NavigationMoveEvent`／`NavigationSubmitEvent`／`NavigationCancelEvent`をSession内で消費します。
 
 `UI/Navigate`はEventSystem標準UIとの互換性を保つため`PassThrough`とします。独自UIの重複入力はAction Typeの変更ではなく、`UiNavigationInputSession`のイベント消費で抑止します。
 
