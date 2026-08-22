@@ -4,6 +4,11 @@
   "version": "0.1.0",
   "unity": "6000.3",
   "description": "Runtime input guide, device visualization, and live input highlighting.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koiusa/SteamMultiRuntime.git",
+    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.inputguide"
+  },
   "license": "MIT",
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",

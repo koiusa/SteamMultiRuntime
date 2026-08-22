@@ -4,6 +4,11 @@
   "version": "0.1.1",
   "unity": "6000.3",
   "description": "Reusable Input System control-path icon resolution and standard input icons.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koiusa/SteamMultiRuntime.git",
+    "directory": "Assets/SteamMultiRuntime/Runtime/Packages/com.koiusa.input.icons"
+  },
   "license": "MIT",
   "dependencies": { "com.unity.inputsystem": "1.18.0" }
 }
