@@ -2,6 +2,20 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.12.5] - 2026-08-23
+
+### Changed
+
+- Updated the application version to 0.10.7 and Android version code to 6.
+- Updated `com.koiusa.inputguide` to 0.3.0, `com.koiusa.keyconfig` to 0.2.3, and `com.koiusa.steammultiruntime.keyconfig` to 0.1.7.
+- Added independently anchored, replaceable Input Guide panel layouts and extensible device-layout host routing.
+
+### Fixed
+
+- Kept additional Device panel anchors intact when applying an `InputGuideConfiguration`.
+- Initialized the operation list from the connected presentation device before the first input.
+- Prevented Keyconfig Dynamic Font Asset reimport churn after EditMode test shutdown.
+
 ## [0.12.4] - 2026-08-23
 
 ### Changed

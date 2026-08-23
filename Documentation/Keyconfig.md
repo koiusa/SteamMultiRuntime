@@ -139,6 +139,10 @@ Keyconfig用の`GameplayKeyConfigSettings.asset`はInputActionAssetを複製せ�
 操作ガイドは`com.koiusa.inputguide/Runtime/Resources/System/InputGuideOverlay.prefab`を使用します。
 `InputGuideSelectionController`のMap Filterは`All`、`EnabledOnly`、`Specified`から選択でき、Action Map群とBinding Groupを1つのスナップショットとして参照先`InputGuideOverlay`へpushします。ControllerはInput Actionsを別途保持せず、Overlayの`Input Actions Config`からMapとControl Schemeを列挙します。専用EditorはMapをマスク形式で複数選択しつつMap名リストとして保存します。Map名とAction名は`KeyConfigLocalization`でローカライズされ、Controller、Mapの有効状態、またはBinding変更時には表示と入力ハイライトが再構築されます。`Specified`でMap名が空の場合は何も表示しません。
 
+公式Prefabは`InputGuidePanelCollection`に通常の`InputGuidePanelLayout`を列挙します。固定スロットは`Device`と`Operations`だけで、Keyboard本体とMouseなどの追加デバイスパネルは同じ`Device`スロットを共有しながら、各コンポーネントがUXML、描画先host、9方向アンカーを個別に保持します。`InputGuideConfiguration.DevicePanelAnchor`は一覧先頭の代表Deviceパネルを制御し、追加パネルのアンカーを上書きしません。表示モードの開閉は同じスロットの全パネルへ適用します。
+
+疑似デバイスは`InputGuideDeviceLayoutCollection`へ文字列ID、Input System layout／usage、排他グループ、描画先hostを設定して追加します。Mouse固有のスロットやランタイム分岐はなく、Mouseや左右XR Controllerも通常のDevice layoutとして構成します。
+
 コンパクト表示のMapタブ切替と一覧スクロールは`InputGuideNavigationController`が担当します。公式PrefabはOverlayのInput Actions Configにある`UI/PreviousSection`と`UI/NextSection`を使ってQ／EまたはL1／R1で前後へ循環し、`UI/Navigate`の上下方向で一覧をスクロールします。
 操作一覧は画面上部の全幅を使い、各Mapを1列としてスクロールなしで横一列に表示します。
 

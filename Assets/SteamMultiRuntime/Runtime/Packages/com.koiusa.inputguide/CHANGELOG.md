@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.3.0] - 2026-08-23
+
+- Updated the `com.koiusa.keyconfig` dependency to 0.2.3 and declared the existing direct `com.koiusa.ui.core` dependency.
 - Renamed `InputGuidePanelKind` to `InputGuidePanelSlot` to distinguish visual panel slots from extensible device layout IDs.
 - Merged the Mouse layout into the Device panel and reduced the fixed panel slots to Device and Operations.
 - Kept the primary device card and additional Mouse/XR panels visually separate with independent component anchors.

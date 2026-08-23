@@ -34,7 +34,7 @@ Steam Multi Runtimeは、公開汎用パッケージとして`com.koiusa.applica
 | `com.koiusa.ui.core` | 特定ゲームやLocalizationに依存しないUI基盤。共通テーマ、`IUiMenu`、スタック式`UiMenuNavigator` |
 | `com.koiusa.keyconfig` | `KeyConfigPanel`／`KeyConfigController`を公開入口とするInput Systemのリバインドと入力表示 |
 | `com.koiusa.input.icons` | Input SystemのControl pathと標準入力アイコンの解決 |
-| `com.koiusa.inputguide` | 操作一覧、接続デバイス表示、入力ハイライト、Map選択とコンパクト表示ナビゲーション |
+| `com.koiusa.inputguide` | 操作一覧、交換可能な独立パネル配置、拡張可能な疑似デバイス表示、入力ハイライト、Map選択とコンパクト表示ナビゲーション |
 | `com.koiusa.targetingsystem` | ターゲット検出、ロックオン、Camera連携 |
 
 ### Steam Multi Runtime共通基盤

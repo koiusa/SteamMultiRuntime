@@ -282,10 +282,13 @@ com.koiusa.application 0.2.0
    ├─ PauseChanged / IsPaused
    └─ Quitting / IsQuitting
 
-com.koiusa.inputguide 0.2.1
+com.koiusa.inputguide 0.3.0
 ├─ InputGuideOverlay
 ├─ InputGuideSelectionController
 ├─ InputGuideNavigationController
+├─ InputGuidePanelCollection
+├─ InputGuidePanelLayout
+├─ InputGuideDeviceLayoutCollection
 └─ InputGuideOperationPanel
 ```
 

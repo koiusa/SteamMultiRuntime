@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2026-08-23
+
+### Fixed
+
 - Matched the persistent dynamic FontAsset name to its filename to prevent test-run shutdown from producing an inconsistent reimport and a spurious asset modification.
 
 ## [0.2.0]
