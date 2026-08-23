@@ -1,5 +1,7 @@
 # Changelog
 
+- Matched the persistent dynamic FontAsset name to its filename to prevent test-run shutdown from producing an inconsistent reimport and a spurious asset modification.
+
 ## [0.2.0]
 
 - Replaced the implementation-oriented public surface with `KeyConfigPanel`, `KeyConfigController`, stable GUID-based binding DTOs, and `KeyConfigSettings` under `Koiusa.KeyConfig`.

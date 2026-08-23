@@ -33,6 +33,8 @@ namespace Koiusa.KeyConfig.Tests
             Assert.That(AssetDatabase.Contains(fallbackFont), Is.True,
                 "The fallback FontAsset and its Material must remain persistent through Play Mode teardown.");
             Assert.That(AssetDatabase.GetAssetPath(fallbackFont), Does.EndWith("KeyConfig Dynamic SDF.asset"));
+            Assert.That(fallbackFont.name, Is.EqualTo("KeyConfig Dynamic SDF"),
+                "The main asset name must match its filename so clearing dynamic data does not cause an inconsistent reimport.");
             Assert.That(AssetDatabase.Contains(fallbackFont.material), Is.True,
                 "UI Toolkit deferred text jobs must not reference a runtime-created Material.");
             var runtimeFont = UnityEngine.TextCore.Text.FontAsset.CreateFontAsset(
