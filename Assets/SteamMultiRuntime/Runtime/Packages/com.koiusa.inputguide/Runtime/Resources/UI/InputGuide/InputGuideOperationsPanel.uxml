@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="input-operation-header">
+        <ui:Label text="OPERATIONS" class="input-guide-title" />
+        <ui:Label text="F1 / TOUCH PAD" class="input-operation-toggle-hint" />
+    </ui:VisualElement>
+    <ui:VisualElement class="input-guide-divider" />
+    <ui:VisualElement name="input-operation-map-tabs" class="input-operation-map-tabs" />
+    <ui:ScrollView name="input-operation-scroll-view" mode="Vertical" class="input-operation-sections">
+        <ui:VisualElement name="keyboard-operation-list" class="input-operation-list" />
+        <ui:VisualElement name="gamepad-operation-list" class="input-operation-list" />
+    </ui:ScrollView>
+</ui:UXML>

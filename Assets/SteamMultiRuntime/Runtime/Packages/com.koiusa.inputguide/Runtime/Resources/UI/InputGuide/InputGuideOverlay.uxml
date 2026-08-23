@@ -1,46 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:Style src="../../../../../com.koiusa.ui.core/Runtime/Resources/UI/Core/KoiusaUiTheme.uss" />
     <ui:Style src="InputGuideOverlay.uss" />
-    <ui:Template name="InputGuideKeyboard" src="InputGuideKeyboard.uxml" />
-    <ui:Template name="InputGuideMouse" src="InputGuideMouse.uxml" />
-    <ui:Template name="InputGuideGamepad" src="InputGuideGamepad.uxml" />
     <ui:VisualElement name="input-guide-overlay" class="koiusa-theme input-guide-screen" picking-mode="Ignore">
-        <ui:VisualElement class="input-guide-panel">
-            <ui:VisualElement class="input-guide-header">
-                <ui:VisualElement class="input-guide-accent" />
-                <ui:VisualElement>
-                    <ui:Label text="CONTROLS" class="input-guide-title" />
-                    <ui:Label name="map-label" text="GAMEPLAY" class="input-guide-map" />
-                </ui:VisualElement>
-                <ui:VisualElement class="input-guide-spacer" />
-                <ui:Label name="input-mode-label" text="MODE: NONE" class="input-guide-device" />
-                <ui:Label name="device-label" text="KEYBOARD" class="input-guide-device" />
-            </ui:VisualElement>
-            <ui:VisualElement class="input-guide-divider" />
-            <ui:VisualElement name="device-layout" class="input-device-layout">
-                <ui:VisualElement name="keyboard-layout-host" class="input-device-host input-keyboard-host">
-                    <ui:Instance template="InputGuideKeyboard" />
-                </ui:VisualElement>
-                <ui:VisualElement name="gamepad-layout-host" class="input-device-host input-gamepad-host">
-                    <ui:Instance template="InputGuideGamepad" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-            <ui:Label text="LIVE INPUT MONITOR" class="input-guide-footer" />
-        </ui:VisualElement>
-        <ui:VisualElement name="mouse-layout-host" class="input-mouse-floating-host">
-            <ui:Instance template="InputGuideMouse" />
-        </ui:VisualElement>
-        <ui:VisualElement class="input-operation-panel">
-            <ui:VisualElement class="input-operation-header">
-                <ui:Label text="OPERATIONS" class="input-guide-title" />
-                <ui:Label text="F1 / TOUCH PAD" class="input-operation-toggle-hint" />
-            </ui:VisualElement>
-            <ui:VisualElement class="input-guide-divider" />
-            <ui:VisualElement name="input-operation-map-tabs" class="input-operation-map-tabs" />
-            <ui:ScrollView name="input-operation-scroll-view" mode="Vertical" class="input-operation-sections">
-                <ui:VisualElement name="keyboard-operation-list" class="input-operation-list" />
-                <ui:VisualElement name="gamepad-operation-list" class="input-operation-list" />
-            </ui:ScrollView>
-        </ui:VisualElement>
+        <ui:VisualElement name="device-panel-host" class="input-device-panel-group" />
+        <ui:VisualElement name="mouse-panel-host" class="input-mouse-panel-host" />
+        <ui:VisualElement name="operations-panel-host" class="input-operation-panel" />
     </ui:VisualElement>
 </ui:UXML>

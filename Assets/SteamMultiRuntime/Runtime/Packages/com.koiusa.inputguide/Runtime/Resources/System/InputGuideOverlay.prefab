@@ -13,6 +13,11 @@ GameObject:
   - component: {fileID: 3015366725873491201}
   - component: {fileID: 3015366725873491208}
   - component: {fileID: 7273299857406907624}
+  - component: {fileID: 8162135502428704211}
+  - component: {fileID: 8162135502428704212}
+  - component: {fileID: 8162135502428704213}
+  - component: {fileID: 8162135502428704214}
+  - component: {fileID: 8162135502428704215}
   m_Layer: 0
   m_Name: InputGuideOverlay
   m_TagString: Untagged
@@ -58,27 +63,6 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &7273299857406907624
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1901867009749240428}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0da7059df1494e55ac007b56d344f21a, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideOverlay
-  inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
-  layoutAsset: {fileID: 9197481963319205126, guid: c073356281ac46df8bac1a314ae739e3, type: 3}
-  iconResolver: {fileID: 11400000, guid: 6415dd300497c674ba7731d62b0fb24a, type: 2}
-  startVisible: 0
-  layoutPreset: 0
-  toggleHintVisibility: 0
-  autoSwitchDeviceLayout: 1
-  stickVisualTravel: 8
-  stickVisualDeadzone: 0.08
 --- !u!114 &3015366725873491201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,10 +89,147 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4a23ea5252443719ce9f8994191bf2b, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideNavigationController
   overlay: {fileID: 7273299857406907624}
   previousMapAction: UI/PreviousSection
   nextMapAction: UI/NextSection
   scrollAction: UI/Navigate
   scrollStep: 90
+--- !u!114 &7273299857406907624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0da7059df1494e55ac007b56d344f21a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideOverlay
+  inputActionsConfig: {fileID: 11400000, guid: 289be5b482a648b69131f578cf937b72, type: 2}
+  layoutAsset: {fileID: 9197481963319205126, guid: c073356281ac46df8bac1a314ae739e3, type: 3}
+  iconResolver: {fileID: 11400000, guid: 6415dd300497c674ba7731d62b0fb24a, type: 2}
+  startVisible: 0
+  layoutPreset: 0
+  toggleHintVisibility: 0
+  panelCollection: {fileID: 8162135502428704214}
+  deviceLayoutCollection: {fileID: 8162135502428704215}
+  autoSwitchDeviceLayout: 1
+  stickVisualTravel: 8
+  stickVisualDeadzone: 0.08
+  deviceIdleDelay: 1.5
+  deviceFadeDuration: 0.2
+  primaryDeviceSwitchLock: 0.25
+--- !u!114 &8162135502428704211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b17f3dd9eb9144668fc028659bad721a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuidePanelLayout
+  panelSlot: 0
+  hostElementName: device-panel-host
+  defaultLayout: {fileID: 9197481963319205126, guid: e921814ef6d94c1eb1b98c07156785d0, type: 3}
+  layoutOverride: {fileID: 0}
+  anchor: 6
+--- !u!114 &8162135502428704212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b17f3dd9eb9144668fc028659bad721a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuidePanelLayout
+  panelSlot: 0
+  hostElementName: mouse-panel-host
+  defaultLayout: {fileID: 9197481963319205126, guid: e56b16cc174d43d4bcf3b75f53fa834b, type: 3}
+  layoutOverride: {fileID: 0}
+  anchor: 8
+--- !u!114 &8162135502428704213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b17f3dd9eb9144668fc028659bad721a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuidePanelLayout
+  panelSlot: 1
+  hostElementName: operations-panel-host
+  defaultLayout: {fileID: 9197481963319205126, guid: cc028803cfbd4305a079ffcba10730a2, type: 3}
+  layoutOverride: {fileID: 0}
+  anchor: 0
+--- !u!114 &8162135502428704214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efcf9f0dc37e45d8b62edcadb050c4aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuidePanelCollection
+  panels:
+  - {fileID: 8162135502428704211}
+  - {fileID: 8162135502428704212}
+  - {fileID: 8162135502428704213}
+--- !u!114 &8162135502428704215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901867009749240428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1392cac35ad47b5bf112972b123bb64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Koiusa.InputGuide.Runtime::Koiusa.InputGuide.InputGuideDeviceLayoutCollection
+  layouts:
+  - id: keyboard
+    panelSlot: 0
+    defaultLayout: {fileID: 9197481963319205126, guid: beb1ad4bd634420aaa938f4e35381625, type: 3}
+    layoutOverride: {fileID: 0}
+    controlLayouts:
+    - Keyboard
+    requiredUsages: []
+    exclusiveGroup: primary
+    hostElementName: 
+    defaultVisible: 1
+  - id: mouse
+    panelSlot: 0
+    defaultLayout: {fileID: 9197481963319205126, guid: 3813a2536b4840529806357c668dc0d9, type: 3}
+    layoutOverride: {fileID: 0}
+    controlLayouts:
+    - Mouse
+    requiredUsages: []
+    exclusiveGroup: 
+    hostElementName: mouse-device-layouts-host
+    defaultVisible: 1
+  - id: gamepad
+    panelSlot: 0
+    defaultLayout: {fileID: 9197481963319205126, guid: a0782a5deeb74f2bbe49d4beb22097c2, type: 3}
+    layoutOverride: {fileID: 0}
+    controlLayouts:
+    - Gamepad
+    - Joystick
+    requiredUsages: []
+    exclusiveGroup: primary
+    hostElementName: 
+    defaultVisible: 0

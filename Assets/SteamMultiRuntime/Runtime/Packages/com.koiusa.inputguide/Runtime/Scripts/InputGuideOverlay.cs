@@ -12,13 +12,12 @@ namespace Koiusa.InputGuide
 {
     /// <summary>Gameplay HUD that visualizes the current bindings and their live input state.</summary>
     [RequireComponent(typeof(UIDocument))]
+    [RequireComponent(typeof(InputGuidePanelCollection))]
+    [RequireComponent(typeof(InputGuideDeviceLayoutCollection))]
     [DisallowMultipleComponent]
     public sealed class InputGuideOverlay : MonoBehaviour, IInputGuideOverlay
     {
         private const string DefaultLayoutPath = "UI/InputGuide/InputGuideOverlay";
-        private const string KeyboardLayoutPath = "UI/InputGuide/InputGuideKeyboard";
-        private const string MouseLayoutPath = "UI/InputGuide/InputGuideMouse";
-        private const string GamepadLayoutPath = "UI/InputGuide/InputGuideGamepad";
 
         [Header("Input")]
         [SerializeField] private KeyConfigSettings inputActionsConfig;
@@ -29,6 +28,8 @@ namespace Koiusa.InputGuide
         [SerializeField] private bool startVisible;
         [SerializeField] private InputGuideLayoutPreset layoutPreset = InputGuideLayoutPreset.Standard;
         [SerializeField] private InputGuideToggleHintVisibility toggleHintVisibility = InputGuideToggleHintVisibility.PresetDefault;
+        [SerializeField] private InputGuidePanelCollection panelCollection;
+        [SerializeField] private InputGuideDeviceLayoutCollection deviceLayoutCollection;
         [SerializeField] private bool autoSwitchDeviceLayout = true;
         [SerializeField, Range(0f, 16f)] private float stickVisualTravel = 8f;
         [SerializeField, Range(0f, 0.5f)] private float stickVisualDeadzone = 0.08f;
@@ -41,14 +42,11 @@ namespace Koiusa.InputGuide
         private VisualElement overlay;
         private VisualElement devicePanel;
         private VisualElement operationPanel;
-        private ScrollView operationScrollView;
-        private VisualElement mouseLayoutHost;
         private Label deviceLabel;
         private Label inputModeLabel;
         private VisualElement keyboardLayout;
         private VisualElement mouseLayout;
         private VisualElement gamepadLayout;
-        private InputGuideOperationPanel operationListPanel;
         private Label gamepadFaceWestLabel;
         private Label gamepadFaceNorthLabel;
         private Label gamepadFaceEastLabel;
@@ -73,6 +71,8 @@ namespace Koiusa.InputGuide
         private bool configurationApplied;
         private InputGuideSelection selection = InputGuideSelection.All();
         private readonly List<InputActionMap> displayedMaps = new List<InputActionMap>();
+        private InputGuideOperationPanel operationPanelController;
+        private ScrollView operationScrollView;
 
         private sealed class GuideRow
         {
@@ -165,6 +165,8 @@ namespace Koiusa.InputGuide
         private void Awake()
         {
             uiDocument = GetComponent<UIDocument>();
+            if (panelCollection == null) panelCollection = GetComponent<InputGuidePanelCollection>();
+            if (deviceLayoutCollection == null) deviceLayoutCollection = GetComponent<InputGuideDeviceLayoutCollection>();
             inputActionAsset = ResolveConfiguredInputActions();
         }
 
@@ -296,7 +298,8 @@ namespace Koiusa.InputGuide
                 lastActiveDevice = frameActiveDevice;
                 if (autoSwitchDeviceLayout)
                 {
-                    SetGamepadLayout(IsGamepadLike(lastActiveDevice));
+                    deviceLayoutCollection?.ShowForDevice(lastActiveDevice);
+                    SetGamepadLayout(IsGamepadLike(lastActiveDevice), false);
                 }
             }
 
@@ -336,21 +339,11 @@ namespace Koiusa.InputGuide
                 return;
             }
 
+            overlay.style.display = mode == InputGuideDisplayMode.Hidden ? DisplayStyle.None : DisplayStyle.Flex;
             var showDevices = mode is InputGuideDisplayMode.Both or InputGuideDisplayMode.DeviceOnly;
             var showOperations = mode is InputGuideDisplayMode.Both or InputGuideDisplayMode.OperationsOnly;
-            overlay.style.display = mode == InputGuideDisplayMode.Hidden ? DisplayStyle.None : DisplayStyle.Flex;
-            if (devicePanel != null)
-            {
-                devicePanel.style.display = showDevices ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-            if (mouseLayoutHost != null)
-            {
-                mouseLayoutHost.style.display = showDevices ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-            if (operationPanel != null)
-            {
-                operationPanel.style.display = showOperations ? DisplayStyle.Flex : DisplayStyle.None;
-            }
+            panelCollection?.SetVisible(InputGuidePanelSlot.Device, showDevices);
+            panelCollection?.SetVisible(InputGuidePanelSlot.Operations, showOperations);
         }
 
         private void ToggleDeviceLayout()
@@ -365,7 +358,72 @@ namespace Koiusa.InputGuide
         public InputGuideConfiguration CaptureConfiguration()
         {
             return new InputGuideConfiguration(
-                displayMode, layoutPreset, toggleHintVisibility);
+                displayMode,
+                layoutPreset,
+                toggleHintVisibility,
+                GetPanelAnchor(InputGuidePanelSlot.Device),
+                GetPanelAnchor(InputGuidePanelSlot.Operations));
+        }
+
+        public InputGuidePanelAnchor GetPanelAnchor(InputGuidePanelSlot panelSlot)
+        {
+            var layout = FindPanelLayout(panelSlot);
+            if (layout != null) return layout.Anchor;
+            return panelSlot switch
+            {
+                InputGuidePanelSlot.Device => InputGuidePanelAnchor.BottomLeft,
+                _ => InputGuidePanelAnchor.TopRight
+            };
+        }
+
+        public void SetPanelAnchor(InputGuidePanelSlot panelSlot, InputGuidePanelAnchor anchor)
+        {
+            var layout = FindPanelLayout(panelSlot);
+            if (layout == null)
+                throw new InvalidOperationException($"No panel layout is configured for {panelSlot}.");
+
+            panelCollection.SetAnchor(panelSlot, anchor);
+        }
+
+        public VisualTreeAsset GetPanelLayoutOverride(InputGuidePanelSlot panelSlot)
+        {
+            return FindPanelLayout(panelSlot)?.LayoutOverride;
+        }
+
+        public void SetPanelLayoutOverride(InputGuidePanelSlot panelSlot, VisualTreeAsset layoutAsset)
+        {
+            var layout = FindPanelLayout(panelSlot);
+            if (layout == null)
+                throw new InvalidOperationException($"No panel layout is configured for {panelSlot}.");
+            if (ReferenceEquals(layout.LayoutOverride, layoutAsset)) return;
+            layout.SetLayoutOverride(layoutAsset);
+            RebuildIfActive();
+        }
+
+        public VisualTreeAsset GetDeviceLayoutOverride(string layoutId) =>
+            deviceLayoutCollection?.Get(layoutId)?.LayoutOverride;
+
+        public void SetDeviceLayoutOverride(string layoutId, VisualTreeAsset layoutAsset)
+        {
+            var layout = deviceLayoutCollection?.Get(layoutId)
+                ?? throw new ArgumentException($"Device layout '{layoutId}' is not registered.", nameof(layoutId));
+            if (ReferenceEquals(layout.LayoutOverride, layoutAsset)) return;
+            layout.SetOverride(layoutAsset);
+            RebuildIfActive();
+        }
+
+        public void SetDeviceLayoutVisible(string layoutId, bool visible)
+        {
+            var layout = deviceLayoutCollection?.Get(layoutId)
+                ?? throw new ArgumentException($"Device layout '{layoutId}' is not registered.", nameof(layoutId));
+            layout.SetVisible(visible);
+        }
+
+        public void ShowDeviceLayout(string layoutId)
+        {
+            if (deviceLayoutCollection?.Get(layoutId) == null)
+                throw new ArgumentException($"Device layout '{layoutId}' is not registered.", nameof(layoutId));
+            deviceLayoutCollection.Show(layoutId);
         }
 
         /// <summary>Applies map selection and presentation as one rebuild.</summary>
@@ -378,6 +436,8 @@ namespace Koiusa.InputGuide
 
             layoutPreset = configuration.LayoutPreset;
             toggleHintVisibility = configuration.ToggleHintVisibility;
+            SetPanelAnchor(InputGuidePanelSlot.Device, configuration.DevicePanelAnchor);
+            SetPanelAnchor(InputGuidePanelSlot.Operations, configuration.OperationsPanelAnchor);
             displayMode = configuration.DisplayMode;
             configurationApplied = true;
 
@@ -400,7 +460,7 @@ namespace Koiusa.InputGuide
         }
 
         /// <summary>Reapplies serialized Inspector settings while the overlay is running.</summary>
-        public void RefreshFromInspector()
+        internal void RefreshFromInspector()
         {
             if (!Application.isPlaying || !isActiveAndEnabled || uiDocument == null)
             {
@@ -495,32 +555,23 @@ namespace Koiusa.InputGuide
         public void SelectPreviousMapTab()
         {
             if (!AreOperationTabsVisible()) return;
-            operationListPanel?.SelectPreviousMap();
+            operationPanelController?.SelectPreviousMap();
             ResetOperationScroll();
         }
 
         public void SelectNextMapTab()
         {
             if (!AreOperationTabsVisible()) return;
-            operationListPanel?.SelectNextMap();
+            operationPanelController?.SelectNextMap();
             ResetOperationScroll();
         }
 
         public void ScrollOperationList(float direction, float distance = 90f)
         {
-            if (!AreOperationTabsVisible() || operationScrollView == null || Mathf.Abs(direction) < 0.1f)
-            {
-                return;
-            }
-
+            if (!AreOperationTabsVisible() || operationScrollView == null || Mathf.Abs(direction) < 0.1f) return;
             var y = operationScrollView.scrollOffset.y - Mathf.Sign(direction) * Mathf.Max(1f, distance);
             var max = Mathf.Max(0f, operationScrollView.verticalScroller.highValue);
             operationScrollView.scrollOffset = new Vector2(0f, Mathf.Clamp(y, 0f, max));
-        }
-
-        private void ResetOperationScroll()
-        {
-            if (operationScrollView != null) operationScrollView.scrollOffset = Vector2.zero;
         }
 
         private bool AreOperationTabsVisible()
@@ -535,6 +586,8 @@ namespace Koiusa.InputGuide
             root.Clear();
             rows.Clear();
             displayedMaps.Clear();
+            operationPanelController = null;
+            operationScrollView = null;
 
             var layout = layoutAsset != null
                 ? layoutAsset
@@ -546,15 +599,13 @@ namespace Koiusa.InputGuide
             }
 
             layout.CloneTree(root);
-            CloneDeviceLayout(root, "keyboard-layout-host", KeyboardLayoutPath);
-            CloneDeviceLayout(root, "mouse-layout-host", MouseLayoutPath);
-            CloneDeviceLayout(root, "gamepad-layout-host", GamepadLayoutPath);
+            panelCollection?.Build(root);
+            deviceLayoutCollection?.Build(root);
             overlay = root.Q<VisualElement>("input-guide-overlay");
             devicePanel = root.Q<VisualElement>(className: "input-guide-panel");
             operationPanel = root.Q<VisualElement>(className: "input-operation-panel");
-            operationScrollView = root.Q<ScrollView>("input-operation-scroll-view");
             ApplyPresentationPreset();
-            mouseLayoutHost = root.Q<VisualElement>("mouse-layout-host");
+            ApplyPanelLayouts();
             deviceLabel = root.Q<Label>("device-label");
             inputModeLabel = root.Q<Label>("input-mode-label");
             if (deviceLabel != null)
@@ -574,14 +625,9 @@ namespace Koiusa.InputGuide
             var now = Time.unscaledTime;
             lastKeyboardActivityTime = now;
             lastGamepadActivityTime = now;
-            primaryDeviceIsGamepad = IsGamepadLike(lastActiveDevice)
-                || (Keyboard.current == null && Gamepad.current != null);
+            var presentationDevice = ResolvePresentationDevice(lastActiveDevice);
+            primaryDeviceIsGamepad = IsGamepadLike(presentationDevice);
             lastPrimaryDeviceSwitchTime = float.NegativeInfinity;
-            operationListPanel = new InputGuideOperationPanel(
-                root.Q<VisualElement>("keyboard-operation-list"),
-                root.Q<VisualElement>("gamepad-operation-list"),
-                root.Q<VisualElement>("input-operation-map-tabs"),
-                IsInBindingGroup);
             gamepadFaceWestLabel = root.Q<Label>("gamepad-face-west-label");
             gamepadFaceNorthLabel = root.Q<Label>("gamepad-face-north-label");
             gamepadFaceEastLabel = root.Q<Label>("gamepad-face-east-label");
@@ -616,8 +662,9 @@ namespace Koiusa.InputGuide
             }
             mapLabel.text = string.Join(" / ", localizedMapNames);
             UpdateInputModeLabel();
-            SetGamepadLayout(IsGamepadLike(lastActiveDevice));
-            UpdateGamepadFaceLabels(lastActiveDevice);
+            deviceLayoutCollection?.ShowForDevice(presentationDevice);
+            SetGamepadLayout(primaryDeviceIsGamepad, false);
+            UpdateGamepadFaceLabels(presentationDevice);
             foreach (var map in displayedMaps)
             {
                 foreach (var action in map.actions)
@@ -634,7 +681,14 @@ namespace Koiusa.InputGuide
                     }
                 }
             }
-            operationListPanel.Build(displayedMaps);
+            operationScrollView = root.Q<ScrollView>("input-operation-scroll-view");
+            operationPanelController = new InputGuideOperationPanel(
+                root.Q<VisualElement>("keyboard-operation-list"),
+                root.Q<VisualElement>("gamepad-operation-list"),
+                root.Q<VisualElement>("input-operation-map-tabs"),
+                IsInBindingGroup);
+            operationPanelController.Build(displayedMaps);
+            operationPanelController.SetGamepadVisible(isGamepadLayoutVisible);
 
             // Keep physical controller buttons visible in the input monitor even
             // when the current action map does not assign an action to them.
@@ -673,26 +727,51 @@ namespace Koiusa.InputGuide
 
         private void ApplyPresentationPreset()
         {
-            InputGuidePresentationStyles.Apply(overlay, operationPanel, layoutPreset, toggleHintVisibility);
+            ApplyLayoutPreset(overlay, operationPanel, CaptureConfiguration());
         }
 
-        private void CloneDeviceLayout(VisualElement root, string hostName, string resourcePath)
+        internal static void ApplyLayoutPreset(
+            VisualElement targetOverlay,
+            VisualElement targetOperationPanel,
+            InputGuideConfiguration configuration)
         {
-            var host = root.Q<VisualElement>(hostName);
-            if (host == null || host.childCount > 0)
-            {
-                return;
-            }
-
-            var deviceLayoutAsset = Resources.Load<VisualTreeAsset>(resourcePath);
-            if (deviceLayoutAsset == null)
-            {
-                Debug.LogError($"Input guide device layout was not found at Resources/{resourcePath}.", this);
-                return;
-            }
-
-            deviceLayoutAsset.CloneTree(host);
+            if (targetOverlay == null || configuration == null) return;
+            var compact = configuration.LayoutPreset == InputGuideLayoutPreset.CompactOperations;
+            targetOverlay.EnableInClassList("input-guide-screen--compact-operations", compact);
+            var hint = targetOperationPanel?.Q<VisualElement>(className: "input-operation-toggle-hint");
+            if (hint == null) return;
+            hint.style.display = configuration.ToggleHintVisibility == InputGuideToggleHintVisibility.Visible ||
+                                 (configuration.ToggleHintVisibility == InputGuideToggleHintVisibility.PresetDefault && !compact)
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
         }
+
+        private void ResetOperationScroll()
+        {
+            if (operationScrollView != null) operationScrollView.scrollOffset = Vector2.zero;
+        }
+
+        private void ApplyPanelLayouts()
+        {
+            panelCollection?.Refresh(InputGuidePanelSlot.Device);
+            panelCollection?.Refresh(InputGuidePanelSlot.Operations);
+        }
+
+        private InputGuidePanelLayout FindPanelLayout(InputGuidePanelSlot panelSlot)
+        {
+            return panelCollection?.Get(panelSlot);
+        }
+
+        internal void ConfigurePanelCollection(InputGuidePanelCollection collection)
+        {
+            panelCollection = collection;
+        }
+
+        internal void ConfigureDeviceLayoutCollection(InputGuideDeviceLayoutCollection collection)
+        {
+            deviceLayoutCollection = collection;
+        }
+
 
         private void BindDebugControl(VisualElement root, string elementName, string bindingPath)
         {
@@ -710,12 +789,13 @@ namespace Koiusa.InputGuide
             });
         }
 
-        private void SetGamepadLayout(bool showGamepad)
+        private void SetGamepadLayout(bool showGamepad, bool updateDeviceLayout = true)
         {
             isGamepadLayoutVisible = showGamepad;
+            if (updateDeviceLayout) deviceLayoutCollection?.Show(showGamepad ? "gamepad" : "keyboard");
             if (keyboardLayout != null) keyboardLayout.style.display = DisplayStyle.Flex;
             if (gamepadLayout != null) gamepadLayout.style.display = DisplayStyle.Flex;
-            operationListPanel?.SetGamepadVisible(showGamepad);
+            operationPanelController?.SetGamepadVisible(showGamepad);
         }
 
         private void RefreshLocalizedUi()
@@ -1013,9 +1093,19 @@ namespace Koiusa.InputGuide
 
         private static string GetCurrentDeviceName(InputDevice lastDevice)
         {
-            var device = lastDevice ?? Keyboard.current as InputDevice ?? Gamepad.current;
+            var device = ResolvePresentationDevice(lastDevice);
             return device != null ? device.displayName.ToUpperInvariant() : "NO DEVICE";
         }
+
+        internal static InputDevice ResolvePresentationDevice(InputDevice lastDevice)
+        {
+            return ResolvePresentationDevice(lastDevice, Keyboard.current, Gamepad.current);
+        }
+
+        internal static InputDevice ResolvePresentationDevice(
+            InputDevice lastDevice,
+            Keyboard keyboard,
+            Gamepad gamepad) => lastDevice ?? keyboard as InputDevice ?? gamepad;
 
         private void UpdateInputModeLabel()
         {
@@ -1053,36 +1143,6 @@ namespace Koiusa.InputGuide
                 result += value[i];
             }
             return result;
-        }
-    }
-
-    internal static class InputGuidePresentationStyles
-    {
-        internal const string CompactClass = "input-guide-screen--compact-operations";
-
-        public static void Apply(
-            VisualElement overlay,
-            VisualElement operationPanel,
-            InputGuideLayoutPreset preset,
-            InputGuideToggleHintVisibility hintVisibility)
-        {
-            if (overlay == null)
-            {
-                return;
-            }
-
-            var compact = preset == InputGuideLayoutPreset.CompactOperations;
-            overlay.EnableInClassList(CompactClass, compact);
-
-            var hint = operationPanel?.Q<VisualElement>(className: "input-operation-toggle-hint");
-            if (hint == null)
-            {
-                return;
-            }
-
-            var showHint = hintVisibility == InputGuideToggleHintVisibility.Visible ||
-                           (hintVisibility == InputGuideToggleHintVisibility.PresetDefault && !compact);
-            hint.style.display = showHint ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 

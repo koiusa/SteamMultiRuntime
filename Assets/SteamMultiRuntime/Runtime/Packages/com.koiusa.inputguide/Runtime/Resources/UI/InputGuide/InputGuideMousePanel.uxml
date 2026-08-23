@@ -1,0 +1,3 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="mouse-device-layouts-host" class="input-mouse-device-layouts-host" />
+</ui:UXML>

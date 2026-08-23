@@ -35,7 +35,9 @@ namespace Koiusa.InputGuide.Editor
                 overlay.ApplyConfiguration(new InputGuideConfiguration(
                     nextMode,
                     overlay.LayoutPreset,
-                    overlay.ToggleHintVisibility));
+                    overlay.ToggleHintVisibility,
+                    overlay.GetPanelAnchor(InputGuidePanelSlot.Device),
+                    overlay.GetPanelAnchor(InputGuidePanelSlot.Operations)));
             }
         }
     }

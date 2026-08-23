@@ -6,20 +6,106 @@
     bottom: 24px;
 }
 
-.input-guide-panel {
+.input-device-panel-group {
     position: absolute;
     left: 0;
     bottom: 0;
+    width: 780px;
+}
+
+.input-device-primary-panel {
     width: 630px;
     padding: 14px;
+}
+
+/* In the standard preset the anchor positions the simulated device panel. */
+.input-device-panel-group.input-guide-anchor--left,
+.input-mouse-panel-host.input-guide-anchor--left {
+    left: 0;
+    right: auto;
+}
+
+.input-device-panel-group.input-guide-anchor--horizontal-center,
+.input-mouse-panel-host.input-guide-anchor--horizontal-center {
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
+}
+
+.input-device-panel-group.input-guide-anchor--right,
+.input-mouse-panel-host.input-guide-anchor--right {
+    left: auto;
+    right: 0;
+}
+
+.input-device-panel-group.input-guide-anchor--top,
+.input-mouse-panel-host.input-guide-anchor--top {
+    top: 0;
+    bottom: auto;
+}
+
+.input-device-panel-group.input-guide-anchor--middle,
+.input-mouse-panel-host.input-guide-anchor--middle {
+    top: 50%;
+    bottom: auto;
+    translate: 0 -50%;
+}
+
+.input-device-panel-group.input-guide-anchor--horizontal-center.input-guide-anchor--middle,
+.input-mouse-panel-host.input-guide-anchor--horizontal-center.input-guide-anchor--middle {
+    translate: -50% -50%;
+}
+
+.input-device-panel-group.input-guide-anchor--bottom,
+.input-mouse-panel-host.input-guide-anchor--bottom {
+    top: auto;
+    bottom: 0;
 }
 
 .input-operation-panel {
     position: absolute;
     left: 0;
-    right: 0;
+    right: auto;
     top: 0;
+    width: 1200px;
+    max-width: 100%;
     padding: 12px;
+}
+
+.input-operation-panel.input-guide-anchor--left {
+    left: 0;
+    right: auto;
+}
+
+.input-operation-panel.input-guide-anchor--horizontal-center {
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
+}
+
+.input-operation-panel.input-guide-anchor--right {
+    left: auto;
+    right: 0;
+}
+
+.input-operation-panel.input-guide-anchor--top {
+    top: 0;
+    bottom: auto;
+}
+
+.input-operation-panel.input-guide-anchor--middle {
+    top: 50%;
+    bottom: auto;
+    translate: 0 -50%;
+}
+
+.input-operation-panel.input-guide-anchor--horizontal-center.input-guide-anchor--middle {
+    translate: -50% -50%;
+}
+
+.input-operation-panel.input-guide-anchor--bottom {
+    top: auto;
+    bottom: 0;
 }
 
 /* Official compact preset. The screen remains the positioning context so callers
@@ -44,6 +130,42 @@
     border-top-right-radius: 8px;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--left {
+    left: 0;
+    right: auto;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--horizontal-center {
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--right {
+    left: auto;
+    right: 0;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--top {
+    top: 0;
+    bottom: auto;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--middle {
+    top: 50%;
+    bottom: auto;
+    translate: 0 -50%;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--horizontal-center.input-guide-anchor--middle {
+    translate: -50% -50%;
+}
+
+.input-guide-screen--compact-operations .input-operation-panel.input-guide-anchor--bottom {
+    top: auto;
+    bottom: 0;
 }
 
 .input-guide-screen--compact-operations .input-operation-list {
@@ -268,7 +390,39 @@
     padding-top: 5px;
     padding-bottom: 3px;
 }
+.input-device-layouts-host {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
 .input-device-host {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-mouse-panel-host {
+    position: absolute;
+    width: 138px;
+    height: 253px;
+}
+
+.input-mouse-device-layouts-host,
+.input-device-auxiliary-layouts-host {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.input-device-auxiliary-host {
     position: absolute;
     left: 0;
     right: 0;
@@ -359,12 +513,6 @@
     border-top-right-radius: 56px;
     border-bottom-left-radius: 45px;
     border-bottom-right-radius: 45px;
-}
-
-.input-mouse-floating-host {
-    position: absolute;
-    right: 0;
-    bottom: 0;
 }
 
 .mouse-buttons { flex-direction: row; height: 72px; }
