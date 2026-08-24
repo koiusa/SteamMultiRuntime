@@ -29,7 +29,7 @@ namespace Koiusa.KeyConfig.Editor
         private Vector2 scrollPosition;
         private int selectedMapTabIndex;
 
-        [MenuItem("Tools/KeyConfig/Input Binding Icon Window")]
+        [MenuItem("Tools/KeyConfig/Configuration/Input Binding Icon Window")]
         private static void Open()
         {
             var window = GetWindow<InputBindingIconBindingWindow>("KeyConfig Icon Binding");

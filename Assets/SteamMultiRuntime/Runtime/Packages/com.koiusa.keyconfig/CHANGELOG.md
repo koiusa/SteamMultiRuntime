@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5] - 2026-08-24
+
+### Fixed
+
+- Added `Tools > KeyConfig > Diagnostics > Device Diagnostics Settings` so the diagnostics toggle is discoverable in the diagnostics category of the existing KeyConfig editor tool menu.
+- Grouped resolver creation under `Tools > KeyConfig > Assets` and the binding icon editor under `Tools > KeyConfig > Configuration`.
+
 ## [0.2.4] - 2026-08-24
 
 ### Fixed

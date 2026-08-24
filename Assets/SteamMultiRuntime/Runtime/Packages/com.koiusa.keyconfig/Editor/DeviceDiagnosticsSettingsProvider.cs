@@ -10,7 +10,14 @@ namespace Koiusa.KeyConfig.Editor
     internal static class DeviceDiagnosticsSettings
     {
         internal const string DefineSymbol = "KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS";
+        internal const string MenuPath = "Tools/KeyConfig/Diagnostics/Device Diagnostics Settings";
         private const string SettingsPath = "Project/Koiusa/Keyconfig";
+
+        [MenuItem(MenuPath)]
+        private static void OpenSettings()
+        {
+            SettingsService.OpenProjectSettings(SettingsPath);
+        }
 
         [SettingsProvider]
         private static SettingsProvider CreateProvider()

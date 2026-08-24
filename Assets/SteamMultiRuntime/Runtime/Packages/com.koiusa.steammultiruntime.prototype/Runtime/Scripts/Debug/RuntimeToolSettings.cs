@@ -9,7 +9,7 @@ namespace Koiusa.SteamMultiRuntime
 
         public static bool FrameRateLoggingEnabled
         {
-            get => PlayerPrefs.GetInt(FrameRateLoggingKey, 1) != 0;
+            get => PlayerPrefs.GetInt(FrameRateLoggingKey, 0) != 0;
             set => SetBoolean(FrameRateLoggingKey, value);
         }
 

@@ -1,10 +1,25 @@
 using Koiusa.KeyConfig.Editor;
 using NUnit.Framework;
+using System.Reflection;
+using UnityEditor;
 
 namespace Koiusa.KeyConfig.Tests
 {
     public sealed class DeviceDiagnosticsSettingsTests
     {
+        [Test]
+        public void ToolsMenuOpensDeviceDiagnosticsSettings()
+        {
+            var method = typeof(DeviceDiagnosticsSettings).GetMethod(
+                "OpenSettings",
+                BindingFlags.Static | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            Assert.That(method.GetCustomAttributes(typeof(MenuItem), false), Has.Length.EqualTo(1));
+            Assert.That(DeviceDiagnosticsSettings.MenuPath,
+                Is.EqualTo("Tools/KeyConfig/Diagnostics/Device Diagnostics Settings"));
+        }
+
         [Test]
         public void EnablingDiagnosticsPreservesExistingSymbolsWithoutDuplicates()
         {
