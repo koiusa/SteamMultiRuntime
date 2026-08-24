@@ -35,17 +35,7 @@ Action Map、Action、Composite、スキーム、プロファイルの元名称�
 
 Package ManagerのSamplesから`Basic Key Rebinding`をImportしてください。
 
-## Device diagnostics
-
-入力デバイスの変更ログはデフォルトで無効であり、`InputSystem.onDeviceChange`を購読しません。
-診断が必要なプラットフォームのScripting Define Symbolsに
-`KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS`を追加すると、GamepadとJoystickのデバイス変更がログ出力されます。
-EditorまたはDevelopment Buildであるだけでは有効になりません。
-Unity Editorの`Tools > KeyConfig > Diagnostics > Device Diagnostics Settings`から設定画面を開き、現在選択中のBuild Targetに対して有効／無効を切り替えられます。
-同じ画面は`Edit > Project Settings > Koiusa > Keyconfig`からも開けます。
-
 Editor Toolは用途別に次のカテゴリへ分類されます。
 
 - `Tools > KeyConfig > Assets`: Input Action Asset ResolverとInput Binding Icon Resolverの作成
 - `Tools > KeyConfig > Configuration`: Input Binding Iconの編集
-- `Tools > KeyConfig > Diagnostics`: 入力デバイス診断の設定

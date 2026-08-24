@@ -7,13 +7,11 @@ All notable changes to Steam Multi Runtime will be documented in this file.
 ### Changed
 
 - Updated `com.koiusa.keyconfig` to 0.2.5, `com.koiusa.inputguide` to 0.3.1, `com.koiusa.steammultiruntime.keyconfig` to 0.1.8, and `com.koiusa.steammultiruntime.prototype` to 0.1.2.
-- Added a Keyconfig Project Settings tool for explicitly toggling device diagnostics per selected build target.
-- Added `Tools > KeyConfig > Diagnostics > Device Diagnostics Settings` as the categorized entry point for that tool.
 - Categorized the remaining KeyConfig editor tools under `Assets` and `Configuration`.
 
 ### Fixed
 
-- Disabled Keyconfig Input System device-change diagnostics and their event subscription by default; diagnostics now require the explicit `KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS` Scripting Define Symbol.
+- Removed the temporary Keyconfig Input System device-change logger and its event subscription entirely.
 - Disabled `RuntimeFrameRateLogger` by default so Editor and Development Build sessions only sample profiler markers and emit frame-rate logs after explicit opt-in from the diagnostics menu.
 
 ## [0.12.5] - 2026-08-23

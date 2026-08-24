@@ -9,27 +9,6 @@ namespace Koiusa.KeyConfig
     {
         public const float DefaultActuationThreshold = 0.15f;
 
-#if KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void InitializeDeviceDiagnostics()
-        {
-            InputSystem.onDeviceChange -= OnDeviceChange;
-            InputSystem.onDeviceChange += OnDeviceChange;
-        }
-
-        private static void OnDeviceChange(InputDevice device, InputDeviceChange change)
-        {
-            if (device is not Gamepad && device is not Joystick)
-            {
-                return;
-            }
-
-            Debug.Log(
-                $"[InputDevice] change={change}, name={device.displayName}, layout={device.layout}, " +
-                $"id={device.deviceId}, added={device.added}, enabled={device.enabled}");
-        }
-#endif
-
         public static InputControl Resolve(string bindingPath)
         {
             return string.IsNullOrWhiteSpace(bindingPath)
