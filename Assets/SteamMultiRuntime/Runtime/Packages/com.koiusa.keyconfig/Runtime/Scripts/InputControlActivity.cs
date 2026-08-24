@@ -9,6 +9,7 @@ namespace Koiusa.KeyConfig
     {
         public const float DefaultActuationThreshold = 0.15f;
 
+#if KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void InitializeDeviceDiagnostics()
         {
@@ -23,13 +24,11 @@ namespace Koiusa.KeyConfig
                 return;
             }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log(
                 $"[InputDevice] change={change}, name={device.displayName}, layout={device.layout}, " +
                 $"id={device.deviceId}, added={device.added}, enabled={device.enabled}");
-#endif
-
         }
+#endif
 
         public static InputControl Resolve(string bindingPath)
         {

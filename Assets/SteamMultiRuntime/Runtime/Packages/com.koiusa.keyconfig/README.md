@@ -34,3 +34,11 @@ Action Map、Action、Composite、スキーム、プロファイルの元名称�
 ## Sample
 
 Package ManagerのSamplesから`Basic Key Rebinding`をImportしてください。
+
+## Device diagnostics
+
+入力デバイスの変更ログはデフォルトで無効であり、`InputSystem.onDeviceChange`を購読しません。
+診断が必要なプラットフォームのScripting Define Symbolsに
+`KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS`を追加すると、GamepadとJoystickのデバイス変更がログ出力されます。
+EditorまたはDevelopment Buildであるだけでは有効になりません。
+Unity Editorの`Edit > Project Settings > Koiusa > Keyconfig`で、現在選択中のBuild Targetに対して有効／無効を切り替えられます。

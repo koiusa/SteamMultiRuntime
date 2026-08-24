@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4] - 2026-08-24
+
+### Fixed
+
+- Disabled Input System device-change diagnostics by default so normal builds do not subscribe to `InputSystem.onDeviceChange` or generate device-change log stack traces.
+- Made device diagnostics explicitly opt-in through the `KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS` Scripting Define Symbol, independently of Editor and Development Build settings.
+- Added a Project Settings editor tool that toggles the diagnostics symbol for the selected build target.
+
 ## [0.2.3] - 2026-08-23
 
 ### Fixed

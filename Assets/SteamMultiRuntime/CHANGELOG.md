@@ -2,6 +2,17 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Updated `com.koiusa.keyconfig` to 0.2.4.
+- Added a Keyconfig Project Settings tool for explicitly toggling device diagnostics per selected build target.
+
+### Fixed
+
+- Disabled Keyconfig Input System device-change diagnostics and their event subscription by default; diagnostics now require the explicit `KOIUSA_KEYCONFIG_DEVICE_DIAGNOSTICS` Scripting Define Symbol.
+
 ## [0.12.5] - 2026-08-23
 
 ### Changed
