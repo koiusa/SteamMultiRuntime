@@ -1,6 +1,6 @@
 {
   "name": "com.koiusa.steammultiruntime.prototype",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "Koiusa SteamMultiRuntime Prototype",
   "description": "Prototype components for SteamMultiRuntime including Mover and NPC utilities.",
   "unity": "6000.0",
