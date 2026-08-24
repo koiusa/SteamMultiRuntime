@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.2] - 2026-08-24
+
+- Updated the `com.koiusa.keyconfig` dependency to 0.2.6 after removal of the temporary device-change diagnostics.
+
 ## [0.3.1] - 2026-08-24
 
 - Updated the `com.koiusa.keyconfig` dependency to 0.2.5 for opt-in device diagnostics and categorized editor tools.
