@@ -34,6 +34,11 @@ namespace Koiusa.SteamMultiRuntime
         void RestoreFullHealth();
     }
 
+    public interface IActorHealthNotifier : IActorHealthFeature
+    {
+        event Action<float, float> HealthChanged;
+    }
+
     public interface IActorDamageReceiverFeature
     {
         bool CanReceiveDamage { get; }

@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         [SerializeField] private ActorPresentationSettings presentationSettings;
 
         private ILocalPlayerOwnershipNotifier ownership;
-        private ActorHealthFeature health;
+        private IActorHealthNotifier health;
         private Coroutine overheadHideRoutine;
         private float previousHealth;
 
@@ -20,7 +20,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             var components = GetComponents<MonoBehaviour>();
             for (var i = 0; i < components.Length; i++)
                 if (components[i] is ILocalPlayerOwnershipNotifier source) { ownership = source; break; }
-            health = GetComponent<ActorHealthFeature>();
+            health = GetComponent<IActorHealthNotifier>();
             previousHealth = health != null ? health.CurrentHealth : 0f;
         }
 

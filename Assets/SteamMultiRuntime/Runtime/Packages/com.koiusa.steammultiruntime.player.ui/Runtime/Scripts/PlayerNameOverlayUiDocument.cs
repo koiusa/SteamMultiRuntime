@@ -13,7 +13,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         private Label playerNameLabel;
         private IPlayerIdentitySource identitySource;
         private IPlayerDisplayNameNotifier displayNameNotifier;
-        private ActorHealthFeature healthFeature;
+        private IActorHealthNotifier healthFeature;
 
         private void OnEnable()
         {
@@ -24,7 +24,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             identitySource = FindIdentitySource();
             displayNameNotifier = identitySource as IPlayerDisplayNameNotifier;
             if (displayNameNotifier != null) displayNameNotifier.DisplayNameChanged += RefreshDisplayName;
-            healthFeature = GetComponentInParent<ActorHealthFeature>();
+            healthFeature = GetComponentInParent<IActorHealthNotifier>();
             if (healthFeature != null) healthFeature.HealthChanged += OnHealthChanged;
             RefreshDisplayName();
         }

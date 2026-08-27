@@ -11,7 +11,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
         private VisualElement healthBar;
         private VisualElement healthBarFill;
         private Label healthValueLabel;
-        private ActorHealthFeature healthFeature;
+        private IActorHealthNotifier healthFeature;
 
         private void OnEnable()
         {
@@ -19,7 +19,7 @@ namespace Koiusa.SteamMultiRuntime.Player.UI
             uiDocument = GetComponent<UIDocument>();
             BindVisualTreeAndRefresh();
             uiDocument.rootVisualElement.schedule.Execute(BindVisualTreeAndRefresh);
-            healthFeature = GetComponentInParent<ActorHealthFeature>();
+            healthFeature = GetComponentInParent<IActorHealthNotifier>();
             if (healthFeature != null) healthFeature.HealthChanged += OnHealthChanged;
             RefreshHealth();
         }
