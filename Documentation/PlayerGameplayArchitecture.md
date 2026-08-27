@@ -27,7 +27,7 @@ Network Playerの移動はServer Authorityです。Ownerは入力だけをServer
 ### 実装済み
 
 - `ActorCharacterCoordinator`をMovement、Skill、Combatへの共通アクセスポイントとして追加
-- `ActorSkillCoordinator`によるSkill ID検索、排他実行、キャンセル、Cooldown、開始／終了通知
+- `ActorSkillCoordinator`によるSkill ID検索、排他実行、キャンセル、Cooldown、開始／終了通知。表示Slotは各Skillの`IActorSkillPresentationDescriptor`から取得し、Coordinatorは具象Skill型を列挙しない
 - `ActorSkillDefinition` ScriptableObjectによる固定Skill IDと表示名の一元管理
 - `DashSkillFeature`、`SwordAttackSkillFeature`、`GuardSkillFeature`、`HealSkillFeature`の初期実装
 - `ActorCombatCoordinator`によるHP、被ダメージ倍率、範囲Hit判定の仲介
@@ -150,7 +150,7 @@ Dash TrailはDash本体の0.2秒で新規発生を停止し、0.42秒でEffect O
 
 `NetworkActorCombatState`は`IActorCombatProcessGate`としてNetwork CombatのDamage、Heal、Hit DetectionをSpawn済みServerだけに制限し、`ActorHealthFeature.CurrentHealth`をServer-writeのNetworkVariableで全Clientへ同期します。Clientへの反映は`ActorHealthFeature.ApplyReplicatedHealth`を通して`HealthChanged`通知を維持します。Local CharacterにはGateを配置せず、従来どおり共通Combatを直接処理します。
 
-`ActorHealthFeature`は最初に参照された時点で初期HPを確定します。ComponentのAwake順にかかわらず、`ActorRespawnFeature`と`ActorHealthUiRouter`は0ではなく初期HPを基準に死亡・Damageを判定します。Clientへ複製されたHPが0を跨いだ場合は`HealthChanged`に加えて`Died`と`LifeStateChanged`も一度だけ通知し、Client側のHP表示、死亡Presentation、状態解除を同じ遷移へ接続します。
+`ActorHealthFeature`は最初に参照された時点で初期HPを確定します。ComponentのAwake順にかかわらず、`ActorRespawnFeature`と`ActorHealthUiRouter`は0ではなく初期HPを基準に死亡・Damageを判定します。`ActorRespawnFeature`は具象Healthではなく`IActorDeathNotifier`を購読します。Clientへ複製されたHPが0を跨いだ場合は`HealthChanged`に加えて`Died`と`LifeStateChanged`も一度だけ通知し、Client側のHP表示、死亡Presentation、状態解除を同じ遷移へ接続します。
 
 NPCとNetwork越しの非所有Playerの頭上HPは通常非表示とし、Damageによる`HealthChanged`を受けたときだけ設定時間（既定3秒）表示します。ローカル所有Playerは画面HUDだけを使用し、頭上HPを表示しません。
 
@@ -228,7 +228,7 @@ ActorCharacterCoordinator
 - `ActorCharacterCoordinator`は3領域への共通アクセスポイントです。
 - `ActorCompositeMotor`は通常移動、Traversal、外部モーション要求を処理します。
 - `ActorSkillCoordinator`は装着済みSkillの検索、排他実行、キャンセルを処理します。
-- `ActorCombatCoordinator`はHP、被ダメージ倍率、範囲Hit判定を仲介します。
+- `ActorCombatCoordinator`はHP、被ダメージ倍率、範囲Hit判定を仲介します。具象Featureには依存せず、HPは`IActorHealthFeature`、範囲Hit判定は`IActorAreaAttackResolver`、Guard命中表示は`IGuardImpactPresenter`を介して接続します。
 - `Feature`はPlayerへ個別に付け外しできる機能単位です。
 - `Action`はTraversal Feature内部の具体動作に使用します。
 

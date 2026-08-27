@@ -8,6 +8,7 @@ namespace Koiusa.SteamMultiRuntime
         [SerializeField, Min(0f)] private float amount = 25f;
         private IActorCombatCoordinator combat;
         public float LastHealedAmount { get; private set; }
+        private protected override ActorSkillSlot PresentationSlot => ActorSkillSlot.Heal;
 
         private void Awake() => combat = GetComponent<IActorCombatCoordinator>();
 

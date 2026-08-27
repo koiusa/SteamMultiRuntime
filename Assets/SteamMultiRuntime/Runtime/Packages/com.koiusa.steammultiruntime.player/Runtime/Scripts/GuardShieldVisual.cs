@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class GuardShieldVisual : MonoBehaviour
+    public sealed class GuardShieldVisual : MonoBehaviour, IGuardImpactPresenter
     {
         private static readonly int OpacityId = Shader.PropertyToID("_Opacity");
         private static readonly int ImpactPositionId = Shader.PropertyToID("_ImpactPosition");

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class ActorHitDetectionFeature : MonoBehaviour
+    public sealed class ActorHitDetectionFeature : MonoBehaviour, IActorAreaAttackResolver
     {
         private readonly Collider[] hits = new Collider[32];
         private readonly HashSet<IActorDamageReceiverFeature> damaged = new HashSet<IActorDamageReceiverFeature>();

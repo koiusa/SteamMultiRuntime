@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koiusa.SteamMultiRuntime
 {
-    public abstract class ActorSkillFeature : MonoBehaviour, IActorSkillFeature
+    public abstract class ActorSkillFeature : MonoBehaviour, IActorSkillFeature, IActorSkillPresentationDescriptor
     {
         [SerializeField] private ActorSkillDefinition definition;
         [SerializeField, Min(0f)] private float cooldown = 1f;
@@ -18,6 +18,8 @@ namespace Koiusa.SteamMultiRuntime
         public float CooldownRemaining => Mathf.Max(0f, cooldownEndsAt - Time.time);
         protected ActorSkillContext Context { get; private set; }
         protected virtual float ActiveDuration => activeDuration;
+        private protected virtual ActorSkillSlot PresentationSlot => ActorSkillSlot.None;
+        ActorSkillSlot IActorSkillPresentationDescriptor.PresentationSlot => PresentationSlot;
 
         public virtual bool CanActivate(ActorSkillContext context)
         {

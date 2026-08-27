@@ -12,7 +12,7 @@ namespace Koiusa.SteamMultiRuntime
     {
         [SerializeField, Min(0f)] private float respawnDelay = 3f;
 
-        private ActorHealthFeature health;
+        private IActorDeathNotifier health;
         private ActorCharacterCoordinator coordinator;
         private ActorCompositeMotor motor;
         private IActorCombatProcessGate processGate;
@@ -31,13 +31,13 @@ namespace Koiusa.SteamMultiRuntime
 
         private void Awake()
         {
-            health = GetComponent<ActorHealthFeature>();
-            health?.EnsureInitialized();
+            health = GetComponent<IActorDeathNotifier>();
+            _ = health?.CurrentHealth;
             coordinator = GetComponent<ActorCharacterCoordinator>();
             motor = GetComponent<ActorCompositeMotor>();
             processGate = GetComponent<IActorCombatProcessGate>();
             body = GetComponent<Rigidbody>();
-            wasDead = !health.IsAlive;
+            wasDead = health != null && !health.IsAlive;
             CaptureSpawnPose();
         }
 

@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
         private IActorMotorMotionSink motor;
         private IActorLocomotionState locomotionState;
         protected override float ActiveDuration => duration;
+        private protected override ActorSkillSlot PresentationSlot => ActorSkillSlot.Dash;
 
         private void Awake()
         {

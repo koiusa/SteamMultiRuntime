@@ -39,10 +39,31 @@ namespace Koiusa.SteamMultiRuntime
         event Action<float, float> HealthChanged;
     }
 
+    public interface IActorDeathNotifier : IActorHealthNotifier
+    {
+        event Action<ActorDamageRequest> Died;
+    }
+
     public interface IActorDamageReceiverFeature
     {
         bool CanReceiveDamage { get; }
         float ReceiveDamage(ActorDamageRequest request);
+    }
+
+    public interface IActorAreaAttackResolver
+    {
+        int PerformAreaAttack(
+            GameObject source,
+            Vector3 center,
+            float radius,
+            float damage,
+            Vector3 direction,
+            LayerMask layers);
+    }
+
+    public interface IGuardImpactPresenter
+    {
+        void PlayAttackImpact(Vector3 worldPosition);
     }
 
     public interface IActorCombatCoordinator

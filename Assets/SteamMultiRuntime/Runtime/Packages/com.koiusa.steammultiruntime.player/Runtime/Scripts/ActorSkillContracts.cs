@@ -17,6 +17,11 @@ namespace Koiusa.SteamMultiRuntime
         void SetActiveSkill(ActorSkillSlot slot);
     }
 
+    internal interface IActorSkillPresentationDescriptor
+    {
+        ActorSkillSlot PresentationSlot { get; }
+    }
+
     public readonly struct ActorSkillContext
     {
         public ActorSkillContext(GameObject owner, Vector3 direction, GameObject target = null)

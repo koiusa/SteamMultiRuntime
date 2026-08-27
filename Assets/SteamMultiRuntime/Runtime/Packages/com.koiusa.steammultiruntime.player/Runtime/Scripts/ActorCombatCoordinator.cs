@@ -7,8 +7,8 @@ namespace Koiusa.SteamMultiRuntime
     public sealed class ActorCombatCoordinator : MonoBehaviour, IActorCombatCoordinator
     {
         private readonly Dictionary<int, float> incomingDamageScales = new Dictionary<int, float>();
-        private ActorHitDetectionFeature hitDetection;
-        private GuardShieldVisual guardShieldVisual;
+        private IActorAreaAttackResolver areaAttackResolver;
+        private IGuardImpactPresenter guardImpactPresenter;
         private IActorCombatProcessGate processGate;
         public IActorHealthFeature Health { get; private set; }
         public float IncomingDamageScale { get; private set; } = 1f;
@@ -19,16 +19,16 @@ namespace Koiusa.SteamMultiRuntime
         public void RefreshFeatures()
         {
             Health = GetComponent<IActorHealthFeature>();
-            hitDetection = GetComponent<ActorHitDetectionFeature>();
-            guardShieldVisual = GetComponent<GuardShieldVisual>();
+            areaAttackResolver = GetComponent<IActorAreaAttackResolver>();
+            guardImpactPresenter = GetComponent<IGuardImpactPresenter>();
             processGate = GetComponent<IActorCombatProcessGate>();
         }
 
         public float ReceiveDamage(ActorDamageRequest request)
         {
             if (!CanProcessCombat() || Health == null) return 0f;
-            if (guardShieldVisual == null) guardShieldVisual = GetComponent<GuardShieldVisual>();
-            if (IncomingDamageScale < 1f) guardShieldVisual?.PlayAttackImpact(request.Point);
+            if (guardImpactPresenter == null) guardImpactPresenter = GetComponent<IGuardImpactPresenter>();
+            if (IncomingDamageScale < 1f) guardImpactPresenter?.PlayAttackImpact(request.Point);
             var scaled = new ActorDamageRequest(request.Source, request.Amount * IncomingDamageScale, request.Point, request.Direction);
             return Health.ApplyDamage(scaled);
         }
@@ -37,8 +37,8 @@ namespace Koiusa.SteamMultiRuntime
 
         public int PerformAreaAttack(Vector3 center, float radius, float damage, Vector3 direction, LayerMask layers)
         {
-            return CanProcessCombat() && Health?.IsAlive == true && hitDetection != null
-                ? hitDetection.PerformAreaAttack(gameObject, center, radius, damage, direction, layers)
+            return CanProcessCombat() && Health?.IsAlive == true && areaAttackResolver != null
+                ? areaAttackResolver.PerformAreaAttack(gameObject, center, radius, damage, direction, layers)
                 : 0;
         }
 

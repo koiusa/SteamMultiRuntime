@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Koiusa.SteamMultiRuntime
 {
     [DisallowMultipleComponent]
-    public sealed class ActorHealthFeature : MonoBehaviour, IActorHealthNotifier
+    public sealed class ActorHealthFeature : MonoBehaviour, IActorDeathNotifier
     {
         [SerializeField, Min(1f)] private float maxHealth = 100f;
         [SerializeField] private bool restoreOnEnable = true;

@@ -12,6 +12,7 @@ namespace Koiusa.SteamMultiRuntime
 
         private IActorCombatCoordinator combat;
         public int LastHitCount { get; private set; }
+        private protected override ActorSkillSlot PresentationSlot => ActorSkillSlot.Attack;
 
         private void Awake() => combat = GetComponent<IActorCombatCoordinator>();
 

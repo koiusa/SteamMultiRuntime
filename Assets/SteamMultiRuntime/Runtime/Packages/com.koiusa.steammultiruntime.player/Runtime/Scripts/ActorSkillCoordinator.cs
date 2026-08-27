@@ -78,14 +78,9 @@ namespace Koiusa.SteamMultiRuntime
 
         private static ActorSkillSlot GetSkillSlot(IActorSkillFeature skill)
         {
-            return skill switch
-            {
-                SwordAttackSkillFeature => ActorSkillSlot.Attack,
-                DashSkillFeature => ActorSkillSlot.Dash,
-                GuardSkillFeature => ActorSkillSlot.Guard,
-                HealSkillFeature => ActorSkillSlot.Heal,
-                _ => ActorSkillSlot.None
-            };
+            return skill is IActorSkillPresentationDescriptor descriptor
+                ? descriptor.PresentationSlot
+                : ActorSkillSlot.None;
         }
     }
 }
