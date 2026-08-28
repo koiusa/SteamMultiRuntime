@@ -1,11 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.7] - 2026-08-28
 
 ### Changed
 
 - Replaced the binding-row factory's long positional call with named row and shared build contexts.
 - Builds internal binding entries from their source Input Action and binding instead of passing derived values positionally.
+- Updated the `com.koiusa.input.core` dependency to `0.3.0`.
 
 ## [0.2.6] - 2026-08-24
 

@@ -265,7 +265,7 @@ Controller、Coordinator、Feature、Action間の詳細な依存規則はTravers
 ## Applicationと汎用入力Trigger
 
 ```text
-com.koiusa.input.core 0.2.0
+com.koiusa.input.core 0.3.0
 └─ InputActionPerformedTrigger
    ├─ InputActionsConfig
    ├─ InputActionLease

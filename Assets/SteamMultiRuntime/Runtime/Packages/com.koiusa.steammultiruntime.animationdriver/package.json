@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime.animationdriver",
   "displayName": "Koiusa SteamMultiRuntime Animation Driver",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Animation driver components for SteamMultiRuntime.",
   "author": {
@@ -14,6 +14,6 @@
     "unity"
   ],
   "dependencies": {
-    "com.koiusa.steammultiruntime.locomoter": "0.1.0"
+    "com.koiusa.steammultiruntime.locomoter": "0.1.1"
   }
 }

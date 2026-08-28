@@ -1,14 +1,14 @@
 {
   "name": "com.koiusa.steammultiruntime.lobby",
   "displayName": "Steam Multi Runtime Lobby",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Backend-independent lobby contracts, scene flow and local lobby UI for Steam Multi Runtime.",
   "author": { "name": "koiusa" },
   "dependencies": {
     "com.koiusa.steammultiruntime.core": "0.1.0",
     "com.unity.inputsystem": "1.18.0",
-    "com.koiusa.input.core": "0.2.0",
+    "com.koiusa.input.core": "0.3.0",
     "com.koiusa.ui.core": "0.1.0",
     "com.koiusa.steammultiruntime.localization": "0.1.0",
     "com.koiusa.steammultiruntime.resourceloader": "0.1.0"

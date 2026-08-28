@@ -2,6 +2,14 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Updated the public API packages: `com.koiusa.input.core` to 0.3.0, `com.koiusa.keyconfig` to 0.2.7, `com.koiusa.inputguide` to 0.3.3, and `com.koiusa.targetingsystem` to 0.4.1.
+- Updated the affected Steam Multi Runtime packages: character UI, lobby, lobby netcode, lobby Steam, locomoter, locomoter netcode, player, player netcode, player UI, animation driver, and integration to 0.1.1.
+- Updated `com.koiusa.steammultiruntime.keyconfig` to 0.1.10, `com.koiusa.steammultiruntime.prototype` to 0.1.3, and `com.koiusa.steammultiruntime.targetingsystem` to 0.3.1.
+
 ## [0.12.7] - 2026-08-24
 
 ### Changed

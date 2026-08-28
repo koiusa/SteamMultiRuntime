@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.targetingsystem",
   "displayName": "Koiusa Targeting System",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Camera-independent targeting state, selection policies, input commands, and optional Cinemachine presentation for Unity.",
@@ -12,7 +12,7 @@
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
     "com.unity.cinemachine": "3.1.6",
-    "com.koiusa.input.core": "0.2.0"
+    "com.koiusa.input.core": "0.3.0"
   },
 
   "keywords": [

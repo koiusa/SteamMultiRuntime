@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime.integration",
   "displayName": "Steam Multi Runtime Integration",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Integration components that compose Steam Multi Runtime feature packages.",
   "author": { "name": "koiusa" },
@@ -9,7 +9,7 @@
     "com.koiusa.steammultiruntime.core": "0.1.0",
     "com.koiusa.steammultiruntime.character": "0.1.0",
     "com.unity.netcode.gameobjects": "2.11.2",
-    "com.koiusa.steammultiruntime.locomoter": "0.1.0",
+    "com.koiusa.steammultiruntime.locomoter": "0.1.1",
     "com.koiusa.steammultiruntime.resourceloader": "0.1.0"
   }
 }

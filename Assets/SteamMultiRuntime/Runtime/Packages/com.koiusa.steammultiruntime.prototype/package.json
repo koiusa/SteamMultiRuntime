@@ -1,6 +1,6 @@
 {
   "name": "com.koiusa.steammultiruntime.prototype",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "displayName": "Koiusa SteamMultiRuntime Prototype",
   "description": "Prototype components for SteamMultiRuntime including Mover and NPC utilities.",
   "unity": "6000.0",
@@ -12,12 +12,12 @@
     "com.unity.netcode.gameobjects": "2.11.2",
     "com.koiusa.steammultiruntime.core": "0.1.0",
     "com.koiusa.steammultiruntime.editor-tools": "0.1.0",
-    "com.koiusa.steammultiruntime.integration": "0.1.0",
-    "com.koiusa.steammultiruntime.locomoter": "0.1.0",
-    "com.koiusa.steammultiruntime.locomoter.netcode": "0.1.0",
-    "com.koiusa.steammultiruntime.player": "0.1.0",
+    "com.koiusa.steammultiruntime.integration": "0.1.1",
+    "com.koiusa.steammultiruntime.locomoter": "0.1.1",
+    "com.koiusa.steammultiruntime.locomoter.netcode": "0.1.1",
+    "com.koiusa.steammultiruntime.player": "0.1.1",
     "com.koiusa.steammultiruntime.resourceloader": "0.1.0",
-    "com.koiusa.input.core": "0.2.0"
+    "com.koiusa.input.core": "0.3.0"
     ,"com.unity.burst": "1.8.28"
     ,"com.unity.collections": "2.6.2"
     ,"com.unity.mathematics": "1.3.3"

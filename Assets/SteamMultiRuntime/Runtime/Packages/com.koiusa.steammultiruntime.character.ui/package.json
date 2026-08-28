@@ -1,13 +1,13 @@
 {
   "name": "com.koiusa.steammultiruntime.character.ui",
   "displayName": "Steam Multi Runtime Character UI",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Character selection UI for Steam Multi Runtime.",
   "author": { "name": "koiusa" },
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
-    "com.koiusa.input.core": "0.2.0",
+    "com.koiusa.input.core": "0.3.0",
     "com.koiusa.ui.core": "0.1.0",
     "com.koiusa.steammultiruntime.localization": "0.1.0",
     "com.koiusa.steammultiruntime.character": "0.1.0"

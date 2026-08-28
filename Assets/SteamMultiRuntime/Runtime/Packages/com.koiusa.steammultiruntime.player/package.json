@@ -1,15 +1,15 @@
 {
   "name": "com.koiusa.steammultiruntime.player",
   "displayName": "Steam Multi Runtime Player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Player runtime components for Steam Multi Runtime.",
   "author": { "name": "koiusa" },
   "dependencies": {
     "com.unity.inputsystem": "1.18.0",
     "com.unity.visualeffectgraph": "17.3.0",
-    "com.koiusa.input.core": "0.2.0",
+    "com.koiusa.input.core": "0.3.0",
     "com.koiusa.steammultiruntime.core": "0.1.0",
-    "com.koiusa.steammultiruntime.locomoter": "0.1.0"
+    "com.koiusa.steammultiruntime.locomoter": "0.1.1"
   }
 }

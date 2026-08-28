@@ -1,7 +1,7 @@
 {
   "name": "com.koiusa.steammultiruntime.targetingsystem",
   "displayName": "Steam Multi Runtime Targeting System Integration",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "unity": "6000.3",
   "unityRelease": "9f1",
   "description": "Steam Multi Runtime production input, ownership, camera, UI, and prefab composition for the generic Koiusa Targeting System.",
@@ -9,10 +9,10 @@
     "name": "koiusa"
   },
   "dependencies": {
-    "com.koiusa.targetingsystem": "0.4.0",
-    "com.koiusa.input.core": "0.2.0",
-    "com.koiusa.steammultiruntime.player": "0.1.0",
-    "com.koiusa.steammultiruntime.locomoter": "0.1.0",
+    "com.koiusa.targetingsystem": "0.4.1",
+    "com.koiusa.input.core": "0.3.0",
+    "com.koiusa.steammultiruntime.player": "0.1.1",
+    "com.koiusa.steammultiruntime.locomoter": "0.1.1",
     "com.unity.inputsystem": "1.18.0",
     "com.unity.cinemachine": "3.1.6"
   },

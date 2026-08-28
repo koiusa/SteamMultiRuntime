@@ -1,13 +1,13 @@
 {
   "name": "com.koiusa.steammultiruntime.lobby.netcode",
   "displayName": "Steam Multi Runtime Lobby Netcode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.3",
   "description": "Netcode for GameObjects lobby session and scene synchronization implementation.",
   "author": { "name": "koiusa" },
   "dependencies": {
     "com.unity.netcode.gameobjects": "2.11.2",
     "com.community.netcode.transport.facepunch": "2.0.0",
-    "com.koiusa.steammultiruntime.lobby": "0.1.0"
+    "com.koiusa.steammultiruntime.lobby": "0.1.1"
   }
 }
