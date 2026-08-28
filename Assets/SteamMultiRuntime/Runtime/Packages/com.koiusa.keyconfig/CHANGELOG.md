@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Replaced the binding-row factory's long positional call with named row and shared build contexts.
+- Builds internal binding entries from their source Input Action and binding instead of passing derived values positionally.
+
 ## [0.2.6] - 2026-08-24
 
 ### Fixed

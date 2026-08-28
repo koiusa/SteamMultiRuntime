@@ -75,10 +75,8 @@ namespace Koiusa.SteamMultiRuntime
             selectedButtonIndex = 0;
             navigationSession = new UiNavigationInputSession(
                 inputActionsConfig,
-                MoveSelection,
-                SubmitSelection,
-                Hide,
-                pauseMenuDocument?.rootVisualElement);
+                new UiNavigationInputHandlers(MoveSelection, SubmitSelection, Hide),
+                new UiNavigationInputOptions { EventRoot = pauseMenuDocument?.rootVisualElement });
         }
 
         public void Deactivate()

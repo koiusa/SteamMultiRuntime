@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the positional `UiNavigationInputSession` constructors with input-source, `UiNavigationInputHandlers`, and `UiNavigationInputOptions` arguments.
+
 ### Fixed
 
 - Cleared held UI navigation repeat when the Navigate action is canceled by action disable, binding resolution, or device reset.

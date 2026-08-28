@@ -188,6 +188,18 @@ namespace Koiusa.KeyConfig
 
         private void BuildBindingRows()
         {
+            var buildContext = new KeyConfigBindingRowFactory.BuildContext
+            {
+                IsInteractive = isInteractive,
+                IconResolver = iconResolver,
+                UnavailableButtons = unavailableButtons,
+                BindText = rowLocalization.Bind,
+                BindTooltip = rowLocalization.BindTooltip,
+                Rebind = onRebind,
+                AddModifier = onAddModifier,
+                RemoveModifier = onRemoveModifier,
+                Reset = onReset
+            };
             string currentSchemeName = null;
             string currentProfileName = null;
             string currentActionName = null;
@@ -218,9 +230,14 @@ namespace Koiusa.KeyConfig
                 if (isNewAction) currentActionName = entry.ActionName;
 
                 var bindingRow = KeyConfigBindingRowFactory.Create(
-                    entry, rowIndex, rowCounter++, isNewAction, isInteractive, iconResolver, unavailableButtons,
-                    rowLocalization.Bind, rowLocalization.BindTooltip,
-                    onRebind, onAddModifier, onRemoveModifier, onReset);
+                    new KeyConfigBindingRowFactory.RowRequest
+                    {
+                        Entry = entry,
+                        EntryIndex = rowIndex,
+                        VisibleRowIndex = rowCounter++,
+                        ShowActionName = isNewAction
+                    },
+                    buildContext);
                 bindingNavigation.Add(
                     rowIndex, bindingRow.Row, bindingRow.AddModifierButton, bindingRow.RemoveModifierButton,
                     bindingRow.ChangeButton, bindingRow.ResetButton);

@@ -9,59 +9,29 @@ namespace Koiusa.KeyConfig
     {
         public readonly struct BindingEntry
         {
-            public BindingEntry(
-                Guid actionId,
-                string actionName,
-                string actionMapName,
-                string schemeName,
-                string profileName,
+            internal BindingEntry(
+                InputAction action,
                 int bindingIndex,
-                Guid bindingId,
+                InputBinding binding,
                 string displayName,
-                bool isComposite,
-                bool isPartOfComposite,
                 bool isRebindable,
-                string groups,
                 string bindingPath,
-                int modifierCount = 0)
-                : this(
-                    actionId, actionName, actionMapName, schemeName, profileName, bindingIndex, bindingId,
-                    displayName, isComposite, isPartOfComposite, isRebindable, groups, bindingPath,
-                    modifierCount, null)
-            {
-            }
-
-            public BindingEntry(
-                Guid actionId,
-                string actionName,
-                string actionMapName,
-                string schemeName,
-                string profileName,
-                int bindingIndex,
-                Guid bindingId,
-                string displayName,
-                bool isComposite,
-                bool isPartOfComposite,
-                bool isRebindable,
-                string groups,
-                string bindingPath,
-                int modifierCount,
                 IReadOnlyList<string> bindingPaths)
             {
-                ActionId = actionId;
-                ActionName = actionName;
-                ActionMapName = actionMapName;
-                SchemeName = schemeName;
-                ProfileName = profileName;
+                ActionId = action.id;
+                ActionName = action.name;
+                ActionMapName = action.actionMap?.name ?? "(No Map)";
+                SchemeName = ExtractPrimaryGroupName(binding.groups);
+                ProfileName = ExtractDeviceProfileName(bindingPath, binding.path);
                 BindingIndex = bindingIndex;
-                BindingId = bindingId;
+                BindingId = binding.id;
                 DisplayName = displayName;
-                IsComposite = isComposite;
-                IsPartOfComposite = isPartOfComposite;
+                IsComposite = binding.isComposite;
+                IsPartOfComposite = binding.isPartOfComposite;
                 IsRebindable = isRebindable;
-                Groups = groups;
+                Groups = binding.groups;
                 BindingPath = bindingPath;
-                ModifierCount = modifierCount;
+                ModifierCount = CompositeBindingUtility.GetModifierCount(action, bindingIndex);
                 BindingPaths = bindingPaths ??
                     (string.IsNullOrWhiteSpace(bindingPath) ? Array.Empty<string>() : new[] { bindingPath });
             }
@@ -224,20 +194,12 @@ namespace Koiusa.KeyConfig
                         }
                     }
                     entries.Add(new BindingEntry(
-                        action.id,
-                        action.name,
-                        action.actionMap?.name ?? "(No Map)",
-                        ExtractPrimaryGroupName(binding.groups),
-                        ExtractDeviceProfileName(resolvedBindingPath, binding.path),
+                        action,
                         i,
-                        binding.id,
+                        binding,
                         displayName,
-                        binding.isComposite,
-                        binding.isPartOfComposite,
                         IsActionMapRebindable(action.actionMap?.name) && (!binding.isComposite || CompositeBindingUtility.IsSupportedModifierComposite(action, i)),
-                        binding.groups,
                         resolvedBindingPath,
-                        CompositeBindingUtility.GetModifierCount(action, i),
                         resolvedBindingPaths));
                 }
             }

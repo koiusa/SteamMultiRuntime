@@ -75,13 +75,12 @@ namespace Koiusa.SteamMultiRuntime
             BuildUi();
             navigationSession = new UiNavigationInputSession(
                 inputActionsConfig?.FindAction("UI/Navigate"),
-                null,
-                null,
-                view.HandleNavigationMove,
-                null,
-                null,
-                uiDocument.rootVisualElement,
-                view.HandlesNavigationMove);
+                new UiNavigationInputHandlers(view.HandleNavigationMove),
+                new UiNavigationInputOptions
+                {
+                    EventRoot = uiDocument.rootVisualElement,
+                    NavigationEventFilter = view.HandlesNavigationMove
+                });
             GameLocalization.LocaleChanged += Render;
             previousSectionBinding = InputActionBinding.Bind(
                 inputActionsConfig?.FindAction("UI/PreviousSection"),

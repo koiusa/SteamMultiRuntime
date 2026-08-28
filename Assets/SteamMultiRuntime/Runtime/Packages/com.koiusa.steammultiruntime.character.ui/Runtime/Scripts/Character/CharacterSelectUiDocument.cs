@@ -96,10 +96,8 @@ namespace Koiusa.SteamMultiRuntime.Character.UI
             UnbindUiInput();
             inputSession = new UiNavigationInputSession(
                 inputActionsConfig,
-                view.MoveSelection,
-                OnConfirmClicked,
-                Close,
-                registeredRoot);
+                new UiNavigationInputHandlers(view.MoveSelection, OnConfirmClicked, Close),
+                new UiNavigationInputOptions { EventRoot = registeredRoot });
         }
 
         private void UnbindUiInput()

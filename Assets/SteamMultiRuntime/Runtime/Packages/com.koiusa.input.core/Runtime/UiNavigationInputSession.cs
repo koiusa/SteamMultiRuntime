@@ -15,6 +15,32 @@ namespace Koiusa.Input
         Right
     }
 
+    public sealed class UiNavigationInputHandlers
+    {
+        public UiNavigationInputHandlers(
+            Action<UiNavigationDirection> move,
+            Action submit = null,
+            Action cancel = null)
+        {
+            Move = move;
+            Submit = submit;
+            Cancel = cancel;
+        }
+
+        public Action<UiNavigationDirection> Move { get; }
+        public Action Submit { get; }
+        public Action Cancel { get; }
+    }
+
+    public sealed class UiNavigationInputOptions
+    {
+        public VisualElement EventRoot { get; set; }
+        public Func<UiNavigationDirection, bool> NavigationEventFilter { get; set; }
+        public float Threshold { get; set; } = UiNavigationInputSession.DefaultThreshold;
+        public float RepeatDelay { get; set; } = UiNavigationInputSession.DefaultRepeatDelay;
+        public float RepeatInterval { get; set; } = UiNavigationInputSession.DefaultRepeatInterval;
+    }
+
     /// <summary>
     /// Owns the shared UI actions and turns a held Vector2 into discrete navigation steps.
     /// Screens only provide move, submit, and cancel callbacks.
@@ -63,47 +89,39 @@ namespace Koiusa.Input
 
         public UiNavigationInputSession(
             InputActionsConfig config,
-            Action<UiNavigationDirection> move,
-            Action submit,
-            Action cancel,
-            VisualElement blockedEventRoot = null,
-            Func<UiNavigationDirection, bool> blockNavigationEvent = null,
-            float threshold = DefaultThreshold,
-            float repeatDelay = DefaultRepeatDelay,
-            float repeatInterval = DefaultRepeatInterval)
+            UiNavigationInputHandlers handlers,
+            UiNavigationInputOptions options = null)
             : this(
                 config?.FindAction("UI/Navigate"),
-                submit != null ? config?.FindAction("UI/Submit") : null,
-                cancel != null ? config?.FindAction("UI/Cancel") : null,
-                move,
-                submit,
-                cancel,
-                blockedEventRoot,
-                blockNavigationEvent,
-                threshold,
-                repeatDelay,
-                repeatInterval)
+                handlers?.Submit != null ? config?.FindAction("UI/Submit") : null,
+                handlers?.Cancel != null ? config?.FindAction("UI/Cancel") : null,
+                handlers,
+                options)
         {
         }
 
         public UiNavigationInputSession(
             InputAction navigateAction,
+            UiNavigationInputHandlers handlers,
+            UiNavigationInputOptions options = null)
+            : this(navigateAction, null, null, handlers, options)
+        {
+        }
+
+        private UiNavigationInputSession(
+            InputAction navigateAction,
             InputAction submitAction,
             InputAction cancelAction,
-            Action<UiNavigationDirection> move,
-            Action submit,
-            Action cancel,
-            VisualElement blockedEventRoot = null,
-            Func<UiNavigationDirection, bool> blockNavigationEvent = null,
-            float threshold = DefaultThreshold,
-            float repeatDelay = DefaultRepeatDelay,
-            float repeatInterval = DefaultRepeatInterval)
+            UiNavigationInputHandlers handlers,
+            UiNavigationInputOptions options)
         {
-            this.move = move;
-            this.threshold = Mathf.Clamp01(threshold);
-            this.repeatDelay = Mathf.Max(0f, repeatDelay);
-            this.repeatInterval = Mathf.Max(0.01f, repeatInterval);
-            this.blockNavigationEvent = blockNavigationEvent;
+            if (handlers == null) throw new ArgumentNullException(nameof(handlers));
+            options ??= new UiNavigationInputOptions();
+            move = handlers.Move;
+            threshold = Mathf.Clamp01(options.Threshold);
+            repeatDelay = Mathf.Max(0f, options.RepeatDelay);
+            repeatInterval = Mathf.Max(0.01f, options.RepeatInterval);
+            blockNavigationEvent = options.NavigationEventFilter;
 
             if (navigateAction == null)
             {
@@ -119,25 +137,25 @@ namespace Koiusa.Input
             clickLease = InputActionLease.Acquire(actionAsset?.FindAction("UI/Click", false));
             this.navigateAction.performed += OnNavigatePerformed;
             this.navigateAction.canceled += OnNavigateCanceled;
-            submitBinding = submit == null
+            submitBinding = handlers.Submit == null
                 ? null
                 : InputActionBinding.Bind(submitAction, _ =>
                 {
                     if (IsActiveSession)
                     {
-                        submit.Invoke();
+                        handlers.Submit.Invoke();
                     }
                 });
-            cancelBinding = cancel == null
+            cancelBinding = handlers.Cancel == null
                 ? null
                 : InputActionBinding.Bind(cancelAction, _ =>
                 {
                     if (IsActiveSession)
                     {
-                        cancel.Invoke();
+                        handlers.Cancel.Invoke();
                     }
                 });
-            this.blockedEventRoot = blockedEventRoot;
+            blockedEventRoot = options.EventRoot;
             this.blockedEventRoot?.RegisterCallback<NavigationMoveEvent>(
                 OnNavigationMoveEvent,
                 TrickleDown.TrickleDown);

@@ -8,6 +8,27 @@ namespace Koiusa.KeyConfig
 {
     internal static class KeyConfigBindingRowFactory
     {
+        internal sealed class BuildContext
+        {
+            public bool IsInteractive;
+            public KeyConfigIconSet IconResolver;
+            public HashSet<Button> UnavailableButtons;
+            public Action<TextElement, string> BindText;
+            public Action<VisualElement, string> BindTooltip;
+            public Action<int> Rebind;
+            public Action<int> AddModifier;
+            public Action<int> RemoveModifier;
+            public Action<int> Reset;
+        }
+
+        internal sealed class RowRequest
+        {
+            public KeyConfigBinding Entry;
+            public int EntryIndex;
+            public int VisibleRowIndex;
+            public bool ShowActionName;
+        }
+
         internal sealed class Result
         {
             public VisualElement Row;
@@ -19,44 +40,34 @@ namespace Koiusa.KeyConfig
             public InputControl Control;
         }
 
-        public static Result Create(
-            KeyConfigBinding entry,
-            int entryIndex,
-            int visibleRowIndex,
-            bool showActionName,
-            bool isInteractive,
-            KeyConfigIconSet iconResolver,
-            HashSet<Button> unavailableButtons,
-            Action<TextElement, string> bindText,
-            Action<VisualElement, string> bindTooltip,
-            Action<int> onRebind,
-            Action<int> onAddModifier,
-            Action<int> onRemoveModifier,
-            Action<int> onReset)
+        public static Result Create(RowRequest request, BuildContext context)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+            var entry = request.Entry ?? throw new ArgumentNullException(nameof(request.Entry));
             var row = new VisualElement { focusable = !entry.IsRebindable };
             row.AddToClassList("keyconfig-row");
-            row.AddToClassList(visibleRowIndex % 2 == 0 ? "even" : "odd");
+            row.AddToClassList(request.VisibleRowIndex % 2 == 0 ? "even" : "odd");
             row.RegisterCallback<FocusInEvent>(OnFocusIn);
             row.RegisterCallback<FocusOutEvent>(OnFocusOut);
 
-            var actionText = showActionName && !entry.IsPartOfComposite
+            var actionText = request.ShowActionName && !entry.IsPartOfComposite
                 ? entry.ActionName
                 : (entry.IsPartOfComposite ? entry.DisplayName.Split('/')[0] : string.Empty);
             var actionCell = new Label(actionText);
-            if (!string.IsNullOrEmpty(actionText)) bindText(actionCell, actionText);
+            if (!string.IsNullOrEmpty(actionText)) context.BindText(actionCell, actionText);
             actionCell.AddToClassList("keyconfig-cell-action");
             if (entry.IsPartOfComposite) actionCell.AddToClassList("composite-child");
             row.Add(actionCell);
 
             var bindingCell = new VisualElement();
             bindingCell.AddToClassList("keyconfig-cell-binding");
-            if (iconResolver != null)
+            if (context.IconResolver != null)
             {
                 var visibleIconCount = 0;
                 for (var pathIndex = 0; pathIndex < entry.BindingPaths.Count; pathIndex++)
                 {
-                    var icon = iconResolver.Resolve(entry.BindingPaths[pathIndex]);
+                    var icon = context.IconResolver.Resolve(entry.BindingPaths[pathIndex]);
                     if (icon == null) continue;
                     if (visibleIconCount > 0)
                     {
@@ -86,21 +97,21 @@ namespace Koiusa.KeyConfig
             var addModifierButton = CreateButton(
                 "keyconfig.add_modifier", "keyconfig.add_modifier_tooltip", "keyconfig-modifier-button",
                 CanChangeModifier(entry, true, hasConnectedDevice),
-                isInteractive, unavailableButtons, bindText, bindTooltip,
-                () => onAddModifier?.Invoke(entryIndex));
+                context.IsInteractive, context.UnavailableButtons, context.BindText, context.BindTooltip,
+                () => context.AddModifier?.Invoke(request.EntryIndex));
             var removeModifierButton = CreateButton(
                 "keyconfig.remove_modifier", "keyconfig.remove_modifier_tooltip", "keyconfig-modifier-button",
                 CanChangeModifier(entry, false, hasConnectedDevice),
-                isInteractive, unavailableButtons, bindText, bindTooltip,
-                () => onRemoveModifier?.Invoke(entryIndex));
+                context.IsInteractive, context.UnavailableButtons, context.BindText, context.BindTooltip,
+                () => context.RemoveModifier?.Invoke(request.EntryIndex));
             var changeButton = CreateButton(
                 "keyconfig.change", null, "keyconfig-rebind-button",
-                entry.IsRebindable, isInteractive, unavailableButtons, bindText, bindTooltip,
-                () => onRebind?.Invoke(entryIndex));
+                entry.IsRebindable, context.IsInteractive, context.UnavailableButtons, context.BindText, context.BindTooltip,
+                () => context.Rebind?.Invoke(request.EntryIndex));
             var resetButton = CreateButton(
                 "keyconfig.reset", null, "keyconfig-reset-button",
-                entry.IsRebindable, isInteractive, unavailableButtons, bindText, bindTooltip,
-                () => onReset?.Invoke(entryIndex));
+                entry.IsRebindable, context.IsInteractive, context.UnavailableButtons, context.BindText, context.BindTooltip,
+                () => context.Reset?.Invoke(request.EntryIndex));
             buttonCell.Add(addModifierButton);
             buttonCell.Add(removeModifierButton);
             buttonCell.Add(changeButton);

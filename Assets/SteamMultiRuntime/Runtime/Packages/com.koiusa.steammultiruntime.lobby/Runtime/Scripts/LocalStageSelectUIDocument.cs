@@ -141,10 +141,8 @@ namespace Koiusa.SteamMultiRuntime
             stageSelectUI.Focus();
             inputSession = new UiNavigationInputSession(
                 inputActionsConfig,
-                stageSelectUI.MoveSelection,
-                stageSelectUI.SubmitSelection,
-                Close,
-                root);
+                new UiNavigationInputHandlers(stageSelectUI.MoveSelection, stageSelectUI.SubmitSelection, Close),
+                new UiNavigationInputOptions { EventRoot = root });
         }
 
         private void UnbindUI()

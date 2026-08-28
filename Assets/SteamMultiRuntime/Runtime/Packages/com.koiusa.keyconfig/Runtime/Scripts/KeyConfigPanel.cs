@@ -100,12 +100,8 @@ namespace Koiusa.KeyConfig
             var asset = controller?.Actions;
             navigationSession = new UiNavigationInputSession(
                 asset?.FindAction("UI/Navigate"),
-                null,
-                null,
-                view.HandleNavigationMove,
-                null,
-                null,
-                uiDocument.rootVisualElement);
+                new UiNavigationInputHandlers(view.HandleNavigationMove),
+                new UiNavigationInputOptions { EventRoot = uiDocument.rootVisualElement });
             BindSectionNavigation();
             SuspendNonUiActions();
 
