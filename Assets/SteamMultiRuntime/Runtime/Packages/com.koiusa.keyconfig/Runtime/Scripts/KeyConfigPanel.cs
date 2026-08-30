@@ -46,6 +46,7 @@ namespace Koiusa.KeyConfig
         private string sessionOverridesJson;
         private IVisualElementScheduledItem inputStateUpdate;
         private IVisualElementScheduledItem releaseBlockRefresh;
+        private bool runtimeActive;
 
         public string BindingGroup => bindingGroup;
         public bool IsVisible => gameObject.activeSelf;
@@ -65,6 +66,31 @@ namespace Koiusa.KeyConfig
             saveOverrides = save;
         }
 
+        /// <summary>
+        /// Configures the panel for runtime creation. This can be called after Awake and may be
+        /// called again to replace the current configuration.
+        /// </summary>
+        public void Configure(
+            KeyConfigSettings settings,
+            VisualTreeAsset layout,
+            StyleSheet styleSheet,
+            KeyConfigIconSet iconResolver,
+            string bindingGroup = "Keyboard&Mouse")
+        {
+            var restartRuntime = runtimeActive;
+            if (restartRuntime) StopRuntime();
+
+            DisposeConfiguredServices();
+            inputActionsConfig = settings;
+            layoutAsset = layout;
+            this.styleSheet = styleSheet;
+            this.iconResolver = iconResolver;
+            this.bindingGroup = bindingGroup?.Trim() ?? string.Empty;
+            InitializeConfiguredServices();
+
+            if (restartRuntime) StartRuntime();
+        }
+
         public void Deactivate()
         {
             if (!gameObject.activeSelf) return;
@@ -76,6 +102,12 @@ namespace Koiusa.KeyConfig
         {
             uiDocument = GetComponent<UIDocument>();
 
+            InitializeConfiguredServices();
+        }
+
+        private void InitializeConfiguredServices()
+        {
+            if (uiDocument == null) uiDocument = GetComponent<UIDocument>();
             view = new KeyConfigView(uiDocument, layoutAsset, styleSheet);
             view.SetIconResolver(iconResolver);
 
@@ -90,6 +122,14 @@ namespace Koiusa.KeyConfig
 
         private void OnEnable()
         {
+            if (view == null) InitializeConfiguredServices();
+            StartRuntime();
+        }
+
+        private void StartRuntime()
+        {
+            if (runtimeActive) return;
+            runtimeActive = true;
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
             InputSystem.onDeviceChange += OnInputDeviceChange;
             InputSystem.onEvent += OnInputEvent;
@@ -126,6 +166,13 @@ namespace Koiusa.KeyConfig
 
         private void OnDisable()
         {
+            StopRuntime();
+        }
+
+        private void StopRuntime()
+        {
+            if (!runtimeActive) return;
+            runtimeActive = false;
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             InputSystem.onDeviceChange -= OnInputDeviceChange;
             InputSystem.onEvent -= OnInputEvent;
@@ -194,6 +241,12 @@ namespace Koiusa.KeyConfig
 
         private void OnDestroy()
         {
+            StopRuntime();
+            DisposeConfiguredServices();
+        }
+
+        private void DisposeConfiguredServices()
+        {
             if (controller != null)
             {
                 controller.ConflictDetected -= OnRebindConflict;
@@ -201,7 +254,8 @@ namespace Koiusa.KeyConfig
                 controller.Dispose();
                 controller = null;
             }
-
+            view?.Dispose();
+            view = null;
         }
 
         private void RebuildBindingList()

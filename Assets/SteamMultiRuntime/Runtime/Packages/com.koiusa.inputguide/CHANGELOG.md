@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.4] - 2026-08-30
+
+- Updated the `com.koiusa.keyconfig` dependency to 0.3.0 for its runtime configuration API.
+
 ## [0.3.3] - 2026-08-28
 
 - Updated dependencies to `com.koiusa.input.core` 0.3.0 and `com.koiusa.keyconfig` 0.2.7.

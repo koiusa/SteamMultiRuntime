@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-08-30
+
+### Added
+
+- Added `KeyConfigPanel.Configure` for reflection-free runtime initialization and safe reconfiguration after `Awake`.
+- Added `KeyConfigSettings.SetInputActionAsset` for runtime-created settings.
+- Added runtime configuration examples and Edit Mode／Play Mode coverage for repeated configuration and existing setter interoperability.
+
+### Compatibility
+
+- Preserved Inspector-based configuration and the existing persistence and binding-group APIs.
+- Reconfiguration now replaces controller and UI event subscriptions without duplicate registrations.
+
 ## [0.2.7] - 2026-08-28
 
 ### Changed

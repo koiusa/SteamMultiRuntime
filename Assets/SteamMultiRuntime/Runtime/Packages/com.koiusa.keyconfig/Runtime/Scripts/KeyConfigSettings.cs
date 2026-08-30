@@ -27,6 +27,12 @@ namespace Koiusa.KeyConfig
         public string PreviousSectionActionPath => previousSectionActionPath;
         public string NextSectionActionPath => nextSectionActionPath;
 
+        /// <summary>Sets the Input Action Asset used by runtime-created settings.</summary>
+        public void SetInputActionAsset(InputActionAsset asset)
+        {
+            inputActionAsset = asset;
+        }
+
         public InputActionAsset Resolve()
         {
             return inputActionAsset;

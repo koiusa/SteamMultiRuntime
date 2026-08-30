@@ -3,6 +3,8 @@
   "rootNamespace": "Koiusa.KeyConfig.Tests",
   "references": [
     "Koiusa.KeyConfig.Runtime",
+    "Koiusa.Input.Icons.Runtime",
+    "Koiusa.UI.Core.Runtime",
     "GUID:75469ad4d38634e559750d17036d5f7c"
   ],
   "optionalUnityReferences": ["TestAssemblies"]

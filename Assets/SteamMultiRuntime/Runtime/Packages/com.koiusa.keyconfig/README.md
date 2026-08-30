@@ -35,6 +35,22 @@ Action Map、Action、Composite、スキーム、プロファイルの元名称�
 
 Package ManagerのSamplesから`Basic Key Rebinding`をImportしてください。
 
+`KeyConfigPanel`を実行時に追加する場合は、Reflectionではなく`Configure`で依存Assetを一括設定できます。
+`Awake`後や非表示中にも呼び出せ、再設定時は既存のイベント購読が安全に置き換えられます。
+
+```csharp
+var settings = ScriptableObject.CreateInstance<KeyConfigSettings>();
+settings.SetInputActionAsset(inputActionAsset);
+
+var panel = gameObject.AddComponent<KeyConfigPanel>(); // UIDocumentも自動的に要求されます
+panel.Configure(settings, layout, styleSheet, iconSet, "Keyboard&Mouse");
+panel.SetPersistence(LoadBindingOverrides, SaveBindingOverrides);
+panel.Open();
+```
+
+Inspectorで各フィールドを設定する従来方式も引き続き利用できます。`SetBindingGroup`、
+`ClearBindingGroupFilter`、`SetPersistence`は`Configure`後も同様に利用できます。
+
 Editor Toolは用途別に次のカテゴリへ分類されます。
 
 - `Tools > KeyConfig > Assets`: Input Action Asset ResolverとInput Binding Icon Resolverの作成
