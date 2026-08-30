@@ -2,6 +2,14 @@
 
 All notable changes to Steam Multi Runtime will be documented in this file.
 
+## [0.13.1] - 2026-08-30
+
+### Changed
+
+- Updated `com.koiusa.keyconfig` to 0.3.0 with reflection-free runtime configuration through `KeyConfigPanel.Configure` and `KeyConfigSettings.SetInputActionAsset`.
+- Updated `com.koiusa.inputguide` to 0.3.4 and aligned its Keyconfig dependency to 0.3.0.
+- Updated the bundled `com.koiusa.steammultiruntime.keyconfig` integration to 0.1.11 and aligned its Keyconfig dependency to 0.3.0.
+
 ## [0.13.0] - 2026-08-28
 
 ### Changed
